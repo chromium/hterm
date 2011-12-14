@@ -1,0 +1,141 @@
+{
+  "WELCOME": {
+    "message": "Welcome!  Open a new ssh connection with the 'open' command.",
+    "description": "Message displayed to the user when the application is first launched"
+  },
+
+  "WELCOME_TIP": {
+    "message": "Pro Tip: You can save this session as a browser bookmark.",
+    "description": "A short tip displayed after the WELCOME message."
+  },
+
+  "CONNECT_MESSAGE": {
+    "message": "Please enter a destination to connect to.",
+    "description": "Message displayed in the connect dialog."
+  },
+
+  "OK_BUTTON_LABEL": {
+    "message": "OK",
+    "description": "The label for the OK button in dialogs."
+  },
+
+  "CANCEL_BUTTON_LABEL": {
+    "message": "Cancel",
+    "description": "The label for the Cancel button in dialogs."
+  },
+
+  "DESTINATION_PATTERN": {
+    "message": "username@hostname[:port]",
+    "description": "Text displayed in the destination textbox to hint at the expected format."
+  },
+
+  "CONNECT_BUTTON_LABEL": {
+    "message": "Connect",
+    "description": "Label for the connect button."
+  },
+
+  "COMMAND_COMPLETE": {
+    "message": "The command $NAME$ completed with exit code $CODE$.  Please close this window at your leisure.",
+    "description": "Message displayed when the current command has completed.",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+	"example": "ssh"
+       },
+
+       "code": {
+         "content": "$2",
+	 "example": "0"
+       }
+     }
+  },
+
+  "CONNECTING": {
+    "message": "Connecting to $USER$@$HOST$, port $PORT$...",
+    "description": "Status message shown when connecting to a host.",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "username"
+      },
+
+      "host": {
+        "content": "$2",
+        "example": "host.example.com"
+      },
+
+      "port": {
+        "content": "$3",
+        "example": "22"
+      }
+    }
+  },
+
+  "UNEXPECTED_ERROR": {
+    "message": "An unexpected error occurred, please chech the JavaScript console for more details.",
+    "description": "Generic message displayed when we encounter an unexpected error."
+  },
+
+  "MISSING_PARAM": {
+    "message": "Missing parameter: $NAME$",
+    "description": "Error message displayed when a command is missing a parameter.",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+	"example": "username"
+      }
+    }
+  },
+
+  "BAD_DESTINATION": {
+    "message": "Unable to parse destination: $DEST$",
+    "description": "Error displayed when we can't parse the destination for the ssh command.",
+    "placeholders": {
+      "dest": {
+        "content": "$1",
+	"example": "invalid.destination"
+      }
+    }
+  },
+
+  "KNOWN_HOSTS_TITLE": {
+    "message": "Known hosts:",
+    "description": "Header text displayed before the list of known hosts."
+  },
+
+  "KNOWN_HOSTS_EMPTY": {
+    "message": "No known hosts, nothing to forget.",
+    "description": "Message displayed when there are no hosts to delete."
+  },
+
+  "KNOWN_HOSTS_PROMPT": {
+    "message": "Please select a host to forget [1-$COUNT$]: ",
+    "description": "Prompt displayed by the ssh-forget-host command",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+	"example": "10"
+      }
+    }
+  },
+
+  "CMD_SSH_TITLE": {
+    "message": "Opens a new SSH session.",
+    "description": "One-sentence description for this command."
+  },
+
+  "CMD_SSH_HELP": {
+    "message": "The |username| and |hostname| parameters are required, |port| is optional.  If port is not specified it defaults to 22.",
+    "description": "Long form help text for this command.  Do not translate the parameter names in |pipes|."
+  },
+
+  "CMD_SSH_FORGET_HOST_TITLE": {
+    "message": "Forget a known ssh host.",
+    "description": "One-sentence description for this command."
+  },
+
+  "CMD_SSH_FORGET_HOST_HELP": {
+    "message": "This command displays a menu of known hosts and prompts for the host to forget.",
+    "description": "Long form help text for this command.  Do not translate the parameter names in |pipes|."
+  }
+}
