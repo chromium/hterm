@@ -41,6 +41,8 @@ hterm.VT100.Tests.prototype.preamble = function(result, cx) {
       this.scrollbarWidth + 'px';
   document.body.appendChild(div);
 
+  this.div = div;
+
   cx.window.terminal = this.terminal = new hterm.Terminal(
       this.fontSize, this.lineHeight);
 
@@ -66,10 +68,11 @@ hterm.VT100.Tests.prototype.postamble = function(result, cx) {
  */
 hterm.VT100.Tests.addTest = function(name, callback) {
   function testProxy(result, cx) {
+    var self = this;
     setTimeout(function() {
-        this.terminal.setCursorPosition(0, 0);
-        this.terminal.setCursorVisible(true);
-        callback.apply(this, [result, cx]);
+        self.terminal.setCursorPosition(0, 0);
+        self.terminal.setCursorVisible(true);
+        callback.apply(self, [result, cx]);
       }, 0);
 
     result.requestTime(200);
@@ -172,6 +175,52 @@ hterm.VT100.Tests.addTest('double-sequence', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ(text, 'line one\nline two\nline three');
+    result.pass();
+  });
+
+hterm.VT100.Tests.addTest('dec-screen-test', function(result, cx) {
+    this.terminal.interpret('\x1b#8');
+
+    var text = this.terminal.getRowsText(0, 6);
+    result.assertEQ(text,
+                    'EEEEEEEEEEEEEEE\n' +
+                    'EEEEEEEEEEEEEEE\n' +
+                    'EEEEEEEEEEEEEEE\n' +
+                    'EEEEEEEEEEEEEEE\n' +
+                    'EEEEEEEEEEEEEEE\n' +
+                    'EEEEEEEEEEEEEEE');
+    result.pass();
+
+  });
+
+hterm.VT100.Tests.addTest('newlines-1', function(result, cx) {
+    // Should be off by default.
+    result.assertEQ(this.terminal.options_.autoCarriageReturn, false);
+
+    // 0d: newline, 0b: vertical tab, 0c: form feed.
+    this.terminal.interpret('newline\x0dvtab\x0bff\x0cbye');
+    var text = this.terminal.getRowsText(0, 3);
+    result.assertEQ(text,
+                    'vtabine\n' +
+                    '    ff\n' +
+                    '      bye'
+                    );
+
+    result.pass();
+  });
+
+hterm.VT100.Tests.addTest('newlines-2', function(result, cx) {
+    this.terminal.interpret('\x1b[20h');
+    result.assertEQ(this.terminal.options_.autoCarriageReturn, true);
+
+    this.terminal.interpret('newline\x0dvtab\x0bff\x0cbye');
+    var text = this.terminal.getRowsText(0, 3);
+    result.assertEQ(text,
+                    'vtabine\n' +
+                    'ff\n' +
+                    'bye'
+                    );
+
     result.pass();
   });
 
@@ -484,9 +533,12 @@ hterm.VT100.Tests.addTest('line-position-absolute', function(result, cx) {
  * Test the device attributes command.
  */
 hterm.VT100.Tests.addTest('device-attributes', function(result, cx) {
+    var resultString;
+    this.terminal.io.sendString = function(str) { resultString = str };
+
     this.terminal.interpret('\x1b[c');
-    result.assertEQ(this.terminal.vt100_.getAndClearPendingResponse(),
-                    '\x1b[?1;2c');
+
+    result.assertEQ(resultString, '\x1b[?1;2c');
     result.pass();
   });
 
@@ -515,15 +567,18 @@ hterm.VT100.Tests.disableTest('color-change', function(result, cx) {
  * Test the status report command.
  */
 hterm.VT100.Tests.addTest('status-report', function(result, cx) {
+    var resultString;
+    terminal.io.sendString = function (str) { resultString = str };
+
     this.terminal.interpret('\x1b[5n');
-    result.assertEQ(this.terminal.vt100_.getAndClearPendingResponse(),
-                    '\x1b0n');
+    result.assertEQ(resultString, '\x1b0n');
+
+    resultString = '';
 
     this.terminal.interpret('line one\nline two\nline three');
     // Reposition the cursor and ask for a position report.
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[6n');
-    result.assertEQ(this.terminal.vt100_.getAndClearPendingResponse(),
-                    '\x1b[2;6R');
+    result.assertEQ(resultString, '\x1b[2;6R');
 
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ(text,
@@ -541,10 +596,10 @@ hterm.VT100.Tests.addTest('status-report', function(result, cx) {
  */
 hterm.VT100.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1h');
-    result.assertEQ(this.terminal.vt100_.applicationCursor, true);
+    result.assertEQ(this.terminal.vt.applicationCursor, true);
 
     this.terminal.interpret('\x1b[?1l');
-    result.assertEQ(this.terminal.vt100_.applicationCursor, false);
+    result.assertEQ(this.terminal.vt.applicationCursor, false);
 
     var fg = this.terminal.foregroundColor;
     var bg = this.terminal.backgroundColor;
@@ -579,6 +634,7 @@ hterm.VT100.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?7l');
     result.assertEQ(this.terminal.options_.wraparound, false);
 
+    /*
     this.terminal.interpret('\x1b[?12l');
     result.assertEQ(this.terminal.options_.cursorBlink, false);
     result.assert(!('cursorBlink' in this.terminal.timeouts_));
@@ -586,17 +642,18 @@ hterm.VT100.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?12h');
     result.assertEQ(this.terminal.options_.cursorBlink, true);
     result.assert('cursorBlink' in this.terminal.timeouts_);
+    */
 
     this.terminal.interpret('\x1b[?25l');
     result.assertEQ(this.terminal.options_.cursorVisible, false);
-    result.assertEQ(this.terminal.cursorNode_.style.display, 'none');
+    result.assertEQ(this.terminal.cursorNode_.style.opacity, '0');
 
     this.terminal.interpret('\x1b[?25h');
     result.assertEQ(this.terminal.options_.cursorVisible, true);
 
     // Turn off blink so we know the cursor should be on.
     this.terminal.interpret('\x1b[?12l');
-    result.assertEQ(this.terminal.cursorNode_.style.display, 'block');
+    result.assertEQ(this.terminal.cursorNode_.style.opacity, '1');
 
     this.terminal.interpret('\x1b[?45h');
     result.assertEQ(this.terminal.options_.reverseWraparound, true);
@@ -605,22 +662,22 @@ hterm.VT100.Tests.addTest('mode-bits', function(result, cx) {
     result.assertEQ(this.terminal.options_.reverseWraparound, false);
 
     this.terminal.interpret('\x1b[?67h');
-    result.assertEQ(this.terminal.vt100_.backspaceSendsBackspace, true);
+    result.assertEQ(this.terminal.vt.backspaceSendsBackspace, true);
 
     this.terminal.interpret('\x1b[?67l');
-    result.assertEQ(this.terminal.vt100_.backspaceSendsBackspace, false);
+    result.assertEQ(this.terminal.vt.backspaceSendsBackspace, false);
 
     this.terminal.interpret('\x1b[?1036h');
-    result.assertEQ(this.terminal.vt100_.metaSendsEscape, true);
+    result.assertEQ(this.terminal.vt.metaSendsEscape, true);
 
     this.terminal.interpret('\x1b[?1036l');
-    result.assertEQ(this.terminal.vt100_.metaSendsEscape, false);
+    result.assertEQ(this.terminal.vt.metaSendsEscape, false);
 
     this.terminal.interpret('\x1b[?1039h');
-    result.assertEQ(this.terminal.vt100_.altSendsEscape, true);
+    result.assertEQ(this.terminal.vt.altSendsEscape, true);
 
     this.terminal.interpret('\x1b[?1039l');
-    result.assertEQ(this.terminal.vt100_.altSendsEscape, false);
+    result.assertEQ(this.terminal.vt.altSendsEscape, false);
 
     result.assertEQ(this.terminal.screen_,
                     this.terminal.primaryScreen_);
@@ -670,19 +727,54 @@ hterm.VT100.Tests.addTest('insert-mode', function(result, cx) {
 /**
  * Test wraparound mode.
  */
-hterm.VT100.Tests.addTest('wraparound-mode', function(result, cx) {
+hterm.VT100.Tests.addTest('wraparound-mode-on', function(result, cx) {
     // Should be on by default.
     result.assertEQ(this.terminal.options_.wraparound, true);
 
     this.terminal.interpret('-----  1  -----');
     this.terminal.interpret('-----  2  -----');
+    this.terminal.interpret('-----  3  -----');
+    this.terminal.interpret('-----  4  -----');
+    this.terminal.interpret('-----  5  -----');
+    this.terminal.interpret('-----  6  -----');
 
-    var text = this.terminal.getRowsText(0, 3);
+    var text = this.terminal.getRowsText(1, 7);
     result.assertEQ(text,
-                    '-----  1  -----\n' +
                     '-----  2  -----\n' +
+                    '-----  3  -----\n' +
+                    '-----  4  -----\n' +
+                    '-----  5  -----\n' +
+                    '-----  6  -----\n' +
                     '');
 
+    result.assertEQ(this.terminal.getCursorRow(), 5);
+    result.assertEQ(this.terminal.getCursorColumn(), 0);
+
+    result.pass();
+  });
+
+hterm.VT100.Tests.addTest('wraparound-mode-off', function(result, cx) {
+    this.terminal.interpret('\x1b[?7l');
+    result.assertEQ(this.terminal.options_.wraparound, false);
+
+    this.terminal.interpret('-----  1  -----');
+    this.terminal.interpret('-----  2  -----');
+    this.terminal.interpret('-----  3  -----');
+    this.terminal.interpret('-----  4  -----');
+    this.terminal.interpret('-----  5  -----');
+    this.terminal.interpret('-----  6  -----');
+
+    var text = this.terminal.getRowsText(0, 6);
+    result.assertEQ(text,
+                    '-----  1  -----\n' +
+                    '\n' +
+                    '\n' +
+                    '\n' +
+                    '\n' +
+                    '');
+
+    result.assertEQ(this.terminal.getCursorRow(), 0);
+    result.assertEQ(this.terminal.getCursorColumn(), 14);
 
     result.pass();
   });
@@ -753,4 +845,27 @@ hterm.VT100.Tests.addTest('alternate-screen', function(result, cx) {
     result.assertEQ(text, '1\n2\n3\n4\n\nhiXX\n\n\n\n');
 
     result.pass();
+  });
+
+
+hterm.VT100.Tests.addTest('fullscreen', function(result, cx) {
+    this.div.style.height = '100%';
+    this.div.style.width = '100%';
+
+    var self = this;
+
+    setTimeout(function() {
+        for (var i = 0; i < 1000; i++) {
+          var indent = i % 40;
+          if (indent > 20)
+            indent = 40 - indent;
+
+          self.terminal.interpret('Line ' + hterm.zpad(i, 3) + ': ' +
+                                  hterm.getWhitespace(indent) + '*\n');
+        }
+
+        result.pass();
+      }, 100);
+
+    result.requestTime(200);
   });

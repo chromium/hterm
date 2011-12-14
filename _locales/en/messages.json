@@ -24,6 +24,16 @@
     "description": "The label for the Cancel button in dialogs."
   },
 
+  "PLUGIN_LOADING": {
+    "message": "Loading NaCl plugin...",
+    "description": "Status message displayed while loading the plugin."
+  },
+
+  "PLUGIN_LOADING_COMPLETE": {
+    "message": " done.",
+    "description": "Appended to PLUGIN_LOADING message when loading is complete."
+  },
+
   "DESTINATION_PATTERN": {
     "message": "username@hostname[:port]",
     "description": "Text displayed in the destination textbox to hint at the expected format."

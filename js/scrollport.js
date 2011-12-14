@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,10 @@ hterm.ScrollPort = function(rowProvider, fontSize, opt_lineHeight) {
   // A map of rowIndex => rowNode for each row that was drawn as part of the
   // previous redraw_() call.
   this.previousRowNodeCache_ = {};
+
+  // Used during scroll events to detect when the underlying cause is a resize.
+  this.lastScreenWidth_ = null;
+  this.lastScreenHeight_ = null;
 
   // The css rule that we use to control the height of a row.
   this.xrowCssRule_ = null;
@@ -162,7 +166,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.iframe_.style.cssText = (
       'border: 0;' +
       'height: 100%;' +
-      'position: absolute;' +
+      'position: relative;' +
       'width: 100%');
 
   div.appendChild(this.iframe_);
@@ -172,12 +176,9 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   var doc = this.document_ = this.iframe_.contentDocument;
   doc.body.style.cssText = (
-      'background-color: black;' +
-      'color: white;' +
-      'font-family: monospace;' +
       'margin: 0px;' +
       'padding: 0px;' +
-      'white-space: pre;' +
+      'overflow: hidden;' +
       '-webkit-user-select: none;');
 
   var style = doc.createElement('style');
@@ -188,11 +189,18 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.xrowCssRule_.style.display = 'block';
   this.xrowCssRule_.style.height = this.rowHeight_ + 'px';
 
+  // TODO(rginda): Sorry, this 'screen_' isn't the same thing as hterm.Screen
+  // from screen.js.  I need to pick a better name for one of them to avoid
+  // the collision.
   this.screen_ = doc.createElement('x-screen');
+  this.screen_.setAttribute('role', 'textbox');
+  this.screen_.setAttribute('tabindex', '-1');
   this.screen_.style.cssText = (
       'display: block;' +
+      'font-family: monospace;' +
       'height: 100%;' +
       'overflow-y: scroll; overflow-x: hidden;' +
+      'white-space: pre;' +
       'width: 100%;');
 
   doc.body.appendChild(this.screen_);
@@ -244,20 +252,25 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.setRowMetrics(this.fontSize_, this.rowHeight_);
 };
 
+hterm.ScrollPort.prototype.focus = function() {
+  this.iframe_.focus();
+  this.screen_.focus();
+};
+
 hterm.ScrollPort.prototype.getForegroundColor = function() {
-  return this.document_.body.style.color;
+  return this.screen_.style.color;
 };
 
 hterm.ScrollPort.prototype.setForegroundColor = function(color) {
-  this.document_.body.style.color = color;
+  this.screen_.style.color = color;
 };
 
 hterm.ScrollPort.prototype.getBackgroundColor = function() {
-  return this.document_.body.style.backgroundColor;
+  return this.screen_.style.backgroundColor;
 };
 
 hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
-  this.document_.body.style.backgroundColor = color;
+  this.screen_.style.backgroundColor = color;
 };
 
 hterm.ScrollPort.prototype.getRowHeight = function() {
@@ -307,7 +320,7 @@ hterm.ScrollPort.prototype.resetCache = function() {
 hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
   this.resetCache();
   this.rowProvider_ = rowProvider;
-  this.redraw_();
+  this.scheduleRedraw();
 };
 
 /**
@@ -320,7 +333,7 @@ hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
  * changed.  It's only needed when getRowNode(N) would return a different
  * x-row than it used to.
  *
- * If rows in the sepecified range are visible, they will be redrawn.
+ * If rows in the specified range are visible, they will be redrawn.
  */
 hterm.ScrollPort.prototype.invalidateRowRange = function(start, end) {
   this.resetCache();
@@ -380,6 +393,9 @@ hterm.ScrollPort.prototype.resize = function() {
   var screenWidth = this.screen_.clientWidth;
   var screenHeight = this.screen_.clientHeight;
 
+  this.lastScreenWidth_ = screenWidth;
+  this.lastScreenHeight_ = screenHeight;
+
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
   this.visibleRowCount = Math.floor(screenHeight / this.rowHeight_);
@@ -390,7 +406,9 @@ hterm.ScrollPort.prototype.resize = function() {
   // Then the difference between the screen height and total row height needs to
   // be made up for as top margin.  We need to record this value so it
   // can be used later to determine the topRowIndex.
-  this.visibleRowTopMargin = screenHeight - visibleRowsHeight;
+  this.visibleRowTopMargin = 0;
+  this.visibleRowBottomMargin = screenHeight - visibleRowsHeight;
+
   this.topFold_.style.marginBottom = this.visibleRowTopMargin + 'px';
 
   // Set the dimensions of the visible rows container.
@@ -402,8 +420,7 @@ hterm.ScrollPort.prototype.resize = function() {
   this.publish
     ('resize', { scrollPort: this },
      function() {
-       var index = self.bottomFold_.previousSibling.rowIndex;
-       self.scrollRowToBottom(index);
+       self.scrollRowToBottom(self.bottomFold_.previousSibling.rowIndex);
      });
 };
 
@@ -411,7 +428,26 @@ hterm.ScrollPort.prototype.syncScrollHeight = function() {
   // Resize the scroll area to appear as though it contains every row.
   this.scrollArea_.style.height = (this.rowHeight_ *
                                    this.rowProvider_.getRowCount() +
-                                   this.visibleRowTopMargin + 'px');
+                                   this.visibleRowTopMargin +
+                                   this.visibleRowBottomMargin +
+                                   'px');
+};
+
+/**
+ * Schedule a redraw to happen asynchronously.
+ *
+ * If this method is called multiple times before the redraw has a chance to
+ * run only one redraw occurs.
+ */
+hterm.ScrollPort.prototype.scheduleRedraw = function() {
+  if (this.redrawTimeout_)
+    return;
+
+  var self = this;
+  this.redrawTimeout_ = setTimeout(function () {
+      self.redrawTimeout_ = null;
+      self.redraw_();
+    }, 0);
 };
 
 /**
@@ -775,7 +811,8 @@ hterm.ScrollPort.prototype.selectAll = function() {
  * Return the maximum scroll position in pixels.
  */
 hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
-  return (this.scrollArea_.clientHeight + this.visibleRowTopMargin -
+  return (this.scrollArea_.clientHeight +
+          this.visibleRowTopMargin + this.visibleRowBottomMargin -
           this.screen_.clientHeight);
 };
 
@@ -793,8 +830,11 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
   if (scrollTop > scrollMax)
     scrollTop = scrollMax;
 
+  if (this.screen_.scrollTop == scrollTop)
+    return;
+
   this.screen_.scrollTop = scrollTop;
-  this.redraw_();
+  this.scheduleRedraw();
 };
 
 /**
@@ -805,14 +845,18 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
 hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
   this.syncScrollHeight();
 
-  var scrollTop = rowIndex * this.rowHeight_ + this.visibleRowTopMargin;
+  var scrollTop = rowIndex * this.rowHeight_ +
+      this.visibleRowTopMargin + this.visibleRowBottomMargin;
   scrollTop -= (this.visibleRowCount - 1) * this.rowHeight_;
 
   if (scrollTop < 0)
     scrollTop = 0;
 
+  if (this.screen_.scrollTop == scrollTop)
+    return;
+
   this.screen_.scrollTop = scrollTop;
-  this.redraw_();
+  this.scheduleRedraw();
 };
 
 /**
@@ -842,6 +886,16 @@ hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
  * may be due to the user manually move the scrollbar, or a programmatic change.
  */
 hterm.ScrollPort.prototype.onScroll_ = function(e) {
+  if (this.screen_.clientWidth != this.lastScreenWidth_ ||
+      this.screen_.clientHeight != this.lastScreenHeight_) {
+    // This event may also fire during a resize (but before the resize event!).
+    // This happens when the browser moves the scrollbar as part of the resize.
+    // In these cases, we want to ignore the scroll event and let onResize
+    // handle things.  If we don't, then we end up scrolling to the wrong
+    // position after a resize.
+    return;
+  }
+
   this.redraw_();
   this.publish('scroll', { scrollPort: this });
 };

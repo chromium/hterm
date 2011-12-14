@@ -53,9 +53,10 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
  */
 hterm.Terminal.Tests.addTest = function(name, callback) {
   function testProxy(result, cx) {
+    var self = this;
     setTimeout(function() {
-        this.terminal.setCursorPosition(0, 0);
-        callback.apply(this, [result, cx]);
+        self.terminal.setCursorPosition(0, 0);
+        callback.apply(self, [result, cx]);
       }, 0);
 
     result.requestTime(200);
@@ -63,6 +64,16 @@ hterm.Terminal.Tests.addTest = function(name, callback) {
 
   TestManager.Suite.addTest.apply(this, [name, testProxy]);
 };
+
+hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
+    result.assertEQ(this.terminal.characterSize_.width, this.charWidth);
+    result.assertEQ(this.terminal.characterSize_.height, this.lineHeight);
+
+    result.assertEQ(this.terminal.screen_.getWidth(), this.visibleColumnCount);
+    result.assertEQ(this.terminal.screen_.getHeight(), this.visibleRowCount);
+
+    result.pass();
+  });
 
 /**
  * Fill the screen with 'X' characters one character at a time, in a way
@@ -72,7 +83,6 @@ hterm.Terminal.Tests.addTest('plaintext-stress-cursor-ltr',
                              function(result, cx) {
     for (var col = 0; col < this.visibleColumnCount; col++) {
       for (var row = 0; row < this.visibleRowCount; row++) {
-        console.log(row, col);
         this.terminal.screen_.setCursorPosition(row, col);
         this.terminal.screen_.insertString('X');
       }

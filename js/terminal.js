@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,16 +19,13 @@
  * displayed twice as wide as standard latin characters.  This is to support
  * CJK (and possibly other character sets).
  */
-hterm.Terminal = function() {
+hterm.Terminal = function(fontSize, opt_lineHeight) {
   // Two screen instances.
   this.primaryScreen_ = new hterm.Screen();
   this.alternateScreen_ = new hterm.Screen();
 
   // The "current" screen.
   this.screen_ = this.primaryScreen_;
-
-  // The VT escape sequence interpreter.
-  this.vt100_ = new hterm.VT100(this);
 
   // The local notion of the screen size.  ScreenBuffers also have a size which
   // indicates their present size.  During size changes, the two may disagree.
@@ -40,9 +37,15 @@ hterm.Terminal = function() {
   this.characterSize_ = new hterm.Size(0, 0);
 
   // The scroll port we'll be using to display the visible rows.
-  this.scrollPort_ = new hterm.ScrollPort(this, 15);
+  this.scrollPort_ = new hterm.ScrollPort(this, fontSize, opt_lineHeight);
   this.scrollPort_.subscribe('resize', this.onResize_.bind(this));
   this.scrollPort_.subscribe('scroll', this.onScroll_.bind(this));
+
+  // The div that contains this terminal.
+  this.div_ = null;
+
+  // The document that contains the scrollPort.  Set in decorate().
+  this.document_ = null;
 
   // The rows that have scrolled off screen and are no longer addressable.
   this.scrollbackRows_ = [];
@@ -62,31 +65,161 @@ hterm.Terminal = function() {
   // The color of the cursor.
   this.cursorColor = 'rgba(255,0,0,0.5)';
 
+  // If true, scroll to the bottom on any keystroke.
+  this.scrollOnKeystroke = true;
+
   // The current mode bits for the terminal.
   this.options_ = new hterm.Options();
 
   // Timeouts we might need to clear.
   this.timeouts_ = {};
+
+  // The VT escape sequence interpreter.
+  this.vt = new hterm.VT100(this);
+
+  // General IO interface that can be given to third parties without exposing
+  // the entire terminal object.
+  this.io = new hterm.Terminal.IO(this);
+};
+
+/**
+ * Create a new instance of a terminal command and run it with a given
+ * argument string.
+ *
+ * @param {function} commandClass The constructor for a terminal command.
+ * @param {string} argString The argument string to pass to the command.
+ */
+hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
+  var self = this;
+  this.command = new commandClass(
+      { argString: argString || '',
+        io: this.io.push(),
+        onExit: function(code) {
+          self.io.pop();
+          self.io.println(hterm.msg('COMMAND_COMPLETE',
+                                    [self.command.commandName, code]));
+        }
+      });
+
+  this.command.run();
+};
+
+/**
+ * Return a copy of the current cursor position.
+ *
+ * @return {hterm.RowCol} The RowCol object representing the current position.
+ */
+hterm.Terminal.prototype.saveCursor = function() {
+  return this.screen_.cursorPosition.clone();
+};
+
+/**
+ * Restore a previously saved cursor position.
+ *
+ * @param {hterm.RowCol} cursor The position to restore.
+ */
+hterm.Terminal.prototype.restoreCursor = function(cursor) {
+  this.screen_.setCursorPosition(cursor.row, cursor.column);
+};
+
+/**
+ * Set the width of the terminal, resizing the UI to match.
+ */
+hterm.Terminal.prototype.setWidth = function(columnCount) {
+  this.div_.style.width = this.characterSize_.width * columnCount + 16 + 'px'
+
+  // The resizing of the UI will happen asynchronously, so we need to take
+  // care of this bookeeping here instead of letting the resize handlers deal
+  // with it.
+  this.screenSize.width = columnCount;
+  this.screen_.setColumnCount(columnCount);
+};
+
+/**
+ * Scroll the terminal to the top of the scrollback buffer.
+ */
+hterm.Terminal.prototype.scrollHome = function() {
+  this.scrollPort_.scrollRowToTop(0);
+};
+
+/**
+ * Scroll the terminal to the end.
+ */
+hterm.Terminal.prototype.scrollEnd = function() {
+  this.scrollPort_.scrollRowToBottom(this.getRowCount());
+};
+
+/**
+ * Scroll the terminal one page up (minus one line) relative to the current
+ * position.
+ */
+hterm.Terminal.prototype.scrollPageUp = function() {
+  var i = this.scrollPort_.getTopRowIndex();
+  this.scrollPort_.scrollRowToTop(i - this.screenSize.height + 1);
+};
+
+/**
+ * Scroll the terminal one page down (minus one line) relative to the current
+ * position.
+ */
+hterm.Terminal.prototype.scrollPageDown = function() {
+  var i = this.scrollPort_.getTopRowIndex();
+  this.scrollPort_.scrollRowToTop(i + this.screenSize.height - 1);
 };
 
 /**
  * Methods called by Cory's vt100 interpreter which we haven't implemented yet.
  */
-hterm.Terminal.prototype.reset =
-hterm.Terminal.prototype.clearColorAndAttributes =
-hterm.Terminal.prototype.setForegroundColor256 =
-hterm.Terminal.prototype.setBackgroundColor256 =
-hterm.Terminal.prototype.setForegroundColor =
-hterm.Terminal.prototype.setBackgroundColor =
-hterm.Terminal.prototype.setAttributes =
-hterm.Terminal.prototype.resize =
-hterm.Terminal.prototype.setSpecialCharactersEnabled =
-hterm.Terminal.prototype.setTabStopAtCursor =
-hterm.Terminal.prototype.clearTabStops =
-hterm.Terminal.prototype.saveCursor =
-hterm.Terminal.prototype.restoreCursor =
-hterm.Terminal.prototype.reverseLineFeed = function() {
-  throw 'NOT IMPLEMENTED';
+hterm.Terminal.prototype.reset = function() {
+  console.log('reset');
+};
+
+hterm.Terminal.prototype.clearColorAndAttributes = function() {
+  //console.log('clearColorAndAttributes');
+};
+
+hterm.Terminal.prototype.setForegroundColor256 = function() {
+  console.log('setForegroundColor256');
+};
+
+hterm.Terminal.prototype.setBackgroundColor256 = function() {
+  console.log('setBackgroundColor256');
+};
+
+hterm.Terminal.prototype.setForegroundColor = function() {
+  //console.log('setForegroundColor');
+};
+
+hterm.Terminal.prototype.setBackgroundColor = function() {
+  //console.log('setBackgroundColor');
+};
+
+hterm.Terminal.prototype.setAttributes = function() {
+  //console.log('setAttributes');
+};
+
+hterm.Terminal.prototype.resize = function() {
+  console.log('resize');
+};
+
+hterm.Terminal.prototype.setSpecialCharsEnabled = function() {
+  //console.log('setSpecialCharactersEnabled');
+};
+
+hterm.Terminal.prototype.setTabStopAtCursor = function() {
+  console.log('setTabStopAtCursor');
+};
+
+hterm.Terminal.prototype.clearTabStops = function() {
+  console.log('clearTabStops');
+};
+
+hterm.Terminal.prototype.saveOptions = function() {
+  console.log('saveOptions');
+};
+
+hterm.Terminal.prototype.restoreOptions = function() {
+  console.log('restoreOptions');
 };
 
 /**
@@ -97,7 +230,7 @@ hterm.Terminal.prototype.reverseLineFeed = function() {
  * @param {string} str Sequence of characters to interpret or pass through.
  */
 hterm.Terminal.prototype.interpret = function(str) {
-  this.vt100_.interpretString(str);
+  this.vt.interpretString(str);
   this.scheduleSyncCursorPosition_();
 };
 
@@ -107,6 +240,8 @@ hterm.Terminal.prototype.interpret = function(str) {
  * @param {HTMLDivElement} div The div to use as the terminal display.
  */
 hterm.Terminal.prototype.decorate = function(div) {
+  this.div_ = div;
+
   this.scrollPort_.decorate(div);
   this.document_ = this.scrollPort_.getDocument();
 
@@ -117,13 +252,32 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.cursorNode_ = this.document_.createElement('div');
   this.cursorNode_.style.cssText =
       ('position: absolute;' +
-       'display: none;' +
+       'top: -99px;' +
+       'display: block;' +
        'width: ' + this.characterSize_.width + 'px;' +
        'height: ' + this.characterSize_.height + 'px;' +
+       '-webkit-transition: opacity 100ms ease-in;' +
        'background-color: ' + this.cursorColor);
   this.document_.body.appendChild(this.cursorNode_);
 
   this.setReverseVideo(false);
+
+  this.vt.keyboard.installKeyboard(this.document_.body.firstChild);
+
+  var link = this.document_.createElement('link');
+  link.setAttribute('href', '../css/dialogs.css');
+  link.setAttribute('rel', 'stylesheet');
+  this.document_.head.appendChild(link);
+
+  this.alertDialog = new AlertDialog(this.document_.body);
+  this.promptDialog = new PromptDialog(this.document_.body);
+  this.confirmDialog = new ConfirmDialog(this.document_.body);
+
+  this.scrollPort_.focus();
+};
+
+hterm.Terminal.prototype.getDocument = function() {
+  return this.document_;
 };
 
 /**
@@ -187,7 +341,7 @@ hterm.Terminal.prototype.getRowsText = function(start, end) {
  */
 hterm.Terminal.prototype.getRowText = function(index) {
   var node = this.getRowNode(index);
-  return row.textContent;
+  return node.textContent;
 };
 
 /**
@@ -238,7 +392,7 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
   if (cursorRow >= this.screen_.rowsArray.length)
     cursorRow = this.screen_.rowsArray.length - 1;
 
-  this.screen_.setCursorPosition(cursorRow, 0);
+  this.setAbsoluteCursorPosition(cursorRow, 0);
 };
 
 /**
@@ -263,13 +417,14 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
   var start, end;
   if (fromIndex < toIndex) {
     start = fromIndex;
-    end = fromIndex + count;
+    end = toIndex + count;
   } else {
     start = toIndex;
-    end = toIndex + count;
+    end = fromIndex + count;
   }
 
   this.renumberRows_(start, end);
+  this.scrollPort_.scheduleRedraw();
 };
 
 /**
@@ -307,7 +462,7 @@ hterm.Terminal.prototype.print = function(str) {
       str = this.screen_.overwriteString(str);
     }
 
-    if (this.options_.wraparound && str) {
+    if (this.options_.wraparound && str != null) {
       this.newLine();
     } else {
       break;
@@ -315,6 +470,23 @@ hterm.Terminal.prototype.print = function(str) {
   } while (str);
 
   this.scheduleSyncCursorPosition_();
+};
+
+/**
+ * Set the VT scroll region.
+ *
+ *
+ * This also resets the cursor position to the absolute (0, 0) position, since
+ * that's what xterm appears to do.
+ *
+ * @param {integer} scrollTop The zero-based top of the scroll region.
+ * @param {integer} scrollBottom The zero-based bottom of the scroll region,
+ *     inclusive.
+ */
+hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
+  this.vtScrollTop_ = scrollTop;
+  this.vtScrollBottom_ = scrollBottom;
+  this.setAbsoluteCursorPosition(0, 0);
 };
 
 /**
@@ -331,7 +503,7 @@ hterm.Terminal.prototype.getVTScrollTop = function() {
     return this.vtScrollTop_;
 
   return 0;
-}
+};
 
 /**
  * Return the bottom row index according to the VT.
@@ -346,7 +518,7 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
   if (this.vtScrollBottom_ != null)
     return this.vtScrollBottom_;
 
-  return this.screenSize.height;
+  return this.screenSize.height - 1;
 }
 
 /**
@@ -360,9 +532,16 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
  */
 hterm.Terminal.prototype.newLine = function() {
   if (this.screen_.cursorPosition.row == this.screen_.rowsArray.length - 1) {
+    // If we're at the end of the screen we need to append a new line and
+    // scroll the top line into the scrollback buffer.
     this.appendRows_(1);
+  } else if (this.screen_.cursorPosition.row == this.getVTScrollBottom()) {
+    // End of the scroll region does not affect the scrollback buffer.
+    this.vtScrollUp(1);
+    this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row, 0);
   } else {
-    this.screen_.setCursorPosition(this.screen_.cursorPosition.row + 1, 0);
+    // Anywhere else in the screen just moves the cursor.
+    this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row + 1, 0);
   }
 };
 
@@ -376,6 +555,33 @@ hterm.Terminal.prototype.lineFeed = function() {
 };
 
 /**
+ * If autoCarriageReturn is set then newLine(), else lineFeed().
+ */
+hterm.Terminal.prototype.formFeed = function() {
+  if (this.options_.autoCarriageReturn) {
+    this.newLine();
+  } else {
+    this.lineFeed();
+  }
+};
+
+/**
+ * Move the cursor up one row, possibly inserting a blank line.
+ *
+ * The cursor column is not changed.
+ */
+hterm.Terminal.prototype.reverseLineFeed = function() {
+  var scrollTop = this.getVTScrollTop();
+  var currentRow = this.screen_.cursorPosition.row;
+
+  if (currentRow == scrollTop) {
+    this.insertLines(1);
+  } else {
+    this.setAbsoluteCursorRow(currentRow - 1);
+  }
+};
+
+/**
  * Replace all characters to the left of the current cursor with the space
  * character.
  *
@@ -385,10 +591,10 @@ hterm.Terminal.prototype.lineFeed = function() {
  * issues as hterm.Screen.prototype.clearCursorRow :/
  */
 hterm.Terminal.prototype.eraseToLeft = function() {
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
   this.setCursorColumn(0);
-  this.screen_.overwriteString(hterm.getWhitespace(currentColumn + 1));
-  this.setCursorColumn(currentColumn);
+  this.screen_.overwriteString(hterm.getWhitespace(cursor.column + 1));
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -404,12 +610,12 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  * todo on hterm.Screen.prototype.clearCursorRow.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
 
-  var maxCount = this.screenSize.width - currentColumn;
+  var maxCount = this.screenSize.width - cursor.column;
   var count = (opt_count && opt_count < maxCount) ? opt_count : maxCount;
   this.screen_.deleteChars(count);
-  this.setCursorColumn(currentColumn);
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -421,9 +627,9 @@ hterm.Terminal.prototype.eraseToRight = function(opt_count) {
  * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.eraseLine = function() {
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
   this.screen_.clearCursorRow();
-  this.setCursorColumn(currentColumn);
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -436,16 +642,17 @@ hterm.Terminal.prototype.eraseLine = function() {
  * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.eraseAbove = function() {
-  var currentRow = this.screen_.cursorPosition.row;
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
+
+  this.eraseToLeft();
 
   var top = this.getVTScrollTop();
-  for (var i = top; i < currentRow; i++) {
-    this.screen_.setCursorPosition(i, 0);
+  for (var i = top; i < cursor.row; i++) {
+    this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
 
-  this.screen_.setCursorPosition(currentRow, currentColumn);
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -458,16 +665,38 @@ hterm.Terminal.prototype.eraseAbove = function() {
  * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.eraseBelow = function() {
-  var currentRow = this.screen_.cursorPosition.row;
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
+
+  this.eraseToRight();
 
   var bottom = this.getVTScrollBottom();
-  for (var i = currentRow + 1; i < bottom; i++) {
-    this.screen_.setCursorPosition(i, 0);
+  for (var i = cursor.row + 1; i <= bottom; i++) {
+    this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
 
-  this.screen_.setCursorPosition(currentRow, currentColumn);
+  this.restoreCursor(cursor);
+};
+
+/**
+ * Fill the terminal with a given character.
+ *
+ * This methods does not respect the VT scroll region.
+ *
+ * @param {string} ch The character to use for the fill.
+ */
+hterm.Terminal.prototype.fill = function(ch) {
+  var cursor = this.saveCursor();
+
+  this.setAbsoluteCursorPosition(0, 0);
+  for (var row = 0; row < this.screenSize.height; row++) {
+    for (var col = 0; col < this.screenSize.width; col++) {
+      this.setAbsoluteCursorPosition(row, col);
+      this.screen_.overwriteString(ch);
+    }
+  }
+
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -479,18 +708,17 @@ hterm.Terminal.prototype.eraseBelow = function() {
  * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.clear = function() {
-  var currentRow = this.screen_.cursorPosition.row;
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
 
   var top = this.getVTScrollTop();
   var bottom = this.getVTScrollBottom();
 
   for (var i = top; i < bottom; i++) {
-    this.screen_.setCursorPosition(i, 0);
+    this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
 
-  this.screen_.setCursorPosition(currentRow, currentColumn);
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -505,21 +733,22 @@ hterm.Terminal.prototype.clear = function() {
  * @param {integer} count The number of lines to insert.
  */
 hterm.Terminal.prototype.insertLines = function(count) {
-  var currentRow = this.screen_.cursorPosition.row;
+  var cursor = this.saveCursor();
 
   var bottom = this.getVTScrollBottom();
-  count = Math.min(count, bottom - currentRow);
+  count = Math.min(count, bottom - cursor.row);
 
   var start = bottom - count;
-  if (start != currentRow)
-    this.moveRows_(start, count, currentRow);
+  if (start != cursor.row)
+    this.moveRows_(start, count, cursor.row);
 
   for (var i = 0; i < count; i++) {
-    this.screen_.setCursorPosition(currentRow + i, 0);
+    this.setAbsoluteCursorPosition(cursor.row + i, 0);
     this.screen_.clearCursorRow();
   }
 
-  this.screen_.setCursorPosition(currentRow, 0);
+  cursor.column = 0;
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -529,35 +758,38 @@ hterm.Terminal.prototype.insertLines = function(count) {
  * rows are strictly there to take up space and have no content or style.
  */
 hterm.Terminal.prototype.deleteLines = function(count) {
-  var currentRow = this.screen_.cursorPosition.row;
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
 
-  var top = currentRow;
+  var top = cursor.row;
   var bottom = this.getVTScrollBottom();
 
-  var maxCount = bottom - top;
+  var maxCount = bottom - top + 1;
   count = Math.min(count, maxCount);
 
-  var moveStart = bottom - count;
+  var moveStart = bottom - count + 1;
   if (count != maxCount)
     this.moveRows_(top, count, moveStart);
 
   for (var i = 0; i < count; i++) {
-    this.screen_.setCursorPosition(moveStart + i, 0);
+    this.setAbsoluteCursorPosition(moveStart + i, 0);
     this.screen_.clearCursorRow();
   }
 
-  this.screen_.setCursorPosition(currentRow, currentColumn);
+  this.restoreCursor(cursor);
 };
 
 /**
  * Inserts the given number of spaces at the current cursor position.
  *
- * The cursor is left at the end of the inserted spaces.
+ * The cursor position is not changed.
  */
 hterm.Terminal.prototype.insertSpace = function(count) {
+  var cursor = this.saveCursor();
+
   var ws = hterm.getWhitespace(count);
   this.screen_.insertString(ws);
+
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -579,16 +811,17 @@ hterm.Terminal.prototype.deleteChars = function(count) {
  * This function does not affect the scrollback rows at all.  Rows shifted
  * off the top are lost.
  *
+ * The cursor position is not altered.
+ *
  * @param {integer} count The number of rows to scroll.
  */
 hterm.Terminal.prototype.vtScrollUp = function(count) {
-  var currentRow = this.screen_.cursorPosition.row;
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
 
-  this.setCursorRow(this.getVTScrollTop());
+  this.setAbsoluteCursorRow(this.getVTScrollTop());
   this.deleteLines(count);
 
-  this.screen_.setCursorPosition(currentRow, currentColumn);
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -605,14 +838,14 @@ hterm.Terminal.prototype.vtScrollUp = function(count) {
  * @param {integer} count The number of rows to scroll.
  */
 hterm.Terminal.prototype.vtScrollDown = function(opt_count) {
-  var currentRow = this.screen_.cursorPosition.row;
-  var currentColumn = this.screen_.cursorPosition.column;
+  var cursor = this.saveCursor();
 
-  this.setCursorRow(this.getVTScrollTop());
+  this.setAbsoluteCursorPosition(this.getVTScrollTop(), 0);
   this.insertLines(opt_count);
 
-  this.screen_.setCursorPosition(currentRow, currentColumn);
+  this.restoreCursor(cursor);
 };
+
 
 /**
  * Set the cursor position.
@@ -625,12 +858,19 @@ hterm.Terminal.prototype.vtScrollDown = function(opt_count) {
  */
 hterm.Terminal.prototype.setCursorPosition = function(row, column) {
   if (this.options_.originMode) {
-    var scrollTop = this.getScrollTop();
-    row = hterm.clamp(row + scrollTop, scrollTop, this.getScrollBottom());
+    this.setRelativeCursorPosition(row, column);
   } else {
-    row = hterm.clamp(row, 0, this.screenSize.height);
+    this.setAbsoluteCursorPosition(row, column);
   }
+};
 
+hterm.Terminal.prototype.setRelativeCursorPosition = function(row, column) {
+  var scrollTop = this.getVTScrollTop();
+  row = hterm.clamp(row + scrollTop, scrollTop, this.getVTScrollBottom());
+  this.screen_.setCursorPosition(row, column);
+};
+
+hterm.Terminal.prototype.setAbsoluteCursorPosition = function(row, column) {
   this.screen_.setCursorPosition(row, column);
 };
 
@@ -640,7 +880,7 @@ hterm.Terminal.prototype.setCursorPosition = function(row, column) {
  * @param {integer} column The new zero-based cursor column.
  */
 hterm.Terminal.prototype.setCursorColumn = function(column) {
-  this.screen_.setCursorPosition(this.screen_.cursorPosition.row, column);
+  this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row, column);
 };
 
 /**
@@ -660,8 +900,8 @@ hterm.Terminal.prototype.getCursorColumn = function() {
  *
  * @param {integer} row The new cursor row.
  */
-hterm.Terminal.prototype.setCursorRow = function(row) {
-  this.setCursorPosition(row, this.screen_.cursorPosition.column);
+hterm.Terminal.prototype.setAbsoluteCursorRow = function(row) {
+  this.setAbsoluteCursorPosition(row, this.screen_.cursorPosition.column);
 };
 
 /**
@@ -680,12 +920,12 @@ hterm.Terminal.prototype.getCursorRow = function(row) {
  * Multiple calls will be coalesced into a single redraw.
  */
 hterm.Terminal.prototype.scheduleRedraw_ = function() {
-  if (this.redrawTimeout_)
-    clearTimeout(this.redrawTimeout_);
+  if (this.timeouts_.redraw)
+    return;
 
   var self = this;
-  setTimeout(function() {
-      self.redrawTimeout_ = null;
+  this.timeouts_.redraw = setTimeout(function() {
+      delete self.timeouts_.redraw;
       self.scrollPort_.redraw_();
     }, 0);
 };
@@ -701,7 +941,7 @@ hterm.Terminal.prototype.scheduleRedraw_ = function() {
  */
 hterm.Terminal.prototype.scheduleScrollDown_ = function() {
   if (this.timeouts_.scrollDown)
-    clearTimeout(this.timeouts_.scrollDown);
+    return;
 
   var self = this;
   this.timeouts_.scrollDown = setTimeout(function() {
@@ -731,7 +971,7 @@ hterm.Terminal.prototype.cursorDown = function(count) {
 
   var row = hterm.clamp(this.screen_.cursorPosition.row + count,
                         minHeight, maxHeight);
-  this.setCursorRow(row);
+  this.setAbsoluteCursorRow(row);
 };
 
 /**
@@ -750,7 +990,7 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
  */
 hterm.Terminal.prototype.cursorRight = function(count) {
   var column = hterm.clamp(this.screen_.cursorPosition.column + count,
-                           0, this.screenSize.width);
+                           0, this.screenSize.width - 1);
   this.setCursorColumn(column);
 };
 
@@ -764,6 +1004,7 @@ hterm.Terminal.prototype.cursorRight = function(count) {
  * 'no-attribute' colors.  My guess is probably not.
  */
 hterm.Terminal.prototype.setReverseVideo = function(state) {
+  this.options_.reverseVideo = state;
   if (state) {
     this.scrollPort_.setForegroundColor(this.backgroundColor);
     this.scrollPort_.setBackgroundColor(this.foregroundColor);
@@ -771,6 +1012,25 @@ hterm.Terminal.prototype.setReverseVideo = function(state) {
     this.scrollPort_.setForegroundColor(this.foregroundColor);
     this.scrollPort_.setBackgroundColor(this.backgroundColor);
   }
+};
+
+/**
+ * Ring the terminal bell.
+ *
+ * We only have a visual bell, which quickly toggles inverse video in the
+ * terminal.
+ */
+hterm.Terminal.prototype.ringBell = function() {
+  // We can't toggle using only setReverseVideo, since there's a chance we'll
+  // get a request to toggle reverse video before our visual bell is over.
+  var fg = this.scrollPort_.getForegroundColor();
+  this.scrollPort_.setForegroundColor(this.scrollPort_.getBackgroundColor());
+  this.scrollPort_.setBackgroundColor(fg);
+
+  var self = this;
+  setTimeout(function() {
+      self.setReverseVideo(self.options_.reverseVideo);
+    }, 100);
 };
 
 /**
@@ -801,6 +1061,17 @@ hterm.Terminal.prototype.setOriginMode = function(state) {
  */
 hterm.Terminal.prototype.setInsertMode = function(state) {
   this.options_.insertMode = state;
+};
+
+/**
+ * Set the auto carriage return bit.
+ *
+ * If auto carriage return is on then a formfeed character is interpreted
+ * as a newline, otherwise it's the same as a linefeed.  The difference boils
+ * down to whether or not the cursor column is reset.
+ */
+hterm.Terminal.prototype.setAutoCarriageReturn = function(state) {
+  this.options_.autoCarriageReturn = state;
 };
 
 /**
@@ -860,9 +1131,6 @@ hterm.Terminal.prototype.setAlternateMode = function(state) {
       this.scrollbackRows_.length,
       this.scrollbackRows_.length + this.screenSize.height);
 
-  if (this.screen_.cursorPosition.row == -1)
-    this.screen_.setCursorPosition(0, 0);
-
   this.syncCursorPosition_();
 };
 
@@ -904,11 +1172,13 @@ hterm.Terminal.prototype.setCursorVisible = function(state) {
   this.options_.cursorVisible = state;
 
   if (!state) {
-    this.cursorNode_.style.display = 'none';
+    this.cursorNode_.style.opacity = '0';
     return;
   }
 
-  this.cursorNode_.style.display = 'block';
+  this.syncCursorPosition_();
+
+  this.cursorNode_.style.opacity = '1';
 
   if (this.options_.cursorBlink) {
     if (this.timeouts_.cursorBlink)
@@ -925,7 +1195,8 @@ hterm.Terminal.prototype.setCursorVisible = function(state) {
 };
 
 /**
- * Synchronizes the visible cursor with the current cursor coordinates.
+ * Synchronizes the visible cursor and document selection with the current
+ * cursor coordinates.
  */
 hterm.Terminal.prototype.syncCursorPosition_ = function() {
   var topRowIndex = this.scrollPort_.getTopRowIndex();
@@ -943,6 +1214,16 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
       this.characterSize_.height * (cursorRowIndex - topRowIndex);
   this.cursorNode_.style.left = this.characterSize_.width *
       this.screen_.cursorPosition.column;
+
+  this.cursorNode_.setAttribute('title',
+                                '(' + this.screen_.cursorPosition.row +
+                                ', ' + this.screen_.cursorPosition.column +
+                                ')');
+
+  // Update the caret for a11y purposes.
+  var selection = this.document_.getSelection();
+  if (selection && selection.isCollapsed)
+    this.screen_.syncSelectionCaret(selection);
 };
 
 /**
@@ -953,13 +1234,25 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
  */
 hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
   if (this.timeouts_.syncCursor)
-    clearTimeout(this.timeouts_.syncCursor);
+    return;
 
   var self = this;
   this.timeouts_.syncCursor = setTimeout(function() {
       self.syncCursorPosition_();
       delete self.timeouts_.syncCursor;
-    }, 100);
+    }, 0);
+};
+
+/**
+ * Invoked by hterm.Terminal.Keyboard when a VT keystroke is detected.
+ *
+ * @param {string} string The VT string representing the keystroke.
+ */
+hterm.Terminal.prototype.onVTKeystroke = function(string) {
+  if (this.scrollOnKeystroke)
+    this.scrollPort_.scrollRowToBottom(this.getRowCount());
+
+  this.io.onVTKeystroke(string);
 };
 
 /**
@@ -977,8 +1270,10 @@ hterm.Terminal.prototype.onResize_ = function() {
                          this.characterSize_.width);
   var height = this.scrollPort_.visibleRowCount;
 
-  if (width == this.screenSize.width && height == this.screenSize.height)
+  if (width == this.screenSize.width && height == this.screenSize.height) {
+    this.syncCursorPosition_();
     return;
+  }
 
   this.screenSize.resize(width, height);
 
@@ -986,19 +1281,40 @@ hterm.Terminal.prototype.onResize_ = function() {
 
   var deltaRows = this.screenSize.height - screenHeight;
 
+  var cursor = this.saveCursor();
+
   if (deltaRows < 0) {
     // Screen got smaller.
-    var ary = this.screen_.shiftRows(-deltaRows);
+    deltaRows *= -1;
+    while (deltaRows) {
+      var lastRow = this.getRowCount() - 1;
+      if (lastRow - this.scrollbackRows_.length == cursor.row)
+        break;
+
+      if (this.getRowText(lastRow))
+        break;
+
+      this.screen_.popRow();
+      deltaRows--;
+    }
+
+    var ary = this.screen_.shiftRows(deltaRows);
     this.scrollbackRows_.push.apply(this.scrollbackRows_, ary);
+
+    // We just removed rows from the top of the screen, we need to update
+    // the cursor to match.
+    cursor.row -= deltaRows;
+
   } else if (deltaRows > 0) {
     // Screen got larger.
 
     if (deltaRows <= this.scrollbackRows_.length) {
       var scrollbackCount = Math.min(deltaRows, this.scrollbackRows_.length);
       var rows = this.scrollbackRows_.splice(
-          0, this.scrollbackRows_.length - scrollbackCount);
+          this.scrollbackRows_.length - scrollbackCount, scrollbackCount);
       this.screen_.unshiftRows(rows);
       deltaRows -= scrollbackCount;
+      cursor.row += scrollbackCount;
     }
 
     if (deltaRows)
@@ -1006,18 +1322,17 @@ hterm.Terminal.prototype.onResize_ = function() {
   }
 
   this.screen_.setColumnCount(this.screenSize.width);
-
-  if (this.screen_.cursorPosition.row == -1)
-    this.screen_.setCursorPosition(0, 0);
+  this.restoreCursor(cursor);
+  this.syncCursorPosition_();
 };
 
 /**
  * Service the cursor blink timeout.
  */
 hterm.Terminal.prototype.onCursorBlink_ = function() {
-  if (this.cursorNode_.style.display == 'block') {
-    this.cursorNode_.style.display = 'none';
+  if (this.cursorNode_.style.opacity == '0') {
+    this.cursorNode_.style.opacity = '1';
   } else {
-    this.cursorNode_.style.display = 'block';
+    this.cursorNode_.style.opacity = '0';
   }
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,16 @@ hterm.ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
  * Make sure the hterm.ScrollPort is reusing the same row nodes when it can.
  */
 hterm.ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
+    // Force a sync redraw before we get started so we know we're done
+    // calling getRowNode.
+    this.scrollPort.redraw_();
+
     this.rowProvider.resetCallCount('getRowNode');
     this.scrollPort.scrollRowToTop(1);
+
+    // Sync redraw so we know getRowNode was called again.
+    this.scrollPort.redraw_();
+
     var count = this.rowProvider.getCallCount('getRowNode');
 
     // Scrolling from 0 to 1 should result in only one call to getRowNode.
@@ -89,6 +97,10 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     // and the bottom of the screen.
     this.scrollPort.scrollRowToTop(50);
 
+    // Force a synchronous redraw.  We'll need to DOM to be correct in order
+    // to alter the selection.
+    this.scrollPort.redraw_();
+
     // And select some text in the middle of the visible range.
     var s = doc.getSelection();
 
@@ -106,12 +118,14 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
 
     for (var i = 0; i < this.visibleRowCount; i++) {
       this.scrollPort.scrollRowToTop(50 - i);
+      this.scrollPort.redraw_();
       result.assertEQ(anchorNode, s.anchorNode);
       result.assertEQ(focusNode, s.focusNode);
     }
 
     for (var i = 0; i < this.visibleRowCount; i++) {
       this.scrollPort.scrollRowToTop(50 + i);
+      this.scrollPort.redraw_();
       result.assertEQ(anchorNode, s.anchorNode);
       result.assertEQ(focusNode, s.focusNode);
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,13 +23,33 @@
  * @constructor
  */
 hterm.VT100 = function(terminal) {
-  this.terminal_ = terminal;
+  this.terminal = terminal;
+
+  this.keyboard = new hterm.VT100.Keyboard(this);
 
   // Sequence being processed -- that seen so far
   this.pendingSequence_ = [];
 
   // Response to be sent back to the guest
   this.pendingResponse_ = '';
+
+  // If true, invoke the JS debugger after a given number of escape sequences.
+  this.dubstepEnabled_ = false;
+
+  // Stop after this many escapes.
+  this.dubstepStopAfter_ = 0;
+
+  // Most recent dubstep size, for easy repeatibility.
+  this.dubstepDefaultCount_ = 1;
+
+  // Total number of escapes seen while in dubstep mode.  Useful for measuring
+  // the number of escapes required to reach an interesting state.
+  this.dubstepTotalCount_ = 0;
+
+  // Whether or not to respect the escape codes for setting terminal width.
+  // A production terminal probably shouldn't allow this, but it's necessary
+  // to make it through the vttest suite.
+  this.setWidthEnabled_ = true;
 
   /**
    * Enable/disable application keypad.
@@ -62,6 +82,56 @@ hterm.VT100 = function(terminal) {
 };
 
 /**
+ * Invoked the JavaScript debugger after a given number of escape sequences
+ * are encountered.
+ *
+ * Before the debugger is invoked the step count is reset to the previous
+ * value.  This makes it easy to sneak up on an interesting terminal state
+ * by stepping through input N escapes at a time without having to reset
+ * the step count after each breakpoint.
+ *
+ * This method is intended to be invoked from the JS console while tracking
+ * down some obscure emulator bug.  You shouldn't ever need to call it from
+ * production code.
+ *
+ * @param {integer} count The number of escape sequences to process before
+ *     stopping.  Pass 0 to disable "dbustep" mode.
+ */
+hterm.VT100.prototype.setDubstep = function(count) {
+  if (!count) {
+    this.dubstepEnabled_ = false;
+    this.dubstepTotalCount_ = 0;
+    return 'Dubstep disabled.';
+  }
+
+  this.dubstepEnabled_ = true;
+  this.dubstepStopAfter_ = count;
+  this.dubstepDefaultCount_ = count;
+
+  // This method is typically invoked from the console, which will display
+  // this return value by default.
+  return 'Stopping in: ' + count + ' steps.';
+};
+
+/**
+ * Checks the dubstep state, invoking the JS debugger if appropriate.
+ */
+hterm.VT100.prototype.checkDubstep_ = function() {
+  this.dubstepTotalCount_++;
+
+  if (--this.dubstepStopAfter_ > 0)
+    return;
+
+  // Disable cursor blink so we know the cursor is visible when the
+  // debugger stops.  This will also sync the cursor position.
+  this.terminal.setCursorBlink(false);
+
+  console.log('Total steps so far: ' + this.dubstepTotalCount_);
+  console.log(this.setDubstep(this.dubstepDefaultCount_));
+  debugger;
+};
+
+/**
  * Interpret a sequence of characters.
  *
  * Incomplete escape sequences are buffered until the next call.
@@ -80,14 +150,16 @@ hterm.VT100.prototype.interpretString = function(str) {
     if (i == str.length)
       break;
 
-    var nextEscape = str.substr(i).search(/[\x1b\n\t]|$/);
+    var nextEscape = str.substr(i).search(/[\x01-\x1F]|$/);
 
     if (nextEscape == -1)
       nextEscape = str.length;
 
     if (nextEscape != 0) {
       var plainText = str.substr(i, nextEscape);
-      this.terminal_.print(plainText);
+      if (this.dubstepEnabled_)
+        console.log('print: ' + JSON.stringify(plainText));
+      this.terminal.print(plainText);
       i += nextEscape;
     }
 
@@ -100,41 +172,81 @@ hterm.VT100.prototype.interpretString = function(str) {
 };
 
 /**
- * Interpret a single character in a sequence.
- *
- * This function is called for each character in terminal input, and
- * accumulates characters until a recognized control sequence is read.  If the
- * character is not part of a control sequence, it is queued up for rendering.
- *
- * @param {string} character Character to interpret or pass through.
+ * Interpret a single character from the terminal input.
  */
 hterm.VT100.prototype.interpretCharacter = function(character) {
-  var interpret = false;
-
-  if (character == '\n') {
-    this.terminal_.newLine();
-    return;
-  }
-
-  if (character == '\t') {
-    // TODO(rginda): I don't think this is the correct behavior.
-    this.terminal_.cursorRight(4);
-    return;
-  }
-
   if (character == '\x1b') {
     this.pendingSequence_.length = 1;
     this.pendingSequence_[0] = character;
     return;
   }
 
-  if (!this.pendingSequence_.length ||
-      (character < '\x20' && character != '\x07')) {
-    // We don't have a pending escape, or this character is invalid in the
-    // context of an escape sequence.  The VT100 spec says to just print it.
-    this.terminal_.print(character);
+  if (this.pendingSequence_.length &&
+      (character >= '\x20' || character == '\x07')) {
+    this.interpretEscape(character);
     return;
   }
+
+  this.interpretNonPrintable(character);
+};
+
+/**
+ * Interpret a non-printable character from the terminal input.
+ */
+hterm.VT100.prototype.interpretNonPrintable = function(character) {
+  if (this.dubstepEnabled_)
+    console.log('nonprintable: ' + JSON.stringify(character));
+
+  switch (character) {
+    case '\n':
+      this.terminal.newLine();
+      break;
+
+    case '\t':
+      // TODO(rginda): I don't think this is the correct behavior.
+      this.terminal.cursorRight(4);
+      break;
+
+    case '\x07':
+      this.terminal.ringBell();
+      break;
+
+    case '\x08':  // Backspace, aka '\b'.
+      this.terminal.cursorLeft(1);
+      break;
+
+    case '\x0a':
+      this.terminal.newLine();
+      break;
+
+    case '\x0b':
+    case '\x0c':
+      this.terminal.formFeed();
+      break;
+
+    case '\x0d':
+      this.terminal.setCursorColumn(0);
+      break;
+
+    case '\u0000':
+      break;
+
+    default:
+      console.error('unhandled unprintable: ' + JSON.stringify(character));
+  }
+};
+
+/**
+ * Interpret a single character in an escape sequence.
+ *
+ * This function is called for each character that appears to be part of an
+ * escape sequence.  It accumulates characters until a recognized control
+ * sequence is read.
+ *
+ * @param {string} character Character to interpret.
+ */
+hterm.VT100.prototype.interpretEscape = function(character) {
+  var interpret = false;
 
   this.pendingSequence_.push(character);
   var sequence = this.pendingSequence_;
@@ -142,15 +254,11 @@ hterm.VT100.prototype.interpretCharacter = function(character) {
   var processed = true;
   switch (sequence[1]) {
     case '[':
-      if (!this.interpretControlSequenceInducer_(sequence.slice(2))) {
-        processed = false;
-      }
+      processed = this.interpretControlSequenceInducer_(sequence.slice(2));
       break;
 
     case ']':
-      if (!this.interpretOperatingSystemCommand_(sequence.slice(2))) {
-        processed = false;
-      }
+      processed = this.interpretOperatingSystemCommand_(sequence.slice(2));
       break;
 
     case '=':  // Application keypad
@@ -161,32 +269,32 @@ hterm.VT100.prototype.interpretCharacter = function(character) {
       this.applicationKeypad = false;
       break;
 
-    case '7':  // Save cursor
-      this.terminal_.saveCursor();
+    case '7':  // Save terminal options.
+      this.terminal.saveOptions();
       break;
 
-    case '8':  // Restore cursor
-      this.terminal_.restoreCursor();
+    case '8':  // Restore terminal options.
+      this.terminal.restoreOptions();
       break;
 
     case 'D':  // Index, like newline, only keep the X position
-      this.terminal_.lineFeed();
+      this.terminal.lineFeed();
       break;
 
     case 'E':  // Next line.  Like newline, but doesn't add lines.
-      this.terminal_.setCursorColumn(0);
-      this.terminal_.cursorDown(1);
+      this.terminal.setCursorColumn(0);
+      this.terminal.cursorDown(1);
       break;
 
     case 'M':  // Reverse index.
       // This is like newline, but in reverse.  When we hit the top of the
       // terminal, lines are added at the top while swapping out the bottom
       // lines.
-      this.terminal_.reverseLineFeed();
+      this.terminal.reverseLineFeed();
       break;
 
     case 'c':  // Full reset
-      this.terminal_.reset();
+      this.terminal.reset();
       break;
 
     case '#':  // DEC commands
@@ -196,7 +304,7 @@ hterm.VT100.prototype.interpretCharacter = function(character) {
       }
       switch (sequence[2]) {
         case '8':  // DEC screen alignment test
-          this.fill('E');
+          this.terminal.fill('E');
           break;
         default:
           console.log('Unsupported DEC command: ' + sequence[2]);
@@ -211,10 +319,10 @@ hterm.VT100.prototype.interpretCharacter = function(character) {
       }
       switch (sequence[2]) {
         case '0':  // Line drawing
-          this.terminal_.setSpecialCharsEnabled(true);
+          this.terminal.setSpecialCharsEnabled(true);
           break;
         default:
-          this.terminal_.setSpecialCharsEnabled(false);
+          this.terminal.setSpecialCharsEnabled(false);
           break;
       }
       break;
@@ -230,7 +338,7 @@ hterm.VT100.prototype.interpretCharacter = function(character) {
       break;
 
     case 'H':  // Set a tab stop at the cursor position
-      this.terminal_.setTabStopAtCursor(true);
+      this.terminal.setTabStopAtCursor(true);
       break;
 
     default:
@@ -239,25 +347,15 @@ hterm.VT100.prototype.interpretCharacter = function(character) {
   }
 
   if (processed) {
-    //console.log('Escape sequence: ' + sequence.slice(1));
+    if (this.dubstepEnabled_) {
+      console.warn('Escape: ' + sequence.slice(1).join(' '));
+      this.checkDubstep_();
+    }
+
     this.pendingSequence_.length = 0;
   }
 
   return;
-};
-
-/**
- * Return any pending response from the interpretation of control sequences.
- *
- * The response should be returned as if the user typed it, and the pending
- * response is cleared from the interpreter.
- *
- * @return {string} response to send.
- */
-hterm.VT100.prototype.getAndClearPendingResponse = function() {
-  var response = this.pendingResponse_;
-  this.pendingResponse_ = '';
-  return response;
 };
 
 /**
@@ -351,6 +449,7 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
   var seqCommand = '';
   var query = false;
   var leadingZeroFilter = true;
+  var response = '';
 
   // Parse the command into a sequence command and series of numeric arguments.
   for (var i = 0; i < sequence.length; ++i) {
@@ -382,66 +481,65 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
     }
   }
 
-  if (!processed) {
-    return processed;
-  }
+  if (!processed)
+    return false;
 
   // Interpret the command
   switch (seqCommand) {
     case 'A':  // Cursor up
-      this.terminal_.cursorUp(args[0] || 1);
+      this.terminal.cursorUp(args[0] || 1);
       break;
 
     case 'B':  // Cursor down
-      this.terminal_.cursorDown(args[0] || 1);
+      this.terminal.cursorDown(args[0] || 1);
       break;
 
     case 'C':  // Cursor right
-      this.terminal_.cursorRight(args[0] || 1);
+      this.terminal.cursorRight(args[0] || 1);
       break;
 
     case 'D':  // Cursor left
-      this.terminal_.cursorLeft(args[0] || 1);
+      this.terminal.cursorLeft(args[0] || 1);
       break;
 
     case 'E':  // Next line
       // This is like Cursor Down, except the cursor moves to the beginning of
       // the line as well.
-      this.terminal_.cursorDown(args[0] || 1);
-      this.terminal_.setCursorColumn(0);
+      this.terminal.cursorDown(args[0] || 1);
+      this.terminal.setCursorColumn(0);
       break;
 
     case 'F':  // Previous line
       // This is like Cursor Up, except the cursor moves to the beginning of the
       // line as well.
-      this.terminal_.cursorUp(args[0] || 1);
-      this.terminal_.setCursorColumn(0);
+      this.terminal.cursorUp(args[0] || 1);
+      this.terminal.setCursorColumn(0);
       break;
 
     case 'G':  // Cursor absolute column
       var position = args[0] ? args[0] - 1 : 0;
-      this.terminal_.setCursorColumn(position);
+      this.terminal.setCursorColumn(position);
       break;
 
     case 'H':  // Cursor absolute row;col
     case 'f':  // Horizontal & Vertical Position
       var row = args[0] ? args[0] - 1 : 0;
       var col = args[1] ? args[1] - 1 : 0;
-      this.terminal_.setCursorPosition(row, col);
+      this.terminal.setCursorPosition(row, col);
       break;
 
     case 'K':  // Erase in Line
       switch (args[0]) {
         case 1:  // Erase to left
-          this.terminal_.eraseToLeft();
+          this.terminal.eraseToLeft();
           break;
         case 2:  // Erase the line
-          this.terminal_.eraseLine();
+          this.terminal.eraseLine();
           break;
         case 0:  // Erase to right
         default:
           // Erase to right
-          this.terminal_.eraseToRight();
+          this.terminal.eraseToRight();
           break;
       }
       break;
@@ -449,30 +547,28 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
     case 'J':  // Erase in display
       switch (args[0]) {
         case 1:  // Erase above
-          this.terminal_.eraseToLeft();
-          this.terminal_.eraseAbove();
+          this.terminal.eraseAbove();
           break;
         case 2:  // Erase all
-          this.terminal_.clear();
+          this.terminal.clear();
           break;
         case 0:  // Erase below
         default:
-          this.terminal_.eraseToRight();
-          this.terminal_.eraseBelow();
+          this.terminal.eraseBelow();
           break;
       }
       break;
 
     case 'X':  // Erase character
-      this.terminal_.eraseToRight(args[0] || 1);
+      this.terminal.eraseToRight(args[0] || 1);
       break;
 
     case 'L':  // Insert lines
-      this.terminal_.insertLines(args[0] || 1);
+      this.terminal.insertLines(args[0] || 1);
       break;
 
     case 'M':  // Delete lines
-      this.terminal_.deleteLines(args[0] || 1);
+      this.terminal.deleteLines(args[0] || 1);
       break;
 
     case '@':  // Insert characters
@@ -480,40 +576,40 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
       if (args[0]) {
         amount = args[0];
       }
-      this.terminal_.insertSpace(amount);
+      this.terminal.insertSpace(amount);
       break;
 
     case 'P':  // Delete characters
       // This command shifts the line contents left, starting at the cursor
       // position.
-      this.terminal_.deleteChars(args[0] || 1);
+      this.terminal.deleteChars(args[0] || 1);
       break;
 
     case 'S':  // Scroll up an amount
-      this.terminal_.vtScrollUp(args[0] || 1);
+      this.terminal.vtScrollUp(args[0] || 1);
       break;
 
     case 'T':  // Scroll down an amount
-      this.terminal_.vtScrollDown(args[0] || 1);
+      this.terminal.vtScrollDown(args[0] || 1);
       break;
 
     case 'c':  // Send device attributes
       if (!args[0]) {
-        this.pendingResponse_ += '\x1b[?1;2c';
+        response += '\x1b[?1;2c';
       }
       break;
 
     case 'd':  // Line position absolute
-      this.terminal_.setCursorRow((args[0] - 1) || 0);
+      this.terminal.setAbsoluteCursorRow((args[0] - 1) || 0);
       break;
 
     case 'g':  // Clear tab stops
       switch (args[0] || 0) {
         case 0:
-          this.terminal_.setTabStopAtCursor(false);
+          this.terminal.setTabStopAtCursor(false);
           break;
         case 3:  // Clear all tab stops in the page
-          this.terminal_.clearTabStops();
+          this.terminal.clearTabStops();
           break;
         default:
           break;
@@ -522,17 +618,17 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
 
     case 'm':  // Color change
       if (args.length == 0) {
-        this.terminal_.clearColorAndAttributes();
+        this.terminal.clearColorAndAttributes();
       } else {
         if (args.length == 3 &&
             (args[0] == 38 || args[0] == 48) && args[1] == 5) {
           // This is code for the 256-color palette, skip the normal processing.
           if (args[0] == 38) {
             // Set the foreground color to the 3rd argument.
-            this.terminal_.setForegroundColor256(args[2]);
+            this.terminal.setForegroundColor256(args[2]);
           } else if (args[0] == 48) {
             // Set the background color to the 3rd argument.
-            this.terminal_.setBackgroundColor256(args[2]);
+            this.terminal.setBackgroundColor256(args[2]);
           }
         } else {
           var numArgs = args.length;
@@ -540,16 +636,16 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
             var arg = args[argNum];
             if (isNaN(arg)) {
               // This is the same as an attribute of zero.
-              this.terminal_.setAttributes(0);
+              this.terminal.setAttributes(0);
             } else if (arg < 30) {
               // This is an attribute argument.
-              this.terminal_.setAttributes(arg);
+              this.terminal.setAttributes(arg);
             } else if (arg < 40) {
               // This is a foreground color argument.
-              this.terminal_.setForegroundColor(arg);
+              this.terminal.setForegroundColor(arg);
             } else if (arg < 50) {
               // This is a background color argument.
-              this.terminal_.setBackgroundColor(arg);
+              this.terminal.setBackgroundColor(arg);
             }
           }
         }
@@ -560,16 +656,14 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
       switch (args[0]) {
         case 5:
           if (!query) {
-            var response = '\x1b0n';
-            this.pendingResponse_ += response;
+            response += '\x1b0n';
           }
           break;
 
         case 6:
-          var curX = this.terminal_.getCursorColumn() + 1;
-          var curY = this.terminal_.getCursorRow() + 1;
-          var response = '\x1b[' + curY + ';' + curX + 'R';
-          this.pendingResponse_ += response;
+          var curX = this.terminal.getCursorColumn() + 1;
+          var curY = this.terminal.getCursorRow() + 1;
+          response += '\x1b[' + curY + ';' + curX + 'R';
           break;
       }
       break;
@@ -582,43 +676,64 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
           case 1:  // Normal (l) or application (h) cursor keys
             this.applicationCursor = set;
             break;
+
           case 3:  // 80 (if l) or 132 (if h) column mode
-            // Our size is always determined by the window size, so we ignore
-            // attempts to resize from remote end.
+            if (!this.setWidthEnabled_)
+              break;
+
+            if (set) {
+              this.terminal.setWidth(132);
+            } else {
+              this.terminal.setWidth(80);
+            }
+            this.terminal.clear();
+            this.terminal.setAbsoluteCursorPosition(0, 0);
             break;
+
           case 4:  // Fast (l) or slow (h) scroll
             // This is meaningless to us.
             break;
+
           case 5:  // Normal (l) or reverse (h) video mode
-            this.terminal_.setReverseVideo(set);
+            this.terminal.setReverseVideo(set);
             break;
+
           case 6:  // Normal (l) or origin (h) cursor mode
-            this.terminal_.setOriginMode(set);
+            this.terminal.setOriginMode(set);
             break;
+
           case 7:  // No (l) wraparound mode or wraparound (h) mode
-            this.terminal_.setWraparound(set);
+            this.terminal.setWraparound(set);
             break;
+
           case 12:  // Stop (l) or start (h) blinking cursor
-            this.terminal_.setCursorBlink(set);
+            this.terminal.setCursorBlink(set);
             break;
+
           case 25:  // Hide (l) or show (h) cursor
-            this.terminal_.setCursorVisible(set);
+            this.terminal.setCursorVisible(set);
             break;
+
           case 45:  // Disable (l) or enable (h) reverse wraparound
-            this.terminal_.setReverseWraparound(set);
+            this.terminal.setReverseWraparound(set);
             break;
+
           case 67:  // Backspace is delete (h) or backspace (l)
             this.backspaceSendsBackspace = set;
             break;
+
           case 1036:  // Meta sends (h) or doesn't send (l) escape
             this.metaSendsEscape = set;
             break;
+
           case 1039:  // Alt sends (h) or doesn't send (l) escape
             this.altSendsEscape = set;
             break;
+
           case 1049:  // Switch to/from alternate, save/restore cursor
-            this.terminal_.setAlternateMode(set);
+            this.terminal.setAlternateMode(set);
             break;
+
           default:
             console.log('Unimplemented l/h command: ' +
                         (query ? '?' : '') + args[0]);
@@ -628,12 +743,12 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
       } else {
         switch (args[0]) {
           case 4:  // Replace (l) or insert (h) mode
-            this.terminal_.setInsertMode(set);
+            this.terminal.setInsertMode(set);
             break;
           case 20:
-            // Normal linefeed (l), \n means move down only
-            // Automatic linefeed (h), \n means \n\r
-            this.terminal_.setAutoLinefeed(set);
+            // If true, vertical tab and form feeds also cause a
+            // carriage return.
+            this.terminal.setAutoCarriageReturn(set);
             break;
           default:
             console.log('Unimplemented l/h command: ' +
@@ -649,9 +764,9 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
         // TODO(maccarro): Implement this
       } else {
         // Set scroll region
-        var scrollTop = args[0] || null;
-        var scrollBottom = args[1] || null;
-        this.terminal_.setScrollRegion(scrollTop, scrollBottom);
+        var scrollTop = args[0] || 1;
+        var scrollBottom = args[1] || this.terminal.screenSize.height;
+        this.terminal.setVTScrollRegion(scrollTop - 1, scrollBottom - 1);
       }
       break;
 
@@ -659,5 +774,9 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
       console.log('Unknown control: ' + seqCommand);
       break;
   }
-  return processed;
+
+  if (response)
+    this.terminal.io.sendString(response);
+
+  return true;
 };

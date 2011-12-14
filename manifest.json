@@ -1,0 +1,15 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDixnK8f4AuZrV+QZx7iiONG/SAiU5VrjlXD2KxRGvI6tDJrLvUin+GpcuMH1d/Qrc0+PmCzJ1duAiD/9F2q8kiYwQ1C3gZmztYneAiVX+3/OvXHr/idyueNQ5XFvBnMCpKD0KqPEksP80utV417fuaHAY4NFjofLZyWUvu23XHRwIDAQAB",
+  "name": "hterm",
+  "version": "0.3.0",
+  "default_locale": "en",
+  "permissions": [
+    "webSocketProxyPrivate",
+    "unlimitedStorage"
+  ],
+  "app": {
+    "launch": {
+      "local_path": "html/nassh.html"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.dialog-container {
+  position: absolute;
+  -webkit-user-select: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+
+  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
+                                      rgba(127, 127, 127, 0.5) 35%,
+                                      rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  -webkit-transition: opacity 250ms linear;
+  overflow: hidden;
+
+  z-index: 9999;
+}
+
+.dialog-frame {
+  position: absolute;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+
+  -webkit-transition-duration: 250ms;
+  -webkit-transition-property: none;
+
+  min-width: 25%;
+  max-width: 75%;
+  border: 1px #aaa solid;
+  border-radius: 2px;
+  background-color: white;
+  padding: 15px;
+}
+
+[hidden] {
+  display: none;
+}
+
+.dialog-title {
+  font-weight: bold;
+  font-size: 120%;
+  padding-bottom: 10px;
+}
+
+.dialog-text {
+  padding-bottom: 10px;
+}
+
+.dialog-frame input {
+  -webkit-box-sizing: border-box;
+  width: 100%;
+}
+
+.dialog-buttons {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  padding-top: 10px;
+  -webkit-box-pack: end;
+}
