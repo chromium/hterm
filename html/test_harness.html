@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- PubSub is currently unscoped (it's not in hterm.*) -->
+    <script src='../js/pubsub.js'></script>
+
+    <!-- hterm.* things -->
+    <script src='../js/hterm.js'></script>
+    <script src='../js/scrollport.js'></script>
+    <script src='../js/terminal.js'></script>
+    <script src='../js/options.js'></script>
+    <script src='../js/screen.js'></script>
+    <script src='../js/vt100.js'></script>
+
+    <!-- Test specific things -->
+    <script src='../js/test_manager.js'></script>
+    <script src='../js/mock_row_provider.js'></script>
+
+    <!-- Tests -->
+    <script src='../js/scrollport_tests.js'></script>
+    <script src='../js/screen_tests.js'></script>
+    <script src='../js/terminal_tests.js'></script>
+    <script src='../js/vt100_tests.js'></script>
+
+    <script>
+      var testManager;
+      var testRun;
+
+      function init() {
+        testManager = new TestManager();
+        testRun = testManager.createTestRun({window: window});
+
+        // Stop after the first failure to make it easier to debug in the
+        // JS console.
+        testRun.maxFailures = 1;
+
+        testRun.selectPattern(testRun.ALL_TESTS);
+        testRun.run();
+      }
+    </script>
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+
+  <body onload='init()'></body>
+</html>
