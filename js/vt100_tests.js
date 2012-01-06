@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -738,17 +738,17 @@ hterm.VT100.Tests.addTest('wraparound-mode-on', function(result, cx) {
     this.terminal.interpret('-----  5  -----');
     this.terminal.interpret('-----  6  -----');
 
-    var text = this.terminal.getRowsText(1, 7);
+    var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
+                    '-----  1  -----\n' +
                     '-----  2  -----\n' +
                     '-----  3  -----\n' +
                     '-----  4  -----\n' +
                     '-----  5  -----\n' +
-                    '-----  6  -----\n' +
-                    '');
+                    '-----  6  -----');
 
     result.assertEQ(this.terminal.getCursorRow(), 5);
-    result.assertEQ(this.terminal.getCursorColumn(), 0);
+    result.assertEQ(this.terminal.getCursorColumn(), 14);
 
     result.pass();
   });

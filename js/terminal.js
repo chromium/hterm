@@ -120,6 +120,7 @@ hterm.Terminal.prototype.saveCursor = function() {
  */
 hterm.Terminal.prototype.restoreCursor = function(cursor) {
   this.screen_.setCursorPosition(cursor.row, cursor.column);
+  this.screen_.cursorPosition.overflow = cursor.overflow;
 };
 
 /**
@@ -424,7 +425,7 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
   }
 
   this.renumberRows_(start, end);
-  this.scrollPort_.scheduleRedraw();
+  this.scrollPort_.scheduleInvalidate();
 };
 
 /**
@@ -432,7 +433,7 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
  *
  * The start and end indicies are relative to the screen, not the scrollback.
  * Rows in the scrollback buffer cannot be renumbered.  Since they are not
- * addressable (you cant delete them, scroll them, etc), you should have
+ * addressable (you can't delete them, scroll them, etc), you should have
  * no need to renumber scrollback rows.
  */
 hterm.Terminal.prototype.renumberRows_ = function(start, end) {
@@ -456,25 +457,21 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end) {
  */
 hterm.Terminal.prototype.print = function(str) {
   do {
+    if (this.options_.wraparound && this.screen_.cursorPosition.overflow)
+      this.newLine();
+
     if (this.options_.insertMode) {
       str = this.screen_.insertString(str);
     } else {
       str = this.screen_.overwriteString(str);
     }
-
-    if (this.options_.wraparound && str != null) {
-      this.newLine();
-    } else {
-      break;
-    }
-  } while (str);
+  } while (this.options_.wraparound && str);
 
   this.scheduleSyncCursorPosition_();
 };
 
 /**
  * Set the VT scroll region.
- *
  *
  * This also resets the cursor position to the absolute (0, 0) position, since
  * that's what xterm appears to do.
@@ -867,10 +864,13 @@ hterm.Terminal.prototype.setCursorPosition = function(row, column) {
 hterm.Terminal.prototype.setRelativeCursorPosition = function(row, column) {
   var scrollTop = this.getVTScrollTop();
   row = hterm.clamp(row + scrollTop, scrollTop, this.getVTScrollBottom());
+  column = hterm.clamp(column, 0, this.screenSize.width - 1);
   this.screen_.setCursorPosition(row, column);
 };
 
 hterm.Terminal.prototype.setAbsoluteCursorPosition = function(row, column) {
+  row = hterm.clamp(row, 0, this.screenSize.height - 1);
+  column = hterm.clamp(column, 0, this.screenSize.width - 1);
   this.screen_.setCursorPosition(row, column);
 };
 
@@ -1127,10 +1127,7 @@ hterm.Terminal.prototype.setAlternateMode = function(state) {
   if (rowDelta > 0)
     this.appendRows_(rowDelta);
 
-  this.scrollPort_.invalidateRowRange(
-      this.scrollbackRows_.length,
-      this.scrollbackRows_.length + this.screenSize.height);
-
+  this.scrollPort_.invalidate();
   this.syncCursorPosition_();
 };
 

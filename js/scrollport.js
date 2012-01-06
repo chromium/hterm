@@ -56,6 +56,9 @@ hterm.ScrollPort = function(rowProvider, fontSize, opt_lineHeight) {
   this.div_ = null;
   this.document_ = null;
 
+  // Collection of active timeout handles.
+  this.timeouts_ = {};
+
   this.observers_ = {};
 
   this.DEBUG_ = false;
@@ -324,37 +327,31 @@ hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
 };
 
 /**
- * Inform the ScrollPort that a given range of rows is invalid.
+ * Inform the ScrollPort that the some or all of the visible rows have
+ * become invalid.
  *
- * The RowProvider should call this method if the underlying x-row instance
- * for a given rowIndex is no longer valid.
+ * This can be used when you've shuffled around some visible rows and want
+ * that to be reflected in the current display.
  *
- * Note that this is not necessary when only the *content* of the x-row has
- * changed.  It's only needed when getRowNode(N) would return a different
- * x-row than it used to.
- *
- * If rows in the specified range are visible, they will be redrawn.
+ * This skips some of the overhead of a full redraw, but should not be used
+ * in cases where the scrollport has been scrolled, or when the row count has
+ * changed.
  */
-hterm.ScrollPort.prototype.invalidateRowRange = function(start, end) {
-  this.resetCache();
+hterm.ScrollPort.prototype.invalidate = function() {
+  var topRowIndex = this.getTopRowIndex();
+  var bottomRowIndex = this.getBottomRowIndex(topRowIndex);
+  this.drawVisibleRows_(topRowIndex, bottomRowIndex);
+};
 
-  var node = this.rowNodes_.firstChild;
-  while (node) {
-    if ('rowIndex' in node &&
-        node.rowIndex >= start && node.rowIndex <= end) {
-      var nextSibling = node.nextSibling;
-      this.rowNodes_.removeChild(node);
+hterm.ScrollPort.prototype.scheduleInvalidate = function() {
+  if (this.timeouts_.invalidate)
+    return;
 
-      var newNode = this.rowProvider_.getRowNode(node.rowIndex);
-
-      this.rowNodes_.insertBefore(newNode, nextSibling);
-      this.previousRowNodeCache_[node.rowIndex] = newNode;
-
-      node = nextSibling;
-    } else {
-      node = node.nextSibling;
-    }
-  }
+  var self = this;
+  this.timeouts_.invalidate = setTimeout(function () {
+      delete self.timeouts_.invalidate;
+      self.invalidate();
+    }, 0);
 };
 
 /**
@@ -440,12 +437,12 @@ hterm.ScrollPort.prototype.syncScrollHeight = function() {
  * run only one redraw occurs.
  */
 hterm.ScrollPort.prototype.scheduleRedraw = function() {
-  if (this.redrawTimeout_)
+  if (this.timeouts_.redraw)
     return;
 
   var self = this;
-  this.redrawTimeout_ = setTimeout(function () {
-      self.redrawTimeout_ = null;
+  this.timeouts_.redraw = setTimeout(function () {
+      delete self.timeouts_.redraw;
       self.redraw_();
     }, 0);
 };

@@ -686,7 +686,9 @@ hterm.VT100.prototype.interpretControlSequenceInducer_ =
             } else {
               this.terminal.setWidth(80);
             }
+
             this.terminal.clear();
+            this.terminal.setVTScrollRegion(null, null);
             this.terminal.setAbsoluteCursorPosition(0, 0);
             break;
 

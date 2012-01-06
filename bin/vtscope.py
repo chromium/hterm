@@ -132,6 +132,8 @@ class VTScope(object):
 
       if not command_line:
         command_line = last_command_line
+      else:
+        command_line = command_line.strip()
 
       self.dispatch_command(command_line)
 
@@ -246,6 +248,20 @@ class VTScope(object):
 
     sock.close()
 
+  def cmd_bstep(self, args):
+    """Step a given number of bytes."""
+
+    if len(args) > 0:
+      count = int(args[0])
+    else:
+      count = 1
+
+    self.end_position = self.start_position + count
+    if self.end_position == len(self.data):
+      self.end_position = len(self.data)
+
+    self.cmd_step([])
+
   def cmd_exit(self, args):
     self.running = False
 
@@ -255,7 +271,7 @@ class VTScope(object):
     Usage: open <local-path>
     """
 
-    filename = args[0]
+    filename = os.path.expanduser(args[0])
     self.position = 0
 
     with open(filename) as f:

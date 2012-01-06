@@ -101,6 +101,8 @@ hterm.Screen.prototype.getWidth = function() {
  * @param {integer} count The maximum number of columns per row.
  */
 hterm.Screen.prototype.setColumnCount = function(count) {
+  this.columnCount_ = count;
+
   if (this.rowsArray.length) {
     var p = this.cursorPosition.clone();
 
@@ -117,8 +119,6 @@ hterm.Screen.prototype.setColumnCount = function(count) {
 
     this.setCursorPosition(p.row, p.column);
   }
-
-  this.columnCount_ = count;
 };
 
 /**
@@ -282,6 +282,7 @@ hterm.Screen.prototype.clearCursorRow = function() {
   this.cursorOffset_ = 0;
   this.cursorNode_ = text;
   this.cursorPosition.column = 0;
+  this.cursorPosition.overflow = false;
 };
 
 /**
@@ -307,6 +308,8 @@ hterm.Screen.prototype.setCursorPosition = function(row, column) {
     console.log('Column out of bounds: ' + column, hterm.getStack(1));
     column = 0;
   }
+
+  this.cursorPosition.overflow = false;
 
   var rowNode = this.rowsArray[row];
   var node = rowNode.firstChild;
@@ -407,14 +410,15 @@ hterm.Screen.prototype.insertString = function(str) {
   this.cursorNode_.textContent = (
       leadingText +
       hterm.getWhitespace(missingSpaceCount) +
-      trailingText
-      );
+      trailingText);
 
   var cursorDelta = Math.min(str.length, trailingText.length);
   if (this.cursorPosition.column + cursorDelta >= this.columnCount_) {
+    // The cursor ended up past the last column.  When this happens we
+    // need to leave the cursor on the last column but record the fact
+    // that it overflowed.
     cursorDelta = this.columnCount_ - this.cursorPosition.column - 1;
-    if (!overflowText)
-      overflowText = '';
+    this.cursorPosition.overflow = true;
   }
 
   this.cursorOffset_ += cursorDelta;

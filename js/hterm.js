@@ -323,12 +323,22 @@ hterm.Size.prototype.toString = function() {
  *
  * Instances of this class have public read/write members for row and column.
  *
+ * This class includes an 'overflow' bit which is use to indicate that the an
+ * attempt has been made to move the cursor column passed the end of the
+ * screen.  When this happens we leave the cursor column set to the last column
+ * of the screen but set the overflow bit.  In this state cursor movement
+ * happens normally, but any attempt to print new characters causes a cr/lf
+ * first.
+ *
  * @param {integer} row The row of this record.
  * @param {integer} column The column of this record.
+ * @param {boolean} opt_overflow Optional boolean indicating that the RowCol
+ *     has overflowed.
  */
-hterm.RowCol = function(row, column) {
+hterm.RowCol = function(row, column, opt_overflow) {
   this.row = row;
   this.column = column;
+  this.overflow = !!opt_overflow;
 };
 
 /**
@@ -336,10 +346,13 @@ hterm.RowCol = function(row, column) {
  *
  * @param {integer} row The new row of this record.
  * @param {integer} column The new column of this record.
+ * @param {boolean} opt_overflow Optional boolean indicating that the RowCol
+ *     has overflowed.
  */
-hterm.RowCol.prototype.move = function(row, column) {
+hterm.RowCol.prototype.move = function(row, column, opt_overflow) {
   this.row = row;
   this.column = column;
+  this.overflow = !!opt_overflow;
 };
 
 /**
@@ -349,7 +362,7 @@ hterm.RowCol.prototype.move = function(row, column) {
  * column.
  */
 hterm.RowCol.prototype.clone = function() {
-  return new hterm.RowCol(this.row, this.column);
+  return new hterm.RowCol(this.row, this.column, this.overflow);
 };
 
 /**
@@ -360,6 +373,7 @@ hterm.RowCol.prototype.clone = function() {
 hterm.RowCol.prototype.setTo = function(that) {
   this.row = that.row;
   this.column = that.column;
+  this.overflow = that.overflow;
 };
 
 /**
@@ -370,7 +384,8 @@ hterm.RowCol.prototype.setTo = function(that) {
  *     otherwise.
  */
 hterm.RowCol.prototype.equals = function(that) {
-  return this.row == that.row && this.column == that.column;
+  return (this.row == that.row && this.column == that.column &&
+          this.overflow == that.overflow);
 };
 
 /**
@@ -380,5 +395,6 @@ hterm.RowCol.prototype.equals = function(that) {
  *     instance.
  */
 hterm.RowCol.prototype.toString = function() {
-  return '[hterm.RowCol: ' + this.row + ', ' + this.column + ']';
+  return ('[hterm.RowCol: ' + this.row + ', ' + this.column + ', ' +
+          this.overflow + ']');
 };
