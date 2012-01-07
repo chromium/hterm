@@ -101,6 +101,10 @@ class VTScope(object):
   # The canned data.
   data = ''
 
+  # The list of header-defined OFFSETs where we might want to stop and view
+  # the current state.
+  stops = []
+
   # The current start/end position in the data.  The characters between these
   # two positions are next up to be sent to the clients.
   start_position = 0
@@ -138,6 +142,26 @@ class VTScope(object):
       self.dispatch_command(command_line)
 
       last_command_line = command_line
+
+  def scan_header(self, header):
+    """Scan the header for OFFSET blocks where we might want to stop and view
+    the current state.
+    """
+
+    offset_re = re.compile(
+        r'^@@\s+OFFSET:(\d+)\s+LINES:(\d+)\s+CURSOR:(\d+),(\d+)\s*$',
+        re.MULTILINE)
+
+    self.stops = []
+
+    m = offset_re.search(header)
+    while m:
+      self.stops.append({'offset': int(m.group(1)),
+                         'lines': int(m.group(2)),
+                         'row': int(m.group(3)),
+                         'column': int(m.group(4))
+                         })
+      m = offset_re.search(header, m.end())
 
   def find_next_chunk(self):
     """Advance start_position and end_position to the next chunk in the
@@ -263,10 +287,34 @@ class VTScope(object):
     self.cmd_step([])
 
   def cmd_exit(self, args):
+    """Exit vtscope.
+
+    Usage: exit
+    """
     self.running = False
+
+  def cmd_stops(self, args):
+    """Display a list of the stop offsets.
+
+    Usage: stops
+    """
+
+    if not len(self.stops):
+      print 'No stop offsets found.'
+      return
+
+    for i in xrange(len(self.stops)):
+      offset = self.stops[i]
+      print '#%s offset: %s, lines: %s, cursor: %s,%s' % \
+          (i + 1, offset['offset'], offset['lines'], offset['row'],
+           offset['column'])
 
   def cmd_open(self, args):
     """Open a local file containing canned data.
+
+    If the log file has header information then the OFFSETs found in the
+    header will be available to the 'seek' command.  See 'seek' and 'stops'
+    commands for more information.
 
     Usage: open <local-path>
     """
@@ -277,7 +325,17 @@ class VTScope(object):
     with open(filename) as f:
       self.data = f.read()
 
-    print 'Read %s bytes from %s.' % (len(self.data), filename)
+    if re.match(r'@@ HEADER_START', self.data):
+      m = re.search(r'@@ HEADER_END\r?\n', self.data, re.MULTILINE)
+      if not m:
+        print 'Unable to locate end of header.'
+      else:
+        end = m.end()
+        print 'Read %s bytes of header.' % end
+        self.scan_header(self.data[0 : end])
+        self.data = self.data[end : ]
+
+    print 'Read %s bytes of playback.' % len(self.data)
     self.cmd_reset([])
 
   def cmd_reset(self, args):
@@ -293,10 +351,30 @@ class VTScope(object):
   def cmd_seek(self, args):
     """Seek to a given position in the canned data.
 
-    If the position comes before the current position, call cmd_reset() first.
+    Usage: seek <offset>
+
+    If <offset> starts with a percent, as in %1, it will seek to the stop
+    offset at the given 1-based index.  Use the 'stops' command to list
+    out the stop offsets defined by the log file.
+
+    If the resulting offset comes before the current position input will
+    be replayed from the beginning.
     """
 
-    pos = int(args[0])
+    if len(args) < 1:
+      print 'Missing argument'
+      return
+
+    if args[0][0] == '%':
+      index = int(args[0][1:])
+      if index < 1 or index > len(self.stops):
+        print 'No such stop.'
+        return
+
+      pos = self.stops[index - 1]['offset']
+
+    else:
+      pos = int(args[0])
 
     if pos > len(self.data):
       print 'Seek past end.'

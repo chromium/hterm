@@ -1,3 +1,155 @@
+@@ HEADER_START
+@@ OFFSET:746 LINES:22 CURSOR:21,0
+
+
+         VT100 test program, version 2.7 (20110705)
+         Line speed 38400bd 
+         Choose test type:
+
+          0. Exit
+          1. Test of cursor movements
+          2. Test of screen features
+          3. Test of character sets
+          4. Test of double-sized characters
+          5. Test of keyboard
+          6. Test of terminal reports
+          7. Test of VT52 mode
+          8. Test of VT102 features (Insert/Delete Char/Line)
+          9. Test of known bugs
+          10. Test of reset and self-test
+          11. Test non-VT100 (e.g., VT220, XTERM) terminals
+          12. Modify test-parameters
+
+          Enter choice number (0 - 12): 1
+
+@@ OFFSET:5802 LINES:24 CURSOR:13,67
+********************************************************************************
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+        EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE        +*
+*+        E                                                          E        +*
+*+        E The screen should be cleared,  and have an unbroken bor- E        +*
+*+        E der of *'s and +'s around the edge,   and exactly in the E        +*
+*+        E middle  there should be a frame of E's around this  text E        +*
+*+        E with  one (1) free position around it.    Push <RETURN>  E        +*
+*+        E                                                          E        +*
+*+        EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE        +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*+                                                                            +*
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+********************************************************************************
+@@ OFFSET:13232 LINES:24 CURSOR:13,93
+************************************************************************************************************************************
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                  EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE                                  +*
+*+                                  E                                                          E                                  +*
+*+                                  E The screen should be cleared,  and have an unbroken bor- E                                  +*
+*+                                  E der of *'s and +'s around the edge,   and exactly in the E                                  +*
+*+                                  E middle  there should be a frame of E's around this  text E                                  +*
+*+                                  E with  one (1) free position around it.    Push <RETURN>  E                                  +*
+*+                                  E                                                          E                                  +*
+*+                                  EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE                                  +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*+                                                                                                                                +*
+*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+************************************************************************************************************************************
+@@ OFFSET:14007 LINES:22 CURSOR:21,13
+Test of autowrap, mixing control and print characters.
+The left/right margins should have letters in order:
+I                                                                              i
+J                                                                              j
+K                                                                              k
+L                                                                              l
+M                                                                              m
+N                                                                              n
+O                                                                              o
+P                                                                              p
+Q                                                                              q
+R                                                                              r
+S                                                                              s
+T                                                                              t
+U                                                                              u
+V                                                                              v
+W                                                                              w
+X                                                                              x
+Y                                                                              y
+Z                                                                              z
+
+Push <RETURN>
+@@ OFFSET:14816 LINES:22 CURSOR:21,13
+Test of autowrap, mixing control and print characters.
+The left/right margins should have letters in order:
+I                                                                                                                                  i
+J                                                                                                                                  j
+K                                                                                                                                  k
+L                                                                                                                                  l
+M                                                                                                                                  m
+N                                                                                                                                  n
+O                                                                                                                                  o
+P                                                                                                                                  p
+Q                                                                                                                                  q
+R                                                                                                                                  r
+S                                                                                                                                  s
+T                                                                                                                                  t
+U                                                                                                                                  u
+V                                                                                                                                  v
+W                                                                                                                                  w
+X                                                                                                                                  x
+Y                                                                                                                                  y
+Z                                                                                                                                  z
+
+Push <RETURN>
+@@ OFFSET:15153 LINES:9 CURSOR:8,13
+Test of cursor-control characters inside ESC sequences.
+Below should be four identical lines:
+
+A B C D E F G H I
+A B C D E F G H I
+A B C D E F G H I
+A B C D E F G H I 
+
+Push <RETURN>
+@@ OFFSET:15967 LINES:20 CURSOR:20,0
+Test of leading zeros in ESC sequences.
+Two lines below you should see the sentence "This is a correct sentence".
+
+This is a correct sentence
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Push <RETURN>
+@@ HEADER_END
 # 20120103.154002 
 [?1l[?3l[?4l[?5l[?6l[?7h[?8l[?40h[?45l[r[0m[2J[3;10HVT100 test program, version 2.7 (20110705)[4;10HLine speed 38400bd [5;10HChoose test type:
 

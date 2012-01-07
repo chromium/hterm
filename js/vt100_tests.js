@@ -847,7 +847,6 @@ hterm.VT100.Tests.addTest('alternate-screen', function(result, cx) {
     result.pass();
   });
 
-
 hterm.VT100.Tests.addTest('fullscreen', function(result, cx) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';
