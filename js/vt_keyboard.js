@@ -11,9 +11,9 @@
  * This class mostly a copy of the keyboard handling code from Cory Maccarrone's
  * Terminal class.
  *
- * @param {hterm.VT100} The VT100 object associated with this keyboard object.
+ * @param {hterm.VT} The VT object associated with this keyboard object.
  */
-hterm.VT100.Keyboard = function(vt) {
+hterm.VT.Keyboard = function(vt) {
   // The parent vt interpreter.
   this.vt_ = vt;
 
@@ -39,7 +39,7 @@ hterm.VT100.Keyboard = function(vt) {
 /**
  * Mnemonic values for keycodes, copied from Closure.
  */
-hterm.VT100.Keyboard.keyCodes = {
+hterm.VT.Keyboard.keyCodes = {
   MAC_ENTER: 3,
   BACKSPACE: 8,
   TAB: 9,
@@ -158,7 +158,7 @@ hterm.VT100.Keyboard.keyCodes = {
  * @param {HTMLElement} element The element whose events should be captured, or
  *     null to disable the keyboard.
  */
-hterm.VT100.Keyboard.prototype.installKeyboard = function(element) {
+hterm.VT.Keyboard.prototype.installKeyboard = function(element) {
   if (element == this.keyboardElement_)
     return;
 
@@ -180,7 +180,7 @@ hterm.VT100.Keyboard.prototype.installKeyboard = function(element) {
 /**
  * Handle onKeyPress events.
  */
-hterm.VT100.Keyboard.prototype.onKeyPress_ = function(e) {
+hterm.VT.Keyboard.prototype.onKeyPress_ = function(e) {
   this.vt_.terminal.onVTKeystroke(String.fromCharCode(e.keyCode));
   e.stopPropagation();
   e.preventDefault();
@@ -189,17 +189,17 @@ hterm.VT100.Keyboard.prototype.onKeyPress_ = function(e) {
 /**
  * Handle onKeyUp events.
  */
-hterm.VT100.Keyboard.prototype.onKeyUp_ = function(e) {
+hterm.VT.Keyboard.prototype.onKeyUp_ = function(e) {
 };
 
 /**
  * Handle onKeyDown events.
  */
-hterm.VT100.Keyboard.prototype.onKeyDown_ = function(e) {
+hterm.VT.Keyboard.prototype.onKeyDown_ = function(e) {
   var esc = '\x1b';
   var sendString = '';
 
-  var keyCodes = hterm.VT100.Keyboard.keyCodes;
+  var keyCodes = hterm.VT.Keyboard.keyCodes;
 
   switch (e.keyCode) {
     case keyCodes.CTRL:

@@ -68,6 +68,9 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // If true, scroll to the bottom on any keystroke.
   this.scrollOnKeystroke = true;
 
+  // If true, scroll to the bottom on terminal output.
+  this.scrollOnOutput = false;
+
   // The current mode bits for the terminal.
   this.options_ = new hterm.Options();
 
@@ -75,7 +78,7 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   this.timeouts_ = {};
 
   // The VT escape sequence interpreter.
-  this.vt = new hterm.VT100(this);
+  this.vt = new hterm.VT(this);
 
   // General IO interface that can be given to third parties without exposing
   // the entire terminal object.
@@ -168,11 +171,12 @@ hterm.Terminal.prototype.scrollPageDown = function() {
   this.scrollPort_.scrollRowToTop(i + this.screenSize.height - 1);
 };
 
-/**
- * Methods called by Cory's vt100 interpreter which we haven't implemented yet.
- */
 hterm.Terminal.prototype.reset = function() {
   console.log('reset');
+};
+
+hterm.Terminal.prototype.softReset = function() {
+  console.log('softReset');
 };
 
 hterm.Terminal.prototype.clearColorAndAttributes = function() {
@@ -207,6 +211,14 @@ hterm.Terminal.prototype.setSpecialCharsEnabled = function() {
   //console.log('setSpecialCharactersEnabled');
 };
 
+hterm.Terminal.prototype.forwardTabStop = function(count) {
+  this.cursorRight(4);
+};
+
+hterm.Terminal.prototype.backwardTabStop = function(count) {
+  console.error('Not implemented: backwardTabStop');
+};
+
 hterm.Terminal.prototype.setTabStopAtCursor = function() {
   console.log('setTabStopAtCursor');
 };
@@ -231,7 +243,7 @@ hterm.Terminal.prototype.restoreOptions = function() {
  * @param {string} str Sequence of characters to interpret or pass through.
  */
 hterm.Terminal.prototype.interpret = function(str) {
-  this.vt.interpretString(str);
+  this.vt.interpret(str);
   this.scheduleSyncCursorPosition_();
 };
 
@@ -468,6 +480,9 @@ hterm.Terminal.prototype.print = function(str) {
   } while (this.options_.wraparound && str);
 
   this.scheduleSyncCursorPosition_();
+
+  if (this.scrollOnOutput)
+    this.scrollPort_.scrollRowToBottom(this.getRowCount());
 };
 
 /**
@@ -783,7 +798,7 @@ hterm.Terminal.prototype.deleteLines = function(count) {
 hterm.Terminal.prototype.insertSpace = function(count) {
   var cursor = this.saveCursor();
 
-  var ws = hterm.getWhitespace(count);
+  var ws = hterm.getWhitespace(count || 1);
   this.screen_.insertString(ws);
 
   this.restoreCursor(cursor);
@@ -956,7 +971,7 @@ hterm.Terminal.prototype.scheduleScrollDown_ = function() {
  * @param {integer} count The number of rows to move the cursor.
  */
 hterm.Terminal.prototype.cursorUp = function(count) {
-  return this.cursorDown(-count);
+  return this.cursorDown(-(count || 1));
 };
 
 /**
@@ -965,6 +980,7 @@ hterm.Terminal.prototype.cursorUp = function(count) {
  * @param {integer} count The number of rows to move the cursor.
  */
 hterm.Terminal.prototype.cursorDown = function(count) {
+  count = count || 1;
   var minHeight = (this.options_.originMode ? this.getVTScrollTop() : 0);
   var maxHeight = (this.options_.originMode ? this.getVTScrollBottom() :
                    this.screenSize.height - 1);
@@ -980,7 +996,7 @@ hterm.Terminal.prototype.cursorDown = function(count) {
  * @param {integer} count The number of columns to move the cursor.
  */
 hterm.Terminal.prototype.cursorLeft = function(count) {
-  return this.cursorRight(-count);
+  return this.cursorRight(-(count || 1));
 };
 
 /**
@@ -989,6 +1005,7 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
  * @param {integer} count The number of columns to move the cursor.
  */
 hterm.Terminal.prototype.cursorRight = function(count) {
+  count = count || 1;
   var column = hterm.clamp(this.screen_.cursorPosition.column + count,
                            0, this.screenSize.width - 1);
   this.setCursorColumn(column);

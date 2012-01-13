@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+
+
+/*******************************************************************************
+ * NOTE(rginda, 01/13/2012): This file is no longer in use.  It has been
+ * replaced by vt.js.
+ *
+ * It will be kept around for a little while longer for reference, but
+ * should be removed once vt.js has stabilized.
+ ******************************************************************************/
+
+
+
+
 /**
  * @fileoverview This file implements the VT100 interpreter, which
  * operates in conjunction with a hterm.Terminal to provide

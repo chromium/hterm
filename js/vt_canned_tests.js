@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview VT100 canned data test suite.
+ * @fileoverview VT canned data test suite.
  *
  * This suite plays back pre-recorded VT sessions.  The recorded data is
  * expected to define checkpoints where we should stop and compare the current
@@ -57,9 +57,9 @@
  * ignored.
  */
 
-hterm.VT100.CannedTests = new TestManager.Suite('hterm.VT100.CannedTests');
+hterm.VT.CannedTests = new TestManager.Suite('hterm.VT.CannedTests');
 
-hterm.VT100.CannedTests.prototype.setup = function(cx) {
+hterm.VT.CannedTests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 80,
         visibleRowCount: 25,
@@ -76,7 +76,7 @@ hterm.VT100.CannedTests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.VT100.CannedTests.prototype.preamble = function(result, cx) {
+hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
   var document = cx.window.document;
 
   document.body.innerHTML = '';
@@ -101,7 +101,7 @@ hterm.VT100.CannedTests.prototype.preamble = function(result, cx) {
  *
  * Called after each test case in this suite.
  */
-hterm.VT100.CannedTests.prototype.postamble = function(result, cx) {
+hterm.VT.CannedTests.prototype.postamble = function(result, cx) {
   this.terminal.setCursorBlink(false);
 };
 
@@ -114,7 +114,7 @@ hterm.VT100.CannedTests.prototype.postamble = function(result, cx) {
  * @param {string} fileName The path to the file containing the canned data
  *     to test.
  */
-hterm.VT100.CannedTests.addTest = function(fileName) {
+hterm.VT.CannedTests.addTest = function(fileName) {
   function testProxy(result, cx) {
     var self = this;
     setTimeout(function() {
@@ -142,7 +142,7 @@ hterm.VT100.CannedTests.addTest = function(fileName) {
  * @param {function} callback The function to call when the data has been
  *     loaded.
  */
-hterm.VT100.CannedTests.prototype.loadCannedData = function(
+hterm.VT.CannedTests.prototype.loadCannedData = function(
     result, fileName, callback) {
   var xhr = new XMLHttpRequest();
   window.xhr = xhr;
@@ -166,7 +166,7 @@ hterm.VT100.CannedTests.prototype.loadCannedData = function(
  *     test.
  * @param {string} data The canned data, including header.
  */
-hterm.VT100.CannedTests.prototype.testCannedData = function(result, data) {
+hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
   // Make sure we got some data.
   result.assert(!!data, 'canned data is not empty');
 
@@ -219,4 +219,4 @@ hterm.VT100.CannedTests.prototype.testCannedData = function(result, data) {
 /**
  * A pre-recorded session of vttest menu option 1, 'Test of cursor movements'.
  */
-hterm.VT100.CannedTests.addTest('../test_data/vttest-01.log');
+hterm.VT.CannedTests.addTest('../test_data/vttest-01.log');

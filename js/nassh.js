@@ -302,10 +302,7 @@ hterm.NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
   var stream = hterm.NaSSH.Stream.openStream(streamClass, fd, path, onOpen);
 
   stream.onClose = function(reason) {
-    // TODO(rginda): The plugin doesn't seem to like us to confirm closes
-    // of /dev/random.
-    if (this.path != '/dev/random')
-      self.sendToPlugin_('onClose', [fd, reason]);
+    self.sendToPlugin_('onClose', [fd, reason]);
   };
 };
 

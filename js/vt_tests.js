@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview VT100 test suite.
+ * @fileoverview VT test suite.
  *
- * This is more of an integration test suite for the VT100 and Terminal classes,
- * as each test typically sends strings into the VT100 parser and then reads
+ * This is more of an integration test suite for the VT and Terminal classes,
+ * as each test typically sends strings into the VT parser and then reads
  * the terminal to verify that everyone did the right thing.
  */
 
-hterm.VT100.Tests = new TestManager.Suite('hterm.VT100.Tests');
+hterm.VT.Tests = new TestManager.Suite('hterm.VT.Tests');
 
-hterm.VT100.Tests.prototype.setup = function(cx) {
+hterm.VT.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 15,
         visibleRowCount: 6,
@@ -29,7 +29,7 @@ hterm.VT100.Tests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.VT100.Tests.prototype.preamble = function(result, cx) {
+hterm.VT.Tests.prototype.preamble = function(result, cx) {
   var document = cx.window.document;
 
   document.body.innerHTML = '';
@@ -54,7 +54,7 @@ hterm.VT100.Tests.prototype.preamble = function(result, cx) {
  *
  * Called after each test case in this suite.
  */
-hterm.VT100.Tests.prototype.postamble = function(result, cx) {
+hterm.VT.Tests.prototype.postamble = function(result, cx) {
   this.terminal.setCursorBlink(false);
 };
 
@@ -66,7 +66,7 @@ hterm.VT100.Tests.prototype.postamble = function(result, cx) {
  * test case, we use this overridden addTest method to add a proxy around the
  * actual test.
  */
-hterm.VT100.Tests.addTest = function(name, callback) {
+hterm.VT.Tests.addTest = function(name, callback) {
   function testProxy(result, cx) {
     var self = this;
     setTimeout(function() {
@@ -85,7 +85,7 @@ hterm.VT100.Tests.addTest = function(name, callback) {
  * Basic sanity test to make sure that when we insert plain text it appears
  * on the screen and scrolls into the scrollback buffer correctly.
  */
-hterm.VT100.Tests.addTest('sanity', function(result, cx) {
+hterm.VT.Tests.addTest('sanity', function(result, cx) {
     this.terminal.interpret('0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
 
     var text = this.terminal.getRowsText(0, 13);
@@ -101,7 +101,7 @@ hterm.VT100.Tests.addTest('sanity', function(result, cx) {
  *
  * TODO(rginda): Test the VT52 variants too.
  */
-hterm.VT100.Tests.addTest('cursor-relative', function(result, cx) {
+hterm.VT.Tests.addTest('cursor-relative', function(result, cx) {
     this.terminal.interpret('line 1\nline 2\nline 3');
     this.terminal.interpret('\x1b[A\x1b[Dtwo' +
                             '\x1b[3D' +
@@ -117,7 +117,7 @@ hterm.VT100.Tests.addTest('cursor-relative', function(result, cx) {
 /**
  * Test absolute cursor positioning.
  */
-hterm.VT100.Tests.addTest('cursor-absolute', function(result, cx) {
+hterm.VT.Tests.addTest('cursor-absolute', function(result, cx) {
     this.terminal.interpret('line 1\nline 2\nline 3');
 
     this.terminal.interpret('\x1b[1Gline three' +
@@ -133,7 +133,7 @@ hterm.VT100.Tests.addTest('cursor-absolute', function(result, cx) {
 /**
  * Test line positioning.
  */
-hterm.VT100.Tests.addTest('line-position', function(result, cx) {
+hterm.VT.Tests.addTest('line-position', function(result, cx) {
     this.terminal.interpret('line 1\nline 2\nline 3');
 
     this.terminal.interpret('\x1b[Fline two' +
@@ -149,7 +149,7 @@ hterm.VT100.Tests.addTest('line-position', function(result, cx) {
  * Test that a partial sequence is buffered until the entire sequence is
  * received.
  */
-hterm.VT100.Tests.addTest('partial-sequence', function(result, cx) {
+hterm.VT.Tests.addTest('partial-sequence', function(result, cx) {
     this.terminal.interpret('line 1\nline 2\nline three');
 
     this.terminal.interpret('\x1b');
@@ -168,7 +168,7 @@ hterm.VT100.Tests.addTest('partial-sequence', function(result, cx) {
 /**
  * Test that two ESC characters in a row are handled properly.
  */
-hterm.VT100.Tests.addTest('double-sequence', function(result, cx) {
+hterm.VT.Tests.addTest('double-sequence', function(result, cx) {
     this.terminal.interpret('line one\nline two\nline 3');
 
     this.terminal.interpret('\x1b[\x1b[Dthree');
@@ -178,7 +178,7 @@ hterm.VT100.Tests.addTest('double-sequence', function(result, cx) {
     result.pass();
   });
 
-hterm.VT100.Tests.addTest('dec-screen-test', function(result, cx) {
+hterm.VT.Tests.addTest('dec-screen-test', function(result, cx) {
     this.terminal.interpret('\x1b#8');
 
     var text = this.terminal.getRowsText(0, 6);
@@ -193,7 +193,7 @@ hterm.VT100.Tests.addTest('dec-screen-test', function(result, cx) {
 
   });
 
-hterm.VT100.Tests.addTest('newlines-1', function(result, cx) {
+hterm.VT.Tests.addTest('newlines-1', function(result, cx) {
     // Should be off by default.
     result.assertEQ(this.terminal.options_.autoCarriageReturn, false);
 
@@ -209,7 +209,7 @@ hterm.VT100.Tests.addTest('newlines-1', function(result, cx) {
     result.pass();
   });
 
-hterm.VT100.Tests.addTest('newlines-2', function(result, cx) {
+hterm.VT.Tests.addTest('newlines-2', function(result, cx) {
     this.terminal.interpret('\x1b[20h');
     result.assertEQ(this.terminal.options_.autoCarriageReturn, true);
 
@@ -227,7 +227,7 @@ hterm.VT100.Tests.addTest('newlines-2', function(result, cx) {
 /**
  * Test the erase left command.
  */
-hterm.VT100.Tests.addTest('erase-left', function(result, cx) {
+hterm.VT.Tests.addTest('erase-left', function(result, cx) {
     this.terminal.interpret('line one\noooooooo\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[1Ktw');
@@ -243,7 +243,7 @@ hterm.VT100.Tests.addTest('erase-left', function(result, cx) {
 /**
  * Test the erase right command.
  */
-hterm.VT100.Tests.addTest('erase-right', function(result, cx) {
+hterm.VT.Tests.addTest('erase-right', function(result, cx) {
     this.terminal.interpret('line one\nline XXXX\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0Ktwo');
@@ -259,7 +259,7 @@ hterm.VT100.Tests.addTest('erase-right', function(result, cx) {
 /**
  * Test the erase line command.
  */
-hterm.VT100.Tests.addTest('erase-line', function(result, cx) {
+hterm.VT.Tests.addTest('erase-line', function(result, cx) {
     this.terminal.interpret('line one\nline twoo\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[2Ktwo');
@@ -275,7 +275,7 @@ hterm.VT100.Tests.addTest('erase-line', function(result, cx) {
 /**
  * Test the erase above command.
  */
-hterm.VT100.Tests.addTest('erase-above', function(result, cx) {
+hterm.VT.Tests.addTest('erase-above', function(result, cx) {
     this.terminal.interpret('line one\noooooooo\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[1Jtw');
@@ -291,7 +291,7 @@ hterm.VT100.Tests.addTest('erase-above', function(result, cx) {
 /**
  * Test the erase all command.
  */
-hterm.VT100.Tests.addTest('erase-all', function(result, cx) {
+hterm.VT.Tests.addTest('erase-all', function(result, cx) {
     this.terminal.interpret('line one\nline XXXX\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[2Jtwo');
@@ -307,7 +307,7 @@ hterm.VT100.Tests.addTest('erase-all', function(result, cx) {
 /**
  * Test the erase below command.
  */
-hterm.VT100.Tests.addTest('erase-below', function(result, cx) {
+hterm.VT.Tests.addTest('erase-below', function(result, cx) {
     this.terminal.interpret('line one\nline XXXX\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0Jtwo');
@@ -323,7 +323,7 @@ hterm.VT100.Tests.addTest('erase-below', function(result, cx) {
 /**
  * Test the erase character command.
  */
-hterm.VT100.Tests.addTest('erase-char', function(result, cx) {
+hterm.VT.Tests.addTest('erase-char', function(result, cx) {
     this.terminal.interpret('line one\nline XXXX\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[4Xtwo');
@@ -339,7 +339,7 @@ hterm.VT100.Tests.addTest('erase-char', function(result, cx) {
 /**
  * Test the insert line command.
  */
-hterm.VT100.Tests.addTest('insert-line', function(result, cx) {
+hterm.VT.Tests.addTest('insert-line', function(result, cx) {
     this.terminal.interpret('line two\nline three');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[L' +
                             'line one');
@@ -355,7 +355,7 @@ hterm.VT100.Tests.addTest('insert-line', function(result, cx) {
 /**
  * Test the insert line command with an argument.
  */
-hterm.VT100.Tests.addTest('insert-lines', function(result, cx) {
+hterm.VT.Tests.addTest('insert-lines', function(result, cx) {
     this.terminal.interpret('line three\n\n');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2L' +
                             'line one\nline two');
@@ -371,7 +371,7 @@ hterm.VT100.Tests.addTest('insert-lines', function(result, cx) {
 /**
  * Test that the insert line command handles overflow properly.
  */
-hterm.VT100.Tests.addTest('insert-toomany-lines', function(result, cx) {
+hterm.VT.Tests.addTest('insert-toomany-lines', function(result, cx) {
     this.terminal.interpret('XXXXX');
     this.terminal.interpret('\x1b[6L' +
                             'line one\nline two\nline three');
@@ -389,7 +389,7 @@ hterm.VT100.Tests.addTest('insert-toomany-lines', function(result, cx) {
 /**
  * Test the delete line command.
  */
-hterm.VT100.Tests.addTest('delete-line', function(result, cx) {
+hterm.VT.Tests.addTest('delete-line', function(result, cx) {
     this.terminal.interpret('line one\nline two\n' +
                             'XXXXXXXX\n' +
                             'line XXXXX');
@@ -406,7 +406,7 @@ hterm.VT100.Tests.addTest('delete-line', function(result, cx) {
 /**
  * Test the delete line command with an argument.
  */
-hterm.VT100.Tests.addTest('delete-lines', function(result, cx) {
+hterm.VT.Tests.addTest('delete-lines', function(result, cx) {
     this.terminal.interpret('line one\nline two\n' +
                             'XXXXXXXX\nXXXXXXXX\n' +
                             'line XXXXX');
@@ -423,7 +423,7 @@ hterm.VT100.Tests.addTest('delete-lines', function(result, cx) {
 /**
  * Test the insert space command.
  */
-hterm.VT100.Tests.addTest('insert-space', function(result, cx) {
+hterm.VT.Tests.addTest('insert-space', function(result, cx) {
     this.terminal.interpret('line one\nlinetwo\nline three');
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[@');
 
@@ -438,7 +438,7 @@ hterm.VT100.Tests.addTest('insert-space', function(result, cx) {
 /**
  * Test the insert space command with an argument.
  */
-hterm.VT100.Tests.addTest('insert-spaces', function(result, cx) {
+hterm.VT.Tests.addTest('insert-spaces', function(result, cx) {
     this.terminal.interpret('line one\nlinetwo\nline three');
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[3@');
 
@@ -453,7 +453,7 @@ hterm.VT100.Tests.addTest('insert-spaces', function(result, cx) {
 /**
  * Test the delete characters command.
  */
-hterm.VT100.Tests.addTest('delete-chars', function(result, cx) {
+hterm.VT.Tests.addTest('delete-chars', function(result, cx) {
     this.terminal.interpret('line one\nline XXXX\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[4Ptwo');
 
@@ -468,7 +468,7 @@ hterm.VT100.Tests.addTest('delete-chars', function(result, cx) {
 /**
  * Test that the delete characters command handles overflow properly.
  */
-hterm.VT100.Tests.addTest('delete-toomany', function(result, cx) {
+hterm.VT.Tests.addTest('delete-toomany', function(result, cx) {
     this.terminal.interpret('line one\nline XXXX\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[20Ptwo');
 
@@ -483,7 +483,7 @@ hterm.VT100.Tests.addTest('delete-toomany', function(result, cx) {
 /**
  * Test the scroll up command.
  */
-hterm.VT100.Tests.addTest('scroll-up', function(result, cx) {
+hterm.VT.Tests.addTest('scroll-up', function(result, cx) {
     this.terminal.interpret('\n\nline one\nline two\nline XXXXX');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2Sthree');
 
@@ -498,7 +498,7 @@ hterm.VT100.Tests.addTest('scroll-up', function(result, cx) {
 /**
  * Test the scroll down command.
  */
-hterm.VT100.Tests.addTest('scroll-down', function(result, cx) {
+hterm.VT.Tests.addTest('scroll-down', function(result, cx) {
     this.terminal.interpret('line one\nline two\nline XXXXX\n');
     this.terminal.interpret('     \x1b[Tthree');
 
@@ -515,7 +515,7 @@ hterm.VT100.Tests.addTest('scroll-down', function(result, cx) {
 /**
  * Test the absolute line positioning command.
  */
-hterm.VT100.Tests.addTest('line-position-absolute', function(result, cx) {
+hterm.VT.Tests.addTest('line-position-absolute', function(result, cx) {
     this.terminal.interpret('line XXX\nline YYY\nline ZZZZZ\n');
     this.terminal.interpret('     \x1b[3dthree\x1b[5D');
     this.terminal.interpret('\x1b[2dtwo\x1b[3D');
@@ -532,7 +532,7 @@ hterm.VT100.Tests.addTest('line-position-absolute', function(result, cx) {
 /**
  * Test the device attributes command.
  */
-hterm.VT100.Tests.addTest('device-attributes', function(result, cx) {
+hterm.VT.Tests.addTest('device-attributes', function(result, cx) {
     var resultString;
     this.terminal.io.sendString = function(str) { resultString = str };
 
@@ -545,28 +545,28 @@ hterm.VT100.Tests.addTest('device-attributes', function(result, cx) {
 /**
  * TODO(rginda): Test the clear tabstops on this line command.
  */
-hterm.VT100.Tests.disableTest('clear-line-tabstops', function(result, cx) {
+hterm.VT.Tests.disableTest('clear-line-tabstops', function(result, cx) {
     '[0g';
   });
 
 /**
  * TODO(rginda): Test the clear all tabstops command.
  */
-hterm.VT100.Tests.disableTest('clear-all-tabstops', function(result, cx) {
+hterm.VT.Tests.disableTest('clear-all-tabstops', function(result, cx) {
     '[3g';
   });
 
 /**
  * TODO(rginda): Test text attributes.
  */
-hterm.VT100.Tests.disableTest('color-change', function(result, cx) {
+hterm.VT.Tests.disableTest('color-change', function(result, cx) {
     '[Xm';
   });
 
 /**
  * Test the status report command.
  */
-hterm.VT100.Tests.addTest('status-report', function(result, cx) {
+hterm.VT.Tests.addTest('status-report', function(result, cx) {
     var resultString;
     terminal.io.sendString = function (str) { resultString = str };
 
@@ -594,7 +594,7 @@ hterm.VT100.Tests.addTest('status-report', function(result, cx) {
  *
  * Most of these should have more in-depth testing below.
  */
-hterm.VT100.Tests.addTest('mode-bits', function(result, cx) {
+hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1h');
     result.assertEQ(this.terminal.vt.applicationCursor, true);
 
@@ -696,13 +696,13 @@ hterm.VT100.Tests.addTest('mode-bits', function(result, cx) {
 /**
  * TODO(rginda): Test origin mode.
  */
-hterm.VT100.Tests.disableTest('origin-mode', function(result, cx) {
+hterm.VT.Tests.disableTest('origin-mode', function(result, cx) {
   });
 
 /**
  * Test insert/overwrite mode.
  */
-hterm.VT100.Tests.addTest('insert-mode', function(result, cx) {
+hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
     // Should be off by default.
     result.assertEQ(this.terminal.options_.insertMode, false);
 
@@ -727,7 +727,7 @@ hterm.VT100.Tests.addTest('insert-mode', function(result, cx) {
 /**
  * Test wraparound mode.
  */
-hterm.VT100.Tests.addTest('wraparound-mode-on', function(result, cx) {
+hterm.VT.Tests.addTest('wraparound-mode-on', function(result, cx) {
     // Should be on by default.
     result.assertEQ(this.terminal.options_.wraparound, true);
 
@@ -753,7 +753,7 @@ hterm.VT100.Tests.addTest('wraparound-mode-on', function(result, cx) {
     result.pass();
   });
 
-hterm.VT100.Tests.addTest('wraparound-mode-off', function(result, cx) {
+hterm.VT.Tests.addTest('wraparound-mode-off', function(result, cx) {
     this.terminal.interpret('\x1b[?7l');
     result.assertEQ(this.terminal.options_.wraparound, false);
 
@@ -782,7 +782,7 @@ hterm.VT100.Tests.addTest('wraparound-mode-off', function(result, cx) {
 /**
  * Test the interactions between insert and wraparound modes.
  */
-hterm.VT100.Tests.addTest('insert-wrap', function(result, cx) {
+hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
     // Should be on by default.
     result.assertEQ(this.terminal.options_.wraparound, true);
 
@@ -811,7 +811,7 @@ hterm.VT100.Tests.addTest('insert-wrap', function(result, cx) {
     result.pass();
   });
 
-hterm.VT100.Tests.addTest('alternate-screen', function(result, cx) {
+hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     this.terminal.interpret('1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
     this.terminal.interpret('\x1b[3;3f');  // Leave the cursor at (3,3)
     var text = this.terminal.getRowsText(0, 10);
@@ -847,7 +847,7 @@ hterm.VT100.Tests.addTest('alternate-screen', function(result, cx) {
     result.pass();
   });
 
-hterm.VT100.Tests.addTest('fullscreen', function(result, cx) {
+hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';
 
