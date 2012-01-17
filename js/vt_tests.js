@@ -824,7 +824,7 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
 
     this.terminal.interpret('\nhi');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\nhi\n\n\n\n');
+    result.assertEQ(text, '1\n2\n3\n4\n\n\n\nhi\n\n');
 
     // Switch back to primary screen.
     this.terminal.interpret('\x1b[?1049l');
@@ -833,16 +833,16 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
 
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7 XX\n8\n9\n10');
+    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7\n8 XX\n9\n10');
 
     // Aand back to alternate screen.
     this.terminal.interpret('\x1b[?1049h');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\nhi\n\n\n\n');
+    result.assertEQ(text, '1\n2\n3\n4\n\n\n\n\n\n');
 
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\nhiXX\n\n\n\n');
+    result.assertEQ(text, '1\n2\n3\n4\n\n\n\n    XX\n\n');
 
     result.pass();
   });

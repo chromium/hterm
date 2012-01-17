@@ -327,19 +327,30 @@ hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
 };
 
 /**
- * Inform the ScrollPort that the some or all of the visible rows have
- * become invalid.
+ * Inform the ScrollPort that the root DOM nodes for some or all of the visible
+ * rows are no longer valid.
  *
- * This can be used when you've shuffled around some visible rows and want
- * that to be reflected in the current display.
+ * Specifically, this should be called if this.rowProvider_.getRowNode() now
+ * returns an entirely different node than it did before.  It does not
+ * need to be called if the content of a row node is the only thing that
+ * changed.
  *
  * This skips some of the overhead of a full redraw, but should not be used
  * in cases where the scrollport has been scrolled, or when the row count has
  * changed.
  */
 hterm.ScrollPort.prototype.invalidate = function() {
+  var node = this.topFold_.nextSibling;
+  while (node != this.bottomFold_) {
+    var nextSibling = node.nextSibling;
+    node.parentElement.removeChild(node);
+    node = nextSibling;
+  }
+
+  this.previousRowNodeCache_ = null;
   var topRowIndex = this.getTopRowIndex();
   var bottomRowIndex = this.getBottomRowIndex(topRowIndex);
+
   this.drawVisibleRows_(topRowIndex, bottomRowIndex);
 };
 
@@ -853,7 +864,6 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
     return;
 
   this.screen_.scrollTop = scrollTop;
-  this.scheduleRedraw();
 };
 
 /**

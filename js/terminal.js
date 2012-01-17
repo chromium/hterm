@@ -71,6 +71,9 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // If true, scroll to the bottom on terminal output.
   this.scrollOnOutput = false;
 
+  // Cursor position and attributes saved with DECSC.
+  this.savedOptions_ = {};
+
   // The current mode bits for the terminal.
   this.options_ = new hterm.Options();
 
@@ -227,12 +230,23 @@ hterm.Terminal.prototype.clearTabStops = function() {
   console.log('clearTabStops');
 };
 
+/**
+ * Save cursor position and attributes.
+ *
+ * TODO(rginda): Save attributes once we support them.
+ */
 hterm.Terminal.prototype.saveOptions = function() {
-  console.log('saveOptions');
+  this.savedOptions_.cursor = this.saveCursor();
 };
 
+/**
+ * Restore cursor position and attributes.
+ *
+ * TODO(rginda): Restore attributes once we support them.
+ */
 hterm.Terminal.prototype.restoreOptions = function() {
-  console.log('restoreOptions');
+  if (this.savedOptions_.cursor)
+    this.restoreCursor(this.savedOptions_.cursor);
 };
 
 /**
@@ -269,7 +283,7 @@ hterm.Terminal.prototype.decorate = function(div) {
        'display: block;' +
        'width: ' + this.characterSize_.width + 'px;' +
        'height: ' + this.characterSize_.height + 'px;' +
-       '-webkit-transition: opacity 100ms ease-in;' +
+       '-webkit-transition: opacity, background-color 100ms linear;' +
        'background-color: ' + this.cursorColor);
   this.document_.body.appendChild(this.cursorNode_);
 
@@ -287,6 +301,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.confirmDialog = new ConfirmDialog(this.document_.body);
 
   this.scrollPort_.focus();
+  this.scrollPort_.scheduleRedraw();
 };
 
 hterm.Terminal.prototype.getDocument = function() {
@@ -1038,16 +1053,13 @@ hterm.Terminal.prototype.setReverseVideo = function(state) {
  * terminal.
  */
 hterm.Terminal.prototype.ringBell = function() {
-  // We can't toggle using only setReverseVideo, since there's a chance we'll
-  // get a request to toggle reverse video before our visual bell is over.
-  var fg = this.scrollPort_.getForegroundColor();
-  this.scrollPort_.setForegroundColor(this.scrollPort_.getBackgroundColor());
-  this.scrollPort_.setBackgroundColor(fg);
+  this.cursorNode_.style.backgroundColor =
+      this.scrollPort_.getForegroundColor();
 
   var self = this;
   setTimeout(function() {
-      self.setReverseVideo(self.options_.reverseVideo);
-    }, 100);
+      self.cursorNode_.style.backgroundColor = self.cursorColor;
+    }, 200);
 };
 
 /**
@@ -1136,6 +1148,7 @@ hterm.Terminal.prototype.setReverseWraparound = function(state) {
  * @param {boolean} state True to set alternate mode, false to unset.
  */
 hterm.Terminal.prototype.setAlternateMode = function(state) {
+  var cursor = this.saveCursor();
   this.screen_ = state ? this.alternateScreen_ : this.primaryScreen_;
 
   this.screen_.setColumnCount(this.screenSize.width);
@@ -1143,6 +1156,8 @@ hterm.Terminal.prototype.setAlternateMode = function(state) {
   var rowDelta = this.screenSize.height - this.screen_.getHeight();
   if (rowDelta > 0)
     this.appendRows_(rowDelta);
+
+  this.restoreCursor(cursor);
 
   this.scrollPort_.invalidate();
   this.syncCursorPosition_();

@@ -364,7 +364,8 @@ hterm.NaSSH.prototype.onPlugin_.read = function(fd, size) {
   var stream = hterm.NaSSH.Stream.getStreamByFd(fd);
 
   if (!stream) {
-    console.warn('Attempt to read from unknown fd: ' + fd);
+    if (fd)
+      console.warn('Attempt to read from unknown fd: ' + fd);
     return;
   }
 

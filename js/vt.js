@@ -40,7 +40,7 @@ hterm.VT = function(terminal) {
 
   // The current parser function.  Escapes that mark the start of a longer
   // sequence will alter the parser function to handle the remainder of the
-  // escape sequence.  One the sequence has been fully parsed this parser
+  // escape sequence.  Once the sequence has been fully parsed this parser
   // function should be set back to this.parseUnknown_.
   this.parser_ = this.parseUnknown_;
 
@@ -76,7 +76,7 @@ hterm.VT = function(terminal) {
    * If true, emit warnings when we encounter a control character or escape
    * sequence that we don't recognize or explicitly ignore.
    */
-  this.warnUnimplemented = false;
+  this.warnUnimplemented = true;
 
   /**
    * Enable/disable application keypad.
@@ -342,8 +342,6 @@ hterm.VT.prototype.setANSIMode = function(code, state) {
  *          it first. (This may be disabled by the titeInhibit resource). This
  *          combines the effects of the 1047 and 1048 modes. Use this with
  *          terminfo-based applications rather than the 47 mode.
- *          TODO(rginda): Refactor terminal.setAlternateMode to make it possible
- *          to support 1047 too.
  *   1050 - [!] Set terminfo/termcap function-key mode.
  *   1051 - [x] Set Sun function-key mode.
  *   1052 - [x] Set HP function-key mode.
@@ -418,11 +416,18 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.altSendsEscape = state;
       break;
 
+    case '1047':  // no-spec
+      this.terminal.setAlternateMode(state);
+      break;
+
     case '1048':  // Save cursor as in DECSC.
       this.terminal.saveOptions();
 
-    case '1049':  // 1039 + 1048.
+    case '1049':  // 1047 + 1048 + clear.
+      this.terminal.saveOptions();
       this.terminal.setAlternateMode(state);
+      if (state)
+        this.terminal.clear();
       break;
 
     default:
@@ -957,7 +962,7 @@ hterm.VT.ESC['='] = function() {
 /**
  * Normal keypad (DECPNM).
  */
-hterm.VT.ESC['='] = function() {
+hterm.VT.ESC['>'] = function() {
   this.applicationKeypad = false;
 };
 
@@ -1225,7 +1230,7 @@ hterm.VT.CSI['c'] = function(args) {
  * implemented' parts.
  */
 hterm.VT.CSI['>c'] = function(args) {
-  this.terminal.sendString('\x1b[>0;95;0');
+  this.terminal.io.sendString('\x1b[>0;256;0c');
 };
 
 /**
@@ -1298,7 +1303,7 @@ hterm.VT.CSI['?l'] = function(args) {
  *
  * Not currently implemented.
  */
-hterm.VT.CSI['m'] = hterm.VT.ignore;
+hterm.VT.CSI['m'] = function () {};
 
 /**
  * Set xterm-specific keyboard modes.

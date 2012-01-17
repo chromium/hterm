@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ hterm.Options = function(opt_copy) {
   this.autoCarriageReturn = opt_copy ? opt_copy.autoCarriageReturn : false;
   this.specialChars = opt_copy ? opt_copy.specialChars : false;
   this.cursorVisible = opt_copy ? opt_copy.cursorVisible : false;
-  this.cursorBlink = opt_copy ? opt_copy.cursorBlink : true;
+  this.cursorBlink = opt_copy ? opt_copy.cursorBlink : false;
   this.insertMode = opt_copy ? opt_copy.insertMode : false;
   this.reverseVideo = opt_copy ? opt_copy.reverseVideo : false;
 };

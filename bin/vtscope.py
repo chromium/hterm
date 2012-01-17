@@ -12,6 +12,7 @@ import readline
 import select
 import socket
 import sys
+import time
 
 HISTFILE = os.path.expanduser('~/.vtscope_history')
 LISTEN_HOST = '127.0.0.1'
@@ -101,6 +102,9 @@ class VTScope(object):
   # The canned data.
   data = ''
 
+  # The amount of sleep time between each character, in ms.
+  delay_ms = 0
+
   # The list of header-defined OFFSETs where we might want to stop and view
   # the current state.
   stops = []
@@ -111,12 +115,20 @@ class VTScope(object):
   end_position = 0
 
   # Patterns for escape sequences we expect to see in the data.
-  re_escapes = {
-      'vt100': re.compile(r'\[\??([0-9\b\s]*(;[0-9\b\s]+)*)?[\x3A-\x7E]'),
-      'vt52': re.compile(r'(Y[\x20-0x7e]|[\x30-\x5A])'),
-      'dec': re.compile(r'#\d'),
-      'graphic': re.compile(r'\([012AB]'),
-  }
+  re_escapes = [
+      # Control Sequence Introducers.
+      ['CSI', re.compile(r'\[.*?[@-~]')],
+      # Operating System Commands.
+      ['OSC', re.compile(r'\].*?(\x1b\\|\x07)')],
+      # Privacy Messages.
+      ['PM', re.compile(r'^.*?(\x1b\\|\x07)')],
+      # Device Control Strings.
+      ['DCS', re.compile(r'P.*?(\x1b\\|\x07)')],
+      # Application Program Control.
+      ['APC', re.compile(r'_.*?(\x1b\\|\x07)')],
+      # Other escape sequences.
+      ['ESC', re.compile(r'..')],
+  ]
 
   def run(self):
     """Start the VTScope REPL."""
@@ -173,9 +185,11 @@ class VTScope(object):
     if self.start_position >= len(self.data):
       return ''
 
+    esc_name = '???'
+
     if self.data[self.start_position] == '\x1b':
       m = None
-      for pattern in self.re_escapes.values():
+      for (esc_name, pattern) in self.re_escapes:
         m = pattern.match(self.data, self.start_position + 1)
         if m:
           break
@@ -187,7 +201,7 @@ class VTScope(object):
         print 'Unable to find end of escape sequence.'
 
       sequence = self.data[self.start_position + 1 : self.end_position]
-      return json.dumps('ESC ' + ' '.join(sequence))[1:-1]
+      return json.dumps(esc_name + ' ' + ' '.join(sequence))[1:-1]
 
     else:
       self.end_position = self.data.find('\x1b', self.start_position)
@@ -214,8 +228,15 @@ class VTScope(object):
   def broadcast_chunk(self):
     """Broadcast the current chunk of data to the connected clients."""
 
-    for fd in self.clients:
-      fd.send(self.data[self.start_position : self.end_position])
+    if not self.delay_ms:
+      for fd in self.clients:
+        fd.send(self.data[self.start_position : self.end_position])
+
+    else:
+      for ch in self.data[self.start_position : self.end_position]:
+        for fd in self.clients:
+          fd.send(ch)
+          time.sleep(self.delay_ms / 1000.0)
 
   def dispatch_command(self, command_line):
     """Dispatch a command line to an appropriate cmd_* method."""
@@ -285,6 +306,14 @@ class VTScope(object):
       self.end_position = len(self.data)
 
     self.cmd_step([])
+
+  def cmd_delay(self, args):
+    """Set a delay between each character, in milliseconds."""
+
+    if len(args):
+      self.delay_ms = int(args[0])
+
+    print 'Delay is now: %s' % self.delay_ms
 
   def cmd_exit(self, args):
     """Exit vtscope.
