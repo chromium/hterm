@@ -38,8 +38,7 @@ class VTScope(object):
   over a TCP socket to port 8383.  VT Scope only listens on the local
   127.0.0.1 interface.
 
-  Canned VT sessions can be created with the 'script.py' command that comes
-  with the pexpect Python package.
+  Canned VT sessions can be created by enabling loggin in xterm.
 
   Sample usage looks like this:
 
@@ -126,8 +125,14 @@ class VTScope(object):
       ['DCS', re.compile(r'P.*?(\x1b\\|\x07)')],
       # Application Program Control.
       ['APC', re.compile(r'_.*?(\x1b\\|\x07)')],
+      # DEC private sequences.
+      ['DEC', re.compile(r'#[^\x1b]')],
+      # Character set control.
+      ['CHR', re.compile(r'%[^\x1b]')],
+      # Graphic character sets.
+      ['GRA', re.compile(r'[()*+-./][^\x1b]')],
       # Other escape sequences.
-      ['ESC', re.compile(r'..')],
+      ['ESC', re.compile(r'[^\x1b]')],
   ]
 
   def run(self):
@@ -185,8 +190,6 @@ class VTScope(object):
     if self.start_position >= len(self.data):
       return ''
 
-    esc_name = '???'
-
     if self.data[self.start_position] == '\x1b':
       m = None
       for (esc_name, pattern) in self.re_escapes:
@@ -198,6 +201,7 @@ class VTScope(object):
         self.end_position = m.end()
       else:
         self.end_position = self.start_position + MAX_TEXT
+        esc_name = '???'
         print 'Unable to find end of escape sequence.'
 
       sequence = self.data[self.start_position + 1 : self.end_position]
@@ -225,18 +229,29 @@ class VTScope(object):
     else:
       print 'End of data.'
 
+  def send(self, str):
+    """Broadcast a string to all clients, removing any that appear to
+    have disconnected."""
+
+    for i in xrange(len(self.clients), 0, -1):
+      fd = self.clients[i - 1]
+      try:
+        fd.send(self.data[self.start_position : self.end_position])
+      except IOError:
+        print 'Client #%s disconnected.' % i
+        del self.clients[i - 1]
+
   def broadcast_chunk(self):
     """Broadcast the current chunk of data to the connected clients."""
 
     if not self.delay_ms:
-      for fd in self.clients:
-        fd.send(self.data[self.start_position : self.end_position])
+      self.send(self.data[self.start_position : self.end_position])
 
     else:
+      # If we have a delay, send a character at a time.
       for ch in self.data[self.start_position : self.end_position]:
-        for fd in self.clients:
-          fd.send(ch)
-          time.sleep(self.delay_ms / 1000.0)
+        self.send(ch)
+        time.sleep(self.delay_ms / 1000.0)
 
   def dispatch_command(self, command_line):
     """Dispatch a command line to an appropriate cmd_* method."""
@@ -268,22 +283,32 @@ class VTScope(object):
   def cmd_accept(self, args):
     """Wait for one or more clients to connect.
 
-    Usage: accept [<client-count>]
+    Usage: accept <client-count>
+
+    If <client-count> starts with a '+' as in 'accept +1', then this will
+    allow additional clients to connect.  Otherwise all existing connections
+    are reset before accepting.
 
     Clients can connect using the the 'nc' (aka netcat) command, with...
 
         $ nc 127.0.0.1 8383
     """
 
-    count = int(args[0])
+    if not len(args):
+      print 'Missing argument.'
+      return
+
+    if args[0][0] == '+':
+      count = len(self.clients) + int(args[0][1:])
+    else:
+      count = int(args[0])
+      self.clients = []
 
     print 'Listening on %s:%s' % (LISTEN_HOST, LISTEN_PORT)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((LISTEN_HOST, LISTEN_PORT))
     sock.listen(1)
-
-    self.clients = []
 
     while len(self.clients) < count:
       print 'Waiting for client %s/%s...' % (len(self.clients) + 1, count)
@@ -392,6 +417,10 @@ class VTScope(object):
 
     if len(args) < 1:
       print 'Missing argument'
+      return
+
+    if not self.data:
+      print 'No data.'
       return
 
     if args[0][0] == '%':

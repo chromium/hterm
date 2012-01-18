@@ -268,6 +268,8 @@ hterm.VT.prototype.dispatch = function(type, code, args) {
 /**
  * Set one of the ANSI defined terminal mode bits.
  *
+ * Invoked in response to SM/RM.
+ *
  * Expected values for code:
  *   2 - Keyboard Action Mode (AM).  Will not implement.
  *   4 - Insert Mode (IRM).
@@ -360,12 +362,13 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '3':  // DECCOLM
-      if (this.allowColumnWidthChanges_)
+      if (this.allowColumnWidthChanges_) {
         this.terminal.setWidth(state ? 132 : 80);
 
-      this.terminal.clear();
-      this.terminal.setVTScrollRegion(null, null);
-      this.terminal.setAbsoluteCursorPosition(0, 0);
+        this.terminal.clear();
+        this.terminal.setVTScrollRegion(null, null);
+        this.terminal.setAbsoluteCursorPosition(0, 0);
+      }
       break;
 
     case '5':  // DECSCNM
@@ -658,7 +661,7 @@ hterm.VT.ESC['E'] = function() {
  */
 hterm.VT.CC1['\x88'] =
 hterm.VT.ESC['H'] = function() {
-  this.terminal.setTabStopAtCursor(true);
+  this.terminal.setTabStop(this.terminal.getCursorColumn());
 };
 
 /**
@@ -1074,15 +1077,22 @@ hterm.VT.CSI['G'] = function(args) {
 };
 
 /**
- * Absolute cursor positioning.
- *
- *   ESC [ Pn ; Pn H - Cursor Position (CUP).
- *   ESC [ Pn ; Pn f - Horizontal and Vertical Position (HVP).
+ * Cursor Position (CUP).
  */
-hterm.VT.CSI['H'] =
-hterm.VT.CSI['f'] = function(args) {
+hterm.VT.CSI['H'] = function(args) {
   this.terminal.setCursorPosition(args[0] ? parseInt(args[0], 10) - 1 : 0,
                                   args[1] ? parseInt(args[1], 10) - 1 : 0);
+};
+
+/**
+ * Cursor Forward Tabulation (CHT).
+ */
+hterm.VT.CSI['I'] = function(args) {
+  var count = args[0] ? parseInt(args[0], 10) : 1;
+  count = hterm.clamp(count, 1, this.terminal.screenSize.width);
+  for (var i = 0; i < count; i++) {
+    this.terminal.forwardTabStop();
+  }
 };
 
 /**
@@ -1192,7 +1202,11 @@ hterm.VT.CSI['X'] = function(args) {
  * Cursor Backward Tabulation (CBT).
  */
 hterm.VT.CSI['Z'] = function(args) {
-  this.terminal.backwardTabStop(args[0] || 1);
+  var count = args[0] ? parseInt(args[0], 10) : 1;
+  count = hterm.clamp(count, 1, this.terminal.screenSize.width);
+  for (var i = 0; i < count; i++) {
+    this.terminal.backwardTabStop();
+  }
 };
 
 /**
@@ -1241,15 +1255,22 @@ hterm.VT.CSI['d'] = function(args) {
 };
 
 /**
+ * Horizontal and Vertical Position (HVP).
+ *
+ * Same as Cursor Position (CUP).
+ */
+hterm.VT.CSI['f'] = hterm.VT.CSI['H'];
+
+/**
  * Tab Clear (TBC).
  */
 hterm.VT.CSI['g'] = function(args) {
   if (!args[0] || args[0] == '0') {
     // Clear tab stop at cursor.
-    this.terminal.setTabStopAtCursor(false);
+    this.terminal.clearTabStopAtCursor(false);
   } else if (args[0] == '3') {
-    // Clear all tab stops in the page
-    this.terminal.clearTabStops();
+    // Clear all tab stops.
+    this.terminal.clearAllTabStops();
   }
 };
 

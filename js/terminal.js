@@ -44,11 +44,16 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // The div that contains this terminal.
   this.div_ = null;
 
-  // The document that contains the scrollPort.  Set in decorate().
-  this.document_ = null;
+  // The document that contains the scrollPort.  Defaulted to the global
+  // document here so that the terminal is functional even if it hasn't been
+  // inserted into a document yet, but re-set in decorate().
+  this.document_ = window.document;
 
   // The rows that have scrolled off screen and are no longer addressable.
   this.scrollbackRows_ = [];
+
+  // Saved tab stops.
+  this.tabStops_ = [];
 
   // The VT's notion of the top and bottom rows.  Used during some VT
   // cursor positioning and scrolling commands.
@@ -61,6 +66,9 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // The default colors for text with no other color attributes.
   this.backgroundColor = 'black';
   this.foregroundColor = 'white';
+
+  // Default tab with of 8 to match xterm.
+  this.tabWidth = 8;
 
   // The color of the cursor.
   this.cursorColor = 'rgba(255,0,0,0.5)';
@@ -86,6 +94,10 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // General IO interface that can be given to third parties without exposing
   // the entire terminal object.
   this.io = new hterm.Terminal.IO(this);
+
+  this.realizeWidth_(80);
+  this.realizeHeight_(24);
+  this.setDefaultTabStops();
 };
 
 /**
@@ -134,12 +146,98 @@ hterm.Terminal.prototype.restoreCursor = function(cursor) {
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
   this.div_.style.width = this.characterSize_.width * columnCount + 16 + 'px'
+  this.realizeWidth_(columnCount);
+  this.scheduleSyncCursorPosition_();
+};
 
-  // The resizing of the UI will happen asynchronously, so we need to take
-  // care of this bookeeping here instead of letting the resize handlers deal
-  // with it.
+/**
+ * Deal with terminal width changes.
+ *
+ * This function does what needs to be done when the terminal width changes
+ * out from under us.  It happens here rather than in onResize_() because this
+ * code may need to run synchronously to handle programmatic changes of
+ * terminal width.
+ *
+ * Relying on the browser to send us an async resize event means we may not be
+ * in the correct state yet when the next escape sequence hits.
+ */
+hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
+  var deltaColumns = columnCount - this.screen_.getWidth();
+
   this.screenSize.width = columnCount;
   this.screen_.setColumnCount(columnCount);
+
+  if (deltaColumns > 0) {
+    this.setDefaultTabStops(this.screenSize.width - deltaColumns);
+  } else {
+    for (var i = this.tabStops_.length - 1; i >= 0; i--) {
+      if (this.tabStops_[i] <= columnCount)
+        break;
+
+      this.tabStops_.pop();
+    }
+  }
+
+  this.screen_.setColumnCount(this.screenSize.width);
+};
+
+/**
+ * Deal with terminal height changes.
+ *
+ * This function does what needs to be done when the terminal height changes
+ * out from under us.  It happens here rather than in onResize_() because this
+ * code may need to run synchronously to handle programmatic changes of
+ * terminal height.
+ *
+ * Relying on the browser to send us an async resize event means we may not be
+ * in the correct state yet when the next escape sequence hits.
+ */
+hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
+  var deltaRows = rowCount - this.screen_.getHeight();
+
+  this.screenSize.height = rowCount;
+
+  var cursor = this.saveCursor();
+
+  if (deltaRows < 0) {
+    // Screen got smaller.
+    deltaRows *= -1;
+    while (deltaRows) {
+      var lastRow = this.getRowCount() - 1;
+      if (lastRow - this.scrollbackRows_.length == cursor.row)
+        break;
+
+      if (this.getRowText(lastRow))
+        break;
+
+      this.screen_.popRow();
+      deltaRows--;
+    }
+
+    var ary = this.screen_.shiftRows(deltaRows);
+    this.scrollbackRows_.push.apply(this.scrollbackRows_, ary);
+
+    // We just removed rows from the top of the screen, we need to update
+    // the cursor to match.
+    cursor.row -= deltaRows;
+
+  } else if (deltaRows > 0) {
+    // Screen got larger.
+
+    if (deltaRows <= this.scrollbackRows_.length) {
+      var scrollbackCount = Math.min(deltaRows, this.scrollbackRows_.length);
+      var rows = this.scrollbackRows_.splice(
+          this.scrollbackRows_.length - scrollbackCount, scrollbackCount);
+      this.screen_.unshiftRows(rows);
+      deltaRows -= scrollbackCount;
+      cursor.row += scrollbackCount;
+    }
+
+    if (deltaRows)
+      this.appendRows_(deltaRows);
+  }
+
+  this.restoreCursor(cursor);
 };
 
 /**
@@ -174,12 +272,24 @@ hterm.Terminal.prototype.scrollPageDown = function() {
   this.scrollPort_.scrollRowToTop(i + this.screenSize.height - 1);
 };
 
+/**
+ * Full terminal reset.
+ */
 hterm.Terminal.prototype.reset = function() {
-  console.log('reset');
+  this.clearAllTabStops();
+  this.setDefaultTabStops();
+  this.clearColorAndAttributes();
+  this.setVTScrollRegion(null, null);
+  this.clear();
+  this.setAbsoluteCursorPosition(0, 0);
+  this.softReset();
 };
 
+/**
+ * Soft terminal reset.
+ */
 hterm.Terminal.prototype.softReset = function() {
-  console.log('softReset');
+  this.options_ = new hterm.Options();
 };
 
 hterm.Terminal.prototype.clearColorAndAttributes = function() {
@@ -214,20 +324,100 @@ hterm.Terminal.prototype.setSpecialCharsEnabled = function() {
   //console.log('setSpecialCharactersEnabled');
 };
 
-hterm.Terminal.prototype.forwardTabStop = function(count) {
-  this.cursorRight(4);
+/**
+ * Move the cursor forward to the next tab stop, or to the last column
+ * if no more tab stops are set.
+ */
+hterm.Terminal.prototype.forwardTabStop = function() {
+  var column = this.screen_.cursorPosition.column;
+
+  for (var i = 0; i < this.tabStops_.length; i++) {
+    if (this.tabStops_[i] > column) {
+      this.setCursorColumn(this.tabStops_[i]);
+      return;
+    }
+  }
+
+  this.setCursorColumn(this.screenSize.width - 1);
 };
 
-hterm.Terminal.prototype.backwardTabStop = function(count) {
-  console.error('Not implemented: backwardTabStop');
+/**
+ * Move the cursor backward to the previous tab stop, or to the first column
+ * if no previous tab stops are set.
+ */
+hterm.Terminal.prototype.backwardTabStop = function() {
+  var column = this.screen_.cursorPosition.column;
+
+  for (var i = this.tabStops_.length - 1; i >= 0; i--) {
+    if (this.tabStops_[i] < column) {
+      this.setCursorColumn(this.tabStops_[i]);
+      return;
+    }
+  }
+
+  this.setCursorColumn(1);
 };
 
-hterm.Terminal.prototype.setTabStopAtCursor = function() {
-  console.log('setTabStopAtCursor');
+/**
+ * Set a tab stop at the given column.
+ *
+ * @param {int} column Zero based column.
+ */
+hterm.Terminal.prototype.setTabStop = function(column) {
+  for (var i = this.tabStops_.length - 1; i >= 0; i--) {
+    if (this.tabStops_[i] == column)
+      return;
+
+    if (this.tabStops_[i] < column) {
+      this.tabStops_.splice(i + 1, 0, column);
+      return;
+    }
+  }
+
+  this.tabStops_.splice(0, 0, column);
 };
 
-hterm.Terminal.prototype.clearTabStops = function() {
-  console.log('clearTabStops');
+/**
+ * Clear the tab stop at the current cursor position.
+ *
+ * No effect if there is no tab stop at the current cursor position.
+ */
+hterm.Terminal.prototype.clearTabStopAtCursor = function() {
+  var column = this.screen_.cursorPosition.column;
+
+  var i = this.tabStops_.indexOf(column);
+  if (i == -1)
+    return;
+
+  this.tabStops_.splice(i, 1);
+};
+
+/**
+ * Clear all tab stops.
+ */
+hterm.Terminal.prototype.clearAllTabStops = function() {
+  this.tabStops_.length = 0;
+};
+
+/**
+ * Set up the default tab stops, starting from a given column.
+ *
+ * This sets a tabstop every (column % this.tabWidth) column, starting
+ * from the specified column, or 0 if no column is provided.
+ *
+ * This does not clear the existing tab stops first, use clearAllTabStops
+ * for that.
+ *
+ * @param {int} opt_start Optional starting zero based starting column, useful
+ *     for filling out missing tab stops when the terminal is resized.
+ */
+hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
+  var start = opt_start || 0;
+  var w = this.tabWidth;
+  var stopCount = Math.floor((this.screenSize.width - start) / this.tabWidth)
+  for (var i = 0; i < stopCount; i++) {
+    this.setTabStop(Math.floor((start + i * w) / w) * w + w);
+  }
 };
 
 /**
@@ -1293,66 +1483,25 @@ hterm.Terminal.prototype.onScroll_ = function() {
 
 /**
  * React when the ScrollPort is resized.
+ *
+ * Note: This function should not directly contain code that alters the internal
+ * state of the terminal.  That kind of code belongs in realizeWidth or
+ * realizeHeight, so that it can be executed synchronously in the case of a
+ * programmatic width change.
  */
 hterm.Terminal.prototype.onResize_ = function() {
-  var width = Math.floor(this.scrollPort_.getScreenWidth() /
-                         this.characterSize_.width);
-  var height = this.scrollPort_.visibleRowCount;
+  var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
+                               this.characterSize_.width);
 
-  if (width == this.screenSize.width && height == this.screenSize.height) {
-    this.syncCursorPosition_();
-    return;
-  }
+  if (columnCount != this.screenSize.width)
+    this.realizeWidth_(columnCount);
 
-  this.screenSize.resize(width, height);
+  var rowCount = this.scrollPort_.visibleRowCount;
 
-  var screenHeight = this.screen_.getHeight();
+  if (rowCount != this.screenSize.height)
+    this.realizeHeight_(rowCount);
 
-  var deltaRows = this.screenSize.height - screenHeight;
-
-  var cursor = this.saveCursor();
-
-  if (deltaRows < 0) {
-    // Screen got smaller.
-    deltaRows *= -1;
-    while (deltaRows) {
-      var lastRow = this.getRowCount() - 1;
-      if (lastRow - this.scrollbackRows_.length == cursor.row)
-        break;
-
-      if (this.getRowText(lastRow))
-        break;
-
-      this.screen_.popRow();
-      deltaRows--;
-    }
-
-    var ary = this.screen_.shiftRows(deltaRows);
-    this.scrollbackRows_.push.apply(this.scrollbackRows_, ary);
-
-    // We just removed rows from the top of the screen, we need to update
-    // the cursor to match.
-    cursor.row -= deltaRows;
-
-  } else if (deltaRows > 0) {
-    // Screen got larger.
-
-    if (deltaRows <= this.scrollbackRows_.length) {
-      var scrollbackCount = Math.min(deltaRows, this.scrollbackRows_.length);
-      var rows = this.scrollbackRows_.splice(
-          this.scrollbackRows_.length - scrollbackCount, scrollbackCount);
-      this.screen_.unshiftRows(rows);
-      deltaRows -= scrollbackCount;
-      cursor.row += scrollbackCount;
-    }
-
-    if (deltaRows)
-      this.appendRows_(deltaRows);
-  }
-
-  this.screen_.setColumnCount(this.screenSize.width);
-  this.restoreCursor(cursor);
-  this.syncCursorPosition_();
+  this.scheduleSyncCursorPosition_();
 };
 
 /**
