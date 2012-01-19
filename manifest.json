@@ -3,6 +3,14 @@
   "name": "hterm",
   "version": "0.4.3",
   "default_locale": "en",
+  "icons": {
+    "128": "images/vt-128.png",
+    "48": "images/vt-48.png",
+    "32": "images/vt-32.png",
+    "16": "images/vt-16.png"
+  },
+  "description": "Terminal emulator and SSH client.",
+  "offline_enabled": true,
   "permissions": [
     "webSocketProxyPrivate",
     "unlimitedStorage"
