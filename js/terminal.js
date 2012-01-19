@@ -95,8 +95,7 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // the entire terminal object.
   this.io = new hterm.Terminal.IO(this);
 
-  this.realizeWidth_(80);
-  this.realizeHeight_(24);
+  this.realizeSize_(80, 24);
   this.setDefaultTabStops();
 };
 
@@ -145,9 +144,24 @@ hterm.Terminal.prototype.restoreCursor = function(cursor) {
  * Set the width of the terminal, resizing the UI to match.
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
-  this.div_.style.width = this.characterSize_.width * columnCount + 16 + 'px'
-  this.realizeWidth_(columnCount);
+  this.div_.style.width = this.characterSize_.width * columnCount + 16 + 'px';
+  this.realizeSize_(columnCount, this.screenSize.height);
   this.scheduleSyncCursorPosition_();
+};
+
+/**
+ * Deal with terminal size changes.
+ *
+ */
+hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
+  if (columnCount != this.screenSize.width)
+    this.realizeWidth_(columnCount);
+
+  if (rowCount != this.screenSize.height)
+    this.realizeHeight_(rowCount);
+
+  // Send new terminal size to plugin.
+  this.io.onTerminalResize(columnCount, rowCount);
 };
 
 /**
@@ -1493,15 +1507,8 @@ hterm.Terminal.prototype.onScroll_ = function() {
 hterm.Terminal.prototype.onResize_ = function() {
   var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
                                this.characterSize_.width);
-
-  if (columnCount != this.screenSize.width)
-    this.realizeWidth_(columnCount);
-
   var rowCount = this.scrollPort_.visibleRowCount;
-
-  if (rowCount != this.screenSize.height)
-    this.realizeHeight_(rowCount);
-
+  this.realizeSize_(columnCount, rowCount);
   this.scheduleSyncCursorPosition_();
 };
 

@@ -120,6 +120,19 @@ hterm.Terminal.IO.prototype.onVTKeystroke = function(string) {
 };
 
 /**
+ * Called when terminal size is changed.
+ *
+ * Clients should override this to receive notification of resize.
+ *
+ * @param {string|integer} terminal width.
+ * @param {string|integer} terminal height.
+ */
+hterm.Terminal.IO.prototype.onTerminalResize = function(width, height) {
+  // Override this.
+  console.log('Unobserverd terminal resized: ' + width + "x" + height);
+};
+
+/**
  * Print a string to the terminal.
  *
  * @param {string} string The string to print.

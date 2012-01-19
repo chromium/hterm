@@ -123,6 +123,16 @@ hterm.NaSSH.prototype.sendString_ = function(string) {
 };
 
 /**
+ * Notify plugin about new terminal size.
+ *
+ * @param {string|integer} terminal width.
+ * @param {string|integer} terminal height.
+ */
+hterm.NaSSH.prototype.onTerminalResize_ = function(width, height) {
+  this.sendToPlugin_('onResize', [Number(width), Number(height)]);
+};
+
+/**
  * Report something very bad.
  *
  * This indicates to the user that something fatal happend when the only
@@ -174,6 +184,7 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
   this.io.println(hterm.msg('CONNECTING', [username, hostname, port]));
   this.io.onVTKeystroke = this.sendString_.bind(this);
   this.io.sendString = this.sendString_.bind(this);
+  this.io.onTerminalResize = this.onTerminalResize_.bind(this);
 
   this.sendToPlugin_('startSession', [ {
         username: username,
@@ -292,53 +303,21 @@ hterm.NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
     self.sendToPlugin_('onOpenFile', [fd, success]);
   }
 
-  var streamClass;
   if (path == '/dev/random') {
-    streamClass = hterm.NaSSH.Stream.Random;
-  } else {
-    streamClass = hterm.NaSSH.Stream.File;
-  }
-
-  var stream = hterm.NaSSH.Stream.openStream(streamClass, fd, path, onOpen);
-
-  stream.onClose = function(reason) {
-    self.sendToPlugin_('onClose', [fd, reason]);
-  };
-};
-
-/**
- * The plugin wants to open a socket.
- *
- * TODO(rginda): I don't know how much of this is going to change in the near
- * future, so I'm not going to document it yet.
- */
-hterm.NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
-  var self = this;
-
-  function onOpen(status) {
-    self.sendToPlugin_('onOpenSocket', [fd, status]);
-  };
-
-  function onURL(url) {
-    var stream = hterm.NaSSH.Stream.openStream(
-        hterm.NaSSH.Stream.Socket, fd, url, onOpen);
-
-    stream.onDataAvailable = function(data) {
-      self.sendToPlugin_('onRead', [fd, data]);
-    };
-
+    var streamClass = hterm.NaSSH.Stream.Random;
+    var stream = hterm.NaSSH.Stream.openStream(streamClass, fd, path, onOpen);
     stream.onClose = function(reason) {
       self.sendToPlugin_('onClose', [fd, reason]);
     };
+  } else {
+    self.sendToPlugin_('onOpenFile', [fd, false]);
   }
-
-  chrome.webSocketProxyPrivate.getURLForTCP(host, port, {}, onURL);
 };
 
 /**
  * Plugin wants to write some data to a file descriptor.
  *
- * This is used to write to sockets as well as HTML5 Filesystem files.
+ * This is used to write to HTML5 Filesystem files.
  */
 hterm.NaSSH.prototype.onPlugin_.write = function(fd, data) {
   if (fd == 1 || fd == 2) {
@@ -371,9 +350,6 @@ hterm.NaSSH.prototype.onPlugin_.read = function(fd, size) {
 
   stream.asyncRead(size, function(b64bytes) {
       self.sendToPlugin_('onRead', [fd, b64bytes]);
-      if (stream instanceof hterm.NaSSH.Stream.File) {
-        stream.close('EOF');
-      }
     });
 };
 
