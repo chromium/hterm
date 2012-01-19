@@ -617,7 +617,12 @@ hterm.VT.CC1['\x1A'] = hterm.VT.CC1['\x18'];
  */
 hterm.VT.CC1['\x1B'] = function() {
   function parseESC(str, i) {
-    this.dispatch('ESC', str.substr(i, 1));
+    var ch = str.substr(i, 1);
+
+    if (ch == '\x1b')
+      return i + 1;
+
+    this.dispatch('ESC', ch);
 
     if (this.parser_ == parseESC)
       this.parser_ = this.parseUnknown_;
@@ -944,7 +949,7 @@ hterm.VT.ESC['7'] = function() {
 /**
  * Restore Cursor (DECSC).
  */
-hterm.VT.ESC['7'] = function() {
+hterm.VT.ESC['8'] = function() {
   this.terminal.restoreOptions();
 };
 
@@ -953,7 +958,7 @@ hterm.VT.ESC['7'] = function() {
  *
  * VT210 and up.  Not currently implemented.
  */
-hterm.VT.ESC['8'] = hterm.VT.ignore;
+hterm.VT.ESC['9'] = hterm.VT.ignore;
 
 /**
  * Application keypad (DECPAM).
@@ -1109,7 +1114,9 @@ hterm.VT.CSI['?J'] = function(args, code) {
   } else if (arg == '2') {
     this.terminal.clear();
   } else if (arg == '3') {
-    // Erase saved lines (xterm).  Not currently implemented.
+    // The xterm docs say this means "Erase saved lines", but we'll just clear
+    // the display since killing the scrollback seems rude.
+    this.terminal.clear();
   } else {
     this.terminal.print('\x1b[' + code + args[0])
   }
@@ -1456,6 +1463,7 @@ hterm.VT.CSI['r'] = function(args) {
   var scrollTop = args[0] ? parseInt(args[0], 10) -1 : null;
   var scrollBottom = args[1] ? parseInt(args[1], 10) - 1 : null;
   this.terminal.setVTScrollRegion(scrollTop, scrollBottom);
+  this.terminal.setRelativeCursorPosition(0, 0);
 };
 
 /**

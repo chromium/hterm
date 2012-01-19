@@ -130,7 +130,7 @@ class VTScope(object):
       # Character set control.
       ['CHR', re.compile(r'%[^\x1b]')],
       # Graphic character sets.
-      ['GRA', re.compile(r'[()*+-./][^\x1b]')],
+      ['SCS', re.compile(r'[()*+-./][^\x1b]')],
       # Other escape sequences.
       ['ESC', re.compile(r'[^\x1b]')],
   ]
@@ -201,7 +201,6 @@ class VTScope(object):
         self.end_position = m.end()
       else:
         self.end_position = self.start_position + MAX_TEXT
-        esc_name = '???'
         print 'Unable to find end of escape sequence.'
 
       sequence = self.data[self.start_position + 1 : self.end_position]
@@ -379,7 +378,7 @@ class VTScope(object):
     with open(filename) as f:
       self.data = f.read()
 
-    if re.match(r'@@ HEADER_START', self.data):
+    if re.match(r'(#[^\n]*\n)*@@ HEADER_START', self.data):
       m = re.search(r'@@ HEADER_END\r?\n', self.data, re.MULTILINE)
       if not m:
         print 'Unable to locate end of header.'
@@ -407,8 +406,8 @@ class VTScope(object):
 
     Usage: seek <offset>
 
-    If <offset> starts with a percent, as in %1, it will seek to the stop
-    offset at the given 1-based index.  Use the 'stops' command to list
+    If <offset> starts with a pound sign, as in 'seek #1', it will seek to the
+    stop offset at the given 1-based index.  Use the 'stops' command to list
     out the stop offsets defined by the log file.
 
     If the resulting offset comes before the current position input will
@@ -423,7 +422,7 @@ class VTScope(object):
       print 'No data.'
       return
 
-    if args[0][0] == '%':
+    if args[0][0] == '#':
       index = int(args[0][1:])
       if index < 1 or index > len(self.stops):
         print 'No such stop.'

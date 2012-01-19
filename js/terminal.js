@@ -320,8 +320,8 @@ hterm.Terminal.prototype.resize = function() {
   console.log('resize');
 };
 
-hterm.Terminal.prototype.setSpecialCharsEnabled = function() {
-  //console.log('setSpecialCharactersEnabled');
+hterm.Terminal.prototype.setCharacterSet = function() {
+  //console.log('setCharacterSet');
 };
 
 /**
@@ -917,9 +917,10 @@ hterm.Terminal.prototype.fill = function(ch) {
 };
 
 /**
- * Erase the entire scroll region.
+ * Erase the entire display.
  *
- * The cursor position is unchanged.
+ * The cursor position is unchanged.  This does not respect the scroll
+ * region.
  *
  * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
  * has a text-attribute related TODO.
@@ -927,10 +928,9 @@ hterm.Terminal.prototype.fill = function(ch) {
 hterm.Terminal.prototype.clear = function() {
   var cursor = this.saveCursor();
 
-  var top = this.getVTScrollTop();
-  var bottom = this.getVTScrollBottom();
+  var bottom = this.screenSize.height;
 
-  for (var i = top; i < bottom; i++) {
+  for (var i = 0; i < bottom; i++) {
     this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
@@ -955,7 +955,7 @@ hterm.Terminal.prototype.insertLines = function(count) {
   var bottom = this.getVTScrollBottom();
   count = Math.min(count, bottom - cursor.row);
 
-  var start = bottom - count;
+  var start = bottom - count + 1;
   if (start != cursor.row)
     this.moveRows_(start, count, cursor.row);
 
@@ -1265,6 +1265,7 @@ hterm.Terminal.prototype.ringBell = function() {
  */
 hterm.Terminal.prototype.setOriginMode = function(state) {
   this.options_.originMode = state;
+  this.setCursorPosition(0, 0);
 };
 
 /**

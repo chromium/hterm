@@ -170,20 +170,23 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
   // Make sure we got some data.
   result.assert(!!data, 'canned data is not empty');
 
-  // And that it has a header.
-  result.assert(!!data.match(/^@@ HEADER_START/), 'data has a header');
+  var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/)
+  // And that it has optional lead-in comments followed by a header.
+  result.assert(!!m, 'data has a header');
+
+  var headerStart = m[0].length;
 
   // And that the header has an ending.
-  var m = data.match(/^@@ HEADER_END\r?\n/m);
+  m = data.match(/^@@ HEADER_END\r?\n/m);
   result.assert(!!m, 'header ends');
 
-  var header = data.substr(0, m.index);
-  data = data.substr(header.length + m[0].length);
+  var header = data.substring(headerStart, m.index);
+  data = data.substr(headerStart + header.length + m[0].length);
 
   var startOffset = 0;
   var headerLines = header.split(/\r?\n/);
 
-  for (var headerIndex = 1; headerIndex < headerLines.length; headerIndex++) {
+  for (var headerIndex = 0; headerIndex < headerLines.length; headerIndex++) {
     var line = headerLines[headerIndex];
     if (!line || /^(#.*|\s*)$/.test(line)) {
       // Skip blank lines and comment lines.
@@ -220,3 +223,5 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
  * A pre-recorded session of vttest menu option 1, 'Test of cursor movements'.
  */
 hterm.VT.CannedTests.addTest('../test_data/vttest-01.log');
+
+hterm.VT.CannedTests.addTest('../test_data/vttest-02.log');
