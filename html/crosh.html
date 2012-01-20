@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- PubSub is currently unscoped (it's not in hterm.*) -->
+    <script src='../js/pubsub.js'></script>
+    <script src='../js/dialogs.js'></script>
+
+    <!-- hterm.* things -->
+    <script src='../js/hterm.js'></script>
+    <script src='../js/scrollport.js'></script>
+    <script src='../js/terminal.js'></script>
+    <script src='../js/terminal_io.js'></script>
+    <script src='../js/options.js'></script>
+    <script src='../js/screen.js'></script>
+    <script src='../js/vt100.js'></script>
+    <script src='../js/vt100_keyboard.js'></script>
+
+    <script src='../js/crosh.js'></script>
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+        border: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      #terminal {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id='terminal'></div>
+    <script>hterm.init(hterm.Crosh.init)</script>
+  </body>
+</html>
