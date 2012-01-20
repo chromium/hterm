@@ -67,6 +67,21 @@ hterm.VT = function(terminal) {
       }).join('');
   this.cc1Pattern_ = new RegExp('[' + cc1 + ']');
 
+  // Regular expression used in UTF-8 decoding.
+  this.utf8Pattern_ = new RegExp(
+      [// 110x-xxxx 10xx-xxxx
+       '([\\xc0-\\xdf][\\x80-\\xbf])',
+       // 1110-xxxx 10xx-xxxx 10xx-xxxx
+       '([\\xe0-\\xef][\\x80-\\xbf]{2})',
+       // 1111-0xxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
+       '([\\xf0-\\xf7][\\x80-\\xbf]{3})',
+       // 1111-10xx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
+       '([\\xf8-\\xfb][\\x80-\\xbf]{4})',
+       // 1111-110x 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
+       '([\\xfc-\\xfd][\\x80-\\xbf]{5})'
+       ].join('|'),
+      'g');
+
   /**
    * The keyboard handler associated with this virtual terminal.
    */
@@ -116,6 +131,8 @@ hterm.VT.prototype.interpret = function(str) {
   var i = 0;
   var step = 0;
 
+  str = this.decodeCharset(str);
+
   while (i < str.length) {
     if (this.stepSize) {
       if (step++ == this.stepSize) {
@@ -130,6 +147,77 @@ hterm.VT.prototype.interpret = function(str) {
 
     i = nextIndex;
   }
+};
+
+/**
+ * Decode an encoded string into a unicode string.
+ *
+ * Hard-coded to UTF-8.
+ *
+ * TODO(rginda): We probably need to support other encodings, and we should
+ * consider moving the decode into the NaCl plugin (though that will hurt
+ * non-nacl-ssh uses of hterm, so maybe not).
+ */
+hterm.VT.prototype.decodeCharset = function(str) {
+  function fromBigCharCode(codePoint) {
+    // String.fromCharCode can't handle codepoints > 2 bytes without
+    // this magic.  See <http://goo.gl/jpcx0>.
+    if (codePoint > 0xffff) {
+      codePoint -= 0x1000;
+      return String.fromCharCode(0xd800 + (codePoint >> 10),
+                                 0xdc00 + (codePoint & 0x3ff));
+    }
+
+    return String.fromCharCode(codePoint);
+  }
+
+  return str.replace(this.utf8Pattern_, function(bytes) {
+      var ary = bytes.split('').map(function (e) { return e.charCodeAt() });
+      var ch = ary[0];
+      if (ch <= 0xdf) {
+        // 110x-xxxx 10xx-xxxx
+        // 11 bits of 2 bytes encoded in 2 bytes.
+        return String.fromCharCode(((ch & 0x1f) << 6) |
+                                   (ary[1] & 0x3f));
+      }
+
+      if (ch <= 0xef) {
+        // 1110-xxxx 10xx-xxxx 10xx-xxxx
+        // 16 bits of 2 bytes encoded in 3 bytes.
+        var rv = String.fromCharCode(((ch & 0x0f) << 12) |
+                                     (ary[1] & 0x3f) << 6 |
+                                     (ary[2] & 0x3f));
+        return rv;
+      }
+
+      if (ch <= 0xf7) {
+        // 1111-0xxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
+        // 21 bits of 3 bytes encoded in 4 bytes.
+        return fromBigCharCode(((ch & 0x1f) << 18) |
+                               (ary[1] & 0x3f) << 12 |
+                               (ary[2] & 0x3f) << 6 |
+                               (ary[3] & 0x3f));
+      }
+
+      if (ch <= 0xfb) {
+        // 1111-10xx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
+        // 26 bits of 4 bytes encoded in 5 bytes.
+        return fromBigCharCode(((ch & 0x1f) << 24) |
+                               (ary[1] & 0x3f) << 18 |
+                               (ary[2] & 0x3f) << 12 |
+                               (ary[3] & 0x3f) << 6 |
+                               (ary[4] & 0x3f));
+      }
+
+      // 1111-110x 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
+      // 31 bits of 4 bytes encoded in 6 bytes.
+      return fromBigCharCode(((ch & 0x1f) << 30) |
+                             (ary[1] & 0x3f) << 24 |
+                             (ary[2] & 0x3f) << 18 |
+                             (ary[3] & 0x3f) << 12 |
+                             (ary[4] & 0x3f) << 6 |
+                             (ary[5] & 0x3f));
+    });
 };
 
 /**
