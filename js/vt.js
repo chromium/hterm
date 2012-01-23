@@ -613,10 +613,11 @@ hterm.VT.CC1['\x09'] = function() {
 /**
  * Line Feed (LF).
  *
- * This code causes a line feed or a new line operation.  See new line mode.
+ * This code causes a line feed or a new line operation.  See Automatic
+ * Newline (LNM).
  */
 hterm.VT.CC1['\x0A'] = function() {
-  this.terminal.newLine();
+  this.terminal.formFeed();
 };
 
 /**
@@ -624,9 +625,7 @@ hterm.VT.CC1['\x0A'] = function() {
  *
  * Interpreted as LF.
  */
-hterm.VT.CC1['\x0B'] = function() {
-  this.terminal.formFeed();
-};
+hterm.VT.CC1['\x0B'] = hterm.VT.CC1['\x0A'];
 
 /**
  * Form Feed (FF).

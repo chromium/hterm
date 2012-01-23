@@ -86,7 +86,7 @@ hterm.VT.Tests.addTest = function(name, callback) {
  * on the screen and scrolls into the scrollback buffer correctly.
  */
 hterm.VT.Tests.addTest('sanity', function(result, cx) {
-    this.terminal.interpret('0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
+    this.terminal.interpret('0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10\r\n11\r\n12');
 
     var text = this.terminal.getRowsText(0, 13);
     result.assertEQ(text, '0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
@@ -102,7 +102,7 @@ hterm.VT.Tests.addTest('sanity', function(result, cx) {
  * TODO(rginda): Test the VT52 variants too.
  */
 hterm.VT.Tests.addTest('cursor-relative', function(result, cx) {
-    this.terminal.interpret('line 1\nline 2\nline 3');
+    this.terminal.interpret('line 1\r\nline 2\r\nline 3');
     this.terminal.interpret('\x1b[A\x1b[Dtwo' +
                             '\x1b[3D' +
                             '\x1b[Aone' +
@@ -118,7 +118,7 @@ hterm.VT.Tests.addTest('cursor-relative', function(result, cx) {
  * Test absolute cursor positioning.
  */
 hterm.VT.Tests.addTest('cursor-absolute', function(result, cx) {
-    this.terminal.interpret('line 1\nline 2\nline 3');
+    this.terminal.interpret('line 1\r\nline 2\r\nline 3');
 
     this.terminal.interpret('\x1b[1Gline three' +
                             '\x1b[2;6Htwo' +
@@ -134,7 +134,7 @@ hterm.VT.Tests.addTest('cursor-absolute', function(result, cx) {
  * Test line positioning.
  */
 hterm.VT.Tests.addTest('line-position', function(result, cx) {
-    this.terminal.interpret('line 1\nline 2\nline 3');
+    this.terminal.interpret('line 1\r\nline 2\r\nline 3');
 
     this.terminal.interpret('\x1b[Fline two' +
                             '\x1b[Fline one' +
@@ -150,7 +150,7 @@ hterm.VT.Tests.addTest('line-position', function(result, cx) {
  * received.
  */
 hterm.VT.Tests.addTest('partial-sequence', function(result, cx) {
-    this.terminal.interpret('line 1\nline 2\nline three');
+    this.terminal.interpret('line 1\r\nline 2\r\nline three');
 
     this.terminal.interpret('\x1b');
     this.terminal.interpret('[');
@@ -169,7 +169,7 @@ hterm.VT.Tests.addTest('partial-sequence', function(result, cx) {
  * Test that two ESC characters in a row are handled properly.
  */
 hterm.VT.Tests.addTest('double-sequence', function(result, cx) {
-    this.terminal.interpret('line one\nline two\nline 3');
+    this.terminal.interpret('line one\r\nline two\r\nline 3');
 
     this.terminal.interpret('\x1b[\x1b[Dthree');
 
@@ -228,7 +228,7 @@ hterm.VT.Tests.addTest('newlines-2', function(result, cx) {
  * Test the erase left command.
  */
 hterm.VT.Tests.addTest('erase-left', function(result, cx) {
-    this.terminal.interpret('line one\noooooooo\nline three');
+    this.terminal.interpret('line one\r\noooooooo\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[1Ktw');
 
@@ -244,7 +244,7 @@ hterm.VT.Tests.addTest('erase-left', function(result, cx) {
  * Test the erase right command.
  */
 hterm.VT.Tests.addTest('erase-right', function(result, cx) {
-    this.terminal.interpret('line one\nline XXXX\nline three');
+    this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0Ktwo');
 
@@ -260,7 +260,7 @@ hterm.VT.Tests.addTest('erase-right', function(result, cx) {
  * Test the erase line command.
  */
 hterm.VT.Tests.addTest('erase-line', function(result, cx) {
-    this.terminal.interpret('line one\nline twoo\nline three');
+    this.terminal.interpret('line one\r\nline twoo\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[2Ktwo');
 
@@ -276,7 +276,7 @@ hterm.VT.Tests.addTest('erase-line', function(result, cx) {
  * Test the erase above command.
  */
 hterm.VT.Tests.addTest('erase-above', function(result, cx) {
-    this.terminal.interpret('line one\noooooooo\nline three');
+    this.terminal.interpret('line one\r\noooooooo\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[1Jtw');
 
@@ -292,7 +292,7 @@ hterm.VT.Tests.addTest('erase-above', function(result, cx) {
  * Test the erase all command.
  */
 hterm.VT.Tests.addTest('erase-all', function(result, cx) {
-    this.terminal.interpret('line one\nline XXXX\nline three');
+    this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[2Jtwo');
 
@@ -308,7 +308,7 @@ hterm.VT.Tests.addTest('erase-all', function(result, cx) {
  * Test the erase below command.
  */
 hterm.VT.Tests.addTest('erase-below', function(result, cx) {
-    this.terminal.interpret('line one\nline XXXX\nline three');
+    this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0Jtwo');
 
@@ -324,7 +324,7 @@ hterm.VT.Tests.addTest('erase-below', function(result, cx) {
  * Test the erase character command.
  */
 hterm.VT.Tests.addTest('erase-char', function(result, cx) {
-    this.terminal.interpret('line one\nline XXXX\nline three');
+    this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[4Xtwo');
 
@@ -340,7 +340,7 @@ hterm.VT.Tests.addTest('erase-char', function(result, cx) {
  * Test the insert line command.
  */
 hterm.VT.Tests.addTest('insert-line', function(result, cx) {
-    this.terminal.interpret('line two\nline three');
+    this.terminal.interpret('line two\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[L' +
                             'line one');
 
@@ -356,9 +356,9 @@ hterm.VT.Tests.addTest('insert-line', function(result, cx) {
  * Test the insert line command with an argument.
  */
 hterm.VT.Tests.addTest('insert-lines', function(result, cx) {
-    this.terminal.interpret('line three\n\n');
+    this.terminal.interpret('line three\r\n\r\n');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2L' +
-                            'line one\nline two');
+                            'line one\r\nline two');
 
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ(text,
@@ -374,7 +374,7 @@ hterm.VT.Tests.addTest('insert-lines', function(result, cx) {
 hterm.VT.Tests.addTest('insert-toomany-lines', function(result, cx) {
     this.terminal.interpret('XXXXX');
     this.terminal.interpret('\x1b[6L' +
-                            'line one\nline two\nline three');
+                            'line one\r\nline two\r\nline three');
 
     var text = this.terminal.getRowsText(0, 5);
     result.assertEQ(text,
@@ -390,8 +390,8 @@ hterm.VT.Tests.addTest('insert-toomany-lines', function(result, cx) {
  * Test the delete line command.
  */
 hterm.VT.Tests.addTest('delete-line', function(result, cx) {
-    this.terminal.interpret('line one\nline two\n' +
-                            'XXXXXXXX\n' +
+    this.terminal.interpret('line one\r\nline two\r\n' +
+                            'XXXXXXXX\r\n' +
                             'line XXXXX');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[Mthree');
 
@@ -407,8 +407,8 @@ hterm.VT.Tests.addTest('delete-line', function(result, cx) {
  * Test the delete line command with an argument.
  */
 hterm.VT.Tests.addTest('delete-lines', function(result, cx) {
-    this.terminal.interpret('line one\nline two\n' +
-                            'XXXXXXXX\nXXXXXXXX\n' +
+    this.terminal.interpret('line one\r\nline two\r\n' +
+                            'XXXXXXXX\r\nXXXXXXXX\r\n' +
                             'line XXXXX');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2Mthree');
 
@@ -424,7 +424,7 @@ hterm.VT.Tests.addTest('delete-lines', function(result, cx) {
  * Test the insert space command.
  */
 hterm.VT.Tests.addTest('insert-space', function(result, cx) {
-    this.terminal.interpret('line one\nlinetwo\nline three');
+    this.terminal.interpret('line one\r\nlinetwo\r\nline three');
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[@');
 
     var text = this.terminal.getRowsText(0, 3);
@@ -439,7 +439,7 @@ hterm.VT.Tests.addTest('insert-space', function(result, cx) {
  * Test the insert space command with an argument.
  */
 hterm.VT.Tests.addTest('insert-spaces', function(result, cx) {
-    this.terminal.interpret('line one\nlinetwo\nline three');
+    this.terminal.interpret('line one\r\nlinetwo\r\nline three');
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[3@');
 
     var text = this.terminal.getRowsText(0, 3);
@@ -454,7 +454,7 @@ hterm.VT.Tests.addTest('insert-spaces', function(result, cx) {
  * Test the delete characters command.
  */
 hterm.VT.Tests.addTest('delete-chars', function(result, cx) {
-    this.terminal.interpret('line one\nline XXXX\nline three');
+    this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[4Ptwo');
 
     var text = this.terminal.getRowsText(0, 3);
@@ -469,7 +469,7 @@ hterm.VT.Tests.addTest('delete-chars', function(result, cx) {
  * Test that the delete characters command handles overflow properly.
  */
 hterm.VT.Tests.addTest('delete-toomany', function(result, cx) {
-    this.terminal.interpret('line one\nline XXXX\nline three');
+    this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[20Ptwo');
 
     var text = this.terminal.getRowsText(0, 3);
@@ -484,7 +484,7 @@ hterm.VT.Tests.addTest('delete-toomany', function(result, cx) {
  * Test the scroll up command.
  */
 hterm.VT.Tests.addTest('scroll-up', function(result, cx) {
-    this.terminal.interpret('\n\nline one\nline two\nline XXXXX');
+    this.terminal.interpret('\r\n\r\nline one\r\nline two\r\nline XXXXX');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2Sthree');
 
     var text = this.terminal.getRowsText(0, 3);
@@ -499,7 +499,7 @@ hterm.VT.Tests.addTest('scroll-up', function(result, cx) {
  * Test the scroll down command.
  */
 hterm.VT.Tests.addTest('scroll-down', function(result, cx) {
-    this.terminal.interpret('line one\nline two\nline XXXXX\n');
+    this.terminal.interpret('line one\r\nline two\r\nline XXXXX\r\n');
     this.terminal.interpret('     \x1b[Tthree');
 
     var text = this.terminal.getRowsText(0, 5);
@@ -516,7 +516,7 @@ hterm.VT.Tests.addTest('scroll-down', function(result, cx) {
  * Test the absolute line positioning command.
  */
 hterm.VT.Tests.addTest('line-position-absolute', function(result, cx) {
-    this.terminal.interpret('line XXX\nline YYY\nline ZZZZZ\n');
+    this.terminal.interpret('line XXX\r\nline YYY\r\nline ZZZZZ\r\n');
     this.terminal.interpret('     \x1b[3dthree\x1b[5D');
     this.terminal.interpret('\x1b[2dtwo\x1b[3D');
     this.terminal.interpret('\x1b[1done');
@@ -575,7 +575,7 @@ hterm.VT.Tests.addTest('status-report', function(result, cx) {
 
     resultString = '';
 
-    this.terminal.interpret('line one\nline two\nline three');
+    this.terminal.interpret('line one\r\nline two\r\nline three');
     // Reposition the cursor and ask for a position report.
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[6n');
     result.assertEQ(resultString, '\x1b[2;6R');
@@ -707,10 +707,10 @@ hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
     result.assertEQ(this.terminal.options_.insertMode, false);
 
     this.terminal.interpret('\x1b[4h');
-    this.terminal.interpret(' one\x1b[4Dline\n');
+    this.terminal.interpret(' one\x1b[4Dline\r\n');
 
     this.terminal.interpret('\x1b[4l');
-    this.terminal.interpret('XXXXXXXX\x1b[8Dline two\n');
+    this.terminal.interpret('XXXXXXXX\x1b[8Dline two\r\n');
 
     this.terminal.interpret('\x1b[4h');
     this.terminal.interpret(' three\x1b[6Dline');
@@ -787,11 +787,11 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
     result.assertEQ(this.terminal.options_.wraparound, true);
 
     this.terminal.interpret('' + // Insert off, wrap on (default).
-                            '[15GAAAA[1GXX\n' +
+                            '[15GAAAA[1GXX\r\n' +
                             '[4h[?7l' +  // Insert on, wrap off.
-                            '[15GAAAA[1GXX\n' +
+                            '[15GAAAA[1GXX\r\n' +
                             '[4h[?7h' +  // Insert on, wrap on.
-                            '[15GAAAA[1GXX\n' +
+                            '[15GAAAA[1GXX\r\n' +
                             '[4l[?7l' +  // Insert off, wrap off.
                             '[15GAAAA[1GXX');
 
@@ -812,7 +812,7 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
   });
 
 hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
-    this.terminal.interpret('1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
+    this.terminal.interpret('1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10');
     this.terminal.interpret('\x1b[3;3f');  // Leave the cursor at (3,3)
     var text = this.terminal.getRowsText(0, 10);
     result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
@@ -822,7 +822,7 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     text = this.terminal.getRowsText(0, 10);
     result.assertEQ(text, '1\n2\n3\n4\n\n\n\n\n\n');
 
-    this.terminal.interpret('\nhi');
+    this.terminal.interpret('\r\nhi');
     text = this.terminal.getRowsText(0, 10);
     result.assertEQ(text, '1\n2\n3\n4\n\n\n\nhi\n\n');
 

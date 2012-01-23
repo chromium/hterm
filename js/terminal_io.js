@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,6 @@ hterm.Terminal.IO.prototype.onVTKeystroke = function(string) {
  */
 hterm.Terminal.IO.prototype.onTerminalResize = function(width, height) {
   // Override this.
-  console.log('Unobserverd terminal resized: ' + width + "x" + height);
 };
 
 /**
@@ -150,5 +149,5 @@ hterm.Terminal.IO.prototype.print = function(string) {
  * @param {string} string The string to print.
  */
 hterm.Terminal.IO.prototype.println = function(string) {
-  this.terminal_.interpret(string + '\n');
+  this.terminal_.interpret(string + '\r\n');
 };

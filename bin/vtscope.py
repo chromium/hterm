@@ -235,7 +235,7 @@ class VTScope(object):
     for i in xrange(len(self.clients), 0, -1):
       fd = self.clients[i - 1]
       try:
-        fd.send(self.data[self.start_position : self.end_position])
+        fd.send(str)
       except IOError:
         print 'Client #%s disconnected.' % i
         del self.clients[i - 1]
