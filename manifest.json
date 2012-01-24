@@ -12,6 +12,7 @@
   "description": "Terminal emulator and SSH client.",
   "offline_enabled": true,
   "permissions": [
+    "terminalPrivate",
     "unlimitedStorage"
   ],
   "app": {

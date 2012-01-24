@@ -31,11 +31,13 @@ hterm.Crosh.init = function() {
   // Useful for console debugging.
   window.term_ = terminal;
 
+  // Looks like there is a race between this and terminal initialization, thus
+  // adding timeout.
   setTimeout(function() {
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
       terminal.runCommandClass(hterm.Crosh, document.location.hash.substr(1));
-    }, 0);
+    }, 500);
   return true;
 };
 

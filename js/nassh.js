@@ -159,6 +159,10 @@ hterm.NaSSH.prototype.reportUnexpectedError_ = function(err) {
  * @param {string} destination A string of the form username@host[:port].
  */
 hterm.NaSSH.prototype.connectToDestination = function(destination) {
+  if (destination == 'crosh') {
+    document.location = "crosh.html"
+    return true;
+  }
   var ary = destination.match(/^([^@]+)@([^:]+)(?::(\d+))?$/);
   if (!ary)
     return false;
