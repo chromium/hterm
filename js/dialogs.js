@@ -74,22 +74,10 @@ BaseDialog.prototype.onOk_ = null;
 BaseDialog.prototype.onCancel_ = null;
 
 BaseDialog.prototype.onContainerKeyDown_ = function(event) {
-  switch (event.keyCode) {
-    case 13:  // Enter
-    if (!this.okButton_.disabled) {
-      this.onOkClick_(event);
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    return;
-
-    case 27:  // Escape
-    if (!this.cancelButton_.disabled) {
-      this.onCancelClick_(event);
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    return;
+  // Handle Escape.
+  if (event.keyCode == 27 && !this.cancelButton_.disabled) {
+    this.onCancelClick_(event);
+    event.preventDefault();
   }
 };
 
@@ -215,6 +203,7 @@ function PromptDialog(parentNode) {
   this.input_ = this.document_.createElement('input');
   this.input_.setAttribute('type', 'text');
   this.input_.addEventListener('focus', this.onInputFocus.bind(this));
+  this.input_.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.initialFocusElement_ = this.input_;
   this.frame_.insertBefore(this.input_, this.text_.nextSibling);
 }
@@ -224,6 +213,11 @@ PromptDialog.prototype = {__proto__: BaseDialog.prototype};
 PromptDialog.prototype.onInputFocus = function(event) {
   this.input_.select();
 };
+
+PromptDialog.prototype.onKeyDown_ = function(event) {
+  if (event.keyCode == 13)  // Enter
+    this.onOkClick_(event);
+}
 
 PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,
                                        onShow) {
