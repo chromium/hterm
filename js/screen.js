@@ -51,6 +51,9 @@ hterm.Screen = function(opt_columnCount) {
   // The max column width for this screen.
   this.columnCount_ = opt_columnCount || 80;
 
+  // The current color, bold, underline and blink attributes.
+  this.textAttributes = new hterm.TextAttributes(window.document);
+
   // Current zero-based cursor coordinates.
   this.cursorPosition = new hterm.RowCol(0, 0);
 
@@ -292,7 +295,6 @@ hterm.Screen.prototype.clearCursorRow = function() {
  * @param {integer} column The zero based column.
  */
 hterm.Screen.prototype.setCursorPosition = function(row, column) {
-  var currentColumn = 0;
   if (row >= this.rowsArray.length) {
     console.log('Row out of bounds: ' + row, hterm.getStack(1));
     row = this.rowsArray.length - 1;
@@ -318,6 +320,8 @@ hterm.Screen.prototype.setCursorPosition = function(row, column) {
     node = rowNode.ownerDocument.createTextNode('');
     rowNode.appendChild(node);
   }
+
+  var currentColumn = 0;
 
   if (rowNode == this.cursorRowNode_) {
     if (column >= this.cursorPosition.column - this.cursorOffset_) {
@@ -353,95 +357,257 @@ hterm.Screen.prototype.syncSelectionCaret = function(selection) {
 };
 
 /**
- * Insert the given string at the cursor position, with the understanding that
- * the insert will cause the column to overflow, and the overflow will be
- * in a different text style than where the cursor is currently located.
+ * Split a single node into two nodes at the given offset.
  *
- * TODO: Implement this.
+ * For example:
+ * Given the DOM fragment '<div><span>Hello World</span></div>', call splitNode_
+ * passing the span and an offset of 6.  This would modifiy the fragment to
+ * become: '<div><span>Hello </span><span>World</span></div>'.  If the span
+ * had any attributes they would have been copied to the new span as well.
+ *
+ * The to-be-split node must have a container, so that the new node can be
+ * placed next to it.
+ *
+ * @param {HTMLNode} node The node to split.
+ * @param {integer} offset The offset into the node where the split should
+ *     occur.
  */
-hterm.Screen.prototype.spliceStringAndWrap_ = function(str) {
-  throw 'NOT IMPLEMENTED';
+hterm.Screen.prototype.splitNode_ = function(node, offset) {
+  var afterNode = node.cloneNode(true);
+
+  node.textContent = node.textContent.substr(0, offset);
+  afterNode.textContent = afterNode.textContent.substr(offset);
+
+  node.parentNode.insertBefore(afterNode, node.nextSibling);
 };
 
 /**
- * Insert a string at the current cursor position.
+ * Remove and return all content past the end of the current cursor position.
  *
- * If the insert causes the column to overflow, the extra text is returned.
- * If only the cursor overflows (ie, you print exactly enough to fill the
- * last column) then the empty string is returned.
+ * If necessary, the cursor's current node will be split.  Everything past
+ * the end of the cursor will be returned in an array.  Any empty nodes
+ * will be omitted from the result array.  If the resulting array is empty,
+ * this function will return null.
  *
- * @return {string} Text that overflowed the column, or null if nothing
- *     overflowed.
+ * @return {Array} An array of DOM nodes that used to appear after the cursor,
+ *     or null if the cursor was already at the end of the line.
+ */
+hterm.Screen.prototype.clipAtCursor_ = function() {
+  if (this.cursorOffset_ < this.cursorNode_.textContent.length - 1)
+    this.splitNode_(this.cursorNode_, this.cursorOffset_ + 1);
+
+  var rv = null;
+  var rowNode = this.cursorRowNode_;
+  var node = this.cursorNode_.nextSibling;
+
+  while (node) {
+    var length = node.textContent.length;
+    if (length) {
+      if (rv) {
+        rv.push(node);
+        rv.characterLength += length;
+      } else {
+        rv = [node];
+        rv.characterLength = length;
+      }
+    }
+
+    rowNode.removeChild(node);
+    node = this.cursorNode_.nextSibling;
+  }
+
+  return rv;
+};
+
+/**
+ * Ensure that the current row does not overflow the current column count.
+ *
+ * If the current row is too long, it will be clipped and the overflow content
+ * will be returned as an array of DOM nodes.  Otherwise this function returns
+ * null.
+ *
+ * @return {Array} An array of DOM nodes that overflowed in the current row,
+ *     or null if the row did not overflow.
+ */
+hterm.Screen.prototype.maybeClipCurrentRow = function() {
+  var currentColumn = this.cursorPosition.column;
+
+  if (currentColumn >= this.columnCount_) {
+    this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
+    this.cursorPosition.overflow = true;
+    return this.clipAtCursor_();
+  }
+
+  if (this.cursorRowNode_.textContent.length > this.columnCount_) {
+    this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
+    var overflow = this.clipAtCursor_();
+    this.setCursorPosition(this.cursorPosition.row, currentColumn);
+    return overflow;
+  }
+
+  return null;
+};
+
+/**
+ * Insert a string at the current character position using the current
+ * text attributes.
+ *
+ * You must call maybeClipCurrentRow() after in order to check overflow.
  */
 hterm.Screen.prototype.insertString = function(str) {
-  if (this.cursorPosition.column == this.columnCount_)
-    return str;
+  var cursorNode = this.cursorNode_;
+  var cursorNodeText = cursorNode.textContent;
 
-  var totalRowText = this.cursorRowNode_.textContent;
+  // We may alter the length of the string by prepending some missing
+  // whitespace, so we need to record the string length ahead of time.
+  var strLength = str.length;
 
-  // There may not be underlying characters to support the current cursor
-  // position, since they don't get inserted until they're necessary.
-  var missingSpaceCount = Math.max(this.cursorPosition.column -
-                                   totalRowText.length,
-                                   0);
+  // No matter what, before this function exits the cursor column will have
+  // moved this much.
+  this.cursorPosition.column += strLength;
 
-  var overflowCount = Math.max(totalRowText.length + missingSpaceCount +
-                               str.length - this.columnCount_,
-                               0);
+  // Local cache of the cursor offset.
+  var offset = this.cursorOffset_;
 
-  if (overflowCount > 0 && this.cursorNode_.nextSibling) {
-    // We're going to overflow, but there is text after the cursor with a
-    // different set of attributes. This is going to take some effort.
-    return this.spliceStringAndWrap_(str);
+  // Reverse offset is the offset measured from the end of the string.
+  // Zero implies that the cursor is at the end of the cursor node.
+  var reverseOffset = cursorNodeText.length - offset
+
+  if (reverseOffset < 0) {
+    // A negative reverse offset means the cursor is positioned past the end
+    // of the characters on this line.  We'll need to insert the missing
+    // whitespace.
+    var ws = hterm.getWhitespace(-reverseOffset);
+
+    // This whitespace should be completely unstyled.  Underline and background
+    // color would be visible on whitespace, so we can't use one of those
+    // spans to hold the text.
+    if (!(this.textAttributes.underline || this.textAttributes.background)) {
+      // Best case scenario, we can just pretend the spaces were part of the
+      // original string.
+      str = ws + str;
+    } else if (cursorNode.nodeType == 3 ||
+               !(cursorNode.style.textDecoration ||
+                 cursorNode.style.backgroundColor)) {
+      // Second best case, the current node is able to hold the whitespace.
+      cursorNode.textContent = (cursorNodeText += ws);
+    } else {
+      // Worst case, we have to create a new node to hold the whitespace.
+      var wsNode = cursorNode.ownerDocument.createTextNode(ws);
+      this.cursorRowNode_.insertBefore(wsNode, cursorNode.nextSibling);
+      this.cursorNode_ = cursorNode = wsNode;
+      this.cursorOffset_ = offset = -reverseOffset;
+      cursorNodeText = ws;
+    }
+
+    // We now know for sure that we're at the last character of the cursor node.
+    reverseOffset = 0;
   }
 
-  // Wrapping is simple since the cursor is located in the last block of text
-  // on the line.
+  if (this.textAttributes.matchesContainer(cursorNode)) {
+    // The new text can be placed directly in the cursor node.
+    if (reverseOffset == 0) {
+      cursorNode.textContent = cursorNodeText + str;
+    } else if (offset == 0) {
+      cursorNode.textContent = str + cursorNodeText;
+    } else {
+      cursorNode.textContent = cursorNodeText.substr(0, offset) + str +
+          cursorNodeText.substr(offset);
+    }
 
-  var cursorNodeText = this.cursorNode_.textContent;
-  var leadingText = cursorNodeText.substr(0, this.cursorOffset_);
-  var trailingText = str + cursorNodeText.substr(this.cursorOffset_);
-  var overflowText = trailingText.substr(trailingText.length - overflowCount);
-  trailingText = trailingText.substr(0, trailingText.length - overflowCount);
-
-  if (!overflowText)
-    overflowText = null;
-
-  this.cursorNode_.textContent = (
-      leadingText +
-      hterm.getWhitespace(missingSpaceCount) +
-      trailingText);
-
-  var cursorDelta = Math.min(str.length, trailingText.length);
-  if (this.cursorPosition.column + cursorDelta >= this.columnCount_) {
-    // The cursor ended up past the last column.  When this happens we
-    // need to leave the cursor on the last column but record the fact
-    // that it overflowed.
-    cursorDelta = this.columnCount_ - this.cursorPosition.column - 1;
-    this.cursorPosition.overflow = true;
+    this.cursorOffset_ += strLength;
+    return;
   }
 
-  this.cursorOffset_ += cursorDelta;
-  this.cursorPosition.column += cursorDelta;
+  // The cursor node is the wrong style for the new text.  If we're at the
+  // beginning or end of the cursor node, then the adjacent node is also a
+  // potential candidate.
 
-  return overflowText;
+  if (offset == 0) {
+    // At the beginning of the cursor node, the check the previous sibling.
+    var previousSibling = cursorNode.previousSibling;
+    if (previousSibling &&
+        this.textAttributes.matchesContainer(previousSibling)) {
+      previousSibling.textContent += str;
+      this.cursorNode_ = previousSibling;
+      this.cursorOffset_ = previousSibling.textContent.length;
+      return;
+    }
+
+    var newNode = this.textAttributes.createContainer(str);
+    this.cursorRowNode_.insertBefore(newNode, cursorNode);
+    this.cursorNode_ = newNode;
+    this.cursorOffset_ = strLength;
+    return;
+  }
+
+  if (reverseOffset == 0) {
+    // At the end of the cursor node, the check the next sibling.
+    var nextSibling = cursorNode.nextSibling;
+    if (nextSibling &&
+        this.textAttributes.matchesContainer(nextSibling)) {
+      nextSibling.textContent = str + nextSibling.textContent;
+      this.cursorNode_ = nextSibling;
+      this.cursorOffset_ = strLength;
+      return;
+    }
+
+    var newNode = this.textAttributes.createContainer(str);
+    this.cursorRowNode_.insertBefore(newNode, nextSibling);
+    this.cursorNode_ = newNode;
+    // We specifically need to include any missing whitespace here, since it's
+    // going in a new node.
+    this.cursorOffset_ = str.length;
+    return;
+  }
+
+  // Worst case, we're somewhere in the middle of the cursor node.  We'll
+  // have to split it into two nodes and insert our new container in between.
+  this.splitNode_(cursorNode, offset);
+  var newNode = this.textAttributes.createContainer(str);
+  this.cursorRowNode_.insertBefore(newNode, cursorNode.nextSibling);
+  this.cursorNode_ = newNode;
+  this.cursorOffset_ = strLength;
+};
+
+/**
+ * Insert an array of DOM nodes at the beginning of the cursor row.
+ *
+ * This does not pay attention to the cursor column, it only prepends to the
+ * beginning of the current row.
+ *
+ * This method does not attempt to coalesce rows of the same style.  It assumes
+ * that the rows being inserted have already been coalesced, and that there
+ * would be no gain in coalescing only the final node.
+ */
+hterm.Screen.prototype.prependNodes = function(ary) {
+  var parentNode = this.cursorRowNode_;
+
+  for (var i = ary.length - 1; i >= 0; i--) {
+    parentNode.insertBefore(ary[i], parentNode.firstChild);
+  }
 };
 
 /**
  * Overwrite the text at the current cursor position.
  *
- * If the text causes the column to overflow, the extra text is returned.
- *
- * @return {string} Text that overflowed the column, or null if nothing
- *     overflowed.
+ * You must call maybeClipCurrentRow() after in order to check overflow.
  */
 hterm.Screen.prototype.overwriteString = function(str) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;
   if (!maxLength)
-    return str;
+    return [str];
+
+  if ((this.cursorNode_.textContent.substr(this.cursorOffset_) == str) &&
+      this.textAttributes.matchesContainer(this.cursorNode_)) {
+    // This overwrite would be a no-op, just move the cursor and return.
+    this.cursorOffset_ += str.length;
+    this.cursorPosition.column += str.length;
+    return;
+  }
 
   this.deleteChars(Math.min(str.length, maxLength));
-  return this.insertString(str);
+  this.insertString(str);
 };
 
 /**
@@ -456,6 +622,11 @@ hterm.Screen.prototype.overwriteString = function(str) {
 hterm.Screen.prototype.deleteChars = function(count) {
   var node = this.cursorNode_;
   var offset = this.cursorOffset_;
+
+  if (node.textContent.length <= offset && !node.nextSibling) {
+    // There's nothing after this node/offset to delete, buh bye.
+    return;
+  }
 
   while (node && count) {
     var startLength = node.textContent.length;

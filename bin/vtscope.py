@@ -266,7 +266,9 @@ class VTScope(object):
       print 'Unknown command: "%s"' % command_name
       return
 
-    if False:
+    # Change this test to 'if False' to skip over the try/catch, making it
+    # easier to debug broken cmd_* functions.
+    if True:
       try:
         command_function(command_args)
       except Exception as ex:
@@ -345,6 +347,51 @@ class VTScope(object):
     Usage: exit
     """
     self.running = False
+
+  def cmd_send(self, args):
+    """Send a string to all clients.
+
+    You can use ESC to signify the ASCII code for escape, and JSON notation
+    to specify any other non-printables.
+
+    JSON notation uses '\uXXXX' to specify arbitrary codepoints, as well as
+    common shortcuts such as '\n', '\t', and '\b'.
+
+    Whitespace is used only as a separator.  To send a literal space you must
+    encode it as \u0020.
+
+        # Send the code to show the cursor (useful if the recorded session
+        # previously hid it).
+        send ESC [ ? 25 h
+
+        # Same as above.
+        send ESC [?25h
+
+        # Broken, would send the literal characters "ESC" followed by "[?25h".
+        send ESC[?25h
+
+        # Send a tab followed by a backspace.
+        send \t\b
+
+        # Send the text HelloWorld (whitespace is only used as a separator).
+        send Hello World
+
+        # Send the text "Hello World"
+        send Hello\u0020World
+    """
+
+    str = ''
+
+    for arg in args:
+      if len(arg) == 1:
+        str += arg
+      elif arg == 'ESC':
+        str += "\x1b"
+      else:
+        str += json.loads('"%s"' % arg)
+
+    print 'Sending %s' % json.dumps(str)
+    self.send(str)
 
   def cmd_stops(self, args):
     """Display a list of the stop offsets.

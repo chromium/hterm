@@ -63,6 +63,10 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // The DIV element for the visible cursor.
   this.cursorNode_ = null;
 
+  // Default font family for the terminal text.
+  this.defaultFontFamily_ = '"DejaVu Sans Mono", "Everson Mono", FreeMono, ' +
+      '"Andale Mono", "Lucida Console", monospace'
+
   // The default colors for text with no other color attributes.
   this.backgroundColor = 'black';
   this.foregroundColor = 'white';
@@ -70,7 +74,7 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // Default tab with of 8 to match xterm.
   this.tabWidth = 8;
 
-  // The color of the cursor.
+  // The color of the visible cursor.
   this.cursorColor = 'rgba(255,0,0,0.5)';
 
   // If true, scroll to the bottom on any keystroke.
@@ -128,6 +132,10 @@ hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
  */
 hterm.Terminal.prototype.saveCursor = function() {
   return this.screen_.cursorPosition.clone();
+};
+
+hterm.Terminal.prototype.getTextAttributes = function() {
+  return this.screen_.textAttributes;
 };
 
 /**
@@ -304,6 +312,8 @@ hterm.Terminal.prototype.reset = function() {
  */
 hterm.Terminal.prototype.softReset = function() {
   this.options_ = new hterm.Options();
+  this.setCursorVisible(true);
+  this.setCursorBlink(false);
 };
 
 hterm.Terminal.prototype.clearColorAndAttributes = function() {
@@ -441,6 +451,7 @@ hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
  */
 hterm.Terminal.prototype.saveOptions = function() {
   this.savedOptions_.cursor = this.saveCursor();
+  this.savedOptions_.textAttributes = this.screen_.textAttributes.clone();
 };
 
 /**
@@ -451,6 +462,8 @@ hterm.Terminal.prototype.saveOptions = function() {
 hterm.Terminal.prototype.restoreOptions = function() {
   if (this.savedOptions_.cursor)
     this.restoreCursor(this.savedOptions_.cursor);
+  if (this.savedOptions_.textAttributes)
+    this.screen_.textAttributes = this.savedOptions_.textAttributes;
 };
 
 /**
@@ -474,6 +487,8 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.div_ = div;
 
   this.scrollPort_.decorate(div);
+  this.scrollPort_.setFontFamily(this.defaultFontFamily_);
+
   this.document_ = this.scrollPort_.getDocument();
 
   // Get character dimensions from the scrollPort.
@@ -687,16 +702,35 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end) {
  * @param{string} str The string to print.
  */
 hterm.Terminal.prototype.print = function(str) {
-  do {
-    if (this.options_.wraparound && this.screen_.cursorPosition.overflow)
-      this.newLine();
+  if (this.options_.wraparound && this.screen_.cursorPosition.overflow)
+    this.newLine();
 
-    if (this.options_.insertMode) {
-      str = this.screen_.insertString(str);
-    } else {
-      str = this.screen_.overwriteString(str);
-    }
-  } while (this.options_.wraparound && str);
+  if (this.options_.insertMode) {
+    this.screen_.insertString(str);
+  } else {
+    this.screen_.overwriteString(str);
+  }
+
+  var overflow = this.screen_.maybeClipCurrentRow();
+
+  if (this.options_.wraparound && overflow) {
+    var lastColumn;
+
+    do {
+      if (this.screen_.cursorPosition.overflow)
+        this.newLine();
+
+      if (!this.options_.insertMode)
+        this.screen_.deleteChars(overflow.characterLength);
+
+      this.screen_.prependNodes(overflow);
+      lastColumn = overflow.characterCount;
+
+      overflow = this.screen_.maybeClipCurrentRow();
+    } while (overflow);
+
+    this.setCursorColumn(lastColumn);
+  }
 
   this.scheduleSyncCursorPosition_();
 
@@ -1019,6 +1053,7 @@ hterm.Terminal.prototype.insertSpace = function(count) {
 
   var ws = hterm.getWhitespace(count || 1);
   this.screen_.insertString(ws);
+  this.screen_.maybeClipCurrentRow();
 
   this.restoreCursor(cursor);
 };

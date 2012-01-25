@@ -86,7 +86,8 @@ hterm.VT.Tests.addTest = function(name, callback) {
  * on the screen and scrolls into the scrollback buffer correctly.
  */
 hterm.VT.Tests.addTest('sanity', function(result, cx) {
-    this.terminal.interpret('0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10\r\n11\r\n12');
+    this.terminal.interpret('0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n' +
+                            '7\r\n8\r\n9\r\n10\r\n11\r\n12');
 
     var text = this.terminal.getRowsText(0, 13);
     result.assertEQ(text, '0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
@@ -559,8 +560,32 @@ hterm.VT.Tests.disableTest('clear-all-tabstops', function(result, cx) {
 /**
  * TODO(rginda): Test text attributes.
  */
-hterm.VT.Tests.disableTest('color-change', function(result, cx) {
-    '[Xm';
+hterm.VT.Tests.addTest('color-change', function(result, cx) {
+    this.terminal.interpret('[mplain....... [0;36mHi\r\n' +
+                            '[mbright...... [0;96mHi\r\n' +
+                            '[mbold........ [1;36mHi\r\n' +
+                            '[mbold-bright. [1;96mHi\r\n' +
+                            '[mbright-bold. [96;1mHi');
+
+    var text = this.terminal.getRowsText(0, 5);
+    result.assertEQ(text,
+                    'plain....... Hi\n' +
+                    'bright...... Hi\n' +
+                    'bold........ Hi\n' +
+                    'bold-bright. Hi\n' +
+                    'bright-bold. Hi');
+
+    for (var i = 0; i < 5; i++) {
+      var row = this.terminal.getRowNode(i);
+      result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
+      result.assertEQ(row.childNodes[0].nodeType, 3, 'i: ' + i);
+      result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
+      result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
+      result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
+      result.assert(!!row.childNodes[1].style.fontWeight == (i > 1), 'i: ' + i);
+    }
+
+    result.pass();
   });
 
 /**
@@ -799,15 +824,10 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
     result.assertEQ(text,
                     '              A\n' +
                     'XXA\n' +
-
                     'XX             \n' +
-
                     '              A\n' +
                     'XXAAA\n' +
-
                     'XX            A');
-
-
     result.pass();
   });
 
@@ -833,7 +853,7 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
 
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7\n8 XX\n9\n10');
+    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7 XX\n8\n9\n10');
 
     // Aand back to alternate screen.
     this.terminal.interpret('\x1b[?1049h');
@@ -842,7 +862,7 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
 
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\n\n\n    XX\n\n');
+    result.assertEQ(text, '1\n2\n3\n4\n\n\n    XX\n\n\n');
 
     result.pass();
   });

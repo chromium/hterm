@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -251,8 +251,11 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     this.screen.clearCursorRow();
     this.screen.insertString('XXXX');
     this.screen.setCursorPosition(0, 0);
-    var overflow = this.screen.insertString(ws);
-    result.assertEQ(overflow, 'XXXX');
+    this.screen.insertString(ws);
+    var overflow = this.screen.maybeClipCurrentRow();
+    result.assertEQ(overflow.length, 1);
+    result.assertEQ(overflow[0].nodeType, 3);
+    result.assertEQ(overflow[0].textContent, 'XXXX');
 
     // Insert into a more complicated row.
     this.screen.setCursorPosition(1, 3);
@@ -260,15 +263,18 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     result.assertEQ(ary[1].innerHTML, 'helXXXXXlo<div id="1"> </div>' +
                     '<div id="2">world</div>');
 
-    // Check that multi-attribute is not implemented.  We'll want a better test
-    // once its implemented.
+    // Check multi-attribute overflow.
     this.screen.setCursorPosition(1, 0);
-    try {
-      this.screen.insertString(ws);
-      result.assert(false);
-    } catch (ex) {
-      result.assertEQ(ex, 'NOT IMPLEMENTED');
-    }
+    this.screen.insertString(ws);
+    overflow = this.screen.maybeClipCurrentRow();
+    result.assert(overflow instanceof Array);
+    result.assertEQ(overflow.length, 3);
+    result.assertEQ(overflow[0].nodeType, 3);
+    result.assertEQ(overflow[0].textContent, "helXXXXXlo");
+    result.assertEQ(overflow[1].tagName, 'DIV');
+    result.assertEQ(overflow[1].textContent, " ");
+    result.assertEQ(overflow[2].tagName, 'DIV');
+    result.assertEQ(overflow[2].textContent, "world");
 
     result.pass();
   });

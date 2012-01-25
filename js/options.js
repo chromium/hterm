@@ -27,7 +27,6 @@ hterm.Options = function(opt_copy) {
   this.reverseWraparound = opt_copy ? opt_copy.reverseWraparound : false;
   this.originMode = opt_copy ? opt_copy.originMode : false;
   this.autoCarriageReturn = opt_copy ? opt_copy.autoCarriageReturn : false;
-  this.specialChars = opt_copy ? opt_copy.specialChars : false;
   this.cursorVisible = opt_copy ? opt_copy.cursorVisible : false;
   this.cursorBlink = opt_copy ? opt_copy.cursorBlink : false;
   this.insertMode = opt_copy ? opt_copy.insertMode : false;

@@ -255,6 +255,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.setRowMetrics(this.fontSize_, this.rowHeight_);
 };
 
+hterm.ScrollPort.prototype.setFontFamily = function(fontFamily) {
+  this.screen_.style.fontFamily = fontFamily;
+};
+
 hterm.ScrollPort.prototype.focus = function() {
   this.iframe_.focus();
   this.screen_.focus();

@@ -507,6 +507,7 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.altSendsEscape = state;
       break;
 
+    case '47':
     case '1047':  // no-spec
       this.terminal.setAlternateMode(state);
       break;
@@ -515,10 +516,15 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.saveOptions();
 
     case '1049':  // 1047 + 1048 + clear.
-      this.terminal.saveOptions();
-      this.terminal.setAlternateMode(state);
-      if (state)
+      if (state) {
+        this.terminal.saveOptions();
+        this.terminal.setAlternateMode(state);
         this.terminal.clear();
+      } else {
+        this.terminal.setAlternateMode(state);
+        this.terminal.restoreOptions();
+      }
+
       break;
 
     default:
@@ -1416,9 +1422,160 @@ hterm.VT.CSI['?l'] = function(args) {
 /**
  * Character Attributes (SGR).
  *
- * Not currently implemented.
+ * Iterate through the list of arguments, applying the following attribute
+ * changes based on the argument value...
+ *
+ *    0 Normal (default).
+ *    1 Bold.
+ *    4 Underlined.
+ *    5 Blink (appears as Bold).
+ *    7 Inverse.
+ *    8 Invisible, i.e., hidden (VT300).
+ *   22 Normal (neither bold nor faint).
+ *   24 Not underlined.
+ *   25 Steady (not blinking).
+ *   27 Positive (not inverse).
+ *   28 Visible, i.e., not hidden (VT300).
+ *   30 Set foreground color to Black.
+ *   31 Set foreground color to Red.
+ *   32 Set foreground color to Green.
+ *   33 Set foreground color to Yellow.
+ *   34 Set foreground color to Blue.
+ *   35 Set foreground color to Magenta.
+ *   36 Set foreground color to Cyan.
+ *   37 Set foreground color to White.
+ *   39 Set foreground color to default (original).
+ *   40 Set background color to Black.
+ *   41 Set background color to Red.
+ *   42 Set background color to Green.
+ *   43 Set background color to Yellow.
+ *   44 Set background color to Blue.
+ *   45 Set background color to Magenta.
+ *   46 Set background color to Cyan.
+ *   47 Set background color to White.
+ *   49 Set background color to default (original)
+ *
+ * For 16-color support, the following apply.
+ *
+ *   90 Set foreground color to Bright Black.
+ *   91 Set foreground color to Bright Red.
+ *   92 Set foreground color to Bright Green.
+ *   93 Set foreground color to Bright Yellow.
+ *   94 Set foreground color to Bright Blue.
+ *   95 Set foreground color to Bright Magenta.
+ *   96 Set foreground color to Bright Cyan.
+ *   97 Set foreground color to Bright White.
+ *  100 Set background color to Bright Black.
+ *  101 Set background color to Bright Red.
+ *  102 Set background color to Bright Green.
+ *  103 Set background color to Bright Yellow.
+ *  104 Set background color to Bright Blue.
+ *  105 Set background color to Bright Magenta.
+ *  106 Set background color to Bright Cyan.
+ *  107 Set background color to Bright White.
+ *
+ * For 88- or 256-color support, the following apply.
+ *  38 ; 5 ; P Set foreground color to the second P.
+ *  48 ; 5 ; P Set background color to the second P.
+ *
+ * Note that most terminals consider "bold" to be "bold and bright".  In
+ * some documents the bold state is even referred to as bright.  We interpret
+ * bold as bold-bright here too, but only when the "bold" setting comes before
+ * the color selection.
  */
-hterm.VT.CSI['m'] = function () {};
+hterm.VT.CSI['m'] = function (args) {
+  function get256(i) {
+    if (args.length < i + 2 || args[i + 1] != '5')
+      return null;
+
+    return parseInt(args[i + 2], 10);
+  }
+
+  var attrs = this.terminal.getTextAttributes();
+
+  if (!args.length) {
+    attrs.reset();
+    return;
+  }
+
+  for (var i = 0; i < args.length; i++) {
+    var arg = parseInt(args[i] || 0, 10);
+
+    if (arg < 30) {
+      if (arg == 0) {
+        attrs.reset();
+      } else if (arg == 1) {
+        attrs.bold = true;
+      } else if (arg == 4) {
+        attrs.underline = true;
+      } else if (arg == 5) {
+        attrs.blink = true;
+      } else if (arg == 7) {  // Inverse.
+        attrs.foreground = this.terminal.backgroundColor;
+        attrs.background = this.terminal.foregroundColor;
+      } else if (arg == 8) {  // Invisible.
+        attrs.foreground = this.terminal.backgroundColor;
+      } else if (arg == 22) {
+        attrs.bold = false;
+      } else if (arg == 24) {
+        attrs.underline = false;
+      } else if (arg == 25) {
+        attrs.blink = false;
+      } else if (arg == 27) {
+        attrs.foreground = attrs.DEFAULT_COLOR;
+        attrs.background = attrs.DEFAULT_COLOR;
+      } else if (arg == 28) {
+        attrs.foreground = attrs.DEFAULT_COLOR;
+      }
+
+    } else if (arg < 50) {
+      // Select fore/background color from bottom half of 16 color palette
+      // or from the 256 color palette.
+      if (arg < 38) {
+        attrs.foreground = attrs.COLORS_16[attrs.bold ? arg - 22 : arg - 30];
+
+      } else if (arg == 38) {
+        var c = get256(i);
+        if (c == null)
+          return;
+
+        i += 2;
+
+        if (c > 256)
+          continue;
+
+        attrs.foreground = attrs.COLORS_256[c];
+
+      } else if (arg == 39) {
+        attrs.foreground = attrs.DEFAULT_COLOR;
+
+      } else if (arg < 48) {
+        attrs.background = attrs.COLORS_16[arg - 40];
+
+      } else if (arg == 48) {
+        var c = get256(i);
+        if (!c)
+          return;
+
+        i += 2;
+
+        if (c > 256)
+          continue;
+
+        attrs.background = attrs.COLORS_256[c];
+      } else {
+        attrs.background = attrs.DEFAULT_COLOR;
+      }
+
+    } else if (arg >= 90 && arg <= 97) {
+      attrs.foreground = attrs.COLORS_16[arg - 90 + 8];
+
+    } else if (arg >= 100 && arg <= 107) {
+      attrs.foreground = attrs.COLORS_16[arg - 100 + 8];
+
+    }
+  }
+};
 
 /**
  * Set xterm-specific keyboard modes.
