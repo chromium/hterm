@@ -40,6 +40,7 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   this.scrollPort_ = new hterm.ScrollPort(this, fontSize, opt_lineHeight);
   this.scrollPort_.subscribe('resize', this.onResize_.bind(this));
   this.scrollPort_.subscribe('scroll', this.onScroll_.bind(this));
+  this.scrollPort_.subscribe('paste', this.onPaste_.bind(this));
 
   // The div that contains this terminal.
   this.div_ = null;
@@ -119,9 +120,11 @@ hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
           self.io.pop();
           self.io.println(hterm.msg('COMMAND_COMPLETE',
                                     [self.command.commandName, code]));
+          self.vt.keyboard.installKeyboard(null);
         }
       });
 
+  this.vt.keyboard.installKeyboard(this.document_.body.firstChild);
   this.command.run();
 };
 
@@ -136,6 +139,13 @@ hterm.Terminal.prototype.saveCursor = function() {
 
 hterm.Terminal.prototype.getTextAttributes = function() {
   return this.screen_.textAttributes;
+};
+
+/**
+ * Change the title of this terminal's window.
+ */
+hterm.Terminal.prototype.setWindowTitle = function(title) {
+  this.document_.title = title;
 };
 
 /**
@@ -507,8 +517,6 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.document_.body.appendChild(this.cursorNode_);
 
   this.setReverseVideo(false);
-
-  this.vt.keyboard.installKeyboard(this.document_.body.firstChild);
 
   var link = this.document_.createElement('link');
   link.setAttribute('href', '../css/dialogs.css');
@@ -1529,6 +1537,13 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
  */
 hterm.Terminal.prototype.onScroll_ = function() {
   this.scheduleSyncCursorPosition_();
+};
+
+/**
+ * React when text is pasted into the scrollPort.
+ */
+hterm.Terminal.prototype.onPaste_ = function(e) {
+  this.io.onVTKeystroke(e.text);
 };
 
 /**

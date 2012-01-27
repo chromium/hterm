@@ -96,6 +96,8 @@ hterm.NaSSH.prototype.run = function() {
   this.plugin_.addEventListener('load', this.onPluginLoaded_.bind(this));
   this.plugin_.addEventListener('message', this.onPluginMessage_.bind(this));
   document.body.appendChild(this.plugin_);
+
+  window.onbeforeunload = this.onBeforeUnload_.bind(this);
 };
 
 /**
@@ -204,6 +206,7 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
  */
 hterm.NaSSH.prototype.exit = function(code) {
   this.io.pop();
+  window.onbeforeunload = null;
 
   if (this.argv_.onExit)
     this.argv_.onExit(code);
@@ -251,6 +254,12 @@ hterm.NaSSH.prototype.onPluginLoaded_ = function() {
   } else {
     this.promptForDestination_();
   }
+};
+
+hterm.NaSSH.prototype.onBeforeUnload_ = function(e) {
+  var msg = hterm.msg('BEFORE_UNLOAD');
+  e.returnValue = msg;
+  return msg;
 };
 
 /**

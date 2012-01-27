@@ -162,7 +162,7 @@ hterm.VT.Keyboard.prototype.installKeyboard = function(element) {
   if (element == this.keyboardElement_)
     return;
 
-  if (this.keyboardElement_)
+  if (element && this.keyboardElement_)
     this.installKeyboard(null);
 
   for (var i = 0; i < this.handlers_.length; i++) {

@@ -24,6 +24,11 @@
     "description": "The label for the Cancel button in dialogs."
   },
 
+  "BEFORE_UNLOAD": {
+    "message": "Closing this tab will disconnect this session.",
+    "description": "The message shown to a user when they try to close a tab with an open session."
+  },
+
   "PLUGIN_LOADING": {
     "message": "Loading NaCl plugin...",
     "description": "Status message displayed while loading the plugin."

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,7 +203,7 @@ function PromptDialog(parentNode) {
   this.input_ = this.document_.createElement('input');
   this.input_.setAttribute('type', 'text');
   this.input_.addEventListener('focus', this.onInputFocus.bind(this));
-  this.input_.addEventListener('keydown', this.onKeyDown_.bind(this));
+  this.input_.addEventListener('keypress', this.onKeyDown_.bind(this));
   this.initialFocusElement_ = this.input_;
   this.frame_.insertBefore(this.input_, this.text_.nextSibling);
 }
@@ -215,8 +215,10 @@ PromptDialog.prototype.onInputFocus = function(event) {
 };
 
 PromptDialog.prototype.onKeyDown_ = function(event) {
-  if (event.keyCode == 13)  // Enter
+  if (event.keyCode == 13) {  // Enter
     this.onOkClick_(event);
+    event.preventDefault();
+  }
 }
 
 PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,

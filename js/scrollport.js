@@ -175,7 +175,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   div.appendChild(this.iframe_);
 
   this.iframe_.contentWindow.addEventListener('resize',
-                                              this.onResize.bind(this));
+                                              this.onResize_.bind(this));
 
   var doc = this.document_ = this.iframe_.contentDocument;
   doc.body.style.cssText = (
@@ -211,6 +211,17 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.addEventListener('scroll', this.onScroll_.bind(this));
   this.screen_.addEventListener('mousewheel', this.onScrollWheel_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
+  this.screen_.addEventListener('paste', this.onPaste_.bind(this));
+
+  // We send focus to this element just before a paste happens, so we can
+  // capture the pasted text and forward it on to someone who cares.
+  this.pasteTarget_ = doc.createElement('textarea');
+  this.pasteTarget_.setAttribute('tabindex', '-1');
+  this.pasteTarget_.style.cssText = (
+    'position: absolute;' +
+    'top: -999px;');
+
+  doc.body.appendChild(this.pasteTarget_);
 
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
@@ -938,7 +949,7 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
  * The browser will resize us such that the top row stays at the top, but we
  * prefer to the bottom row to stay at the bottom.
  */
-hterm.ScrollPort.prototype.onResize = function(e) {
+hterm.ScrollPort.prototype.onResize_ = function(e) {
   this.resize();
 };
 
@@ -997,4 +1008,18 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
         startBackfillIndex, this.selection_.endRow.rowIndex);
     this.rowNodes_.insertBefore(this.bottomSelectBag_, this.selection_.endRow);
   }
+};
+
+/**
+ * Handle a paste event on the the ScrollPort's screen element.
+ */
+hterm.ScrollPort.prototype.onPaste_ = function(e) {
+  this.pasteTarget_.focus();
+
+  var self = this;
+  setTimeout(function() {
+      self.publish('paste', { text: self.pasteTarget_.value });
+      self.pasteTarget_.value = '';
+      self.screen_.focus();
+    }, 0);
 };

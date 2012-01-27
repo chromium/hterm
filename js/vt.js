@@ -566,6 +566,14 @@ hterm.VT.ESC = {};
 hterm.VT.CSI = {};
 
 /**
+ * Collection of OSC (Operating System Control) sequences.
+ *
+ * These sequences begin with 'ESC ]', followed by a function number and a
+ * string terminated by either ST or BEL.
+ */
+hterm.VT.OSC = {};
+
+/**
  * Collection of VT52 sequences.
  *
  * When in VT52 mode, other sequences are disabled.
@@ -867,12 +875,28 @@ hterm.VT.ESC['\\'] = hterm.VT.ignore;
  * Operating System Command (OSC).
  *
  * Commands relating to the operating system.
- *
- * Will not implement.
  */
 hterm.VT.CC1['\x9d'] =
 hterm.VT.ESC[']'] = function() {
-  this.parser_ = this.parseUntilStringTerminator_;
+  this.args_.length = 0;
+  this.args_[0] = '';
+
+  this.parser_ = function(str, i) {
+    var endIndex = this.parseUntilStringTerminator_(str, i);
+    this.args_[0] += str.substring(i, endIndex);
+    if (this.parser_ == this.parseUnknown_) {
+      // We're done.
+      var ary = this.args_[0].match(/^(\d+);(.*)(\x1b\\|\x07)$/);
+      if (ary) {
+        this.args_[0] = ary[2];
+        this.dispatch('OSC', ary[1], this.args_);
+      } else {
+        console.warn('Invalid OSC: ' + JSON.stringify(this.args_[0]));
+      }
+    }
+
+    return endIndex;
+  };
 };
 
 /**
@@ -1109,6 +1133,20 @@ hterm.VT.ESC['o'] =
 hterm.VT.ESC['|'] =
 hterm.VT.ESC['}'] =
 hterm.VT.ESC['~'] = hterm.VT.ignore;
+
+/**
+ * Change icon name and window title.
+ *
+ * We only change the window title.
+ */
+hterm.VT.OSC['0'] = function(args) {
+  this.terminal.setWindowTitle(args[0]);
+};
+
+/**
+ * Change window title.
+ */
+hterm.VT.OSC['2'] = hterm.VT.OSC['0'];
 
 /**
  * Insert (blank) characters (ICH).
@@ -1475,8 +1513,8 @@ hterm.VT.CSI['?l'] = function(args) {
  *  107 Set background color to Bright White.
  *
  * For 88- or 256-color support, the following apply.
- *  38 ; 5 ; P Set foreground color to the second P.
- *  48 ; 5 ; P Set background color to the second P.
+ *  38 ; 5 ; P Set foreground color to P.
+ *  48 ; 5 ; P Set background color to P.
  *
  * Note that most terminals consider "bold" to be "bold and bright".  In
  * some documents the bold state is even referred to as bright.  We interpret
