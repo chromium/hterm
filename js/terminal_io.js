@@ -116,7 +116,7 @@ hterm.Terminal.IO.prototype.sendString = function(string) {
  */
 hterm.Terminal.IO.prototype.onVTKeystroke = function(string) {
   // Override this.
-  console.log('Unobserverd VT keystroke: ' + string);
+  console.log('Unobserverd VT keystroke: ' + JSON.stringify(string));
 };
 
 /**

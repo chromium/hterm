@@ -621,10 +621,10 @@ hterm.VT.Tests.addTest('status-report', function(result, cx) {
  */
 hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1h');
-    result.assertEQ(this.terminal.vt.applicationCursor, true);
+    result.assertEQ(this.terminal.keyboard.applicationCursor, true);
 
     this.terminal.interpret('\x1b[?1l');
-    result.assertEQ(this.terminal.vt.applicationCursor, false);
+    result.assertEQ(this.terminal.keyboard.applicationCursor, false);
 
     var fg = this.terminal.foregroundColor;
     var bg = this.terminal.backgroundColor;
@@ -687,22 +687,22 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     result.assertEQ(this.terminal.options_.reverseWraparound, false);
 
     this.terminal.interpret('\x1b[?67h');
-    result.assertEQ(this.terminal.vt.backspaceSendsBackspace, true);
+    result.assertEQ(this.terminal.keyboard.backspaceSendsBackspace, true);
 
     this.terminal.interpret('\x1b[?67l');
-    result.assertEQ(this.terminal.vt.backspaceSendsBackspace, false);
+    result.assertEQ(this.terminal.keyboard.backspaceSendsBackspace, false);
 
     this.terminal.interpret('\x1b[?1036h');
-    result.assertEQ(this.terminal.vt.metaSendsEscape, true);
+    result.assertEQ(this.terminal.keyboard.metaSendsEscape, true);
 
     this.terminal.interpret('\x1b[?1036l');
-    result.assertEQ(this.terminal.vt.metaSendsEscape, false);
+    result.assertEQ(this.terminal.keyboard.metaSendsEscape, false);
 
     this.terminal.interpret('\x1b[?1039h');
-    result.assertEQ(this.terminal.vt.altSendsEscape, true);
+    result.assertEQ(this.terminal.keyboard.altSendsEscape, true);
 
     this.terminal.interpret('\x1b[?1039l');
-    result.assertEQ(this.terminal.vt.altSendsEscape, false);
+    result.assertEQ(this.terminal.keyboard.altSendsEscape, false);
 
     result.assertEQ(this.terminal.screen_,
                     this.terminal.primaryScreen_);

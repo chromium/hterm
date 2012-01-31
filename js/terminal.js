@@ -96,6 +96,9 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // The VT escape sequence interpreter.
   this.vt = new hterm.VT(this);
 
+  // The keyboard hander.
+  this.keyboard = new hterm.Keyboard(this);
+
   // General IO interface that can be given to third parties without exposing
   // the entire terminal object.
   this.io = new hterm.Terminal.IO(this);
@@ -120,13 +123,37 @@ hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
           self.io.pop();
           self.io.println(hterm.msg('COMMAND_COMPLETE',
                                     [self.command.commandName, code]));
-          self.vt.keyboard.installKeyboard(null);
+          self.uninstallKeyboard();
         }
       });
 
-  this.vt.keyboard.installKeyboard(this.document_.body.firstChild);
+  this.installKeyboard();
   this.command.run();
 };
+
+/**
+ * Returns true if the current screen is the primary screen, false otherwise.
+ */
+hterm.Terminal.prototype.isPrimaryScreen = function() {
+  return this.screen_ = this.primaryScreen_;
+};
+
+/**
+ * Install the keyboard handler for this terminal.
+ *
+ * This will prevent the browser from seeing any keystrokes sent to the
+ * terminal.
+ */
+hterm.Terminal.prototype.installKeyboard = function() {
+  this.keyboard.installKeyboard(this.document_.body.firstChild);
+}
+
+/**
+ * Uninstall the keyboard handler for this terminal.
+ */
+hterm.Terminal.prototype.uninstallKeyboard = function() {
+  this.keyboard.installKeyboard(null);
+}
 
 /**
  * Return a copy of the current cursor position.
@@ -145,7 +172,7 @@ hterm.Terminal.prototype.getTextAttributes = function() {
  * Change the title of this terminal's window.
  */
 hterm.Terminal.prototype.setWindowTitle = function(title) {
-  this.document_.title = title;
+  window.document.title = title;
 };
 
 /**

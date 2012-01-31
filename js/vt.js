@@ -83,44 +83,10 @@ hterm.VT = function(terminal) {
       'g');
 
   /**
-   * The keyboard handler associated with this virtual terminal.
-   */
-  this.keyboard = new hterm.VT.Keyboard(this);
-
-  /**
    * If true, emit warnings when we encounter a control character or escape
    * sequence that we don't recognize or explicitly ignore.
    */
   this.warnUnimplemented = true;
-
-  /**
-   * Enable/disable application keypad.
-   *
-   * This changes the way numeric keys are sent from the keyboard.
-   */
-  this.applicationKeypad = false;
-
-  /**
-   * Enable/disable the application cursor mode.
-   *
-   * This changes the way cursor keys are sent from the keyboard.
-   */
-  this.applicationCursor = false;
-
-  /**
-   * Whether backspace should send ^H or not.
-   */
-  this.backspaceSendsBackspace = false;
-
-  /**
-   * Set whether the alt key sends a leading escape or not.
-   */
-  this.altSendsEscape = true;
-
-  /**
-   * Set whether the meta key sends a leading escape or not.
-   */
-  this.metaSendsEscape = true;
 };
 
 /**
@@ -150,6 +116,22 @@ hterm.VT.prototype.interpret = function(str) {
 };
 
 /**
+ * UTF-8 encode a unicode string.
+ *
+ * Currently only works with codepoints <= 0x07ff.
+ * TODO(rginda): Generalize for higher codepoints.
+ */
+hterm.VT.prototype.encodeCharset = function(str) {
+  return str.replace(/([\u0080-\u07ff])/g, function(m, ch) {
+      var code = ch.charCodeAt(0);
+      // 110x-xxxx 10xx-xxxx
+      // 11 bits encoded in 2 bytes.
+      return String.fromCharCode(0xc0 | (code >> 6)) +
+      String.fromCharCode (0x80 | (code & 0x3f));
+    });
+};
+
+/**
  * Decode an encoded string into a unicode string.
  *
  * Hard-coded to UTF-8.
@@ -172,7 +154,7 @@ hterm.VT.prototype.decodeCharset = function(str) {
   }
 
   return str.replace(this.utf8Pattern_, function(bytes) {
-      var ary = bytes.split('').map(function (e) { return e.charCodeAt() });
+      var ary = bytes.split('').map(function (e) { return e.charCodeAt(0) });
       var ch = ary[0];
       if (ch <= 0xdf) {
         // 110x-xxxx 10xx-xxxx
@@ -446,7 +428,7 @@ hterm.VT.prototype.setANSIMode = function(code, state) {
 hterm.VT.prototype.setDECMode = function(code, state) {
   switch (code) {
     case '1':  // DECCKM
-      this.applicationCursor = state;
+      this.terminal.keyboard.applicationCursor = state;
       break;
 
     case '3':  // DECCOLM
@@ -488,7 +470,7 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '67':  // DECBKM
-      this.backspaceSendsBackspace = state;
+      this.terminal.keyboard.backspaceSendsBackspace = state;
       break;
 
     case '1010':  // rxvt
@@ -500,11 +482,11 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '1036':  // no-spec
-      this.metaSendsEscape = state;
+      this.terminal.keyboard.metaSendsEscape = state;
       break;
 
     case '1039':  // no-spec
-      this.altSendsEscape = state;
+      this.terminal.keyboard.altSendsEscape = state;
       break;
 
     case '47':
@@ -1081,14 +1063,14 @@ hterm.VT.ESC['9'] = hterm.VT.ignore;
  * Application keypad (DECPAM).
  */
 hterm.VT.ESC['='] = function() {
-  this.applicationKeypad = true;
+  this.terminal.keyboard.applicationKeypad = true;
 };
 
 /**
  * Normal keypad (DECPNM).
  */
 hterm.VT.ESC['>'] = function() {
-  this.applicationKeypad = false;
+  this.terminal.keyboard.applicationKeypad = false;
 };
 
 /**

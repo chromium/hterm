@@ -1,7 +1,8 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDixnK8f4AuZrV+QZx7iiONG/SAiU5VrjlXD2KxRGvI6tDJrLvUin+GpcuMH1d/Qrc0+PmCzJ1duAiD/9F2q8kiYwQ1C3gZmztYneAiVX+3/OvXHr/idyueNQ5XFvBnMCpKD0KqPEksP80utV417fuaHAY4NFjofLZyWUvu23XHRwIDAQAB",
+  "minimum_chrome_version": "17",
   "name": "hterm",
-  "version": "0.5.4",
+  "version": "0.6.4",
   "default_locale": "en",
   "icons": {
     "128": "images/vt-128.png",
@@ -12,7 +13,6 @@
   "description": "Terminal emulator and SSH client.",
   "offline_enabled": true,
   "permissions": [
-    "terminalPrivate",
     "unlimitedStorage"
   ],
   "app": {
