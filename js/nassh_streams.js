@@ -134,3 +134,135 @@ hterm.NaSSH.Stream.Random.prototype.asyncRead = function(size, onRead) {
 
   setTimeout(function() { onRead(b64bytes) }, 0);
 };
+
+/**
+ * XHR backed streams.
+ */
+hterm.NaSSH.Stream.XHRSocket = function(fd) {
+  hterm.NaSSH.Stream.apply(this, [fd]);
+};
+
+hterm.NaSSH.Stream.XHRSocket.prototype = {
+  __proto__: hterm.NaSSH.Stream.prototype
+};
+
+/**
+ * Maximum length of message that can be sent to avoid request limits.
+ */
+hterm.NaSSH.Stream.XHRSocket.prototype.maxMessage = 1024;
+
+hterm.NaSSH.Stream.XHRSocket.prototype.asyncOpen_ = function(args, onOpen) {
+  this.id_ = args.id;
+  this.relay_ = args.relay;
+
+  // Write steam.
+  this.wcnt_ = 0;
+  this.ws_ = new XMLHttpRequest();
+  this.ws_.onerror = this.onSocketError_.bind(this);
+  this.ws_.onreadystatechange = this.onWriteReady_.bind(this);
+  this.ws_.queue_ = [];
+  this.sent_ = 0;
+
+  // Read stream.
+  this.rcnt_ = 0;
+  this.rs_ = new XMLHttpRequest();
+  this.rs_.onerror = this.onSocketError_.bind(this);
+  this.rs_.onreadystatechange = this.onReadReady_.bind(this);
+  this.rs_.open("GET", "http://" + this.relay_ + "/read?sid=" +
+      this.id_ + "&rcnt=" + this.rcnt_, true);
+  this.rs_.send();
+
+  onOpen(true);
+}
+
+hterm.NaSSH.Stream.XHRSocket.prototype.asyncRead = function(size, onRead) {
+  // Do nothing we will push data.
+};
+
+hterm.NaSSH.Stream.XHRSocket.prototype.asyncWrite = function(data, onWrite) {
+  if (data.length)
+    this.ws_.queue_.push(this.base64ToWebSafe_(data));
+
+  if (this.sent_ == 0 && this.ws_.queue_.length) {
+    var msg = this.ws_.queue_[0];
+    if (msg.length > this.maxMessage) {
+      msg = msg.substr(0, this.maxMessage);
+    }
+    this.sent_ = msg.length;
+    this.ws_.open("GET", "http://" + this.relay_ + "/write?sid=" +
+        this.id_ + "&wcnt=" + this.wcnt_ + "&data=" + msg, true);
+    this.ws_.send();
+  }
+
+  if (onWrite)
+    setTimeout(onWrite, 0);
+};
+
+hterm.NaSSH.Stream.XHRSocket.prototype.close = function() {
+  hterm.NaSSH.Stream.prototype.close.apply(this, [null]);
+};
+
+hterm.NaSSH.Stream.XHRSocket.prototype.onDataAvailable = function(data) { };
+
+hterm.NaSSH.Stream.XHRSocket.prototype.webSafeToBase64_ = function(s) {
+  s = s.replace(/[-_]/g, function(ch) { return (ch == '-' ? '+' : '/'); });
+  if (s.length % 4 == 2) {
+    s = s + '==';
+  } else if (s.length % 4 == 3) {
+    s = s + '=';
+  } else if (s.length % 4 != 0) {
+    this.close();
+    throw 'Invalid web safe base64 string length: ' + s.length;
+  }
+  return s;
+}
+
+hterm.NaSSH.Stream.XHRSocket.prototype.base64ToWebSafe_ = function(s) {
+  s = s.replace(/[+/=]/g,
+      function(ch) { return (ch == '+' ? '-' : (ch == '/' ? '_' : "")); });
+  return s;
+}
+
+hterm.NaSSH.Stream.XHRSocket.prototype.onReadReady_ = function(e) {
+  if (this.rs_.readyState == 4) {
+    if (this.rs_.status == 200) {
+      this.rcnt_ += Math.floor(this.rs_.responseText.length * 3 / 4);
+      var data = this.webSafeToBase64_(this.rs_.responseText);
+      this.onDataAvailable(data);
+    }
+
+    if (this.rs_.status == 410) { // session gone
+      this.close();
+      return;
+    }
+
+    this.rs_.open("GET", "http://" + this.relay_ + "/read?sid=" +
+        this.id_ + "&rcnt=" + this.rcnt_, true);
+    this.rs_.send();
+  }
+};
+
+hterm.NaSSH.Stream.XHRSocket.prototype.onWriteReady_ = function(e) {
+  if (this.ws_.readyState == 4) {
+    if (this.ws_.status == 200) {
+      if (this.sent_ == this.ws_.queue_[0].length) {
+        this.ws_.queue_.shift();
+      } else {
+        this.ws_.queue_[0] = this.ws_.queue_[0].substr(this.sent_);
+      }
+      this.wcnt_ += Math.floor(this.sent_ * 3 / 4);
+      this.sent_ = 0;
+    }
+
+    if (this.ws_.status == 410) { // session gone
+      this.close();
+      return;
+    }
+
+    this.asyncWrite('', null);
+  }
+};
+
+hterm.NaSSH.Stream.XHRSocket.prototype.onSocketError_ = function(e) {
+  this.close()
+};

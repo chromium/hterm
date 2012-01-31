@@ -19,6 +19,13 @@ hterm.NaSSH = function(argv) {
   this.argv_ = argv;
   this.io = null;
   this.verbose_ = false;
+  this.socketRelayServer_ = sessionStorage.getItem('relay');
+  if (this.socketRelayServer_) {
+    this.socketRelayServer_ = this.socketRelayServer_ + ':8023';
+  } else {
+    // Use given relay server only once so page refresh will renew cookies.
+    sessionStorage.setItem('relay', null);
+  }
 };
 
 /**
@@ -141,11 +148,21 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
     document.location = "crosh.html"
     return true;
   }
-  var ary = destination.match(/^([^@]+)@([^:]+)(?::(\d+))?$/);
+  var ary = destination.match(/^([^@]+)@([^:@]+)(?::(\d+))?(?:@(.+))?$/);
   if (!ary)
     return false;
 
-  this.connectTo(ary[1], ary[2], ary[3]);
+  if (ary[4] && !this.socketRelayServer_) {
+    sessionStorage.setItem('username', ary[1]);
+    sessionStorage.setItem('hostname', ary[2]);
+    sessionStorage.setItem('port', ary[3] ? ary[3] : 22);
+    sessionStorage.setItem('proxy', ary[4]);
+    window.onbeforeunload = null;
+    document.location = "/ssh.html";
+    return true;
+  }
+
+  this.connectTo(ary[1], ary[2], ary[3], ary[4]);
   return true;
 };
 
@@ -157,23 +174,32 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
  * @param {string|integer} opt_port The optional port number to connect to.
  *     Defaults to 22 if not provided.
  */
-hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
+hterm.NaSSH.prototype.connectTo = function(username, hostname,
+                                           opt_port, opt_proxy) {
   var port = opt_port ? Number(opt_port) : 22;
+  var proxy = opt_proxy ? '@' + opt_proxy : '';
 
-  document.location.hash = username + '@' + hostname + ':' + port;
+  document.location.hash = username + '@' + hostname + ':' + port + proxy;
 
+  if (proxy) {
+    this.io.println('Proxy server ' + opt_proxy +
+        ', relay server ' + this.socketRelayServer_);
+  }
   this.io.println(hterm.msg('CONNECTING', [username + '@' + hostname, port]));
   this.io.onVTKeystroke = this.sendString_.bind(this);
   this.io.sendString = this.sendString_.bind(this);
   this.io.onTerminalResize = this.onTerminalResize_.bind(this);
 
-  this.sendToPlugin_('startSession', [ {
-        username: username,
-        host: hostname,
-        port: port,
-        terminalWidth: this.io.terminal_.screenSize.width,
-        terminalHeight: this.io.terminal_.screenSize.height
-    }]);
+  var argv = {};
+  argv.username = username;
+  argv.host = hostname;
+  argv.port = port;
+  argv.terminalWidth = this.io.terminal_.screenSize.width;
+  argv.terminalHeight = this.io.terminal_.screenSize.height;
+  argv.useJsSocket = (proxy != '');
+  argv.arguments = [ ];
+  argv.arguments.push('-C');  // enable compression
+  this.sendToPlugin_('startSession', [ argv ]);
 };
 
 /**
@@ -302,6 +328,51 @@ hterm.NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
   } else {
     self.sendToPlugin_('onOpenFile', [fd, false]);
   }
+};
+
+/**
+ * The plugin wants to open a socket.
+ *
+ */
+hterm.NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
+  var self = this;
+  var sessionRequest = new XMLHttpRequest();
+
+  function onError(event) {
+    self.sendToPlugin_('onOpenSocket', [fd, false]);
+    console.log('Failed to get session ID: ' + event.target.status);
+  };
+
+  function onOpen(success) {
+    self.sendToPlugin_('onOpenSocket', [fd, success]);
+  };
+
+  function onReady(event) {
+    if (sessionRequest.readyState == 4) {
+      if (sessionRequest.status == 200) {
+        var session_id = this.responseText;
+        var stream = hterm.NaSSH.Stream.openStream(hterm.NaSSH.Stream.XHRSocket,
+            fd, { id: session_id, relay: self.socketRelayServer_ }, onOpen);
+
+        stream.onDataAvailable = function(data) {
+          self.sendToPlugin_('onRead', [fd, data]);
+        };
+
+        stream.onClose = function(reason) {
+          self.sendToPlugin_('onClose', [fd, reason]);
+        };
+      } else {
+        onError(event);
+      }
+    }
+  };
+
+  sessionRequest.open('GET', 'http://' + this.socketRelayServer_ +
+      '/proxy?host=' + host + '&port=' + port, true);
+  sessionRequest.withCredentials = true;  // We need to see cookies for /proxy.
+  sessionRequest.onerror = onError;
+  sessionRequest.onreadystatechange = onReady;
+  sessionRequest.send();
 };
 
 /**
