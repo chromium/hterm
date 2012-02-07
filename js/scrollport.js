@@ -169,7 +169,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.iframe_.style.cssText = (
       'border: 0;' +
       'height: 100%;' +
-      'position: relative;' +
+      'position: absolute;' +
       'width: 100%');
 
   div.appendChild(this.iframe_);
@@ -181,6 +181,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   doc.body.style.cssText = (
       'margin: 0px;' +
       'padding: 0px;' +
+      'height: 100%' +
+      'width: 100%' +
       'overflow: hidden;' +
       '-webkit-user-select: none;');
 

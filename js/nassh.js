@@ -89,13 +89,16 @@ hterm.NaSSH.prototype.run = function() {
   this.io.print(hterm.msg('PLUGIN_LOADING'));
 
   this.plugin_ = window.document.createElement('embed');
-  this.plugin_.style.width = '0';
-  this.plugin_.style.height = '0';
+  this.plugin_.style.cssText =
+      ('position: absolute;' +
+       'top: -99px' +
+       'width: 0;' +
+       'height: 0;');
   this.plugin_.setAttribute('src', '../plugin/ssh_client.nmf');
   this.plugin_.setAttribute('type', 'application/x-nacl');
   this.plugin_.addEventListener('load', this.onPluginLoaded_.bind(this));
   this.plugin_.addEventListener('message', this.onPluginMessage_.bind(this));
-  document.body.appendChild(this.plugin_);
+  document.body.insertBefore(this.plugin_, document.body.firstChild);
 
   window.onbeforeunload = this.onBeforeUnload_.bind(this);
 };

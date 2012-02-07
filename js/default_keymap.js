@@ -79,7 +79,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
   function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64) }
 
   // Call a method on the keymap instance.
-  function call(m) { return function (e) { return this[m](e) } }
+  function call(m) { return function (e, k) { return this[m](e, k) } }
 
   var ESC = '\x1b';
   var CSI = '\x1b[';
@@ -142,27 +142,27 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
     [221, ']}',    DEFAULT, ctl(']'), DEFAULT],
     [220, '\\|',   DEFAULT, ctl('Q'), DEFAULT],
 
-    // Fourth row.
+    // Fourth row. (We let Ctrl-Shift-J pass for Chrome DevTools.)
     [20,  '[CAPS]',  PASS,    PASS,     PASS],
-    [65,  'aA',      DEFAULT, ctl('A'), DEFAULT],
-    [83,  'sS',      DEFAULT, ctl('S'), DEFAULT],
-    [68,  'dD',      DEFAULT, ctl('D'), DEFAULT],
-    [70,  'fF',      DEFAULT, ctl('F'), DEFAULT],
-    [71,  'gG',      DEFAULT, ctl('G'), DEFAULT],
-    [72,  'hH',      DEFAULT, ctl('H'), DEFAULT],
-    [74,  'jJ',      DEFAULT, ctl('J'), DEFAULT],
-    [75,  'kK',      DEFAULT, ctl('K'), DEFAULT],
-    [76,  'lL',      DEFAULT, ctl('L'), DEFAULT],
-    [186, ';:',      DEFAULT, STRIP,    DEFAULT],
-    [222, '\'"',     DEFAULT, STRIP,    DEFAULT],
-    [13,  '[ENTER]', '\r',    CANCEL,   CANCEL],
+    [65,  'aA',      DEFAULT, ctl('A'),           DEFAULT],
+    [83,  'sS',      DEFAULT, ctl('S'),           DEFAULT],
+    [68,  'dD',      DEFAULT, ctl('D'),           DEFAULT],
+    [70,  'fF',      DEFAULT, ctl('F'),           DEFAULT],
+    [71,  'gG',      DEFAULT, ctl('G'),           DEFAULT],
+    [72,  'hH',      DEFAULT, ctl('H'),           DEFAULT],
+    [74,  'jJ',      DEFAULT, sh(ctl('J'), PASS), DEFAULT],
+    [75,  'kK',      DEFAULT, ctl('K'),           DEFAULT],
+    [76,  'lL',      DEFAULT, ctl('L'),           DEFAULT],
+    [186, ';:',      DEFAULT, STRIP,              DEFAULT],
+    [222, '\'"',     DEFAULT, STRIP,              DEFAULT],
+    [13,  '[ENTER]', '\r',    CANCEL,             CANCEL],
 
     // Fifth row.
     [16,  '[SHIFT]', PASS,    PASS,                   PASS],
     [90,  'zZ',      DEFAULT, ctl('Z'),               DEFAULT],
     [88,  'xX',      DEFAULT, ctl('X'),               DEFAULT],
-    [67,  'cC',      DEFAULT, ctl('C'),               DEFAULT],
-    [86,  'vV',      DEFAULT, ctl('V'),               DEFAULT],
+    [67,  'cC',      DEFAULT, call('onCtrlC_'),       DEFAULT],
+    [86,  'vV',      DEFAULT, sh(ctl('V'), PASS),     DEFAULT],
     [66,  'bB',      DEFAULT, ctl('B'),               DEFAULT],
     [78,  'nN',      DEFAULT, ctl('N'),               DEFAULT],
     [77,  'mM',      DEFAULT, ctl('M'),               DEFAULT],
@@ -275,4 +275,27 @@ hterm.Keyboard.KeyMap.Default.prototype.onKeyPageDown_ = function(e) {
 
   this.keyboard.terminal.scrollPageDown();
   return hterm.Keyboard.KeyActions.CANCEL;
+};
+
+/**
+ * Either send a ^C or allow the browser to interpret the keystroke as a copy
+ * command.
+ *
+ * If there is no selection, or if the user presses Ctrl-Shift-C, then we'll
+ * transmit a ^C ('\x03').  If there is a selection, we defer to the
+ * browser.  In this case we clear out the selection so the user knows we
+ * heard them, and also to give them a chance to send a ^C by just hitting
+ * the key again.
+ */
+hterm.Keyboard.KeyMap.Default.prototype.onCtrlC_ = function(e, keyDef) {
+  var document = this.keyboard.terminal.getDocument();
+  if (e.shiftKey || document.getSelection().isCollapsed) {
+    // If the shift key is being held, or there is no document selection, send
+    // a ^C.
+    return '\x03';
+  }
+
+  // Otherwise let the browser deal handle it as a copy command.
+  setTimeout(function() { document.getSelection().collapseToEnd() }, 0);
+  return hterm.Keyboard.KeyActions.PASS;
 };
