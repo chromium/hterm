@@ -967,12 +967,29 @@ TestManager.Result.prototype.completeTest_ = function(status, opt_throw) {
  *     of the caller.
  */
 TestManager.Result.prototype.assertEQ = function(actual, expected, opt_name) {
+  // Utility function to pretty up the log.
+  function format(value) {
+    if (typeof value == 'number')
+      return value;
+
+    var str = String(value);
+    var ary = str.split('\n').map(function (e) { return JSON.stringify(e) });
+    if (ary.length > 1) {
+      // If the string has newlines, start it off on its own line so that
+      // it's easier to compare against another string with newlines.
+      return '\n' + ary.join('\n');
+    } else {
+      return ary.join('\n');
+    }
+  }
+
   if (actual === expected)
     return;
 
   var name = opt_name ? '[' + opt_name + ']' : '';
+
   this.fail('assertEQ' + name + ': ' + this.getCallerLocation_(1) + ': ' +
-            String(actual) + ' !== ' + String(expected));
+            format(actual) + ' !== ' + format(expected));
 };
 
 /**

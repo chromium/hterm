@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,7 @@ hterm.Terminal.Tests = new TestManager.Suite('hterm.Terminal.Tests');
 hterm.Terminal.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 80,
-        visibleRowCount: 25,
-        fontSize: 15,
-        lineHeight: 17,
-        charWidth: 9,
-        scrollbarWidth: 16,
+        visibleRowCount: 24,
       });
 };
 
@@ -30,17 +26,18 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
 
   document.body.innerHTML = '';
 
-  var div = document.createElement('div');
-  div.style.position = 'absolute';
-  div.style.height = this.lineHeight * this.visibleRowCount + 'px';
-  div.style.width = this.charWidth * this.visibleColumnCount +
-      this.scrollbarWidth + 'px';
+  var div = this.div = document.createElement('div');
+  div.style.position = 'relative';
+  div.style.height = '100%';
+  div.style.width = '100%';
+
   document.body.appendChild(div);
 
-  cx.window.terminal = this.terminal = new hterm.Terminal(
-      this.fontSize, this.lineHeight);
+  cx.window.terminal = this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
+  this.terminal.setWidth(this.visibleColumnCount);
+  this.terminal.setHeight(this.visibleRowCount);
 };
 
 /**
@@ -66,8 +63,12 @@ hterm.Terminal.Tests.addTest = function(name, callback) {
 };
 
 hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
-    result.assertEQ(this.terminal.characterSize_.width, this.charWidth);
-    result.assertEQ(this.terminal.characterSize_.height, this.lineHeight);
+    result.assertEQ((this.div.clientWidth - this.terminal.scrollbarWidthPx) /
+                    this.terminal.scrollPort_.characterSize.width,
+                    this.visibleColumnCount);
+    result.assertEQ(this.div.clientHeight /
+                    this.terminal.scrollPort_.characterSize.height,
+                    this.visibleRowCount);
 
     result.assertEQ(this.terminal.screen_.getWidth(), this.visibleColumnCount);
     result.assertEQ(this.terminal.screen_.getHeight(), this.visibleRowCount);

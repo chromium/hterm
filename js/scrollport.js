@@ -25,16 +25,17 @@
  *
  * @param {RowProvider} rowProvider An object capable of providing rows as
  *     raw text or row nodes.
- * @param {integer} fontSize The css font-size, in pixels.
- * @param {integer} opt_lineHeight Optional css line-height in pixels.
- *    If omitted it will be computed based on the fontSize.
  */
-hterm.ScrollPort = function(rowProvider, fontSize, opt_lineHeight) {
+hterm.ScrollPort = function(rowProvider) {
   PubSub.addBehavior(this);
 
   this.rowProvider_ = rowProvider;
-  this.fontSize_ = fontSize;
-  this.rowHeight_ = opt_lineHeight || fontSize + 2;
+
+  // SWAG the character size until we can measure it.
+  this.characterSize = new hterm.Size(10, 10);
+
+  // DOM node used for character measurement.
+  this.ruler_ = null;
 
   this.selection_ = new hterm.ScrollPort.Selection(this);
 
@@ -192,7 +193,6 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   this.xrowCssRule_ = doc.styleSheets[0].cssRules[0];
   this.xrowCssRule_.style.display = 'block';
-  this.xrowCssRule_.style.height = this.rowHeight_ + 'px';
 
   // TODO(rginda): Sorry, this 'screen_' isn't the same thing as hterm.Screen
   // from screen.js.  I need to pick a better name for one of them to avoid
@@ -203,6 +203,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.style.cssText = (
       'display: block;' +
       'font-family: monospace;' +
+      'font-size: 15px;' +
       'height: 100%;' +
       'overflow-y: scroll; overflow-x: hidden;' +
       'white-space: pre;' +
@@ -230,6 +231,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.rowNodes_.style.cssText = (
       'display: block;' +
       'position: fixed;' +
+      'overflow: hidden;' +
       '-webkit-user-select: text;');
   this.screen_.appendChild(this.rowNodes_);
 
@@ -265,11 +267,12 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.scrollArea_.style.cssText = 'visibility: hidden';
   this.screen_.appendChild(this.scrollArea_);
 
-  this.setRowMetrics(this.fontSize_, this.rowHeight_);
+  this.resize();
 };
 
 hterm.ScrollPort.prototype.setFontFamily = function(fontFamily) {
   this.screen_.style.fontFamily = fontFamily;
+  this.syncCharacterSize();
 };
 
 hterm.ScrollPort.prototype.focus = function() {
@@ -293,25 +296,12 @@ hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
   this.screen_.style.backgroundColor = color;
 };
 
-hterm.ScrollPort.prototype.getRowHeight = function() {
-  return this.rowHeight_;
-};
-
 hterm.ScrollPort.prototype.getScreenWidth = function() {
   return this.screen_.clientWidth;
 };
 
 hterm.ScrollPort.prototype.getScreenHeight = function() {
   return this.screen_.clientHeight;
-};
-
-hterm.ScrollPort.prototype.getCharacterWidth = function() {
-  var span = this.document_.createElement('span');
-  span.textContent = '\xa0';  // &nbsp;
-  this.rowNodes_.appendChild(span);
-  var width = span.offsetWidth;
-  this.rowNodes_.removeChild(span);
-  return width;
 };
 
 /**
@@ -383,31 +373,68 @@ hterm.ScrollPort.prototype.scheduleInvalidate = function() {
 };
 
 /**
- * Set the fontSize and lineHeight of this hterm.ScrollPort.
- *
- * @param {integer} fontSize The css font-size, in pixels.
- * @param {integer} opt_lineHeight Optional css line-height in pixels.
- *    If omitted it will be computed based on the fontSize.
+ * Set the font size of the ScrollPort.
  */
-hterm.ScrollPort.prototype.setRowMetrics = function(fontSize, opt_lineHeight) {
-  this.fontSize_ = fontSize;
-  this.rowHeight_ = opt_lineHeight || fontSize + 2;
+hterm.ScrollPort.prototype.setFontSize = function(px) {
+  this.screen_.style.fontSize = px + 'px';
+  this.resize();
+  this.invalidate();
+};
 
-  this.screen_.style.fontSize = this.fontSize_ + 'px';
-  this.screen_.style.lineHeight = this.rowHeight_ + 'px';
-  this.xrowCssRule_.style.height = this.rowHeight_ + 'px';
+/**
+ * Return the current font size of the ScrollPort.
+ */
+hterm.ScrollPort.prototype.getFontSize = function() {
+  return parseInt(this.screen_.style.fontSize);
+};
 
-  this.topSelectBag_.style.height = this.rowHeight_ + 'px';
-  this.bottomSelectBag_.style.height = this.rowHeight_ + 'px';
+/**
+ * Measure the size of a single character in pixels.
+ *
+ * @return {hterm.Size} A new hterm.Size object.
+ */
+hterm.ScrollPort.prototype.measureCharacterSize = function() {
+  if (!this.ruler_) {
+    this.ruler_ = this.document_.createElement('div');
+    this.ruler_.style.cssText = (
+        'position: absolute;' +
+        'top: 0;' +
+        'left: 0;' +
+        'visibility: hidden;' +
+        'height: auto !important;' +
+        'width: auto !important;');
+
+    this.ruler_.textContent = 'X';
+  }
+
+  this.rowNodes_.appendChild(this.ruler_);
+  var size = new hterm.Size(this.ruler_.clientWidth,
+                            this.ruler_.clientHeight);
+  this.rowNodes_.removeChild(this.ruler_);
+  return size;
+};
+
+/**
+ * Synchronize the character size.
+ *
+ * This will re-measure the current character size and adjust the height
+ * of an x-row to match.
+ */
+hterm.ScrollPort.prototype.syncCharacterSize = function() {
+  this.characterSize = this.measureCharacterSize();
+
+  var lineHeight = this.characterSize.height + 'px';
+  this.xrowCssRule_.style.height = lineHeight;
+  this.topSelectBag_.style.height = lineHeight;
+  this.bottomSelectBag_.style.height = lineHeight;
 
   if (this.DEBUG_) {
     // When we're debugging we add padding to the body so that the offscreen
     // elements are visible.
-    this.document_.body.style.paddingTop = 3 * this.rowHeight_ + 'px';
-    this.document_.body.style.paddingBottom = 3 * this.rowHeight_ + 'px';
+    this.document_.body.style.paddingTop =
+        this.document_.body.style.paddingBottom =
+        3 * this.characterSize.height + 'px';
   }
-
-  this.resize();
 };
 
 /**
@@ -421,12 +448,15 @@ hterm.ScrollPort.prototype.resize = function() {
   this.lastScreenWidth_ = screenWidth;
   this.lastScreenHeight_ = screenHeight;
 
+  this.syncScrollHeight();
+  this.syncCharacterSize();
+
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
-  this.visibleRowCount = Math.floor(screenHeight / this.rowHeight_);
+  this.visibleRowCount = Math.floor(screenHeight / this.characterSize.height);
 
   // Then compute the height of our integral number of rows.
-  var visibleRowsHeight = this.visibleRowCount * this.rowHeight_;
+  var visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
 
   // Then the difference between the screen height and total row height needs to
   // be made up for as top margin.  We need to record this value so it
@@ -445,16 +475,18 @@ hterm.ScrollPort.prototype.resize = function() {
   this.publish
     ('resize', { scrollPort: this },
      function() {
-       self.scrollRowToBottom(self.bottomFold_.previousSibling.rowIndex);
+       self.scrollRowToBottom(self.rowProvider_.getRowCount());
+       self.scheduleRedraw();
      });
 };
 
 hterm.ScrollPort.prototype.syncScrollHeight = function() {
   // Resize the scroll area to appear as though it contains every row.
-  this.scrollArea_.style.height = (this.rowHeight_ *
+  this.scrollArea_.style.height = (this.characterSize.height *
                                    this.rowProvider_.getRowCount() +
                                    this.visibleRowTopMargin +
                                    this.visibleRowBottomMargin +
+                                   1 +
                                    'px');
 };
 
@@ -754,7 +786,7 @@ hterm.ScrollPort.prototype.syncRowNodesTop_ = function() {
   var topMargin = 0;
   var node = this.topFold_.previousSibling;
   while (node) {
-    topMargin += this.rowHeight_;
+    topMargin += this.characterSize.height;
     node = node.previousSibling;
   }
 
@@ -849,7 +881,8 @@ hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
 hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
   this.syncScrollHeight();
 
-  var scrollTop = rowIndex * this.rowHeight_ + this.visibleRowTopMargin;
+  var scrollTop = rowIndex * this.characterSize.height +
+      this.visibleRowTopMargin;
 
   var scrollMax = this.getScrollMax_();
   if (scrollTop > scrollMax)
@@ -870,9 +903,9 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
 hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
   this.syncScrollHeight();
 
-  var scrollTop = rowIndex * this.rowHeight_ +
+  var scrollTop = rowIndex * this.characterSize.height +
       this.visibleRowTopMargin + this.visibleRowBottomMargin;
-  scrollTop -= (this.visibleRowCount - 1) * this.rowHeight_;
+  scrollTop -= (this.visibleRowCount - 1) * this.characterSize.height;
 
   if (scrollTop < 0)
     scrollTop = 0;
@@ -890,7 +923,7 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
  * returns the row that *should* be at the top.
  */
 hterm.ScrollPort.prototype.getTopRowIndex = function() {
-  return Math.floor(this.screen_.scrollTop / this.rowHeight_);
+  return Math.floor(this.screen_.scrollTop / this.characterSize.height);
 };
 
 /**
@@ -917,6 +950,7 @@ hterm.ScrollPort.prototype.onScroll_ = function(e) {
     // In these cases, we want to ignore the scroll event and let onResize
     // handle things.  If we don't, then we end up scrolling to the wrong
     // position after a resize.
+    this.resize();
     return;
   }
 

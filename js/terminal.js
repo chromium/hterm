@@ -19,7 +19,7 @@
  * displayed twice as wide as standard latin characters.  This is to support
  * CJK (and possibly other character sets).
  */
-hterm.Terminal = function(fontSize, opt_lineHeight) {
+hterm.Terminal = function() {
   // Two screen instances.
   this.primaryScreen_ = new hterm.Screen();
   this.alternateScreen_ = new hterm.Screen();
@@ -33,11 +33,8 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // screen.
   this.screenSize = new hterm.Size(0, 0);
 
-  // The pixel dimensions of a single character on the screen.
-  this.characterSize_ = new hterm.Size(0, 0);
-
   // The scroll port we'll be using to display the visible rows.
-  this.scrollPort_ = new hterm.ScrollPort(this, fontSize, opt_lineHeight);
+  this.scrollPort_ = new hterm.ScrollPort(this);
   this.scrollPort_.subscribe('resize', this.onResize_.bind(this));
   this.scrollPort_.subscribe('scroll', this.onScroll_.bind(this));
   this.scrollPort_.subscribe('paste', this.onPaste_.bind(this));
@@ -64,26 +61,6 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   // The DIV element for the visible cursor.
   this.cursorNode_ = null;
 
-  // Default font family for the terminal text.
-  this.defaultFontFamily_ = '"DejaVu Sans Mono", "Everson Mono", FreeMono, ' +
-      '"Andale Mono", "Lucida Console", monospace'
-
-  // The default colors for text with no other color attributes.
-  this.backgroundColor = 'black';
-  this.foregroundColor = 'white';
-
-  // Default tab with of 8 to match xterm.
-  this.tabWidth = 8;
-
-  // The color of the visible cursor.
-  this.cursorColor = 'rgba(255,0,0,0.5)';
-
-  // If true, scroll to the bottom on any keystroke.
-  this.scrollOnKeystroke = true;
-
-  // If true, scroll to the bottom on terminal output.
-  this.scrollOnOutput = false;
-
   // Cursor position and attributes saved with DECSC.
   this.savedOptions_ = {};
 
@@ -106,6 +83,50 @@ hterm.Terminal = function(fontSize, opt_lineHeight) {
   this.realizeSize_(80, 24);
   this.setDefaultTabStops();
 };
+
+/**
+ * Default font family for the terminal text.
+ */
+
+hterm.Terminal.prototype.defaultFontFamily =
+    '"DejaVu Sans Mono", "Everson Mono", FreeMono, ' +
+    '"Andale Mono", "Lucida Console", monospace';
+
+/**
+ * The default colors for text with no other color attributes.
+ */
+hterm.Terminal.prototype.backgroundColor = 'black';
+hterm.Terminal.prototype.foregroundColor = 'white';
+
+/**
+ * Default tab with of 8 to match xterm.
+ */
+hterm.Terminal.prototype.tabWidth = 8;
+
+/**
+ * The color of the visible cursor.
+ */
+hterm.Terminal.prototype.cursorColor = 'rgba(255,0,0,0.5)';
+
+/**
+ * If true, scroll to the bottom on any keystroke.
+ */
+hterm.Terminal.prototype.scrollOnKeystroke = true;
+
+/**
+ * If true, scroll to the bottom on terminal output.
+ */
+hterm.Terminal.prototype.scrollOnOutput = false;
+
+/**
+ * The default font size in pixels.
+ */
+hterm.Terminal.prototype.defaultFontSizePx = 15;
+
+/**
+ * The assumed width of a scrollbar.
+ */
+hterm.Terminal.prototype.scrollbarWidthPx = 16;
 
 /**
  * Create a new instance of a terminal command and run it with a given
@@ -156,6 +177,27 @@ hterm.Terminal.prototype.uninstallKeyboard = function() {
 }
 
 /**
+ * Set the font size for this terminal.
+ */
+hterm.Terminal.prototype.setFontSize = function(px) {
+  this.scrollPort_.setFontSize(px);
+};
+
+/**
+ * Get the current font size.
+ */
+hterm.Terminal.prototype.getFontSize = function() {
+  return this.scrollPort_.getFontSize();
+};
+
+/**
+ * Set the CSS "font-family" for this terminal.
+ */
+hterm.Terminal.prototype.setFontFamily = function(str) {
+  this.scrollPort_.setFontFamily(str);
+};
+
+/**
  * Return a copy of the current cursor position.
  *
  * @return {hterm.RowCol} The RowCol object representing the current position.
@@ -181,16 +223,32 @@ hterm.Terminal.prototype.setWindowTitle = function(title) {
  * @param {hterm.RowCol} cursor The position to restore.
  */
 hterm.Terminal.prototype.restoreCursor = function(cursor) {
-  this.screen_.setCursorPosition(cursor.row, cursor.column);
-  this.screen_.cursorPosition.overflow = cursor.overflow;
+  var row = hterm.clamp(cursor.row, 0, this.screenSize.height - 1);
+  var column = hterm.clamp(cursor.column, 0, this.screenSize.width - 1);
+  this.screen_.setCursorPosition(row, column);
+  if (cursor.column > column ||
+      cursor.column == column && cursor.overflow) {
+    this.screen_.cursorPosition.overflow = true;
+  }
 };
 
 /**
  * Set the width of the terminal, resizing the UI to match.
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
-  this.div_.style.width = this.characterSize_.width * columnCount + 16 + 'px';
+  this.div_.style.width = this.scrollPort_.characterSize.width *
+      columnCount + this.scrollbarWidthPx + 'px';
   this.realizeSize_(columnCount, this.screenSize.height);
+  this.scheduleSyncCursorPosition_();
+};
+
+/**
+ * Set the height of the terminal, resizing the UI to match.
+ */
+hterm.Terminal.prototype.setHeight = function(rowCount) {
+  this.div_.style.height =
+      this.scrollPort_.characterSize.height * rowCount + 'px';
+  this.realizeSize_(this.screenSize.width, rowCount);
   this.scheduleSyncCursorPosition_();
 };
 
@@ -278,8 +336,7 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
 
     // We just removed rows from the top of the screen, we need to update
     // the cursor to match.
-    cursor.row -= deltaRows;
-
+    cursor.row = Math.max(cursor.row - deltaRows, 0);
   } else if (deltaRows > 0) {
     // Screen got larger.
 
@@ -296,6 +353,7 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
       this.appendRows_(deltaRows);
   }
 
+  this.setVTScrollRegion(null, null);
   this.restoreCursor(cursor);
 };
 
@@ -524,21 +582,18 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.div_ = div;
 
   this.scrollPort_.decorate(div);
-  this.scrollPort_.setFontFamily(this.defaultFontFamily_);
+  this.scrollPort_.setFontFamily(this.defaultFontFamily);
+  this.scrollPort_.setFontSize(this.defaultFontSize);
 
   this.document_ = this.scrollPort_.getDocument();
-
-  // Get character dimensions from the scrollPort.
-  this.characterSize_.height = this.scrollPort_.getRowHeight();
-  this.characterSize_.width = this.scrollPort_.getCharacterWidth();
 
   this.cursorNode_ = this.document_.createElement('div');
   this.cursorNode_.style.cssText =
       ('position: absolute;' +
        'top: -99px;' +
        'display: block;' +
-       'width: ' + this.characterSize_.width + 'px;' +
-       'height: ' + this.characterSize_.height + 'px;' +
+       'width: ' + this.scrollPort_.characterSize.width + 'px;' +
+       'height: ' + this.scrollPort_.characterSize.height + 'px;' +
        '-webkit-transition: opacity, background-color 100ms linear;' +
        'background-color: ' + this.cursorColor);
   this.document_.body.appendChild(this.cursorNode_);
@@ -752,14 +807,13 @@ hterm.Terminal.prototype.print = function(str) {
     var lastColumn;
 
     do {
-      if (this.screen_.cursorPosition.overflow)
-        this.newLine();
+      this.newLine();
+      lastColumn = overflow.characterLength;
 
       if (!this.options_.insertMode)
         this.screen_.deleteChars(overflow.characterLength);
 
       this.screen_.prependNodes(overflow);
-      lastColumn = overflow.characterCount;
 
       overflow = this.screen_.maybeClipCurrentRow();
     } while (overflow);
@@ -786,7 +840,6 @@ hterm.Terminal.prototype.print = function(str) {
 hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
   this.vtScrollTop_ = scrollTop;
   this.vtScrollBottom_ = scrollBottom;
-  this.setAbsoluteCursorPosition(0, 0);
 };
 
 /**
@@ -1426,16 +1479,24 @@ hterm.Terminal.prototype.setAlternateMode = function(state) {
   var cursor = this.saveCursor();
   this.screen_ = state ? this.alternateScreen_ : this.primaryScreen_;
 
-  this.screen_.setColumnCount(this.screenSize.width);
+  if (this.screen_.rowsArray.length &&
+      this.screen_.rowsArray[0].rowIndex != this.scrollbackRows_.length) {
+    // If the screen changed sizes while we were away, our rowIndexes may
+    // be incorrect.
+    var offset = this.scrollbackRows_.length;
+    var ary = this.screen_.rowsArray;
+    for (i = 0; i < ary.length; i++) {
+      ary[i].rowIndex = offset + i;
+    }
+  }
 
-  var rowDelta = this.screenSize.height - this.screen_.getHeight();
-  if (rowDelta > 0)
-    this.appendRows_(rowDelta);
+  this.realizeWidth_(this.screenSize.width);
+  this.realizeHeight_(this.screenSize.height);
+  this.scrollPort_.syncScrollHeight();
+  this.scrollPort_.invalidate();
 
   this.restoreCursor(cursor);
-
-  this.scrollPort_.invalidate();
-  this.syncCursorPosition_();
+  this.scrollPort_.resize();
 };
 
 /**
@@ -1510,14 +1571,18 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
 
   if (cursorRowIndex > bottomRowIndex) {
     // Cursor is scrolled off screen, move it outside of the visible area.
-    this.cursorNode_.style.top = -this.characterSize_.height;
+    this.cursorNode_.style.top = -this.scrollPort_.characterSize.height + 'px';
     return;
   }
 
+  this.cursorNode_.style.width = this.scrollPort_.characterSize.width + 'px';
+  this.cursorNode_.style.height = this.scrollPort_.characterSize.height + 'px';
+
   this.cursorNode_.style.top = this.scrollPort_.visibleRowTopMargin +
-      this.characterSize_.height * (cursorRowIndex - topRowIndex);
-  this.cursorNode_.style.left = this.characterSize_.width *
-      this.screen_.cursorPosition.column;
+      this.scrollPort_.characterSize.height * (cursorRowIndex - topRowIndex) +
+      'px';
+  this.cursorNode_.style.left = this.scrollPort_.characterSize.width *
+      this.screen_.cursorPosition.column + 'px';
 
   this.cursorNode_.setAttribute('title',
                                 '(' + this.screen_.cursorPosition.row +
@@ -1583,8 +1648,16 @@ hterm.Terminal.prototype.onPaste_ = function(e) {
  */
 hterm.Terminal.prototype.onResize_ = function() {
   var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
-                               this.characterSize_.width);
-  var rowCount = this.scrollPort_.visibleRowCount;
+                               this.scrollPort_.characterSize.width);
+  var rowCount = Math.floor(this.scrollPort_.getScreenHeight() /
+                            this.scrollPort_.characterSize.height);
+
+  if (!(columnCount || rowCount)) {
+    // We avoid these situations since they happen sometimes when the terminal
+    // gets removed from the document, and we can't deal with that.
+    return;
+  }
+
   this.realizeSize_(columnCount, rowCount);
   this.scheduleSyncCursorPosition_();
 };

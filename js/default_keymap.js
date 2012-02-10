@@ -121,9 +121,9 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
     [55,  '7&',     DEFAULT,          ctl('_'),               PASS],
     [56,  '8*',     DEFAULT,          sh('\x7f', '*'),        PASS],
     [57,  '9(',     DEFAULT,          STRIP,                  PASS],
-    [48,  '0)',     DEFAULT,          STRIP,                  PASS],
-    [189, '-_',     DEFAULT,          sh(STRIP, ctl('_')),    DEFAULT],
-    [187, '=+',     DEFAULT,          STRIP,                  DEFAULT],
+    [48,  '0)',     DEFAULT,          call('onZoom_'),        PASS],
+    [189, '-_',     DEFAULT,          call('onZoom_'),        DEFAULT],
+    [187, '=+',     DEFAULT,          call('onZoom_'),        DEFAULT],
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'),       DEFAULT],
 
     // Third row.
@@ -298,4 +298,34 @@ hterm.Keyboard.KeyMap.Default.prototype.onCtrlC_ = function(e, keyDef) {
   // Otherwise let the browser deal handle it as a copy command.
   setTimeout(function() { document.getSelection().collapseToEnd() }, 0);
   return hterm.Keyboard.KeyActions.PASS;
+};
+
+/**
+ * Handle font zooming.
+ *
+ * The browser's built-in zoom has a bit of an issue at certain zoom levels.
+ * At some magnifications, the measured height of a row of text differs from
+ * the height that was explicitly set.
+ *
+ * We override the browser zoom keys to change the ScrollPort's font size to
+ * avoid the issue.
+ */
+hterm.Keyboard.KeyMap.Default.prototype.onZoom_ = function(e, keyDef) {
+  var cap = keyDef.keyCap.substr(0, 1);
+  if (cap == '0') {
+      this.keyboard.terminal.setFontSize(
+          this.keyboard.terminal.defaultFontSizePx);
+  } else {
+    var size = this.keyboard.terminal.getFontSize();
+
+    if (cap == '-') {
+      size -= 1;
+    } else {
+      size += 1;
+    }
+
+    this.keyboard.terminal.setFontSize(size);
+  }
+
+  return hterm.Keyboard.KeyActions.CANCEL;
 };

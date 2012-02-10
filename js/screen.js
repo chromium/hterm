@@ -98,29 +98,14 @@ hterm.Screen.prototype.getWidth = function() {
 /**
  * Set the maximum number of columns per row.
  *
- * TODO(rginda): This should probably clip existing rows if the count is
- *    decreased.
- *
  * @param {integer} count The maximum number of columns per row.
  */
 hterm.Screen.prototype.setColumnCount = function(count) {
   this.columnCount_ = count;
 
-  if (this.rowsArray.length) {
-    var p = this.cursorPosition.clone();
-
-    for (var i = 0; i < this.rowsArray.length; i++) {
-      var overflow = this.rowsArray[i].textContent.length - count;
-      if (overflow > 0) {
-        this.setCursorPosition(i, count - 1);
-        this.deleteChars(overflow);
-      }
-    }
-
-    if (p.column >= count)
-      p.column = count - 1;
-
-    this.setCursorPosition(p.row, p.column);
+  if (this.cursorPosition.column >= count) {
+    this.setCursorPosition(this.cursorPosition.row,
+                           this.cursorPosition.column - 1);
   }
 };
 
@@ -373,10 +358,11 @@ hterm.Screen.prototype.syncSelectionCaret = function(selection) {
  *     occur.
  */
 hterm.Screen.prototype.splitNode_ = function(node, offset) {
-  var afterNode = node.cloneNode(true);
+  var afterNode = node.cloneNode(false);
 
-  node.textContent = node.textContent.substr(0, offset);
-  afterNode.textContent = afterNode.textContent.substr(offset);
+  var textContent = node.textContent;
+  node.textContent = textContent.substr(0, offset);
+  afterNode.textContent = textContent.substr(offset);
 
   node.parentNode.insertBefore(afterNode, node.nextSibling);
 };
@@ -579,6 +565,8 @@ hterm.Screen.prototype.insertString = function(str) {
  * This method does not attempt to coalesce rows of the same style.  It assumes
  * that the rows being inserted have already been coalesced, and that there
  * would be no gain in coalescing only the final node.
+ *
+ * The cursor will be reset to the zero'th column.
  */
 hterm.Screen.prototype.prependNodes = function(ary) {
   var parentNode = this.cursorRowNode_;
@@ -586,6 +574,14 @@ hterm.Screen.prototype.prependNodes = function(ary) {
   for (var i = ary.length - 1; i >= 0; i--) {
     parentNode.insertBefore(ary[i], parentNode.firstChild);
   }
+
+  // We have to leave the cursor in a sensible state so we don't confuse
+  // setCursorPosition.  It's fastest to just leave it at the start of
+  // the row.  If the caller wants it somewhere else, they can move it
+  // on their own.
+  this.cursorPosition.column = 0;
+  this.cursorNode_ = parentNode.firstChild;
+  this.cursorOffset_ = 0;
 };
 
 /**

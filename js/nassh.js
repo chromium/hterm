@@ -28,7 +28,7 @@ hterm.NaSSH = function(argv) {
  * command.
  */
 hterm.NaSSH.init = function() {
-  var terminal = new hterm.Terminal(15, 18);
+  var terminal = new hterm.Terminal(15);
   terminal.decorate(document.querySelector('#terminal'));
 
   // Useful for console debugging.
