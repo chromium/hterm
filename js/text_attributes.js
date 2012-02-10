@@ -4,38 +4,51 @@
 
 hterm.TextAttributes = function(document) {
   this.document_ = document;
+  // When the foreground color comes from the COLORS_16 array, this property
+  // contains the index that the color came from.  This allows us to switch
+  // to the bright version of the color when the bold attribute is set, which
+  // is what most other terminals do.
+  this.foregroundIndex16 = null;
+
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
   this.bold = false;
   this.blink = false;
   this.underline = false;
-
-  if (!hterm.TextAttributes.colorsFixed) {
-    hterm.TextAttributes.fixColors(this.COLORS_16);
-    hterm.TextAttributes.fixColors(this.COLORS_256);
-    hterm.TextAttributes.colorsFixed = true;
-  }
 };
 
-hterm.TextAttributes.fixColors = function (colorArray) {
-  for (var i = 0; i < colorArray.length; i++) {
-    var ary = colorArray[i].match(/#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i);
-    colorArray[i] = 'rgb(' + parseInt(ary[1], 16) + ', ' +
-        parseInt(ary[2], 16) + ', ' +
-        parseInt(ary[3], 16) + ')';
+/**
+ * Converts a var_args list of CSS '#RRGGBB' color values into the rgb(...)
+ * form.
+ *
+ * We need to be able to read back CSS color values from a node and test
+ * equality against the color tables.  CSS always returns in rgb(...),
+ * but it's much more compact to specify colors using # notation.
+ */
+hterm.TextAttributes.defineColors = function(var_args) {
+  var rv = Array.apply(null, arguments);
+
+  for (var i = 0; i < rv.length; i++) {
+    var ary = rv[i].match(/#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i);
+    if (ary) {
+      rv[i] = 'rgb(' + parseInt(ary[1], 16) + ', ' +
+          parseInt(ary[2], 16) + ', ' +
+          parseInt(ary[3], 16) + ')';
+    }
   }
+
+  return rv;
 };
 
 hterm.TextAttributes.prototype.DEFAULT_COLOR = new String('');
 
-hterm.TextAttributes.prototype.COLORS_16 = [
+hterm.TextAttributes.prototype.COLORS_16 = hterm.TextAttributes.defineColors(
     '#000000', '#CC0000', '#4E9A06', '#C4A000',
     '#3465A4', '#75507B', '#06989A', '#D3D7CF',
     '#555753', '#EF2929', '#8AE234', '#FCE94F',
-    '#729FCF', '#AD7FA8', '#34E2E2', '#EEEEEC'
-  ];
+    '#729FCF', '#AD7FA8', '#34E2E2', '#EEEEEC');
 
-hterm.TextAttributes.prototype.COLORS_256 = [
+hterm.TextAttributes.prototype.COLORS_256 = hterm.TextAttributes.defineColors(
     '#000000', '#AA0000', '#00AA00', '#AA5500', '#0000AA', '#AA00AA', '#00AAAA',
     '#AAAAAA', '#555555', '#FF5555', '#55FF55', '#FFFF55', '#5555FF', '#FF55FF',
     '#55FFFF', '#FFFFFF', '#000000', '#00005F', '#000087', '#0000AF', '#0000D7',
@@ -72,8 +85,7 @@ hterm.TextAttributes.prototype.COLORS_256 = [
     '#FFFFFF', '#080808', '#121212', '#1C1C1C', '#262626', '#303030', '#3A3A3A',
     '#444444', '#4E4E4E', '#585858', '#626262', '#6C6C6C', '#767676', '#808080',
     '#8A8A8A', '#949494', '#9E9E9E', '#A8A8A8', '#B2B2B2', '#BCBCBC', '#C6C6C6',
-    '#D0D0D0', '#DADADA', '#E4E4E4', '#EEEEEE'
-  ];
+    '#D0D0D0', '#DADADA', '#E4E4E4', '#EEEEEE');
 
 hterm.TextAttributes.prototype.setDocument = function(document) {
   this.document_ = document;

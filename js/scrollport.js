@@ -453,10 +453,11 @@ hterm.ScrollPort.prototype.resize = function() {
 
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
-  this.visibleRowCount = Math.floor(screenHeight / this.characterSize.height);
+  this.visibleRowCount = Math.floor(
+      (screenHeight - 1) / this.characterSize.height);
 
   // Then compute the height of our integral number of rows.
-  var visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
+  var visibleRowsHeight = this.visibleRowCount * this.characterSize.height + 1;
 
   // Then the difference between the screen height and total row height needs to
   // be made up for as top margin.  We need to record this value so it

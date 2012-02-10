@@ -63,10 +63,6 @@ hterm.VT.CannedTests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 80,
         visibleRowCount: 25,
-        fontSize: 15,
-        lineHeight: 17,
-        charWidth: 9,
-        scrollbarWidth: 16,
       });
 };
 
@@ -83,17 +79,15 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
 
   var div = document.createElement('div');
   div.style.position = 'absolute';
-  div.style.height = this.lineHeight * this.visibleRowCount + 'px';
-  div.style.width = this.charWidth * this.visibleColumnCount +
-      this.scrollbarWidth + 'px';
   document.body.appendChild(div);
 
   this.div = div;
 
-  cx.window.terminal = this.terminal = new hterm.Terminal(
-      this.fontSize, this.lineHeight);
+  cx.window.terminal = this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
+  this.terminal.setWidth(this.visibleColumnCount);
+  this.terminal.setHeight(this.visibleRowCount);
 };
 
 /**
@@ -216,6 +210,8 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
     startOffset = endOffset;
   }
 
+  terminal.setWidth(null);
+  terminal.setHeight(null);
   result.pass();
 };
 

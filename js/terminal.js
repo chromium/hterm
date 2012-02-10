@@ -61,6 +61,11 @@ hterm.Terminal = function() {
   // The DIV element for the visible cursor.
   this.cursorNode_ = null;
 
+  // Terminal bell sound.
+  this.bellAudio_ = this.document_.createElement('audio');
+  this.bellAudio_.setAttribute('src', '../audio/bell.ogg');
+  this.bellAudio_.setAttribute('preload', 'auto');
+
   // Cursor position and attributes saved with DECSC.
   this.savedOptions_ = {};
 
@@ -236,6 +241,11 @@ hterm.Terminal.prototype.restoreCursor = function(cursor) {
  * Set the width of the terminal, resizing the UI to match.
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
+  if (columnCount == null) {
+    this.div_.style.width = '100%';
+    return;
+  }
+
   this.div_.style.width = this.scrollPort_.characterSize.width *
       columnCount + this.scrollbarWidthPx + 'px';
   this.realizeSize_(columnCount, this.screenSize.height);
@@ -246,6 +256,11 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
  * Set the height of the terminal, resizing the UI to match.
  */
 hterm.Terminal.prototype.setHeight = function(rowCount) {
+  if (rowCount == null) {
+    this.div_.style.height = '100%';
+    return;
+  }
+
   this.div_.style.height =
       this.scrollPort_.characterSize.height * rowCount + 'px';
   this.realizeSize_(this.screenSize.width, rowCount);
@@ -1380,6 +1395,8 @@ hterm.Terminal.prototype.setReverseVideo = function(state) {
  * terminal.
  */
 hterm.Terminal.prototype.ringBell = function() {
+  this.bellAudio_.play();
+
   this.cursorNode_.style.backgroundColor =
       this.scrollPort_.getForegroundColor();
 
@@ -1612,6 +1629,56 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
     }, 0);
 };
 
+hterm.Terminal.prototype.showOverlay = function(msg) {
+  if (!this.overlayNode_) {
+    if (!this.div_)
+      return;
+
+    this.overlayNode_ = this.document_.createElement('div');
+    this.overlayNode_.style.cssText = (
+        'background-color: ' + this.foregroundColor + ';' +
+        'border-radius: 15px;' +
+        'color: ' + this.backgroundColor + ';' +
+        'font-family: ' + this.defaultFontFamily + ';' +
+        'font-size: xx-large;' +
+        'opacity: 0.75;' +
+        'padding: 0.2em 0.5em 0.2em 0.5em;' +
+        'position: absolute;' +
+        '-webkit-user-select: none;' +
+        '-webkit-transition: opacity 180ms ease-in;');
+  }
+
+  this.overlayNode_.textContent = msg;
+  this.overlayNode_.style.opacity = '0.75';
+
+  if (!this.overlayNode_.parentNode)
+    this.div_.appendChild(this.overlayNode_);
+
+  this.overlayNode_.style.top = (
+      this.div_.clientHeight - this.overlayNode_.clientHeight) / 2;
+  this.overlayNode_.style.left = (
+      this.div_.clientWidth - this.overlayNode_.clientWidth -
+      this.scrollbarWidthPx) / 2;
+
+  var self = this;
+
+  if (this.overlayTimeout_)
+    clearTimeout(this.overlayTimeout_);
+
+  this.overlayTimeout_ = setTimeout(function() {
+      self.overlayNode_.style.opacity = '0';
+      setTimeout(function() {
+          self.overlayNode_.parentNode.removeChild(self.overlayNode_);
+          self.overlayTimeout_ = null;
+          self.overlayNode_.style.opacity = '0.75';
+        }, 200);
+    }, 1500);
+};
+
+hterm.Terminal.prototype.overlaySize = function() {
+  this.showOverlay(this.screenSize.width + 'x' + this.screenSize.height);
+};
+
 /**
  * Invoked by hterm.Terminal.Keyboard when a VT keystroke is detected.
  *
@@ -1660,6 +1727,7 @@ hterm.Terminal.prototype.onResize_ = function() {
 
   this.realizeSize_(columnCount, rowCount);
   this.scheduleSyncCursorPosition_();
+  this.overlaySize();
 };
 
 /**

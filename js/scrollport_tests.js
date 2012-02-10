@@ -8,8 +8,6 @@ hterm.ScrollPort.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 80,
         visibleRowCount: 25,
-        fontSize: 15,
-        lineHeight: 17,
         totalRowCount: 10000
       });
 
@@ -21,13 +19,15 @@ hterm.ScrollPort.Tests.prototype.setup = function(cx) {
 
   var div = document.createElement('div');
   div.style.position = 'relative';
-  div.style.height = this.lineHeight * this.visibleRowCount + 'px';
+  div.style.height = '100%';
   div.style.width = '100%';
   document.body.appendChild(div);
 
-  this.scrollPort = new hterm.ScrollPort(this.rowProvider,
-                                         this.fontSize, this.lineHeight);
+  this.scrollPort = new hterm.ScrollPort(this.rowProvider);
   this.scrollPort.decorate(div);
+  div.style.height = (this.scrollPort.characterSize.height *
+                      this.visibleRowCount + 1 + 'px');
+  this.scrollPort.resize();
 };
 
 /**

@@ -1526,11 +1526,18 @@ hterm.VT.CSI['m'] = function (args) {
         attrs.reset();
       } else if (arg == 1) {
         attrs.bold = true;
+        if (attrs.foregroundIndex16 != null &&
+            attrs.foregroundIndex16 < 7) {
+          attrs.foregroundIndex16 += 8;
+          attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
+        }
+
       } else if (arg == 4) {
         attrs.underline = true;
       } else if (arg == 5) {
         attrs.blink = true;
       } else if (arg == 7) {  // Inverse.
+        attrs.foregroundIndex16 = null;
         attrs.foreground = this.terminal.backgroundColor;
         attrs.background = this.terminal.foregroundColor;
       } else if (arg == 8) {  // Invisible.
@@ -1542,9 +1549,11 @@ hterm.VT.CSI['m'] = function (args) {
       } else if (arg == 25) {
         attrs.blink = false;
       } else if (arg == 27) {
+        attrs.foregroundIndex16 = null;
         attrs.foreground = attrs.DEFAULT_COLOR;
         attrs.background = attrs.DEFAULT_COLOR;
       } else if (arg == 28) {
+        attrs.foregroundIndex16 = null;
         attrs.foreground = attrs.DEFAULT_COLOR;
       }
 
@@ -1552,7 +1561,8 @@ hterm.VT.CSI['m'] = function (args) {
       // Select fore/background color from bottom half of 16 color palette
       // or from the 256 color palette.
       if (arg < 38) {
-        attrs.foreground = attrs.COLORS_16[attrs.bold ? arg - 22 : arg - 30];
+        attrs.foregroundIndex16 = attrs.bold ? arg - 22 : arg - 30;
+        attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
 
       } else if (arg == 38) {
         var c = get256(i);
@@ -1564,12 +1574,15 @@ hterm.VT.CSI['m'] = function (args) {
         if (c > 256)
           continue;
 
+        attrs.foregroundIndex16 = null;
         attrs.foreground = attrs.COLORS_256[c];
 
       } else if (arg == 39) {
+        attrs.foregroundIndex16 = null;
         attrs.foreground = attrs.DEFAULT_COLOR;
 
       } else if (arg < 48) {
+        attrs.foregroundIndex16 = null;
         attrs.background = attrs.COLORS_16[arg - 40];
 
       } else if (arg == 48) {
@@ -1588,10 +1601,12 @@ hterm.VT.CSI['m'] = function (args) {
       }
 
     } else if (arg >= 90 && arg <= 97) {
-      attrs.foreground = attrs.COLORS_16[arg - 90 + 8];
+      attrs.foregroundIndex16 = arg - 90 + 8;
+      attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
 
     } else if (arg >= 100 && arg <= 107) {
-      attrs.foreground = attrs.COLORS_16[arg - 100 + 8];
+      attrs.foregroundIndex16 = arg - 100 + 8;
+      attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
 
     }
   }
