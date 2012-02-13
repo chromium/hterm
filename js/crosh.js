@@ -66,7 +66,6 @@ hterm.Crosh.prototype.onProcessOutput_ = function(pid, type, text) {
     this.exit(0);
     return;
   }
-
   this.io.print(text);
 }
 
@@ -81,6 +80,7 @@ hterm.Crosh.prototype.run = function() {
   this.io.sendString = this.sendString_.bind(this);
 
   var self = this;
+  this.io.onTerminalResize = this.onTerminalResize_.bind(this);
   chrome.terminalPrivate.onProcessOutput.addListener(
       this.onProcessOutput_.bind(this));
   document.body.onunload = this.close_.bind(this);
@@ -92,6 +92,15 @@ hterm.Crosh.prototype.run = function() {
           return;
         }
         self.pid_ = pid;
+
+        if (!chrome.terminalPrivate.onTerminalResize) {
+          console.warn("Terminal resizing not supported.");
+          return;
+        }
+
+        // Setup initial window size.
+        self.onTerminalResize_(self.io.terminal_.screenSize.width,
+                               self.io.terminal_.screenSize.height);
       }
   );
 };
@@ -116,6 +125,29 @@ hterm.Crosh.prototype.close_ = function() {
     chrome.terminalPrivate.closeTerminalProcess(this.pid_);
     this.pid_ = -1;
 }
+
+/**
+ * Notify process about new terminal size.
+ *
+ * @param {string|integer} terminal width.
+ * @param {string|integer} terminal height.
+ */
+hterm.Crosh.prototype.onTerminalResize_ = function(width, height) {
+  if (this.pid_ == -1)
+    return;
+
+  // We don't want to break older versions of chrome.
+  if (!chrome.terminalPrivate.onTerminalResize)
+    return;
+
+  chrome.terminalPrivate.onTerminalResize(this.pid_,
+      Number(width), Number(height),
+      function(success) {
+        if (!success)
+          console.warn("terminalPrivate.onTerminalResize failed");
+      }
+  );
+};
 
 /**
  * Exit the crosh command.
