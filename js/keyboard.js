@@ -67,6 +67,12 @@ hterm.Keyboard = function(terminal) {
    * Set whether the meta key sends a leading escape or not.
    */
   this.metaSendsEscape = true;
+
+  /**
+   * Set whether the alt key acts as a meta key, instead of producing 8-bit
+   * characters.
+   */
+  this.altIsMeta = true;
 };
 
 /**
@@ -103,6 +109,9 @@ hterm.Keyboard.KeyMap = function(keyboard, name) {
  *  - Alt is the action that should be performed when they key is pressed
  *    along with the alt modifier.  See below for the supported actions.
  *
+ *  - Meta is the action that should be performed when they key is pressed
+ *    along with the meta modifier.  See below for the supported actions.
+ *
  * Actions can be one of the hterm.Keyboard.KeyActions as documented below,
  * a literal string, or an array.  If the action is a literal string then
  * the string is sent directly to the host.  If the action is an array it
@@ -127,9 +136,9 @@ hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
  * (If the function took everything as one big hash we couldn't detect
  * duplicates, and there would be a lot more typing involved.)
  *
- * Each key definition should have 5 elements: (keyCode, keyCap, normal action,
- * control action and alt action).  See KeyMap.addKeyDef for the meaning
- * of these elements.
+ * Each key definition should have 6 elements: (keyCode, keyCap, normal action,
+ * control action, alt action and meta action).  See KeyMap.addKeyDef for the
+ * meaning of these elements.
  */
 hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(var_args) {
   for (var i = 0; i < arguments.length; i++) {
@@ -137,7 +146,8 @@ hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(var_args) {
                    { keyCap: arguments[i][1],
                      normal: arguments[i][2],
                      control: arguments[i][3],
-                     alt: arguments[i][4]
+                     alt: arguments[i][4],
+                     meta: arguments[i][5]
                    });
   }
 };
@@ -288,8 +298,8 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
   var shift = e.shiftKey;
   var control = e.ctrlKey;
-  var alt = e.altKey;
-  var meta = e.metaKey;
+  var alt = this.altIsMeta ? false : e.altKey;
+  var meta = this.altIsMeta ? (e.altKey || e.metaKey) : e.metaKey;
 
   var action;
 
@@ -297,6 +307,8 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     action = getAction('control');
   } else if (alt) {
     action = getAction('alt');
+  } else if (meta) {
+    action = getAction('meta');
   } else {
     action = getAction('normal');
   }
@@ -330,24 +342,39 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   if (action === CANCEL)
     return;
 
-  if (action === DEFAULT) {
-    if (control) {
-      var unshifted = keyDef.keyCap.substr(0, 1);
-      var code = unshifted.charCodeAt(0);
-      if (code >= 64 && code <= 95) {
+  if (action !== DEFAULT && typeof action != 'string') {
+    console.warn('Invalid action: ' + JSON.stringify(action));
+    return;
+  }
+
+  if (action.substr(0, 2) != '\x1b[') {
+    // The action is not an escape sequence...
+
+    if (action === DEFAULT) {
+      if (control) {
+        var unshifted = keyDef.keyCap.substr(0, 1);
+        var code = unshifted.charCodeAt(0);
+        if (code >= 64 && code <= 95) {
         action = String.fromCharCode(code - 64);
+        }
+      } else if (alt) {
+        var ch = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
+        var code = ch.charCodeAt(0) + 128;
+        action = this.terminal.vt.encodeCharset(String.fromCharCode(code));
+      } else {
+        action = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
       }
-    } else if (alt) {
-      var ch = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
-      var code = ch.charCodeAt(0) + 128;
-      action = this.terminal.vt.encodeCharset(String.fromCharCode(code));
-    } else if (this.metaSendsEscape && meta) {
-      action = '\x1b' + keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
-    } else {
-      action = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
     }
 
-  } else if (action.substr(0, 2) == '\x1b[' && (alt || control || shift)) {
+    // We respect metaSendsEscape even if the keymap action was a literal
+    // string.  The other modifiers are only respected when the action is
+    // DEFAULT.  Otherwise, every overridden meta action would have to
+    // check metaSendsEscape :/
+    if (this.metaSendsEscape && meta)
+      action = '\x1b' + action;
+
+  } else if (alt || control || shift) {
+    // It's an escape sequence in the presence of a keyboard modifier...
     var mod;
 
     if (shift && !(alt || control)) {

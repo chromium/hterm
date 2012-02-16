@@ -165,6 +165,7 @@ hterm.NaSSH.prototype.reportUnexpectedError_ = function(err) {
  */
 hterm.NaSSH.prototype.connectToDestination = function(destination) {
   if (destination == 'crosh') {
+    window.onbeforeunload = null;
     document.location = "crosh.html"
     return true;
   }
@@ -189,7 +190,6 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
 
   document.location.hash = username + '@' + hostname + ':' + port;
 
-  this.io.println(hterm.msg('WELCOME_TIP'));
   this.io.println(hterm.msg('CONNECTING', [username, hostname, port]));
   this.io.onVTKeystroke = this.sendString_.bind(this);
   this.io.sendString = this.sendString_.bind(this);
@@ -231,6 +231,8 @@ hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
     if (!self.connectToDestination(result)) {
       self.io.alert(hterm.msg('BAD_DESTINATION', [result]),
                     self.promptForDestination_.bind(self, result));
+    } else {
+      self.io.println(hterm.msg('WELCOME_TIP'));
     }
   }
 

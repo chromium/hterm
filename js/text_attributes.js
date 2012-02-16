@@ -102,6 +102,7 @@ hterm.TextAttributes.prototype.clone = function() {
 };
 
 hterm.TextAttributes.prototype.reset = function() {
+  this.foregroundIndex16 = null;
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
   this.bold = false;
