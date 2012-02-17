@@ -76,6 +76,14 @@ hterm.Crosh.prototype.onProcessOutput_ = function(pid, type, text) {
  */
 hterm.Crosh.prototype.run = function() {
   this.io = this.argv_.io.push();
+
+  if (!chrome.terminalPrivate) {
+    this.io.println("Crosh is not supported on your version of Chrome :(");
+    this.io.println("Minimal version of Chrome needed to run crosh is 18.");
+    this.exit(1);
+    return;
+  }
+
   this.io.onVTKeystroke = this.sendString_.bind(this);
   this.io.sendString = this.sendString_.bind(this);
 
