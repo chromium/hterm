@@ -1,0 +1,24 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDixnK8f4AuZrV+QZx7iiONG/SAiU5VrjlXD2KxRGvI6tDJrLvUin+GpcuMH1d/Qrc0+PmCzJ1duAiD/9F2q8kiYwQ1C3gZmztYneAiVX+3/OvXHr/idyueNQ5XFvBnMCpKD0KqPEksP80utV417fuaHAY4NFjofLZyWUvu23XHRwIDAQAB",
+  "minimum_chrome_version": "17",
+  "name": "hterm-dev",
+  "version": "0.7.3.0",
+  "default_locale": "en",
+  "icons": {
+    "128": "images/vt-128.png",
+    "48": "images/vt-48.png",
+    "32": "images/vt-32.png",
+    "16": "images/vt-16.png"
+  },
+  "description": "Terminal emulator and SSH client.",
+  "offline_enabled": true,
+  "permissions": [
+    "unlimitedStorage",
+    "terminalPrivate"
+  ],
+  "app": {
+    "launch": {
+      "local_path": "html/nassh.html"
+    }
+  }
+}

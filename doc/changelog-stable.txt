@@ -1,0 +1,33 @@
+0.7.3, 2012-02-22, rginda@chromium.org
+
+* Manifest files split into -dev and -stable versions.
+* Add an altIsMeta flag, on by default.
+* Treat Meta-C/Meta-Shift-V the same as Ctrl-C/Ctrl-Shift-V to
+  make mac users happy.
+* Pass (Ctrl|Meta)-Shift-B bookmark bar key to browser.
+* Pass (Ctrl|Alt|Meta)-1/9 to the browser so as not to block
+  tab switching.
+* Skip pro-tip if nassh started with a known location.
+* Fix TextAttributes.prototype.reset().
+
+BUG=chromium-os:25824,chromium-os:25833,chromium-os:26082
+BUG=chromium-os:26280,chromium-os:26285,chromium-os:26463
+TEST=test_harness.html, 55/55 tests passed.
+
+0.7.2, 2012-02-10, rginda@chromium.org
+
+Add bell audio, show dimensions on resize, and...
+
+fix bold/bright handling and missing bottom pixel.
+
+BUG=chromium-os:25824,chromium-os:26174
+TEST=test_harness.html, 55/55 tests pass.
+
+
+0.7.0, 2012-02-10, rginda@chromium.org
+
+Fix resizing, text zoom, alternate screen bug, and infinite loop/hang.
+
+BUG=chromium-os:25197,chromium-os:25984,chromium-os:25985,chromium-os:25986
+BUG=chromium-os:25785,chromium-os:25787
+TEST=test_harness.html, 55/55 tests passed.
