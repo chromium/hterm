@@ -99,6 +99,8 @@ hterm.Crosh.prototype.run = function() {
           self.exit(1);
           return;
         }
+
+        window.onbeforeunload = self.onBeforeUnload_.bind(self);
         self.pid_ = pid;
 
         if (!chrome.terminalPrivate.onTerminalResize) {
@@ -111,6 +113,12 @@ hterm.Crosh.prototype.run = function() {
                                self.io.terminal_.screenSize.height);
       }
   );
+};
+
+hterm.Crosh.prototype.onBeforeUnload_ = function(e) {
+  var msg = 'Closing this tab will exit crosh.';
+  e.returnValue = msg;
+  return msg;
 };
 
 /**
@@ -163,7 +171,8 @@ hterm.Crosh.prototype.onTerminalResize_ = function(width, height) {
 hterm.Crosh.prototype.exit = function(code) {
   this.close_();
   this.io.pop();
+  window.onbeforeunload = null;
+
   if (this.argv_.onExit)
     this.argv_.onExit(code);
 };
-
