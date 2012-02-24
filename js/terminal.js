@@ -1629,7 +1629,20 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
     }, 0);
 };
 
-hterm.Terminal.prototype.showOverlay = function(msg) {
+/**
+ * Show the terminal overlay for a given amount of time.
+ *
+ * The terminal overlay appears in inverse video in a large font, centered
+ * over the terminal.  You should probably keep the overlay message brief,
+ * since it's in a large font and you probably aren't going to check the size
+ * of the terminal first.
+ *
+ * @param {string} msg The text (not HTML) message to display in the overlay.
+ * @param {number} opt_timeout The amount of time to wait before fading out
+ *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
+ *     stay up forever (or until the next overlay).
+ */
+hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   if (!this.overlayNode_) {
     if (!this.div_)
       return;
@@ -1665,6 +1678,9 @@ hterm.Terminal.prototype.showOverlay = function(msg) {
   if (this.overlayTimeout_)
     clearTimeout(this.overlayTimeout_);
 
+  if (opt_timeout === null)
+    return;
+
   this.overlayTimeout_ = setTimeout(function() {
       self.overlayNode_.style.opacity = '0';
       setTimeout(function() {
@@ -1672,7 +1688,7 @@ hterm.Terminal.prototype.showOverlay = function(msg) {
           self.overlayTimeout_ = null;
           self.overlayNode_.style.opacity = '0.75';
         }, 200);
-    }, 1500);
+    }, opt_timeout || 1500);
 };
 
 hterm.Terminal.prototype.overlaySize = function() {
