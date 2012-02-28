@@ -66,21 +66,16 @@
   },
 
   "CONNECTING": {
-    "message": "Connecting to $USER$@$HOST$, port $PORT$...",
+    "message": "Connecting to $DESTINATION$, port $PORT$...",
     "description": "Status message shown when connecting to a host.",
     "placeholders": {
-      "user": {
+      "destination": {
         "content": "$1",
-        "example": "username"
-      },
-
-      "host": {
-        "content": "$2",
-        "example": "host.example.com"
+        "example": "username@example.com"
       },
 
       "port": {
-        "content": "$3",
+        "content": "$2",
         "example": "22"
       }
     }

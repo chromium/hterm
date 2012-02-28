@@ -162,7 +162,7 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
 
   document.location.hash = username + '@' + hostname + ':' + port;
 
-  this.io.println(hterm.msg('CONNECTING', [username, hostname, port]));
+  this.io.println(hterm.msg('CONNECTING', [username + '@' + hostname, port]));
   this.io.onVTKeystroke = this.sendString_.bind(this);
   this.io.sendString = this.sendString_.bind(this);
   this.io.onTerminalResize = this.onTerminalResize_.bind(this);
