@@ -245,6 +245,7 @@ function ship_crx() {
     echo_err "Editing updates file: $target_dir/updates.xml"
     sed -e "s/\$CRX_FILE/$basename_crx/" -e "s/\$VERSION/$version/" \
       < "$target_dir/updates.xml.t" > "$target_dir/updates.xml"
+    chmod a+r "$target_dir/updates.xml"
   fi
 
   local current="$(\

@@ -756,11 +756,6 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
  * In this case, the blank lines scrolled into the scroll region are made of
  * the nodes we scrolled off.  These have their rowIndex properties carefully
  * renumbered so as not to confuse the ScrollPort.
- *
- * TODO(rginda): I'm not sure why this doesn't require a scrollport repaint.
- * It may just be luck.  I wouldn't be surprised if we actually needed to call
- * scrollPort_.invalidateRowRange, but I'm going to wait for evidence before
- * adding it.
  */
 hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
   var ary = this.screen_.removeRows(fromIndex, count);

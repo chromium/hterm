@@ -324,11 +324,13 @@ hterm.VT.prototype.dispatch = function(type, code, args) {
   var handler = hterm.VT[type][code];
   if (!handler) {
     if (this.warnUnimplemented)
-      console.error('Unknown ' + type + ' code: ' + JSON.stringify(code));
+      console.warn('Unknown ' + type + ' code: ' + JSON.stringify(code));
     return;
-  } else if (handler == hterm.VT.ignore) {
+  }
+
+  if (handler == hterm.VT.ignore) {
     if (this.warnUnimplemented)
-      console.error('Ignored ' + type + ' code: ' + JSON.stringify(code));
+      console.warn('Ignored ' + type + ' code: ' + JSON.stringify(code));
     return;
   }
 
@@ -913,21 +915,15 @@ hterm.VT.ESC['_'] = function() {
  *   ESC \x20 L - Set ANSI conformance level 1.
  *   ESC \x20 M - Set ANSI conformance level 2.
  *   ESC \x20 N - Set ANSI conformance level 3.
- *
- * All other 'ESC \x20' sequences are echoed to the terminal.
  */
 hterm.VT.ESC['\x20'] = function(args) {
+  var self = this;
+
   this.parser_ = function(str, i) {
     var ch = str.substr(i, 1);
-
-    switch (ch) {
-        break;
-
-      default:
-        this.terminal.print('\x1b ' + ch);
-    };
-
-    this.parser_ = this.parseUnkown_;
+    if (this.warnUnimplemented)
+      console.warn('Unimplemented sequence: ESC 0x20 ' + ch);
+    self.parser_ = self.parseUnknown_;
     return i + 1;
   };
 };

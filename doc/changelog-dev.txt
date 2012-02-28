@@ -1,3 +1,14 @@
+0.7.4.1, 2012-02-28, rginda@chromium.org
+
+* Fix remaining issues with ESC 0x20 handler.
+
+0.7.4.0, 2012-02-28, rginda@chromium.org
+
+* Fix permission issue in package.sh script.
+* Remove spash screen.
+* Fix syntax error in ESC 0x20 handler.
+* Warn before closing an active crosh tab.
+
 0.7.3.0, 2012-02-17, rginda@chromium.org
 
 * Manifest files split into -dev and -stable versions.

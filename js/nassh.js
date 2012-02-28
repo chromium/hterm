@@ -51,40 +51,12 @@ hterm.NaSSH.init = function() {
 hterm.NaSSH.prototype.commandName = 'nassh';
 
 /**
- * Splash screen message.
- *
- * Inside joke.
- */
-hterm.NaSSH.prototype.welcomeMessage =
-    ["",
-     "               \\/",
-     "               /\\",
-     "              /  \\                  ,^^^,",
-     "             /    \\                ( o/o )",
-     "            /      \\               _\\ = /_",
-     "           /        \\             |  ...  |",
-     "          /          \\            |_|   |_|",
-     "         /      |\\    \\            e|___|e",
-     "        /       | \\    \\            | | |",
-     "       /        |  \\    \\           | | |",
-     "     ./..ww.....!   \\....\\.w       c__|__D",
-     "",
-     "    D O N ' T  P A C K  Y O U R  T E P E E !",
-     "",
-     "          hterm is almost ready!",
-     ""];
-
-/**
  * Start the nassh command.
  *
  * This is invoked by the terminal as a result of terminal.runCommandClass().
  */
 hterm.NaSSH.prototype.run = function() {
   this.io = this.argv_.io.push();
-
-  for (var i = 0; i < this.welcomeMessage.length; i++) {
-    this.io.println(this.welcomeMessage[i]);
-  }
 
   this.io.print(hterm.msg('PLUGIN_LOADING'));
 
