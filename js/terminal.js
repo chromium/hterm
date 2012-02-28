@@ -95,7 +95,7 @@ hterm.Terminal = function() {
 
 hterm.Terminal.prototype.defaultFontFamily =
     '"DejaVu Sans Mono", "Everson Mono", FreeMono, ' +
-    '"Andale Mono", "Lucida Console", monospace';
+    '"Menlo", "Lucida Console", monospace';
 
 /**
  * The default colors for text with no other color attributes.
