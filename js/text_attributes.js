@@ -18,6 +18,14 @@ hterm.TextAttributes = function(document) {
 };
 
 /**
+ * If false, we ignore the bold attribute.
+ *
+ * This is used for fonts that have a bold version that is a different size
+ * than the normal weight version.
+ */
+hterm.TextAttributes.prototype.enableBold = true;
+
+/**
  * Converts a var_args list of CSS '#RRGGBB' color values into the rgb(...)
  * form.
  *
@@ -131,7 +139,7 @@ hterm.TextAttributes.prototype.createContainer = function(str) {
   if (this.background != this.DEFAULT_COLOR)
     style.backgroundColor = this.background;
 
-  if (this.bold)
+  if (this.enableBold && this.bold)
     style.fontWeight = 'bold';
 
   if (this.blink)
@@ -154,7 +162,7 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
 
   return (this.foreground == style.color &&
           this.background == style.backgroundColor &&
-          this.bold == !!style.fontWeight &&
+          (this.enableBold && this.bold) == !!style.fontWeight &&
           this.blink == !!style.fontStyle &&
           this.underline == !!style.textDecoration);
 };

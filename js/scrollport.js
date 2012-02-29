@@ -391,9 +391,11 @@ hterm.ScrollPort.prototype.getFontSize = function() {
 /**
  * Measure the size of a single character in pixels.
  *
+ * @param {string} opt_weight The font weight to measure, or 'normal' if
+ *     omitted.
  * @return {hterm.Size} A new hterm.Size object.
  */
-hterm.ScrollPort.prototype.measureCharacterSize = function() {
+hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   if (!this.ruler_) {
     this.ruler_ = this.document_.createElement('div');
     this.ruler_.style.cssText = (
@@ -406,6 +408,8 @@ hterm.ScrollPort.prototype.measureCharacterSize = function() {
 
     this.ruler_.textContent = 'X';
   }
+
+  this.ruler_.style.fontWeight = opt_weight || '';
 
   this.rowNodes_.appendChild(this.ruler_);
   var size = new hterm.Size(this.ruler_.clientWidth,

@@ -1,3 +1,8 @@
+0.7.4.4, 2012-02-28, rginda@chromium.org
+
+* Add ability to detect fonts with mismatched bold/normal sizes, and disable
+  bold characters when that happens.
+
 0.7.4.3, 2012-02-28, rginda@chromium.org
 
 * Switch out "Andale Mono" in favor of "Menlo" in the default font family list,

@@ -200,6 +200,15 @@ hterm.Terminal.prototype.getFontSize = function() {
  */
 hterm.Terminal.prototype.setFontFamily = function(str) {
   this.scrollPort_.setFontFamily(str);
+  var normalSize = this.scrollPort_.measureCharacterSize();
+  var boldSize = this.scrollPort_.measureCharacterSize('bold');
+
+  var isBoldSafe = normalSize.equals(boldSize);
+  this.screen_.textAttributes.enableBold = isBoldSafe;
+  if (!isBoldSafe) {
+    console.warn('Bold characters disabled: Size of bold weight differs ' +
+                 'from normal.  Font family is: ' + str);
+  }
 };
 
 /**
@@ -597,8 +606,9 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.div_ = div;
 
   this.scrollPort_.decorate(div);
-  this.scrollPort_.setFontFamily(this.defaultFontFamily);
-  this.scrollPort_.setFontSize(this.defaultFontSize);
+
+  this.setFontSize(this.defaultFontSize);
+  this.setFontFamily(this.defaultFontFamily);
 
   this.document_ = this.scrollPort_.getDocument();
 
