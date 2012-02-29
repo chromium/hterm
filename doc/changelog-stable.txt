@@ -1,3 +1,32 @@
+0.7.4, 2012-02-29, rginda@chromium.org
+
+* Stable release of hterm-dev-0.7.4.4.
+* Add ability to detect fonts with mismatched bold/normal sizes, and disable
+  bold characters when that happens.
+* Switch out "Andale Mono" in favor of "Menlo" in the default font family list,
+  since bold characters in Andale Mono are a different width than normal
+  weight characters.
+* Fix CONNECTING message to take a single DESTINATION parameter rather
+  than distinct USER and HOST parameters.  This avoids an issue in the
+  chrome i18n code that chokes on the translated messages.
+  http://crosbug.com/26620
+* Fix issues with ESC 0x20 handler.
+* Fix permission issue in package.sh script.
+* Remove spash screen.
+* Warn before closing an active crosh tab.
+
+COMMITS:
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=f7e288ce727c6d98b97f4a293bc55dbcaaafdea4
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=487ef2b9fa96288ec533066226b62782beea096a
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=487ef2b9fa96288ec533066226b62782beea096a
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=466e4a634b5e720672012367766ba49211a5db55
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=17aa7cd4d53f45d7589a9972d2fb980c47d89290
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=58a55d32c7be8ef3e3d8106dce2e17e115e4df43
+http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=commit;h=ef5cd8e071d64a3da60c427d5fef2c56082f66ec
+
+BUG=chromium-os:26620
+TEST=test_harness.html, 55/55 tests passed.
+
 0.7.3, 2012-02-22, rginda@chromium.org
 
 * Manifest files split into -dev and -stable versions.
