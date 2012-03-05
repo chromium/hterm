@@ -16,10 +16,6 @@ hterm.VT.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
       { visibleColumnCount: 15,
         visibleRowCount: 6,
-        fontSize: 15,
-        lineHeight: 17,
-        charWidth: 9,
-        scrollbarWidth: 16,
       });
 };
 
@@ -36,17 +32,17 @@ hterm.VT.Tests.prototype.preamble = function(result, cx) {
 
   var div = document.createElement('div');
   div.style.position = 'absolute';
-  div.style.height = this.lineHeight * this.visibleRowCount + 'px';
-  div.style.width = this.charWidth * this.visibleColumnCount +
-      this.scrollbarWidth + 'px';
+  div.style.height = '100%';
+  div.style.width = '100%';
   document.body.appendChild(div);
 
   this.div = div;
 
-  cx.window.terminal = this.terminal = new hterm.Terminal(
-      this.fontSize, this.lineHeight);
+  cx.window.terminal = this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
+  this.terminal.setWidth(this.visibleColumnCount);
+  this.terminal.setHeight(this.visibleRowCount);
 };
 
 /**
@@ -220,6 +216,29 @@ hterm.VT.Tests.addTest('newlines-2', function(result, cx) {
                     'vtabine\n' +
                     'ff\n' +
                     'bye'
+                    );
+
+    result.pass();
+  });
+
+/**
+ * Test the default tab stops.
+ */
+hterm.VT.Tests.addTest('tabs', function(result, cx) {
+    this.terminal.interpret('123456789012345\r\n');
+    this.terminal.interpret('1\t2\ta\r\n');
+    this.terminal.interpret('1\t2\tb\r\n');
+    this.terminal.interpret('1\t2\tc\r\n');
+    this.terminal.interpret('1\t2\td\r\n');
+    this.terminal.interpret('1\t2\te');
+    var text = this.terminal.getRowsText(0, 6);
+    result.assertEQ(text,
+                    '123456789012345\n' +
+                    '1       2     a\n' +
+                    '1       2     b\n' +
+                    '1       2     c\n' +
+                    '1       2     d\n' +
+                    '1       2     e'
                     );
 
     result.pass();
@@ -626,8 +645,8 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1l');
     result.assertEQ(this.terminal.keyboard.applicationCursor, false);
 
-    var fg = this.terminal.foregroundColor;
-    var bg = this.terminal.backgroundColor;
+    var fg = this.terminal.prefs_.get('foreground-color');
+    var bg = this.terminal.prefs_.get('background-color');
 
     this.terminal.interpret('\x1b[?5h');
     result.assertEQ(this.terminal.scrollPort_.getForegroundColor(), bg);

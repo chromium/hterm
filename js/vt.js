@@ -56,7 +56,7 @@ hterm.VT = function(terminal) {
   this.trailingModifier_ = '';
 
   // Whether or not to respect the escape codes for setting terminal width.
-  this.allowColumnWidthChanges_ = true;
+  this.allowColumnWidthChanges_ = false;
 
   // Construct a regular expression to match the known one-byte control chars.
   // This is used in parseUnknown_ to quickly scan a string for the next
@@ -648,16 +648,12 @@ hterm.VT.CC1['\x0D'] = function() {
  *
  * Invoke G1 character set, as designated by SCS control sequence.
  */
-hterm.VT.CC1['\x0E'] = function() {
-  this.terminal.setCharacterSet(1);
-};
+hterm.VT.CC1['\x0E'] = hterm.VT.ignore;
 
 /**
  * Shift In (SI) - Select G0 character set, as selected by ESC ( sequence.
  */
-hterm.VT.CC1['\x0F'] = function() {
-  this.terminal.setCharacterSet(0);
-};
+hterm.VT.CC1['\x0F'] = hterm.VT.ignore;
 
 /**
  * Transmit On (XON).
@@ -1534,10 +1530,10 @@ hterm.VT.CSI['m'] = function (args) {
         attrs.blink = true;
       } else if (arg == 7) {  // Inverse.
         attrs.foregroundIndex16 = null;
-        attrs.foreground = this.terminal.backgroundColor;
-        attrs.background = this.terminal.foregroundColor;
+        attrs.foreground = this.terminal.getBackgroundColor();
+        attrs.background = this.terminal.getForegroundColor();
       } else if (arg == 8) {  // Invisible.
-        attrs.foreground = this.terminal.backgroundColor;
+        attrs.foreground = this.terminal.getBackgroundColor();
       } else if (arg == 22) {
         attrs.bold = false;
       } else if (arg == 24) {

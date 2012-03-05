@@ -85,6 +85,10 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
 
   cx.window.terminal = this.terminal = new hterm.Terminal();
 
+  // Allow column width changes by default so the canned data can request a
+  // known terminal width.
+  this.terminal.vt.allowColumnWidthChanges_ = true;
+
   this.terminal.decorate(div);
   this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.setHeight(this.visibleRowCount);

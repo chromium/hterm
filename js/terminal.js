@@ -18,8 +18,14 @@
  * TODO(rginda): Eventually we're going to need to support characters which are
  * displayed twice as wide as standard latin characters.  This is to support
  * CJK (and possibly other character sets).
+ *
+ * @param {string} opt_profileName Optional preference profile name.  If not
+ *     provided, defaults to 'default'.
  */
-hterm.Terminal = function() {
+hterm.Terminal = function(opt_profileName) {
+  this.profileName_ = null;
+  this.setProfile(opt_profileName || 'default');
+
   // Two screen instances.
   this.primaryScreen_ = new hterm.Screen();
   this.alternateScreen_ = new hterm.Screen();
@@ -61,9 +67,14 @@ hterm.Terminal = function() {
   // The DIV element for the visible cursor.
   this.cursorNode_ = null;
 
+  // These prefs are cached so we don't have to read from local storage with
+  // each output and keystroke.
+  this.scrollOnOutput_ = this.prefs_.get('scroll-on-output');
+  this.scrollOnKeystroke_ = this.prefs_.get('scroll-on-keystroke');
+
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
-  this.bellAudio_.setAttribute('src', '../audio/bell.ogg');
+  this.bellAudio_.setAttribute('src', this.prefs_.get('audible-bell-sound'));
   this.bellAudio_.setAttribute('preload', 'auto');
 
   // Cursor position and attributes saved with DECSC.
@@ -90,48 +101,138 @@ hterm.Terminal = function() {
 };
 
 /**
- * Default font family for the terminal text.
- */
-
-hterm.Terminal.prototype.defaultFontFamily =
-    '"DejaVu Sans Mono", "Everson Mono", FreeMono, ' +
-    '"Menlo", "Lucida Console", monospace';
-
-/**
- * The default colors for text with no other color attributes.
- */
-hterm.Terminal.prototype.backgroundColor = 'black';
-hterm.Terminal.prototype.foregroundColor = 'white';
-
-/**
  * Default tab with of 8 to match xterm.
  */
 hterm.Terminal.prototype.tabWidth = 8;
 
 /**
- * The color of the visible cursor.
- */
-hterm.Terminal.prototype.cursorColor = 'rgba(255,0,0,0.5)';
-
-/**
- * If true, scroll to the bottom on any keystroke.
- */
-hterm.Terminal.prototype.scrollOnKeystroke = true;
-
-/**
- * If true, scroll to the bottom on terminal output.
- */
-hterm.Terminal.prototype.scrollOnOutput = false;
-
-/**
- * The default font size in pixels.
- */
-hterm.Terminal.prototype.defaultFontSizePx = 15;
-
-/**
  * The assumed width of a scrollbar.
  */
 hterm.Terminal.prototype.scrollbarWidthPx = 16;
+
+/**
+ * Select a preference profile.
+ *
+ * This will load the terminal preferences for the given profile name and
+ * associate subsequent preference changes with the new preference profile.
+ *
+ * @param {string} newName The name of the preference profile.  Forward slash
+ *     characters will be removed from the name.
+ */
+hterm.Terminal.prototype.setProfile = function(profileName) {
+  // If we already have a profile selected, we're going to need to re-sync
+  // with the new profile.
+  var needSync = !!this.profileName_;
+
+  this.profileName_ = profileName.replace(/\//g, '');
+
+  this.prefs_ = new hterm.PreferenceManager(
+      '/hterm/prefs/profiles/' + this.profileName_);
+
+  var self = this;
+  this.prefs_.definePreferences
+  ([/**
+     * The default colors for text with no other color attributes.
+     */
+    ['foreground-color', 'white', function(v) {
+        self.scrollPort_.setForegroundColor(v);
+      }
+    ],
+
+    ['background-color', 'black', function(v) {
+        self.scrollPort_.setBackgroundColor(v);
+      }
+    ],
+
+    /**
+     * Default font family for the terminal text.
+     */
+    ['font-family', ('"DejaVu Sans Mono", "Everson Mono", ' +
+                     'FreeMono, "Menlo", "Lucida Console", ' +
+                     'monospace'),
+     function(v) { self.syncFontFamily() }
+    ],
+
+    /**
+     * Anti-aliasing.
+     */
+    ['font-smoothing', 'antialiased',
+     function(v) { self.syncFontFamily() }
+    ],
+
+    /**
+     * True if we should use bold weight font for text with the bold/bright
+     * attribute.  False to use bright colors only.  Null to autodetect.
+     */
+    ['enable-bold', null, function(v) {
+        self.syncBoldSafeState();
+      }
+    ],
+
+    /**
+     * The color of the visible cursor.
+     */
+    ['cursor-color', 'rgba(255,0,0,0.5)', function(v) {
+        self.cursorNode_.style.backgroundColor = v;
+      }
+    ],
+
+    /**
+     * If true, scroll to the bottom on any keystroke.
+     */
+    ['scroll-on-keystroke', true, function(v) {
+        self.scrollOnKeystroke_ = v;
+      }
+    ],
+
+    /**
+     * If true, scroll to the bottom on terminal output.
+     */
+    ['scroll-on-output', false, function(v) {
+        self.scrollOnOutput_ = v;
+      }
+    ],
+
+    /**
+     * The default font size in pixels.
+     */
+    ['font-size', 15, function(v) {
+        self.setFontSize(v);
+      }
+    ],
+
+    /**
+     * Terminal bell sound.  Empty string for no audible bell.
+     */
+    ['audible-bell-sound', '../audio/bell.ogg', function(v) {
+        self.bellAudio_.setAttribute('src', v);
+      }
+    ],
+   ]);
+
+  if (needSync)
+    this.prefs_.notifyAll();
+};
+
+/**
+ * Return the current terminal background color.
+ *
+ * Intended for use by other classes, so we don't have to expose the entire
+ * prefs_ object.
+ */
+hterm.Terminal.prototype.getBackgroundColor = function() {
+  return this.prefs_.get('background-color');
+};
+
+/**
+ * Return the current terminal foreground color.
+ *
+ * Intended for use by other classes, so we don't have to expose the entire
+ * prefs_ object.
+ */
+hterm.Terminal.prototype.getForegroundColor = function() {
+  return this.prefs_.get('foreground-color');
+};
 
 /**
  * Create a new instance of a terminal command and run it with a given
@@ -183,8 +284,17 @@ hterm.Terminal.prototype.uninstallKeyboard = function() {
 
 /**
  * Set the font size for this terminal.
+ *
+ * Call setFontSize(0) to reset to the default font size.
+ *
+ * This function does not modify the font-size preference.
+ *
+ * @param {number} px The desired font size, in pixels.
  */
 hterm.Terminal.prototype.setFontSize = function(px) {
+  if (px === 0)
+    px = this.prefs_.get('font-size');
+
   this.scrollPort_.setFontSize(px);
 };
 
@@ -198,17 +308,29 @@ hterm.Terminal.prototype.getFontSize = function() {
 /**
  * Set the CSS "font-family" for this terminal.
  */
-hterm.Terminal.prototype.setFontFamily = function(str) {
-  this.scrollPort_.setFontFamily(str);
+hterm.Terminal.prototype.syncFontFamily = function() {
+  this.scrollPort_.setFontFamily(this.prefs_.get('font-family'),
+                                 this.prefs_.get('font-smoothing'));
+  this.syncBoldSafeState();
+};
+
+hterm.Terminal.prototype.syncBoldSafeState = function() {
+  var enableBold = this.prefs_.get('enable-bold');
+  if (enableBold !== null) {
+    this.screen_.textAttributes.enableBold = enableBold;
+    return;
+  }
+
   var normalSize = this.scrollPort_.measureCharacterSize();
   var boldSize = this.scrollPort_.measureCharacterSize('bold');
 
   var isBoldSafe = normalSize.equals(boldSize);
-  this.screen_.textAttributes.enableBold = isBoldSafe;
   if (!isBoldSafe) {
     console.warn('Bold characters disabled: Size of bold weight differs ' +
                  'from normal.  Font family is: ' + str);
   }
+
+  this.screen_.textAttributes.enableBold = isBoldSafe;
 };
 
 /**
@@ -271,7 +393,7 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
   }
 
   this.div_.style.height =
-      this.scrollPort_.characterSize.height * rowCount + 'px';
+      this.scrollPort_.characterSize.height * rowCount + 1 + 'px';
   this.realizeSize_(this.screenSize.width, rowCount);
   this.scheduleSyncCursorPosition_();
 };
@@ -435,38 +557,6 @@ hterm.Terminal.prototype.softReset = function() {
   this.setCursorBlink(false);
 };
 
-hterm.Terminal.prototype.clearColorAndAttributes = function() {
-  //console.log('clearColorAndAttributes');
-};
-
-hterm.Terminal.prototype.setForegroundColor256 = function() {
-  console.log('setForegroundColor256');
-};
-
-hterm.Terminal.prototype.setBackgroundColor256 = function() {
-  console.log('setBackgroundColor256');
-};
-
-hterm.Terminal.prototype.setForegroundColor = function() {
-  //console.log('setForegroundColor');
-};
-
-hterm.Terminal.prototype.setBackgroundColor = function() {
-  //console.log('setBackgroundColor');
-};
-
-hterm.Terminal.prototype.setAttributes = function() {
-  //console.log('setAttributes');
-};
-
-hterm.Terminal.prototype.resize = function() {
-  console.log('resize');
-};
-
-hterm.Terminal.prototype.setCharacterSet = function() {
-  //console.log('setCharacterSet');
-};
-
 /**
  * Move the cursor forward to the next tab stop, or to the last column
  * if no more tab stops are set.
@@ -607,8 +697,8 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.scrollPort_.decorate(div);
 
-  this.setFontSize(this.defaultFontSize);
-  this.setFontFamily(this.defaultFontFamily);
+  this.setFontSize(this.prefs_.get('font-size'));
+  this.syncFontFamily();
 
   this.document_ = this.scrollPort_.getDocument();
 
@@ -620,7 +710,7 @@ hterm.Terminal.prototype.decorate = function(div) {
        'width: ' + this.scrollPort_.characterSize.width + 'px;' +
        'height: ' + this.scrollPort_.characterSize.height + 'px;' +
        '-webkit-transition: opacity, background-color 100ms linear;' +
-       'background-color: ' + this.cursorColor);
+       'background-color: ' + this.prefs_.get('cursor-color'));
   this.document_.body.appendChild(this.cursorNode_);
 
   this.setReverseVideo(false);
@@ -843,7 +933,7 @@ hterm.Terminal.prototype.print = function(str) {
 
   this.scheduleSyncCursorPosition_();
 
-  if (this.scrollOnOutput)
+  if (this.scrollOnOutput_)
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
 };
 
@@ -1385,29 +1475,27 @@ hterm.Terminal.prototype.cursorRight = function(count) {
 hterm.Terminal.prototype.setReverseVideo = function(state) {
   this.options_.reverseVideo = state;
   if (state) {
-    this.scrollPort_.setForegroundColor(this.backgroundColor);
-    this.scrollPort_.setBackgroundColor(this.foregroundColor);
+    this.scrollPort_.setForegroundColor(this.prefs_.get('background-color'));
+    this.scrollPort_.setBackgroundColor(this.prefs_.get('foreground-color'));
   } else {
-    this.scrollPort_.setForegroundColor(this.foregroundColor);
-    this.scrollPort_.setBackgroundColor(this.backgroundColor);
+    this.scrollPort_.setForegroundColor(this.prefs_.get('foreground-color'));
+    this.scrollPort_.setBackgroundColor(this.prefs_.get('background-color'));
   }
 };
 
 /**
  * Ring the terminal bell.
- *
- * We only have a visual bell, which quickly toggles inverse video in the
- * terminal.
  */
 hterm.Terminal.prototype.ringBell = function() {
-  this.bellAudio_.play();
+  if (this.bellAudio_.getAttribute('src'))
+    this.bellAudio_.play();
 
   this.cursorNode_.style.backgroundColor =
       this.scrollPort_.getForegroundColor();
 
   var self = this;
   setTimeout(function() {
-      self.cursorNode_.style.backgroundColor = self.cursorColor;
+      self.cursorNode_.style.backgroundColor = self.prefs_.get('cursor-color');
     }, 200);
 };
 
@@ -1654,10 +1742,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
 
     this.overlayNode_ = this.document_.createElement('div');
     this.overlayNode_.style.cssText = (
-        'background-color: ' + this.foregroundColor + ';' +
         'border-radius: 15px;' +
-        'color: ' + this.backgroundColor + ';' +
-        'font-family: ' + this.defaultFontFamily + ';' +
         'font-size: xx-large;' +
         'opacity: 0.75;' +
         'padding: 0.2em 0.5em 0.2em 0.5em;' +
@@ -1665,6 +1750,10 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
         '-webkit-user-select: none;' +
         '-webkit-transition: opacity 180ms ease-in;');
   }
+
+  this.overlayNode_.style.color = this.prefs_.get('background-color');
+  this.overlayNode_.style.backgroundColor = this.prefs_.get('foreground-color');
+  this.overlayNode_.style.fontFamily = this.prefs_.get('font-family');
 
   this.overlayNode_.textContent = msg;
   this.overlayNode_.style.opacity = '0.75';
@@ -1706,7 +1795,7 @@ hterm.Terminal.prototype.overlaySize = function() {
  * @param {string} string The VT string representing the keystroke.
  */
 hterm.Terminal.prototype.onVTKeystroke = function(string) {
-  if (this.scrollOnKeystroke)
+  if (this.scrollOnKeystroke_)
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
 
   this.io.onVTKeystroke(string);

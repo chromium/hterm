@@ -270,8 +270,22 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.resize();
 };
 
-hterm.ScrollPort.prototype.setFontFamily = function(fontFamily) {
+/**
+ * Select the font-family and font-smoothing for this scrollport.
+ *
+ * @param {string} fontFamily Value of the CSS 'font-family' to use for this
+ *     scrollport.  Should be a monospace font.
+ * @param {string} opt_smoothing Optional value for '-webkit-font-smoothing'.
+ *     Defaults to an empty string if not specified.
+ */
+hterm.ScrollPort.prototype.setFontFamily = function(fontFamily, opt_smoothing) {
   this.screen_.style.fontFamily = fontFamily;
+  if (opt_smoothing) {
+    this.screen_.style.webkitFontSmoothing = opt_smoothing;
+  } else {
+    this.screen_.style.webkitFontSmoothing = '';
+  }
+
   this.syncCharacterSize();
 };
 

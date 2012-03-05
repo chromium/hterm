@@ -360,8 +360,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onMetaC_ = function(e, keyDef) {
 hterm.Keyboard.KeyMap.Default.prototype.onZoom_ = function(e, keyDef) {
   var cap = keyDef.keyCap.substr(0, 1);
   if (cap == '0') {
-      this.keyboard.terminal.setFontSize(
-          this.keyboard.terminal.defaultFontSizePx);
+      this.keyboard.terminal.setFontSize(0);
   } else {
     var size = this.keyboard.terminal.getFontSize();
 

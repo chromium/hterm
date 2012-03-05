@@ -235,8 +235,9 @@ function ship_crx() {
   local target_dir="$3"
 
   local basename_crx="$(basename "$source_crx")"
+  local version=$(get_key_value "version" "$extension_dir/manifest.json")
 
-  echo_err "Shipping crx: $target_dir/$basename_crx"
+  echo_err "Shipping crx: $target_dir/$basename_crx, version $version"
 
   cp "$source_crx" "$target_dir"
   chmod a+r "$target_dir/$basename_crx"

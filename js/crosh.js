@@ -25,7 +25,8 @@ hterm.Crosh = function(argv) {
  * command.
  */
 hterm.Crosh.init = function() {
-  var terminal = new hterm.Terminal(15, 18);
+  var profileName = hterm.parseQuery(document.location.search)['profile'];
+  var terminal = new hterm.Terminal(profileName);
   terminal.decorate(document.querySelector('#terminal'));
 
   // Useful for console debugging.

@@ -37,6 +37,35 @@ hterm.msg = function(name, opt_args) {
 };
 
 /**
+ * Parse a query string into a hash.
+ *
+ * This takes a url query string in the form 'name1=value&name2=value' and
+ * converts it into an object of the form { name1: 'value', name2: 'value' }.
+ * If a given name appears multiple times in the query string, only the
+ * last value will appear in the result.
+ *
+ * Names and values are passed through decodeURIComponent before being added
+ * to the result object.
+ *
+ * @param {string} queryString The string to parse.  If it starts with a
+ *     leading '?', the '?' will be ignored.
+ */
+hterm.parseQuery = function(queryString) {
+  if (queryString.substr(0, 1) == '?')
+    queryString = queryString.substr(1);
+
+  var rv = {};
+
+  var pairs = queryString.split('&');
+  for (var i = 0; i < pairs.length; i++) {
+    var pair = pairs[i].split('=');
+    rv[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+  }
+
+  return rv;
+};
+
+/**
  * Return the current call stack after skipping a given number of frames.
  *
  * This method is intended to be used for debugging only.  It returns an

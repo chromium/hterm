@@ -1,3 +1,23 @@
+0.7.5.2, 2102-03-07, rginda@chromium.org
+
+* Re-add default tab width, add a testcase to catch future regressions.
+
+0.7.5.1, 2102-03-07, rginda@chromium.org
+
+* Cached scroll-on-output and scroll-on-keystroke preferences to avoid the
+  performance hit of reading a preference for each bit of output and keystroke.
+
+0.7.5.0, 2102-03-07, rginda@chromium.org
+
+* Add preferences.  Preferences are persisted to localStorage.  Active hterm
+  instances will respond to preference changes by listening to the 'storage'
+  event.
+* Preferences can be grouped into "profiles" so that it's possible
+  to maintain multiple terminal configurations and easily switch
+  between them.
+* The preference profile can be selected at load-time by adding
+  'profile=NAME' to the url used to load nassh.html or crosh.html.
+
 0.7.4.4, 2012-02-28, rginda@chromium.org
 
 * Add ability to detect fonts with mismatched bold/normal sizes, and disable

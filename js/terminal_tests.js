@@ -27,7 +27,7 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
   document.body.innerHTML = '';
 
   var div = this.div = document.createElement('div');
-  div.style.position = 'relative';
+  div.style.position = 'absolute';
   div.style.height = '100%';
   div.style.width = '100%';
 
@@ -66,7 +66,7 @@ hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
     result.assertEQ((this.div.clientWidth - this.terminal.scrollbarWidthPx) /
                     this.terminal.scrollPort_.characterSize.width,
                     this.visibleColumnCount);
-    result.assertEQ(this.div.clientHeight /
+    result.assertEQ((this.div.clientHeight - 1) /
                     this.terminal.scrollPort_.characterSize.height,
                     this.visibleRowCount);
 

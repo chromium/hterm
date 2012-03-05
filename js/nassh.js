@@ -35,7 +35,8 @@ hterm.NaSSH = function(argv) {
  * command.
  */
 hterm.NaSSH.init = function() {
-  var terminal = new hterm.Terminal(15);
+  var profileName = hterm.parseQuery(document.location.search)['profile'];
+  var terminal = new hterm.Terminal(profileName);
   terminal.decorate(document.querySelector('#terminal'));
 
   // Useful for console debugging.
