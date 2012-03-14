@@ -66,6 +66,11 @@
     }
   },
 
+  "RELAY_RETRY": {
+    "message": "Retrying...",
+    "description": "Displayed in a text overlay when we experience an error talking to the relay server."
+  },
+
   "CONNECT_BUTTON_LABEL": {
     "message": "Connect",
     "description": "Label for the connect button."

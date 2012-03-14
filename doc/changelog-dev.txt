@@ -1,3 +1,11 @@
+0.7.6.0, 2012-03-14, rginda@chromium.org
+
+* Refactor and clean up of the relay server code.
+* Add backoff logic to relay server code.
+* Promote Terminal.showOverlay to Terminal.IO.showOverlay.
+* PASS on handling Meta-~, since on Mac Meta is Cmd and Cmd-~ is the 'switch
+  between windows of this app' sequence.
+
 0.7.5.2, 2102-03-07, rginda@chromium.org
 
 * Re-add default tab width, add a testcase to catch future regressions.

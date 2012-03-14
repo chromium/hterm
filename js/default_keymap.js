@@ -129,7 +129,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
     [123, '[F12]', CSI + '24~',               DEFAULT, DEFAULT, DEFAULT],
 
     // Second row.
-    [192, '`~',     DEFAULT, sh(ctl('@'), ctl('^')),        DEFAULT, DEFAULT],
+    [192, '`~',     DEFAULT, sh(ctl('@'), ctl('^')),        DEFAULT, PASS],
     [49,  '1!',     DEFAULT, sh(PASS, STRIP),               PASS,    PASS],
     [50,  '2@',     DEFAULT, sh(PASS, ctl('@')),            PASS,    PASS],
     [51,  '3#',     DEFAULT, sh(PASS, ctl('[')),            PASS,    PASS],

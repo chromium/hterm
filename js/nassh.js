@@ -66,7 +66,10 @@ hterm.NaSSH.prototype.run = function() {
       this.exit(1);
     }
   } else {
-    this.promptForDestination_();
+    // Timeout is a hack to give the dom a chance to draw the terminal.
+    // Without the timeout, the destination prompt sometimes appears off
+    // center.
+    setTimeout(this.promptForDestination_.bind(this), 250);
   }
 };
 
@@ -164,7 +167,7 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
     return false;
 
   if (ary[4]) {
-    this.relay_ = new hterm.NaSSH.GoogleRelay(ary[4]);
+    this.relay_ = new hterm.NaSSH.GoogleRelay(this.io, ary[4]);
     this.io.println(hterm.msg('INITIALIZING_RELAY', [ary[4]]));
     if (!this.relay_.init(ary[1], ary[2], (ary[3] || 22))) {
       // A false return value means we have to redirect to complete
@@ -213,6 +216,9 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
 
   var self = this;
   this.initPlugin_(function() {
+      if (!self.argv_.argString)
+        self.io.println(hterm.msg('WELCOME_TIP'));
+
       window.onbeforeunload = self.onBeforeUnload_.bind(self);
       self.sendToPlugin_('startSession', [argv]);
     });
@@ -245,8 +251,6 @@ hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
     if (!self.connectToDestination(result)) {
       self.io.alert(hterm.msg('BAD_DESTINATION', [result]),
                     self.promptForDestination_.bind(self, result));
-    } else {
-      self.io.println(hterm.msg('WELCOME_TIP'));
     }
   }
 

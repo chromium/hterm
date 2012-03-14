@@ -31,6 +31,23 @@ hterm.Terminal.IO = function(terminal) {
 };
 
 /**
+ * Show the terminal overlay for a given amount of time.
+ *
+ * The terminal overlay appears in inverse video in a large font, centered
+ * over the terminal.  You should probably keep the overlay message brief,
+ * since it's in a large font and you probably aren't going to check the size
+ * of the terminal first.
+ *
+ * @param {string} msg The text (not HTML) message to display in the overlay.
+ * @param {number} opt_timeout The amount of time to wait before fading out
+ *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
+ *     stay up forever (or until the next overlay).
+ */
+hterm.Terminal.IO.prototype.showOverlay = function(message, opt_timeout) {
+  this.terminal_.showOverlay(message, opt_timeout);
+};
+
+/**
  * Show an in-terminal alert dialog.
  *
  * This dialog is asynchronous, you'll be called back when it is dismissed.

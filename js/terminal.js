@@ -1778,7 +1778,8 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   this.overlayTimeout_ = setTimeout(function() {
       self.overlayNode_.style.opacity = '0';
       setTimeout(function() {
-          self.overlayNode_.parentNode.removeChild(self.overlayNode_);
+          if (self.overlayNode_.parentNode)
+            self.overlayNode_.parentNode.removeChild(self.overlayNode_);
           self.overlayTimeout_ = null;
           self.overlayNode_.style.opacity = '0.75';
         }, 200);

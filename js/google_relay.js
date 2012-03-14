@@ -61,7 +61,8 @@
  * 6. Writes are queued up and sent to /write.
  */
 
-hterm.NaSSH.GoogleRelay = function(proxy) {
+hterm.NaSSH.GoogleRelay = function(io, proxy) {
+  this.io = io;
   this.proxy = proxy;
 };
 
@@ -154,16 +155,20 @@ hterm.NaSSH.GoogleRelay.Socket = function(fd) {
   this.port_ = null;
   this.relay_ = null;
 
-  this.writeSocket_ = new XMLHttpRequest();
-  this.writeSocket_.onerror = this.onSocketError_.bind(this);
-  this.writeSocket_.onreadystatechange = this.onWriteDone_.bind(this);
+  this.backoffMS_ = 0;
+
+  this.writeRequest_ = new XMLHttpRequest();
+  this.writeRequest_.ontimeout = this.writeRequest_.onabort =
+      this.writeRequest_.onerror = this.onRequestError_.bind(this);
+  this.writeRequest_.onloadend = this.onWriteDone_.bind(this);
   this.writeQueue_ = [];
 
   this.writeCount_ = 0;
 
-  this.readStream_ = new XMLHttpRequest();
-  this.readStream_.onerror = this.onSocketError_.bind(this);
-  this.readStream_.onreadystatechange = this.onReadReady_.bind(this);
+  this.readRequest_ = new XMLHttpRequest();
+  this.readRequest_.ontimeout = this.readRequest_.onabort =
+      this.readRequest_.onerror = this.onRequestError_.bind(this);
+  this.readRequest_.onloadend = this.onReadReady_.bind(this);
 
   this.readCount_ = 0;
 };
@@ -209,10 +214,7 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.asyncOpen_ = function(
       return onError();
 
     self.sessionID_ = this.responseText;
-    self.readStream_.open("GET", self.relay_.relayServer + "read?sid=" +
-                          self.sessionID_ + "&rcnt=" + self.readCount_, true);
-    self.readStream_.send();
-
+    self.resumeRead_();
     onComplete(true);
   }
 
@@ -220,10 +222,17 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.asyncOpen_ = function(
                       '/proxy?host=' + this.host_ + '&port=' + this.port_,
                       true);
   sessionRequest.withCredentials = true;  // We need to see cookies for /proxy.
-  sessionRequest.onerror = onError;
-  sessionRequest.onreadystatechange = onReady;
+  sessionRequest.onabort = sessionRequest.ontimeout =
+      sessionRequest.onerror = onError;
+  sessionRequest.onloadend = onReady;
   sessionRequest.send();
-}
+};
+
+hterm.NaSSH.GoogleRelay.Socket.prototype.resumeRead_ = function() {
+  this.readRequest_.open('GET', this.relay_.relayServer + 'read?sid=' +
+                         this.sessionID_ + '&rcnt=' + this.readCount_, true);
+  this.readRequest_.send();
+};
 
 /**
  * Queue up some data to write.
@@ -250,7 +259,7 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.asyncWrite = function(data, onWrite) {
 
   if (needService)
     this.serviceWriteQueue_();
-}
+};
 
 /**
  * Send the next pending write.
@@ -260,10 +269,10 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.serviceWriteQueue_ = function() {
     return;
 
   var msg = this.writeQueue_[0];
-  this.writeSocket_.open("GET", this.relay_.relayServer +
-                         "write?sid=" + this.sessionID_ +
-                         "&wcnt=" + this.writeCount_ + "&data=" + msg, true);
-  this.writeSocket_.send();
+  this.writeRequest_.open('GET', this.relay_.relayServer +
+                          'write?sid=' + this.sessionID_ +
+                          '&wcnt=' + this.writeCount_ + '&data=' + msg, true);
+  this.writeRequest_.send();
 };
 
 hterm.NaSSH.GoogleRelay.Socket.prototype.webSafeToBase64_ = function(s) {
@@ -278,7 +287,7 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.webSafeToBase64_ = function(s) {
     throw 'Invalid web safe base64 string length: ' + s.length;
   }
   return s;
-}
+};
 
 hterm.NaSSH.GoogleRelay.Socket.prototype.base64ToWebSafe_ = function(s) {
   return s.replace(/[+/=]/g, function(ch) {
@@ -286,50 +295,95 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.base64ToWebSafe_ = function(s) {
         return '-';
       if (ch == '/')
         return '_';
-      return "";
+      return '';
   });
-}
+};
 
+/**
+ * Called when the readRequest_ has finished loading.
+ *
+ * This indicates that the response entity has the data for us to send to the
+ * terminal.
+ */
 hterm.NaSSH.GoogleRelay.Socket.prototype.onReadReady_ = function(e) {
-  if (this.readStream_.readyState != 4)
+  if (this.readRequest_.readyState != 4)
     return;
 
-  if (this.readStream_.status == 200) {
-    this.readCount_ += Math.floor(this.readStream_.responseText.length * 3 / 4);
-    var data = this.webSafeToBase64_(this.readStream_.responseText);
-    this.onDataAvailable(data);
-
-  } else if (this.readStream_.status == 410) {
-    // Session gone.
+  if (this.readRequest_.status == 410) {
+    // HTTP 410 Gone indicates that the relay has dropped our ssh session.
     this.close();
     return;
   }
 
-  this.readStream_.open("GET", this.relay_.relayServer + "read?sid=" +
-                        this.sessionID_ + "&rcnt=" + this.readCount_, true);
-  this.readStream_.send();
+  if (this.readRequest_.status != 200)
+    return this.onRequestError(e);
+
+  this.readCount_ += Math.floor(
+      this.readRequest_.responseText.length * 3 / 4);
+  var data = this.webSafeToBase64_(this.readRequest_.responseText);
+  this.onDataAvailable(data);
+
+  this.clearBackoff_();
+  this.resumeRead_();
 };
 
+/**
+ * Called when the writeRequest_ has finished loading.
+ *
+ * This indicates that data we wrote has either been successfully written, or
+ * failed somewhere along the way.
+ */
 hterm.NaSSH.GoogleRelay.Socket.prototype.onWriteDone_ = function(e) {
-  if (this.writeSocket_.readyState != 4)
+  if (this.writeRequest_.readyState != 4)
     return;
 
-  if (this.writeSocket_.status == 410) {
-    // Session gone.
+  if (this.writeRequest_.status == 410) {
+    // HTTP 410 Gone indicates that the relay has dropped our ssh session.
     this.close();
     return;
   }
 
-  if (this.writeSocket_.status == 200) {
-    var lastCount = this.writeQueue_[0].length;
-    this.writeQueue_.shift();
-    this.writeCount_ += Math.floor(lastCount * 3 / 4);
-  }
+  if (this.writeRequest_.status != 200)
+    return this.onRequestError(e);
 
-  if (this.writeQueue_.length)
-    this.serviceWriteQueue_();
+  var lastCount = this.writeQueue_[0].length;
+  this.writeQueue_.shift();
+  this.writeCount_ += Math.floor(lastCount * 3 / 4);
+
+  this.clearBackoff_();
+  this.serviceWriteQueue_();
 };
 
-hterm.NaSSH.GoogleRelay.Socket.prototype.onSocketError_ = function(e) {
-  this.close()
+hterm.NaSSH.GoogleRelay.Socket.prototype.clearBackoff_ = function(request) {
+  if (this.backoffMS_)
+    console.log('Recovered.');
+
+  this.backoffMS_ = 0;
+};
+
+hterm.NaSSH.GoogleRelay.Socket.prototype.onRequestError_ = function(e) {
+  var retryFunction;
+
+  if (!this.backoffMS_)
+    this.backoffMS_ = 1;
+
+  if (e.target == this.readRequest_) {
+    console.log('Read error, backing off: ' + this.backoffMS_ + 'ms');
+    retryFunction = this.resumeRead_.bind(this);
+  } else {
+    console.log('Write error, backing off: ' + this.backoffMS_ + 'ms');
+    retryFunction = this.serviceWriteQueue_.bind(this);
+  }
+
+  if (this.backoffMS_ >= 1000) {
+    // Browser timeouts tend to have a wide margin for error.  We want to reduce
+    // the risk that a failed retry will redisplay this message just as its
+    // fading away.  So we show the retry message for a little longer than we
+    // expect to back off.
+    this.relay_.io.showOverlay(hterm.msg('RELAY_RETRY'), this.backoffMS_ + 500);
+  }
+
+  setTimeout(retryFunction, this.backoffMS_);
+
+  this.backoffMS_ = this.backoffMS_ * 2 + 93;  // Exponential backoff.
 };
