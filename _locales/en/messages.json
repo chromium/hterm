@@ -44,6 +44,28 @@
     "description": "Text displayed in the destination textbox to hint at the expected format."
   },
 
+  "INITIALIZING_RELAY": {
+    "message": "Looking up relay server using: $HOST$",
+    "description": "Text displayed in the terminal when the user is connecting through a relay.",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "proxy.example.com"
+      }
+    }
+  },
+
+  "FOUND_RELAY": {
+    "message": "Found relay server: $URL$",
+    "description": "Text displayed in the terminal when the user is connecting through a relay.",
+    "placeholders": {
+      "url": {
+        "content": "$1",
+        "example": "http://proxy.example.com:8023/"
+      }
+    }
+  },
+
   "CONNECT_BUTTON_LABEL": {
     "message": "Connect",
     "description": "Label for the connect button."
@@ -55,12 +77,12 @@
     "placeholders": {
       "name": {
         "content": "$1",
-	"example": "ssh"
+        "example": "ssh"
        },
 
        "code": {
          "content": "$2",
-	 "example": "0"
+         "example": "0"
        }
      }
   },

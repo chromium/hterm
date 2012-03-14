@@ -27,6 +27,36 @@ hterm.init = function(opt_onInit) {
 };
 
 /**
+ * Replace variable references in a string.
+ *
+ * Variables are of the form %ESC(VARNAME).  ESC is an optional escape function
+ * to apply to the value.
+ *
+ * For example
+ *   hterm.replaceVars("%(greeting), %encodeURIComponent(name)",
+ *                     { greeting: "Hello",
+ *                       name: "Google+");
+ *
+ * Will result in "Hello, Google%2B".
+ */
+hterm.replaceVars = function(str, vars) {
+  return str.replace(/%([a-z]*)\(([^\)]+)\)/gi, function(match, fn, varname) {
+      if (typeof vars[varname] == 'undefined')
+        throw 'Unknown variable: ' + varname;
+
+      var rv = vars[varname];
+
+      if (fn == 'encodeURIComponent') {
+        rv = encodeURIComponent(rv);
+      } else if (fn) {
+        throw 'Unknown escape function: ' + fn;
+      }
+
+      return rv;
+    });
+};
+
+/**
  * Return a formatted message in the current locale.
  *
  * @param {string} name The name of the message to return.

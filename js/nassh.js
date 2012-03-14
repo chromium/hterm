@@ -19,13 +19,7 @@ hterm.NaSSH = function(argv) {
   this.argv_ = argv;
   this.io = null;
   this.verbose_ = false;
-  this.socketRelayServer_ = sessionStorage.getItem('relay');
-  if (this.socketRelayServer_) {
-    this.socketRelayServer_ = this.socketRelayServer_ + ':8023';
-  } else {
-    // Use given relay server only once so page refresh will renew cookies.
-    sessionStorage.setItem('relay', null);
-  }
+  this.relay_ = null;
 };
 
 /**
@@ -66,6 +60,23 @@ hterm.NaSSH.prototype.commandName = 'nassh';
 hterm.NaSSH.prototype.run = function() {
   this.io = this.argv_.io.push();
 
+  if (this.argv_.argString) {
+    if (!this.connectToDestination(this.argv_.argString)) {
+      this.io.println(hterm.msg('BAD_DESTINATION', [this.argv_.argString]));
+      this.exit(1);
+    }
+  } else {
+    this.promptForDestination_();
+  }
+};
+
+hterm.NaSSH.prototype.initPlugin_ = function(onComplete) {
+  var self = this;
+  function onPluginLoaded() {
+    self.io.println(hterm.msg('PLUGIN_LOADING_COMPLETE'));
+    onComplete();
+  };
+
   this.io.print(hterm.msg('PLUGIN_LOADING'));
 
   this.plugin_ = window.document.createElement('embed');
@@ -76,11 +87,10 @@ hterm.NaSSH.prototype.run = function() {
        'height: 0;');
   this.plugin_.setAttribute('src', '../plugin/ssh_client.nmf');
   this.plugin_.setAttribute('type', 'application/x-nacl');
-  this.plugin_.addEventListener('load', this.onPluginLoaded_.bind(this));
+  this.plugin_.addEventListener('load', onPluginLoaded);
   this.plugin_.addEventListener('message', this.onPluginMessage_.bind(this));
-  document.body.insertBefore(this.plugin_, document.body.firstChild);
 
-  window.onbeforeunload = this.onBeforeUnload_.bind(this);
+  document.body.insertBefore(this.plugin_, document.body.firstChild);
 };
 
 /**
@@ -145,25 +155,26 @@ hterm.NaSSH.prototype.reportUnexpectedError_ = function(err) {
  */
 hterm.NaSSH.prototype.connectToDestination = function(destination) {
   if (destination == 'crosh') {
-    window.onbeforeunload = null;
     document.location = "crosh.html"
     return true;
   }
+
   var ary = destination.match(/^([^@]+)@([^:@]+)(?::(\d+))?(?:@(.+))?$/);
   if (!ary)
     return false;
 
-  if (ary[4] && !this.socketRelayServer_) {
-    sessionStorage.setItem('username', ary[1]);
-    sessionStorage.setItem('hostname', ary[2]);
-    sessionStorage.setItem('port', ary[3] ? ary[3] : 22);
-    sessionStorage.setItem('proxy', ary[4]);
-    window.onbeforeunload = null;
-    document.location = "/ssh.html";
-    return true;
+  if (ary[4]) {
+    this.relay_ = new hterm.NaSSH.GoogleRelay(ary[4]);
+    this.io.println(hterm.msg('INITIALIZING_RELAY', [ary[4]]));
+    if (!this.relay_.init(ary[1], ary[2], (ary[3] || 22))) {
+      // A false return value means we have to redirect to complete
+      // initialization.  Bail out of the connect for now.  We'll resume it
+      // when the relay is done with its redirect.
+      return true;
+    }
   }
 
-  this.connectTo(ary[1], ary[2], ary[3], ary[4]);
+  this.connectTo(ary[1], ary[2], ary[3]);
   return true;
 };
 
@@ -175,17 +186,17 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
  * @param {string|integer} opt_port The optional port number to connect to.
  *     Defaults to 22 if not provided.
  */
-hterm.NaSSH.prototype.connectTo = function(username, hostname,
-                                           opt_port, opt_proxy) {
+hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
   var port = opt_port ? Number(opt_port) : 22;
-  var proxy = opt_proxy ? '@' + opt_proxy : '';
+  var proxySuffix = ''
 
-  document.location.hash = username + '@' + hostname + ':' + port + proxy;
-
-  if (proxy) {
-    this.io.println('Proxy server ' + opt_proxy +
-        ', relay server ' + this.socketRelayServer_);
+  if (this.relay_) {
+    proxySuffix = '@' + this.relay_.proxy;
+    this.io.println(hterm.msg('FOUND_RELAY', this.relay_.relayServer));
   }
+
+  document.location.hash = username + '@' + hostname + ':' + port + proxySuffix;
+
   this.io.println(hterm.msg('CONNECTING', [username + '@' + hostname, port]));
   this.io.onVTKeystroke = this.sendString_.bind(this);
   this.io.sendString = this.sendString_.bind(this);
@@ -197,10 +208,14 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname,
   argv.port = port;
   argv.terminalWidth = this.io.terminal_.screenSize.width;
   argv.terminalHeight = this.io.terminal_.screenSize.height;
-  argv.useJsSocket = (proxy != '');
-  argv.arguments = [ ];
-  argv.arguments.push('-C');  // enable compression
-  this.sendToPlugin_('startSession', [ argv ]);
+  argv.useJsSocket = !!this.relay_;
+  argv.arguments = ['-C'];  // enable compression
+
+  var self = this;
+  this.initPlugin_(function() {
+      window.onbeforeunload = self.onBeforeUnload_.bind(self);
+      self.sendToPlugin_('startSession', [argv]);
+    });
 };
 
 /**
@@ -242,22 +257,6 @@ hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
   this.io.prompt(hterm.msg('CONNECT_MESSAGE'),
                  opt_default || hterm.msg('DESTINATION_PATTERN'),
                  onOk, onCancel);
-};
-
-/**
- * Called once the NaCl plugin loads.
- */
-hterm.NaSSH.prototype.onPluginLoaded_ = function() {
-  this.io.println(hterm.msg('PLUGIN_LOADING_COMPLETE'));
-
-  if (this.argv_.argString) {
-    if (!this.connectToDestination(this.argv_.argString)) {
-      this.io.println(hterm.msg('BAD_DESTINATION', [this.argv_.argString]));
-      this.exit(1);
-    }
-  } else {
-    this.promptForDestination_();
-  }
 };
 
 hterm.NaSSH.prototype.onBeforeUnload_ = function(e) {
@@ -331,49 +330,27 @@ hterm.NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
   }
 };
 
-/**
- * The plugin wants to open a socket.
- *
- */
 hterm.NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
+  if (!this.relay_) {
+    this.sendToPlugin_('onOpenSocket', [fd, false]);
+    return;
+  }
+
   var self = this;
-  var sessionRequest = new XMLHttpRequest();
+  var stream = this.relay_.openSocket(
+      fd, host, port,
+      function onOpen(success) {
+        self.sendToPlugin_('onOpenSocket', [fd, success]);
+      });
 
-  function onError(event) {
-    self.sendToPlugin_('onOpenSocket', [fd, false]);
-    console.log('Failed to get session ID: ' + event.target.status);
+  stream.onDataAvailable = function(data) {
+    self.sendToPlugin_('onRead', [fd, data]);
   };
 
-  function onOpen(success) {
-    self.sendToPlugin_('onOpenSocket', [fd, success]);
+  stream.onClose = function(reason) {
+    console.log('close: ' + fd);
+    self.sendToPlugin_('onClose', [fd, reason]);
   };
-
-  function onReady(event) {
-    if (sessionRequest.readyState == 4) {
-      if (sessionRequest.status == 200) {
-        var session_id = this.responseText;
-        var stream = hterm.NaSSH.Stream.openStream(hterm.NaSSH.Stream.XHRSocket,
-            fd, { id: session_id, relay: self.socketRelayServer_ }, onOpen);
-
-        stream.onDataAvailable = function(data) {
-          self.sendToPlugin_('onRead', [fd, data]);
-        };
-
-        stream.onClose = function(reason) {
-          self.sendToPlugin_('onClose', [fd, reason]);
-        };
-      } else {
-        onError(event);
-      }
-    }
-  };
-
-  sessionRequest.open('GET', 'http://' + this.socketRelayServer_ +
-      '/proxy?host=' + host + '&port=' + port, true);
-  sessionRequest.withCredentials = true;  // We need to see cookies for /proxy.
-  sessionRequest.onerror = onError;
-  sessionRequest.onreadystatechange = onReady;
-  sessionRequest.send();
 };
 
 /**
