@@ -1,3 +1,7 @@
+0.7.6.1, 2012-03-15, rginda@chromium.org
+
+* Make the relay code more resiliant to intermittent failures.
+
 0.7.6.0, 2012-03-14, rginda@chromium.org
 
 * Refactor and clean up of the relay server code.
