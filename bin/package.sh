@@ -9,7 +9,7 @@ source "$(dirname $0)/shflags"
 DEFINE_string channel '' \
   "Manifest variant to select.  You should have a manifest-CHANNEL.json file \
 in the extension directory." c
-DEFINE_string extension_dir "$(pwd)" \
+DEFINE_string extension_dir "$(dirname $0)/.." \
   "Directory containing the extension to pack." e
 DEFINE_string keyfile '' \
   "Path to private key.  Required for crx files, ignored for zip." k
@@ -17,8 +17,12 @@ DEFINE_string shipdir '' \
   "Path to ship to.  Optional for crx files, ignored for zip." s
 DEFINE_string type '' \
   "Type of package to create.  Either zip or crx." t
-DEFINE_string workdir "$(pwd)/.." \
-  "Work directory.  Zip and/or crx files will be created here." o
+DEFINE_string workdir "../" \
+  "Work directory.  Zip and/or crx files will be created here." w
+DEFINE_string filename '' \
+  "The base name of the output file, without the file extension.  Defaults to \
+the 'name-version', where name and version come from the selected manifest\
+file." f
 
 FLAGS "$@" || exit $?
 eval set -- "${FLAGS_ARGV}"
@@ -179,9 +183,9 @@ function extension_to_zip() {
 
   echo_err "Creating zip file: $(get_relative_path $target_zip)"
   echo_err "Before compression:" \
-    "$(zip -sf $target_zip $EXTENSION_FILES | tail -1)"
+    "$(cd $extension_dir; zip -sf $target_zip $EXTENSION_FILES | tail -1)"
 
-  zip -q $target_zip $EXTENSION_FILES 1>&2
+  (cd $extension_dir; zip -q $target_zip $EXTENSION_FILES 1>&2)
 
   echo_err "After compression: $(du -h "$target_zip" | cut -f1)"
 }
@@ -273,16 +277,13 @@ function package_crx() {
   local key_file="$2"
   local output_dir="$3"
 
-  local version=$(get_key_value "version" "$extension_dir/manifest.json")
-  local name=$(get_key_value "name" "$extension_dir/manifest.json")
-
-  local target_zip="$output_dir/$name-$version.zip"
+  local target_zip="$output_dir/$FLAGS_filename.zip"
   extension_to_zip "$extension_dir" "$target_zip"
   if [ ! -s "$target_zip" ]; then
     return
   fi
 
-  local target_crx="$output_dir/$name-$version.crx"
+  local target_crx="$output_dir/$FLAGS_filename.crx"
   zip_to_crx "$target_zip" "$key_file" "$target_crx"
 
   echo "$target_crx"
@@ -302,10 +303,7 @@ function package_zip() {
   local extension_dir="$1"
   local output_dir="$2"
 
-  local version=$(get_key_value "version" "$extension_dir/manifest.json")
-  local name=$(get_key_value "name" "$extension_dir/manifest.json")
-
-  local target_zip="$output_dir/$name-$version.zip"
+  local target_zip="$output_dir/$FLAGS_filename.zip"
   extension_to_zip "$extension_dir" "$target_zip"
 
   echo "$target_zip"
@@ -315,8 +313,8 @@ function package_zip() {
 # Main.
 #
 function main() {
-  local extension_dir="$FLAGS_extension_dir"
-  local work_dir="$FLAGS_workdir"
+  local extension_dir="$(readlink -f $FLAGS_extension_dir)"
+  local work_dir="$(readlink -f $FLAGS_workdir)"
 
   if [ "$FLAGS_type" == "crx" ]; then
     if [ -z "$FLAGS_keyfile" ]; then
@@ -332,6 +330,13 @@ function main() {
     switch_manifest "$extension_dir" "$FLAGS_channel"
   fi
 
+  if [ -z "$FLAGS_filename" ]; then
+    local version=$(get_key_value "version" "$extension_dir/manifest.json")
+    local name=$(get_key_value "name" "$extension_dir/manifest.json")
+    FLAGS_filename="$name-$version"
+  fi
+
+  # The full path of the final deliverable.
   local outfile=""
 
   if [ "$FLAGS_type" == "zip" ]; then
