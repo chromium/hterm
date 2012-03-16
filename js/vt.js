@@ -437,9 +437,8 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       if (this.allowColumnWidthChanges_) {
         this.terminal.setWidth(state ? 132 : 80);
 
-        this.terminal.clear();
+        this.terminal.clearHome();
         this.terminal.setVTScrollRegion(null, null);
-        this.terminal.setAbsoluteCursorPosition(0, 0);
       }
       break;
 

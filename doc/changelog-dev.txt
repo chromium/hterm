@@ -1,3 +1,9 @@
+0.7.6.2, 2012-03-16, rginda@chromium.org
+
+* Fix regression in terminal reset.
+
+BUG=chromium-os:27950
+
 0.7.6.1, 2012-03-15, rginda@chromium.org
 
 * Make the relay code more resiliant to intermittent failures.

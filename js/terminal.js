@@ -541,10 +541,14 @@ hterm.Terminal.prototype.scrollPageDown = function() {
 hterm.Terminal.prototype.reset = function() {
   this.clearAllTabStops();
   this.setDefaultTabStops();
-  this.clearColorAndAttributes();
   this.setVTScrollRegion(null, null);
-  this.clear();
-  this.setAbsoluteCursorPosition(0, 0);
+
+  this.clearHome(this.primaryScreen_);
+  this.primaryScreen_.textAttributes.reset();
+
+  this.clearHome(this.alternateScreen_);
+  this.alternateScreen_.textAttributes.reset();
+
   this.softReset();
 };
 
@@ -1163,25 +1167,45 @@ hterm.Terminal.prototype.fill = function(ch) {
 };
 
 /**
- * Erase the entire display.
+ * Erase the entire display and leave the cursor at (0, 0).
  *
- * The cursor position is unchanged.  This does not respect the scroll
- * region.
+ * This does not respect the scroll region.
+ *
+ * @param {hterm.Screen} opt_screen Optional screen to operate on.  Defaults
+ *     to the current screen.
  *
  * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
  * has a text-attribute related TODO.
  */
-hterm.Terminal.prototype.clear = function() {
-  var cursor = this.saveCursor();
-
-  var bottom = this.screenSize.height;
+hterm.Terminal.prototype.clearHome = function(opt_screen) {
+  var screen = opt_screen || this.screen_;
+  var bottom = screen.getHeight();
 
   for (var i = 0; i < bottom; i++) {
-    this.setAbsoluteCursorPosition(i, 0);
-    this.screen_.clearCursorRow();
+    screen.setCursorPosition(i, 0);
+    screen.clearCursorRow();
   }
 
-  this.restoreCursor(cursor);
+  screen.setCursorPosition(0, 0);
+};
+
+/**
+ * Erase the entire display without changing the cursor position.
+ *
+ * The cursor position is unchanged.  This does not respect the scroll
+ * region.
+ *
+ * @param {hterm.Screen} opt_screen Optional screen to operate on.  Defaults
+ *     to the current screen.
+ *
+ * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
+ * has a text-attribute related TODO.
+ */
+hterm.Terminal.prototype.clear = function(opt_screen) {
+  var screen = opt_screen || this.screen_;
+  var cursor = screen.cursorPosition.clone();
+  this.clearHome(screen);
+  screen.setCursorPosition(cursor.row, cursor.column);
 };
 
 /**

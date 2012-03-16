@@ -245,6 +245,66 @@ hterm.VT.Tests.addTest('tabs', function(result, cx) {
   });
 
 /**
+ * Test terminal reset.
+ */
+hterm.VT.Tests.addTest('reset', function(result, cx) {
+    this.terminal.interpret(
+        // Switch to alternate screen and set some attributes.
+        '\x1b[?47h\x1b[1;33;44m' +
+        // Switch back to primary screen.
+        '\x1b[?47l' +
+        // Set some text attributes.
+        '\x1b[1;33;44m' +
+        // Clear all tab stops.
+        '\x1b[3g' +
+        // Set a scroll region.
+        '\x1b[2;4r' +
+        // Set cursor position.
+        '\x1b[5;6H');
+
+    var ta;
+
+    result.assertEQ(this.terminal.tabStops_.length, 0);
+
+    ta = this.terminal.primaryScreen_.textAttributes;
+    result.assert(ta.foreground != ta.DEFAULT_COLOR);
+    result.assert(ta.background != ta.DEFAULT_COLOR);
+
+    ta = this.terminal.alternateScreen_.textAttributes;
+    result.assert(ta.foreground != ta.DEFAULT_COLOR);
+    result.assert(ta.background != ta.DEFAULT_COLOR);
+
+    result.assertEQ(ta.bold, true);
+
+    result.assertEQ(this.terminal.vtScrollTop_, 1);
+    result.assertEQ(this.terminal.vtScrollBottom_, 3);
+    result.assertEQ(this.terminal.screen_.cursorPosition.row, 4);
+    result.assertEQ(this.terminal.screen_.cursorPosition.column, 5);
+
+    // Reset.
+    this.terminal.interpret('\x1bc');
+
+    result.assertEQ(this.terminal.tabStops_.length, 1);
+
+    ta = this.terminal.primaryScreen_.textAttributes;
+    result.assertEQ(ta.foreground, ta.DEFAULT_COLOR);
+    result.assertEQ(ta.background, ta.DEFAULT_COLOR);
+
+    ta = this.terminal.alternateScreen_.textAttributes;
+    result.assertEQ(ta.foreground, ta.DEFAULT_COLOR);
+    result.assertEQ(ta.background, ta.DEFAULT_COLOR);
+
+    result.assertEQ(ta.bold, false);
+
+    result.assertEQ(this.terminal.vtScrollTop_, null);
+    result.assertEQ(this.terminal.vtScrollBottom_, null);
+    result.assertEQ(this.terminal.screen_.cursorPosition.row, 0);
+    result.assertEQ(this.terminal.screen_.cursorPosition.column, 0);
+
+    result.pass();
+  });
+
+/**
  * Test the erase left command.
  */
 hterm.VT.Tests.addTest('erase-left', function(result, cx) {
