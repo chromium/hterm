@@ -1,3 +1,22 @@
+0.7.6, 2012-03-16, rginda@chromium.org
+
+* Stable release of hterm-dev-0.7.6.3
+* Fix regression in bold detection. http://crosbug.com/28020
+* Fix regression in terminal reset. http://crosbug.com/27950
+* Refactor and clean up of the relay server code.
+* Add backoff logic to relay server code.
+* Promote Terminal.showOverlay to Terminal.IO.showOverlay.
+* PASS on handling Meta-~, since on Mac Meta is Cmd and Cmd-~ is the 'switch
+  between windows of this app' sequence.
+* Add preferences.  Preferences are persisted to localStorage.  Active hterm
+  instances will respond to preference changes by listening to the 'storage'
+  event.
+* Preferences can be grouped into "profiles" so that it's possible
+  to maintain multiple terminal configurations and easily switch
+  between them.
+* The preference profile can be selected at load-time by adding
+  'profile=NAME' to the url used to load nassh.html or crosh.html.
+
 0.7.4, 2012-02-29, rginda@chromium.org
 
 * Stable release of hterm-dev-0.7.4.4.
