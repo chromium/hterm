@@ -1,3 +1,10 @@
+0.7.6.3, 2012-03-19, rginda@chromium.org
+
+* Fix regression that caused hterm to fail to load if the chosen font was not
+  "safe" for bold charcters.
+
+BUG=chromium-os:28020
+
 0.7.6.2, 2012-03-16, rginda@chromium.org
 
 * Fix regression in terminal reset.

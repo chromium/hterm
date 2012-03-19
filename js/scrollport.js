@@ -289,6 +289,10 @@ hterm.ScrollPort.prototype.setFontFamily = function(fontFamily, opt_smoothing) {
   this.syncCharacterSize();
 };
 
+hterm.ScrollPort.prototype.getFontFamily = function() {
+  return this.screen_.style.fontFamily;
+};
+
 hterm.ScrollPort.prototype.focus = function() {
   this.iframe_.focus();
   this.screen_.focus();

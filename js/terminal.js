@@ -327,7 +327,8 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
   var isBoldSafe = normalSize.equals(boldSize);
   if (!isBoldSafe) {
     console.warn('Bold characters disabled: Size of bold weight differs ' +
-                 'from normal.  Font family is: ' + str);
+                 'from normal.  Font family is: ' +
+                 this.scrollPort_.getFontFamily());
   }
 
   this.screen_.textAttributes.enableBold = isBoldSafe;
