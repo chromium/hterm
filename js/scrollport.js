@@ -1082,3 +1082,10 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
       self.screen_.focus();
     }, 0);
 };
+
+/**
+ * Set the vertical scrollbar mode of the ScrollPort.
+ */
+hterm.ScrollPort.prototype.setScrollbarVisible = function(state) {
+  this.screen_.style.overflowY = state ? 'scroll' : 'hidden';
+};

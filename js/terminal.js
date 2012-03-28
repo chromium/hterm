@@ -208,6 +208,14 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
         self.bellAudio_.setAttribute('src', v);
       }
     ],
+
+    /**
+     * The vertical scrollbar mode.
+     */
+    ['scrollbar-visible', true, function(v) {
+        self.setScrollbarVisible(v);
+      }
+    ],
    ]);
 
   if (needSync)
@@ -704,6 +712,8 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.setFontSize(this.prefs_.get('font-size'));
   this.syncFontFamily();
+
+  this.setScrollbarVisible(this.prefs_.get('scrollbar-visible'));
 
   this.document_ = this.scrollPort_.getDocument();
 
@@ -1875,4 +1885,18 @@ hterm.Terminal.prototype.onCursorBlink_ = function() {
   } else {
     this.cursorNode_.style.opacity = '0';
   }
+};
+
+/**
+ * Set the scrollbar-visible mode bit.
+ *
+ * If scrollbar-visible is on, the vertical scrollbar will be visible.
+ * Otherwise it will not.
+ *
+ * Defaults to on.
+ *
+ * @param {boolean} state True to set scrollbar-visible mode, false to unset.
+ */
+hterm.Terminal.prototype.setScrollbarVisible = function(state) {
+  this.scrollPort_.setScrollbarVisible(state);
 };
