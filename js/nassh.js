@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// CSP means that we can't kick off the initialization from the html file,
+// so we do it like this instead.
+window.onload = function() {
+    hterm.init(hterm.NaSSH.init);
+};
+
 /**
  * The NaCl-ssh-powered terminal command.
  *
@@ -20,6 +26,9 @@ hterm.NaSSH = function(argv) {
   this.io = null;
   this.verbose_ = false;
   this.relay_ = null;
+
+  this.alertDialog = new AlertDialog(window.document.body);
+  this.promptDialog = new PromptDialog(window.document.body);
 };
 
 /**
@@ -222,6 +231,8 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
       window.onbeforeunload = self.onBeforeUnload_.bind(self);
       self.sendToPlugin_('startSession', [argv]);
     });
+
+  document.querySelector('#terminal').focus();
 };
 
 /**
@@ -249,8 +260,8 @@ hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
 
   function onOk(result) {
     if (!self.connectToDestination(result)) {
-      self.io.alert(hterm.msg('BAD_DESTINATION', [result]),
-                    self.promptForDestination_.bind(self, result));
+      self.alertDialog.show(hterm.msg('BAD_DESTINATION', [result]),
+                            self.promptForDestination_.bind(self, result));
     }
   }
 
@@ -258,9 +269,9 @@ hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
     self.exit(1);
   }
 
-  this.io.prompt(hterm.msg('CONNECT_MESSAGE'),
-                 opt_default || hterm.msg('DESTINATION_PATTERN'),
-                 onOk, onCancel);
+  this.promptDialog.show(hterm.msg('CONNECT_MESSAGE'),
+                         opt_default || hterm.msg('DESTINATION_PATTERN'),
+                         onOk, onCancel);
 };
 
 hterm.NaSSH.prototype.onBeforeUnload_ = function(e) {

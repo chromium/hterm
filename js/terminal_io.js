@@ -48,47 +48,6 @@ hterm.Terminal.IO.prototype.showOverlay = function(message, opt_timeout) {
 };
 
 /**
- * Show an in-terminal alert dialog.
- *
- * This dialog is asynchronous, you'll be called back when it is dismissed.
- *
- * @param {string} message The message to display to the user.
- * @param {function} onOk The function to invoke when the dialog is dismissed.
- */
-hterm.Terminal.IO.prototype.alert = function(message, onOk) {
-  this.terminal_.alertDialog.show(message, onOk);
-};
-
-/**
- * Show an in-terminal prompt dialog.
- *
- * This dialog is asynchronous, you'll be called back when it is dismissed.
- *
- * @param {string} message The message to display to the user.
- * @param {string} defaultValue The default value to present to the user.
- * @param {function(string)} onOk The function to invoke if the dialog is
- *     accepted.
- * @param {function} onCancel The function to invoke if the dialog is cancelled.
- */
-hterm.Terminal.IO.prototype.prompt = function(
-    message, defaultValue, onOk, onCancel) {
-  this.terminal_.promptDialog.show(message, defaultValue, onOk, onCancel);
-};
-
-/**
- * Show an in-terminal confirm dialog.
- *
- * This dialog is asynchronous, you'll be called back when it is dismissed.
- *
- * @param {string} message The message to display to the user.
- * @param {function} onOk The function to invoke if the dialog is accepted.
- * @param {function} onCancel The function to invoke if the dialog is cancelled.
- */
-hterm.Terminal.IO.prototype.confirm = function(message, onOk, onCancel) {
-  this.terminal_.confirmDialog.show(message, onOk, onCancel);
-};
-
-/**
  * Create a new hterm.Terminal.IO instance and make it active on the Terminal
  * object associated with this instance.
  *

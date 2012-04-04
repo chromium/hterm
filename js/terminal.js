@@ -709,6 +709,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.div_ = div;
 
   this.scrollPort_.decorate(div);
+  this.div_.focus = this.focus.bind(this);
 
   this.setFontSize(this.prefs_.get('font-size'));
   this.syncFontFamily();
@@ -730,21 +731,22 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.setReverseVideo(false);
 
-  var link = this.document_.createElement('link');
-  link.setAttribute('href', '../css/dialogs.css');
-  link.setAttribute('rel', 'stylesheet');
-  this.document_.head.appendChild(link);
-
-  this.alertDialog = new AlertDialog(this.document_.body);
-  this.promptDialog = new PromptDialog(this.document_.body);
-  this.confirmDialog = new ConfirmDialog(this.document_.body);
-
   this.scrollPort_.focus();
   this.scrollPort_.scheduleRedraw();
 };
 
+/**
+ * Return the HTML document that contains the terminal DOM nodes.
+ */
 hterm.Terminal.prototype.getDocument = function() {
   return this.document_;
+};
+
+/**
+ * Focus the terminal.
+ */
+hterm.Terminal.prototype.focus = function() {
+  this.scrollPort_.focus();
 };
 
 /**
