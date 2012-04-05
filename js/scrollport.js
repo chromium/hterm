@@ -314,6 +314,10 @@ hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
   this.screen_.style.backgroundColor = color;
 };
 
+hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
+  this.screen_.style.backgroundImage = image;
+};
+
 hterm.ScrollPort.prototype.getScreenWidth = function() {
   return this.screen_.clientWidth;
 };
@@ -430,8 +434,12 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   this.ruler_.style.fontWeight = opt_weight || '';
 
   this.rowNodes_.appendChild(this.ruler_);
+
+  // In some fonts, underscores actually show up below the reported height.
+  // We add one to the height here to compensate, and have to add a bottom
+  // border to text with a background color over in text_attributes.js.
   var size = new hterm.Size(this.ruler_.clientWidth,
-                            this.ruler_.clientHeight);
+                            this.ruler_.clientHeight + 1);
   this.rowNodes_.removeChild(this.ruler_);
   return size;
 };
@@ -475,11 +483,10 @@ hterm.ScrollPort.prototype.resize = function() {
 
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
-  this.visibleRowCount = Math.floor(
-      (screenHeight - 1) / this.characterSize.height);
+  this.visibleRowCount = Math.floor(screenHeight / this.characterSize.height);
 
   // Then compute the height of our integral number of rows.
-  var visibleRowsHeight = this.visibleRowCount * this.characterSize.height + 1;
+  var visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
 
   // Then the difference between the screen height and total row height needs to
   // be made up for as top margin.  We need to record this value so it
@@ -509,7 +516,6 @@ hterm.ScrollPort.prototype.syncScrollHeight = function() {
                                    this.rowProvider_.getRowCount() +
                                    this.visibleRowTopMargin +
                                    this.visibleRowBottomMargin +
-                                   1 +
                                    'px');
 };
 
@@ -928,7 +934,7 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
 
   var scrollTop = rowIndex * this.characterSize.height +
       this.visibleRowTopMargin + this.visibleRowBottomMargin;
-  scrollTop -= (this.visibleRowCount - 1) * this.characterSize.height;
+  scrollTop -= this.visibleRowCount * this.characterSize.height;
 
   if (scrollTop < 0)
     scrollTop = 0;

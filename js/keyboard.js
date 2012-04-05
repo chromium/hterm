@@ -36,12 +36,12 @@ hterm.Keyboard = function(terminal) {
    * will send the VT keycodes.  If false then home/end sends VT codes and
    * shift home/end scrolls.
    */
-  this.homeKeysScroll = false;
+  this.homeKeysScroll = terminal.prefs_.get('meta-sends-escape')
 
   /**
    * Same as above, except for page up/page down.
    */
-  this.pageKeysScroll = false;
+  this.pageKeysScroll = terminal.prefs_.get('page-keys-scroll');
 
   /**
    * Enable/disable application keypad.
@@ -61,18 +61,30 @@ hterm.Keyboard = function(terminal) {
    * If true, the backspace should send BS ('\x08', aka ^H).  Otherwise
    * the backspace key should send '\x7f'.
    */
-  this.backspaceSendsBackspace = false;
+  this.backspaceSendsBackspace = terminal.prefs_.get(
+      'backspace-sends-backspace');
 
   /**
    * Set whether the meta key sends a leading escape or not.
    */
-  this.metaSendsEscape = true;
+  this.metaSendsEscape = terminal.prefs_.get('meta-sends-escape');
+
+  /**
+   * Set whether the alt key sends sends an escape or accesses high-byte
+   * characters.
+   *
+   * This setting only matters when alt is distinct from meta (altIsMeta is
+   * false.)
+   */
+  this.altSendsEscape = terminal.prefs_.get('alt-sends-escape');
 
   /**
    * Set whether the alt key acts as a meta key, instead of producing 8-bit
    * characters.
+   *
+   * True to enable, false to disable, null to autodetect based on platform.
    */
-  this.altIsMeta = true;
+  this.altIsMeta = terminal.prefs_.get('alt-is-meta');
 };
 
 /**
@@ -357,7 +369,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
         if (code >= 64 && code <= 95) {
         action = String.fromCharCode(code - 64);
         }
-      } else if (alt) {
+      } else if (alt && !this.altSendsEscape) {
         var ch = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
         var code = ch.charCodeAt(0) + 128;
         action = this.terminal.vt.encodeCharset(String.fromCharCode(code));
@@ -366,11 +378,10 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
       }
     }
 
-    // We respect metaSendsEscape even if the keymap action was a literal
-    // string.  The other modifiers are only respected when the action is
-    // DEFAULT.  Otherwise, every overridden meta action would have to
-    // check metaSendsEscape :/
-    if (this.metaSendsEscape && meta)
+    // We respect alt/metaSendsEscape even if the keymap action was a literal
+    // string.  Otherwise, every overridden alt/meta action would have to
+    // check alt/metaSendsEscape :/
+    if ((this.altSendsEscape && alt) || (this.metaSendsEscape && meta))
       action = '\x1b' + action;
 
   } else if (alt || control || shift) {

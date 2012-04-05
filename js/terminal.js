@@ -131,16 +131,80 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
 
   var self = this;
   this.prefs_.definePreferences
-  ([/**
-     * The default colors for text with no other color attributes.
+  ([
+    /**
+     * Set whether the alt key acts as a meta key or as a distinct alt key.
      */
-    ['foreground-color', 'white', function(v) {
-        self.scrollPort_.setForegroundColor(v);
+    ['alt-is-meta', false, function(v) {
+        self.vt.keyboard.altIsMeta = v;
       }
     ],
 
-    ['background-color', 'black', function(v) {
+    /**
+     * Set whether the alt key acts as a meta key instead of producing 8-bit
+     * characters.
+     */
+    ['alt-sends-escape', true, function(v) {
+        self.vt.keyboard.altSendsEscape = v;
+      }
+    ],
+
+    /**
+     * Terminal bell sound.  Empty string for no audible bell.
+     */
+    ['audible-bell-sound', '../audio/bell.ogg', function(v) {
+        self.bellAudio_.setAttribute('src', v);
+      }
+    ],
+
+    /**
+     * The background color for text with no other color attributes.
+     */
+    ['background-color', 'rgb(16, 16, 16)', function(v) {
         self.scrollPort_.setBackgroundColor(v);
+      }
+    ],
+
+    /**
+     * The background image.
+     *
+     * Defaults to a subtle light-to-transparent-to-dark gradient that is
+     * mostly transparent.
+     */
+    ['background-image',
+     ('-webkit-linear-gradient(bottom, ' +
+      'rgba(0,0,0,0.01) 0%, ' +
+      'rgba(0,0,0,0) 30%, ' +
+      'rgba(255,255,255,0) 70%, ' +
+      'rgba(255,255,255,0.05) 100%)'),
+     function(v) {
+        self.scrollPort_.setBackgroundImage(v);
+      }
+    ],
+
+    /**
+     * If true, the backspace should send BS ('\x08', aka ^H).  Otherwise
+     * the backspace key should send '\x7f'.
+     */
+    ['backspace-sends-backspace', false, function(v) {
+        self.keyboard.backspaceSendsBackspace = v;
+      }
+    ],
+
+    /**
+     * The color of the visible cursor.
+     */
+    ['cursor-color', 'rgba(255,0,0,0.5)', function(v) {
+        self.cursorNode_.style.backgroundColor = v;
+      }
+    ],
+
+    /**
+     * True if we should use bold weight font for text with the bold/bright
+     * attribute.  False to use bright colors only.  Null to autodetect.
+     */
+    ['enable-bold', null, function(v) {
+        self.syncBoldSafeState();
       }
     ],
 
@@ -154,6 +218,14 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * The default font size in pixels.
+     */
+    ['font-size', 15, function(v) {
+        self.setFontSize(v);
+      }
+    ],
+
+    /**
      * Anti-aliasing.
      */
     ['font-smoothing', 'antialiased',
@@ -161,19 +233,28 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
-     * True if we should use bold weight font for text with the bold/bright
-     * attribute.  False to use bright colors only.  Null to autodetect.
+     * The foreground color for text with no other color attributes.
      */
-    ['enable-bold', null, function(v) {
-        self.syncBoldSafeState();
+    ['foreground-color', 'rgb(240, 240, 240)', function(v) {
+        self.scrollPort_.setForegroundColor(v);
       }
     ],
 
     /**
-     * The color of the visible cursor.
+     * If true, home/end will control the terminal scrollbar and shift home/end
+     * will send the VT keycodes.  If false then home/end sends VT codes and
+     * shift home/end scrolls.
      */
-    ['cursor-color', 'rgba(255,0,0,0.5)', function(v) {
-        self.cursorNode_.style.backgroundColor = v;
+    ['home-keys-scroll', false, function(v) {
+        self.keyboard.homeKeysScroll = v;
+      }
+    ],
+
+    /**
+     * Set whether the meta key sends a leading escape or not.
+     */
+    ['meta-sends-escape', true, function(v) {
+        self.keyboard.metaSendsEscape = v;
       }
     ],
 
@@ -194,28 +275,23 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
-     * The default font size in pixels.
-     */
-    ['font-size', 15, function(v) {
-        self.setFontSize(v);
-      }
-    ],
-
-    /**
-     * Terminal bell sound.  Empty string for no audible bell.
-     */
-    ['audible-bell-sound', '../audio/bell.ogg', function(v) {
-        self.bellAudio_.setAttribute('src', v);
-      }
-    ],
-
-    /**
      * The vertical scrollbar mode.
      */
     ['scrollbar-visible', true, function(v) {
         self.setScrollbarVisible(v);
       }
     ],
+
+    /**
+     * If true, page up/down will control the terminal scrollbar and shift
+     * page up/down will send the VT keycodes.  If false then page up/down
+     * sends VT codes and shift page up/down scrolls.
+     */
+    ['page-keys-scroll', false, function(v) {
+        self.keyboard.pageKeysScroll = v;
+      }
+    ],
+
    ]);
 
   if (needSync)
@@ -402,7 +478,7 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
   }
 
   this.div_.style.height =
-      this.scrollPort_.characterSize.height * rowCount + 1 + 'px';
+      this.scrollPort_.characterSize.height * rowCount + 'px';
   this.realizeSize_(this.screenSize.width, rowCount);
   this.scheduleSyncCursorPosition_();
 };
@@ -709,6 +785,8 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.div_ = div;
 
   this.scrollPort_.decorate(div);
+  this.scrollPort_.setBackgroundImage(this.prefs_.get('background-image'));
+
   this.div_.focus = this.focus.bind(this);
 
   this.setFontSize(this.prefs_.get('font-size'));

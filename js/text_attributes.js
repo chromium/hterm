@@ -53,8 +53,8 @@ hterm.TextAttributes.prototype.DEFAULT_COLOR = new String('');
 hterm.TextAttributes.prototype.COLORS_16 = hterm.TextAttributes.defineColors(
     '#000000', '#CC0000', '#4E9A06', '#C4A000',
     '#3465A4', '#75507B', '#06989A', '#D3D7CF',
-    '#555753', '#EF2929', '#8AE234', '#FCE94F',
-    '#729FCF', '#AD7FA8', '#34E2E2', '#EEEEEC');
+    '#555753', '#EF2929', '#00BA13', '#FCE94F',
+    '#729FCF', '#F200CB', '#00B5BD', '#EEEEEC');
 
 hterm.TextAttributes.prototype.COLORS_256 = hterm.TextAttributes.defineColors(
     '#000000', '#AA0000', '#00AA00', '#AA5500', '#0000AA', '#AA00AA', '#00AAAA',
@@ -136,8 +136,13 @@ hterm.TextAttributes.prototype.createContainer = function(str) {
   if (this.foreground != this.DEFAULT_COLOR)
     style.color = this.foreground;
 
-  if (this.background != this.DEFAULT_COLOR)
+  if (this.background != this.DEFAULT_COLOR) {
     style.backgroundColor = this.background;
+    // This bottom border ensures that the extra row of pixels at the bottom of
+    // the character cell (used to hold underscores in some fonts) has the
+    // correct background color.
+    style.borderBottom = '1px ' + this.background + ' solid';
+  }
 
   if (this.enableBold && this.bold)
     style.fontWeight = 'bold';

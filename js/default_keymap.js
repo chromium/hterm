@@ -54,7 +54,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
   function ak(a, b) {
     return function(e, k) {
       var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
-                    !this.keyboard.applicationKeypad) ? a : b;
+                    !self.keyboard.applicationKeypad) ? a : b;
       return resolve(action, e, k);
     }
   }
@@ -64,7 +64,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
   function ac(a, b) {
     return function(e, k) {
       var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
-                    !this.keyboard.applicationCursor) ? a : b;
+                    !self.keyboard.applicationCursor) ? a : b;
       return resolve(action, e, k);
     }
   }
@@ -72,7 +72,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
   // If not backspace-sends-backspace keypad a, else b.
   function bs(a, b) {
     return function(e, k) {
-      var action = !this.keyboard.backspaceSendsBackspace_ ? a : b
+      var action = !self.keyboard.backspaceSendsBackspace ? a : b
       return resolve(action, e, k);
     }
   }
@@ -108,7 +108,15 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
   var PASS = hterm.Keyboard.KeyActions.PASS;
   var STRIP = hterm.Keyboard.KeyActions.STRIP;
 
+  // On OS X, we want to PASS on Meta+KEY and DEFAULT on Meta+Shift+KEY for
+  // certain browser accelerators.  Other platforms use Alt instead of Meta.
+  var osx = window.navigator.userAgent.match(/Mac OS X/);
+  var altAccel = osx ? DEFAULT : sh(PASS, DEFAULT);
+  var metaAccel = osx ? sh(PASS, DEFAULT) : DEFAULT;
+
   this.addKeyDefs(
+    // These fields are: [keycode, keycap, normal, control, alt, meta]
+
     // The browser sends the keycode 0 for some keys.  We'll just assume it's
     // going to do the right thing by default for those keys.
     [0,   '[UNKNOWN]', PASS, PASS, PASS, PASS],
@@ -129,36 +137,36 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
     [123, '[F12]', CSI + '24~',               DEFAULT, DEFAULT, DEFAULT],
 
     // Second row.
-    [192, '`~',     DEFAULT, sh(ctl('@'), ctl('^')),        DEFAULT, PASS],
-    [49,  '1!',     DEFAULT, sh(PASS, STRIP),               PASS,    PASS],
-    [50,  '2@',     DEFAULT, sh(PASS, ctl('@')),            PASS,    PASS],
-    [51,  '3#',     DEFAULT, sh(PASS, ctl('[')),            PASS,    PASS],
-    [52,  '4$',     DEFAULT, sh(PASS, ctl('\\')),           PASS,    PASS],
-    [53,  '5%',     DEFAULT, sh(PASS, ctl(']')),            PASS,    PASS],
-    [54,  '6^',     DEFAULT, sh(PASS, ctl('^')),            PASS,    PASS],
-    [55,  '7&',     DEFAULT, sh(PASS, ctl('_')),            PASS,    PASS],
-    [56,  '8*',     DEFAULT, sh(PASS, '*'),                 PASS,    PASS],
-    [57,  '9(',     DEFAULT, sh(PASS, STRIP),               PASS,    PASS],
-    [48,  '0)',     DEFAULT, call('onZoom_'),               PASS,    DEFAULT],
-    [189, '-_',     DEFAULT, sh(call('onZoom_'), ctl('_')), DEFAULT, DEFAULT],
-    [187, '=+',     DEFAULT, call('onZoom_'),               DEFAULT, DEFAULT],
-    [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'),     DEFAULT, DEFAULT],
+    [192, '`~', DEFAULT, sh(ctl('@'), ctl('^')),        DEFAULT,        PASS],
+    [49,  '1!', DEFAULT, sh(PASS, STRIP),               altAccel,  metaAccel],
+    [50,  '2@', DEFAULT, sh(PASS, ctl('@')),            altAccel,  metaAccel],
+    [51,  '3#', DEFAULT, sh(PASS, ctl('[')),            altAccel,  metaAccel],
+    [52,  '4$', DEFAULT, sh(PASS, ctl('\\')),           altAccel,  metaAccel],
+    [53,  '5%', DEFAULT, sh(PASS, ctl(']')),            altAccel,  metaAccel],
+    [54,  '6^', DEFAULT, sh(PASS, ctl('^')),            altAccel,  metaAccel],
+    [55,  '7&', DEFAULT, sh(PASS, ctl('_')),            altAccel,  metaAccel],
+    [56,  '8*', DEFAULT, sh(PASS, '*'),                 altAccel,  metaAccel],
+    [57,  '9(', DEFAULT, sh(PASS, STRIP),               altAccel,  metaAccel],
+    [48,  '0)', DEFAULT, call('onZoom_'),               DEFAULT,     DEFAULT],
+    [189, '-_', DEFAULT, sh(call('onZoom_'), ctl('_')), DEFAULT,     DEFAULT],
+    [187, '=+', DEFAULT, call('onZoom_'),               DEFAULT,     DEFAULT],
+    [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
-    [9,   '[TAB]', '\t',    STRIP,    DEFAULT, DEFAULT],
-    [81,  'qQ',    DEFAULT, ctl('Q'), DEFAULT, DEFAULT],
-    [87,  'wW',    DEFAULT, ctl('W'), DEFAULT, DEFAULT],
-    [69,  'eE',    DEFAULT, ctl('E'), DEFAULT, DEFAULT],
-    [82,  'rR',    DEFAULT, ctl('R'), DEFAULT, DEFAULT],
-    [84,  'tT',    DEFAULT, ctl('T'), DEFAULT, DEFAULT],
-    [89,  'yY',    DEFAULT, ctl('Y'), DEFAULT, DEFAULT],
-    [85,  'uU',    DEFAULT, ctl('U'), DEFAULT, DEFAULT],
-    [73,  'iI',    DEFAULT, ctl('I'), DEFAULT, DEFAULT],
-    [79,  'oO',    DEFAULT, ctl('O'), DEFAULT, DEFAULT],
-    [80,  'pP',    DEFAULT, ctl('P'), DEFAULT, DEFAULT],
-    [219, '[{',    DEFAULT, ctl('['), DEFAULT, DEFAULT],
-    [221, ']}',    DEFAULT, ctl(']'), DEFAULT, DEFAULT],
-    [220, '\\|',   DEFAULT, ctl('Q'), DEFAULT, DEFAULT],
+    [9,   '[TAB]', '\t',    STRIP,     DEFAULT, DEFAULT],
+    [81,  'qQ',    DEFAULT, ctl('Q'),  DEFAULT, DEFAULT],
+    [87,  'wW',    DEFAULT, ctl('W'),  DEFAULT, DEFAULT],
+    [69,  'eE',    DEFAULT, ctl('E'),  DEFAULT, DEFAULT],
+    [82,  'rR',    DEFAULT, ctl('R'),  DEFAULT, DEFAULT],
+    [84,  'tT',    DEFAULT, ctl('T'),  DEFAULT, DEFAULT],
+    [89,  'yY',    DEFAULT, ctl('Y'),  DEFAULT, DEFAULT],
+    [85,  'uU',    DEFAULT, ctl('U'),  DEFAULT, DEFAULT],
+    [73,  'iI',    DEFAULT, ctl('I'),  DEFAULT, DEFAULT],
+    [79,  'oO',    DEFAULT, ctl('O'),  DEFAULT, DEFAULT],
+    [80,  'pP',    DEFAULT, ctl('P'),  DEFAULT, DEFAULT],
+    [219, '[{',    DEFAULT, ctl('['),  DEFAULT, DEFAULT],
+    [221, ']}',    DEFAULT, ctl(']'),  DEFAULT, DEFAULT],
+    [220, '\\|',   DEFAULT, ctl('\\'), DEFAULT, DEFAULT],
 
     // Fourth row. (We let Ctrl-Shift-J pass for Chrome DevTools.)
     [20,  '[CAPS]',  PASS,    PASS,               PASS,    DEFAULT],
@@ -196,7 +204,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
     [17,  '[CTRL]', PASS,    PASS,     PASS,    PASS],
     [18,  '[ALT]',  PASS,    PASS,     PASS,    PASS],
     [91,  '[LAPL]', PASS,    PASS,     PASS,    PASS],
-    [32,  '[SPC]',  DEFAULT, ctl('@'), DEFAULT, DEFAULT],
+    [32,  ' ',      DEFAULT, ctl('@'), DEFAULT, DEFAULT],
     [92,  '[RAPL]', PASS,    PASS,     PASS,    PASS],
 
     // These things.

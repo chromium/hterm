@@ -36,8 +36,8 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
   cx.window.terminal = this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
-  this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.setHeight(this.visibleRowCount);
+  this.terminal.setWidth(this.visibleColumnCount);
 };
 
 /**
@@ -66,7 +66,7 @@ hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
     result.assertEQ((this.div.clientWidth - this.terminal.scrollbarWidthPx) /
                     this.terminal.scrollPort_.characterSize.width,
                     this.visibleColumnCount);
-    result.assertEQ((this.div.clientHeight - 1) /
+    result.assertEQ(this.div.clientHeight /
                     this.terminal.scrollPort_.characterSize.height,
                     this.visibleRowCount);
 
