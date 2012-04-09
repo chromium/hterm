@@ -1,3 +1,18 @@
+0.7.7.1, 2012-04-10, rginda@chromium.org
+
+* Fix crosh.html/js to work with CSP.
+
+BUG=chromium-os:29179
+TEST=Install on ChromeOS, press Ctrl-Alt-T.
+
+0.7.7.0, 2012-04-08, rginda@chromium.org
+
+* Fix version number.  We should have gone to 0.7.7.0 rather than 0.7.6.4 :/
+* Renamed to "Secure Shell".
+* Updated stable manifest to include CSP and new icons.
+
+BUG=chromium-os:29148
+
 0.7.6.6, 2012-04-06, rginda@chromium.org
 
 * Update to the latest nassh binaries.

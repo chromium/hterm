@@ -3,8 +3,8 @@
   "minimum_chrome_version": "18",
   "manifest_version": 2,
   "content_security_policy": "script-src 'self'; object-src 'self'",
-  "name": "hterm-dev",
-  "version": "0.7.6.6",
+  "name": "Secure Shell (dev)",
+  "version": "0.7.7.1",
   "default_locale": "en",
   "icons": {
     "128": "images/vt-128.png",

@@ -1,13 +1,15 @@
 {
   "minimum_chrome_version": "18",
-  "name": "hterm",
-  "version": "0.7.6",
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "name": "Secure Shell",
+  "version": "0.7.7",
   "default_locale": "en",
   "icons": {
-    "128": "images/vt-128.png",
-    "48": "images/vt-48.png",
-    "32": "images/vt-32.png",
-    "16": "images/vt-16.png"
+    "512": "images/shell-512.png",
+    "128": "images/shell-128.png",
+    "32": "images/shell-32.png",
+    "16": "images/shell-16.png"
   },
   "description": "Terminal emulator and SSH client.",
   "offline_enabled": true,

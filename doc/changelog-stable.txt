@@ -1,3 +1,43 @@
+0.7.7, 2012-04-10, rginda@chromium.org
+
+* Renamed to "Secure Shell".
+* Updated stable manifest to include CSP and new icons.
+* Update to the latest nassh binaries.
+* Fix Ctrl-\.
+* Added keyboard related preferences, 'home-keys-scroll', 'page-keys-scroll',
+  'meta-sends-escape', 'backspace-sends-backspace'.
+* Added altSendsEscape option to keyboard (and 'alt-sends-escape' pref).  The
+  default for alt-is-meta is now false, while alt-sends-escape is true.  This
+  lets Alt and Meta be distinct keys when possible (like on a Mac), while making
+  Alt work "almost" like meta by default.
+* Added a little platform detection logic so we don't burn BOTH Alt-1..9 and
+  Meta-1..9 on every platform.
+* Fixed broken backspaceSendsBackspace behavior.
+* Fix Meta-Space to send ESC \x20 rather than ESC [.
+* Fix character sizing issues, which solves the missing underscores in some
+  fonts, and should solve partial/completely missing terminal row issues.
+* Add background-image pref, defaults to a mostly transparent gradient.
+* Change a few one-byte colors to work better with both light and dark
+  backgrounds.
+* Add 'manifest_version': 2 to manifest file, specify default
+  Content Security Policy (CSP) policy.
+* Kick off nassh initialization from nassh.js rather than
+  nassh.html to make CSP happy.
+* Move dialog code from terminal.* into nassh.*, makes CSP happier
+  and it's the right thing to do.
+
+Internal bugs:
+6100845 Significant color differences with hterm compared to shellinabox
+6183497 Backspace sends delete to emacs
+6270109 option-space sends ESC [
+6270158 hterm (OS X): option-v and option-1 thru option-9 have no effect
+6063659 First line of the console appears off the top of the screen
+
+BUG=chromium-os:29179
+BUG=chromium-os:29148
+BUG=chromium-os:28771,chromium-os:28611
+BUG=chromium-os:28561
+
 0.7.6, 2012-03-16, rginda@chromium.org
 
 * Stable release of hterm-dev-0.7.6.3

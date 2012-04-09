@@ -333,6 +333,9 @@ function main() {
   if [ -z "$FLAGS_filename" ]; then
     local version=$(get_key_value "version" "$extension_dir/manifest.json")
     local name=$(get_key_value "name" "$extension_dir/manifest.json")
+    # Remove spaces and ")", change "(" to "-".  Turns "Secure Shell (dev)"
+    # into "SecureShell-dev".
+    name=${name//[ \)]/}; name=${name//\(/-}
     FLAGS_filename="$name-$version"
   fi
 
