@@ -141,11 +141,19 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
-     * Set whether the alt key acts as a meta key instead of producing 8-bit
-     * characters.
+     * Controls how the alt key is handled.
+     *
+     *  escape....... Send an ESC prefix.
+     *  8-bit........ Add 128 to the unshifted character as in xterm.
+     *  browser-key.. Wait for the keypress event and see what the browser says.
+     *                (This won't work well on platforms where the browser
+     *                 performs a default action for some alt sequences.)
      */
-    ['alt-sends-escape', true, function(v) {
-        self.vt.keyboard.altSendsEscape = v;
+    ['alt-sends-what', 'escape', function(v) {
+        if (!/^(escape|8-bit|browser-key)$/.test(v))
+          v = 'escape';
+
+        self.vt.keyboard.altSendsWhat = v;
       }
     ],
 

@@ -97,7 +97,7 @@ hterm.VT.prototype.interpret = function(str) {
   var i = 0;
   var step = 0;
 
-  str = this.decodeCharset(str);
+  str = this.decodeUTF8(str);
 
   while (i < str.length) {
     if (this.stepSize) {
@@ -116,31 +116,37 @@ hterm.VT.prototype.interpret = function(str) {
 };
 
 /**
- * UTF-8 encode a unicode string.
+ * Encode a UTF-16 string as UTF-8.
  *
- * Currently only works with codepoints <= 0x07ff.
+ * Currently only works with codepoints <= 0xffff.
  * TODO(rginda): Generalize for higher codepoints.
+ *
+ * See also: http://en.wikipedia.org/wiki/UTF-16
  */
-hterm.VT.prototype.encodeCharset = function(str) {
-  return str.replace(/([\u0080-\u07ff])/g, function(m, ch) {
+hterm.VT.prototype.encodeUTF8 = function(str) {
+  return str.replace(/([\u0080-\ud7ff\ue000-\uffff])/g, function(m, ch) {
       var code = ch.charCodeAt(0);
-      // 110x-xxxx 10xx-xxxx
-      // 11 bits encoded in 2 bytes.
-      return String.fromCharCode(0xc0 | (code >> 6)) +
-      String.fromCharCode (0x80 | (code & 0x3f));
+      if (code <= 0x07ff) {
+        // 110x-xxxx 10xx-xxxx
+        // 11 bits encoded in 2 bytes.
+        return String.fromCharCode(0xc0 | (code >> 6)) +
+            String.fromCharCode (0x80 | (code & 0x3f));
+      }
+
+      if (code <= 0xffff) {
+        // 1110-xxxx 10xx-xxxx 10xx-xxxx
+        // 16 bits of 2 bytes encoded in 3 bytes.
+        return String.fromCharCode(0xe0 | (code >> 12)) +
+            String.fromCharCode (0x80 | (code >> 6 & 0x3f)) +
+            String.fromCharCode (0x80 | (code & 0x3f));
+      }
     });
 };
 
 /**
- * Decode an encoded string into a unicode string.
- *
- * Hard-coded to UTF-8.
- *
- * TODO(rginda): We probably need to support other encodings, and we should
- * consider moving the decode into the NaCl plugin (though that will hurt
- * non-nacl-ssh uses of hterm, so maybe not).
+ * Decode a UTF-8 string into UTF-16.
  */
-hterm.VT.prototype.decodeCharset = function(str) {
+hterm.VT.prototype.decodeUTF8 = function(str) {
   function fromBigCharCode(codePoint) {
     // String.fromCharCode can't handle codepoints > 2 bytes without
     // this magic.  See <http://goo.gl/jpcx0>.

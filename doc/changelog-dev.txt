@@ -1,3 +1,15 @@
+0.7.8.0, 2012-04-10, rginda@chromium.org
+
+* Replace 'alt-sends-escape' preference with 'alt-sends-what'.  The new pref
+  can be set to 'escape', '8-bit', or 'browser-key'.  If set to 'escape' (the
+  default), hterm will send ESC (as if alt-sends-escape were true, the previous
+  default).  If set to '8-bit', hterm sends the unshifted character + 128 (as
+  if alt-sends-escape were false).  If set to 'browser-key', hterm waits for
+  the keypress event, and sends whatever character code the browser thinks best.
+  On Mac, this will depend on your keyboard locale.  Composed characters
+  (requiring multiple keystrokes) aren't yet implemented.  'browser-key'
+  shoudn't be used in cases where Chrome uses Alt sequences for the browser.
+
 0.7.7.1, 2012-04-10, rginda@chromium.org
 
 * Fix crosh.html/js to work with CSP.
