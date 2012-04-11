@@ -36,7 +36,7 @@ hterm.Keyboard = function(terminal) {
    * will send the VT keycodes.  If false then home/end sends VT codes and
    * shift home/end scrolls.
    */
-  this.homeKeysScroll = terminal.prefs_.get('meta-sends-escape')
+  this.homeKeysScroll = terminal.prefs_.get('home-keys-scroll');
 
   /**
    * Same as above, except for page up/page down.

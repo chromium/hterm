@@ -1,5 +1,24 @@
+0.7.8, 2012-04-11, rginda@chromium.org
+
+* Stable release of SecureShell-dev-0.7.8.3.
+* Fix 'home-keys-scroll' preference.
+* Fix google_relay.html CSP issues.
+* Replace 'alt-sends-escape' preference with 'alt-sends-what'.  The new pref
+  can be set to 'escape', '8-bit', or 'browser-key'.  If set to 'escape' (the
+  default), hterm will send ESC (as if alt-sends-escape were true, the previous
+  default).  If set to '8-bit', hterm sends the unshifted character + 128 (as
+  if alt-sends-escape were false).  If set to 'browser-key', hterm waits for
+  the keypress event, and sends whatever character code the browser thinks best.
+  On Mac, this will depend on your keyboard locale.  Composed characters
+  (requiring multiple keystrokes) aren't yet implemented.  'browser-key'
+  shoudn't be used on platforms where Chrome uses Alt sequences for the browser.
+
+BUG=chromium-os:29308
+
 0.7.7, 2012-04-10, rginda@chromium.org
 
+* Stable release of SecureShell-dev-0.7.7.1.  (Unpublished due to google_relay
+  CSP issue discovered late in testing.)
 * Renamed to "Secure Shell".
 * Updated stable manifest to include CSP and new icons.
 * Update to the latest nassh binaries.

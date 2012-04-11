@@ -4,19 +4,10 @@
      When using a Google relay, the cookie server will redirect to this page
      after signing in the user and choosing a relay server.
 
-     See js/google_relay.js for more details.
+     See js/google_relay.js and js/google_relay_html.js for more details.
     -->
   <head>
-    <script>
-      function onLoad() {
-        var relayHost = document.location.hash.substr(1).split('@')[1];
-        sessionStorage.setItem('googleRelayHost', relayHost);
-
-        var destination = sessionStorage.getItem('googleRelayDestination');
-        var queryString = sessionStorage.getItem('googleRelayQueryString');
-        document.location = 'nassh.html' + queryString + '#' + destination;
-      }
-    </script>
+    <script src='../js/google_relay_html.js'></script>
   </head>
-  <body onload='onLoad()'></body>
+  <body></body>
 </html>

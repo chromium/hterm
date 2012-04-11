@@ -1,3 +1,15 @@
+0.7.8.3, 2012-04-11, rginda@chromium.org
+
+* Fix 'home-keys-scroll' preference.
+
+0.7.8.2, 2012-04-11, rginda@chromium.org
+
+* Fix google_relay.html CSP issues.
+
+0.7.8.1, 2012-04-10, rginda@chromium.org
+
+* Fix update_url in manifest.
+
 0.7.8.0, 2012-04-10, rginda@chromium.org
 
 * Replace 'alt-sends-escape' preference with 'alt-sends-what'.  The new pref
