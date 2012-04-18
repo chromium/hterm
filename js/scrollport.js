@@ -182,8 +182,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   doc.body.style.cssText = (
       'margin: 0px;' +
       'padding: 0px;' +
-      'height: 100%' +
-      'width: 100%' +
+      'height: 100%;' +
+      'width: 100%;' +
       'overflow: hidden;' +
       '-webkit-user-select: none;');
 
@@ -440,6 +440,11 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   // border to text with a background color over in text_attributes.js.
   var size = new hterm.Size(this.ruler_.clientWidth,
                             this.ruler_.clientHeight + 1);
+
+  this.ruler_.style.webkitTextSizeAdjust = 'none';
+  size.zoomFactor = size.width / this.ruler_.clientWidth;
+  this.ruler_.style.webkitTextSizeAdjust = '';
+
   this.rowNodes_.removeChild(this.ruler_);
   return size;
 };

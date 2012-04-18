@@ -11,10 +11,10 @@
 
 window.onload = function() {
   var relayHost = document.location.hash.substr(1).split('@')[1];
-  sessionStorage.setItem('googleRelayHost', relayHost);
+  sessionStorage.setItem('googleRelay.host', relayHost);
 
-  var destination = sessionStorage.getItem('googleRelayDestination');
-  var queryString = sessionStorage.getItem('googleRelayQueryString');
+  var destination = sessionStorage.getItem('googleRelay.destination');
+  var queryString = sessionStorage.getItem('googleRelay.queryString');
   var url = chrome.extension.getURL('html/nassh.html' + queryString +
                                     '#' + destination);
   console.log(url);

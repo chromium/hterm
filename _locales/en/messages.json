@@ -29,6 +29,11 @@
     "description": "The message shown to a user when they try to close a tab with an open session."
   },
 
+  "ZOOM_WARNING": {
+    "message": "Please set Wrench->Zoom to 100%",
+    "description": "Shown in the top/right corner if the Zoom setting is not set to 100%."
+  },
+
   "PLUGIN_LOADING": {
     "message": "Loading NaCl plugin...",
     "description": "Status message displayed while loading the plugin."

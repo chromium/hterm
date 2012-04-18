@@ -23,6 +23,7 @@ window.onload = function() {
  */
 hterm.NaSSH = function(argv) {
   this.argv_ = argv;
+  this.environment_ = argv.environment || {};
   this.io = null;
   this.verbose_ = false;
   this.relay_ = null;
@@ -68,18 +69,48 @@ hterm.NaSSH.prototype.commandName = 'nassh';
  */
 hterm.NaSSH.prototype.run = function() {
   this.io = this.argv_.io.push();
+  var self = this;
 
-  if (this.argv_.argString) {
-    if (!this.connectToDestination(this.argv_.argString)) {
-      this.io.println(hterm.msg('BAD_DESTINATION', [this.argv_.argString]));
-      this.exit(1);
-    }
-  } else {
-    // Timeout is a hack to give the dom a chance to draw the terminal.
-    // Without the timeout, the destination prompt sometimes appears off
-    // center.
-    setTimeout(this.promptForDestination_.bind(this), 250);
+  this.initFileSystem_(function() {
+      if (window.sessionStorage.getItem('nassh.promptOnReload') ||
+          !self.argv_.argString) {
+        // If promptOnReload isn't set and we haven't gotten the destination
+        // as an argument then we need to ask the user for the destination.
+        //
+        // The promptOnReload session item allows us to remember that we've
+        // displayed the dialog, so we can re-display it if the user reloads
+        // the page.  (Items in sessionStorage are scoped to the tab, kept
+        // between page reloads, and discarded when the tab goes away.)
+        window.sessionStorage.setItem('nassh.promptOnReload', 'yes');
+
+        // Timeout is a hack to give the dom a chance to draw the terminal.
+        // Without the timeout, the destination prompt sometimes appears off
+        // center.
+        setTimeout(function() {
+            self.promptForDestination_(document.location.hash.substr(1));
+          }, 250);
+      } else {
+        if (!self.connectToDestination(self.argv_.argString)) {
+          self.io.println(hterm.msg('BAD_DESTINATION', [self.argv_.argString]));
+          self.exit(1);
+        }
+      }
+    });
+};
+
+hterm.NaSSH.prototype.initFileSystem_ = function(onComplete) {
+  var self = this;
+
+  function onFileSystem(fileSystem) {
+    self.fileSystem_ = fileSystem;
+    onComplete();
   }
+
+  var requestFS = window.requestFileSystem || window.webkitRequestFileSystem;
+  requestFS(window.PERSISTENT,
+            16 * 1024 * 1024,
+            onFileSystem,
+            hterm.flog('Error initializing filesystem', onComplete));
 };
 
 hterm.NaSSH.prototype.initPlugin_ = function(onComplete) {
@@ -229,6 +260,7 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
         self.io.println(hterm.msg('WELCOME_TIP'));
 
       window.onbeforeunload = self.onBeforeUnload_.bind(self);
+      self.sendToPlugin_('setEnvironment', [self.environment_]);
       self.sendToPlugin_('startSession', [argv]);
     });
 
@@ -244,6 +276,36 @@ hterm.NaSSH.prototype.exit = function(code) {
 
   if (this.argv_.onExit)
     this.argv_.onExit(code);
+};
+
+/**
+ * Remove all known hosts.
+ */
+hterm.NaSSH.prototype.removeAllKnownHosts = function() {
+  this.fileSystem_.root.getFile(
+      '/.ssh/known_hosts', {create: false},
+      function(fileEntry) { fileEntry.remove(function() {}) });
+};
+
+/**
+ * Remove a known host by index.
+ *
+ * @param {integer} index One-based index of the known host entry to remove.
+ */
+hterm.NaSSH.prototype.removeKnownHostByIndex = function(index) {
+  var onError = hterm.flog('Error accessing /.ssh/known_hosts');
+  var self = this;
+
+  hterm.readFile(
+      self.fileSystem_.root, '/.ssh/known_hosts',
+      function(contents) {
+        var ary = contents.split('\n');
+        ary.splice(index - 1, 1);
+        hterm.overwriteFile(self.fileSystem_.root, '/.ssh/known_hosts',
+                            ary.join('\n'),
+                            hterm.flog('done'),
+                            onError);
+      }, onError);
 };
 
 /**

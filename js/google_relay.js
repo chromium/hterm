@@ -84,11 +84,11 @@ hterm.NaSSH.GoogleRelay.prototype.relayServerPattern =
 hterm.NaSSH.GoogleRelay.prototype.requestRelayServer = function(destination) {
   // Save off our destination in session storage before we leave for the
   // proxy page.
-  sessionStorage.setItem('googleRelayDestination', destination);
+  sessionStorage.setItem('googleRelay.destination', destination);
   var queryString = document.location.search;
   if (queryString.length < 2)
     queryString = '';
-  sessionStorage.setItem('googleRelayQueryString', queryString);
+  sessionStorage.setItem('googleRelay.queryString', queryString);
 
   document.location = hterm.replaceVars(
       this.cookieServerPattern,
@@ -110,9 +110,9 @@ hterm.NaSSH.GoogleRelay.prototype.init = function(username, hostname, port) {
                      (port || 22) + '@' + this.proxy);
 
   // This session storage item comes from /html/google_relay.html.
-  var relayHost = sessionStorage.getItem('googleRelayHost');
+  var relayHost = sessionStorage.getItem('googleRelay.host');
   if (relayHost) {
-    var savedDestination = sessionStorage.getItem('googleRelayDestination');
+    var savedDestination = sessionStorage.getItem('googleRelay.destination');
     if (savedDestination == destination) {
       this.relayServer = hterm.replaceVars(this.relayServerPattern,
                                            {host: relayHost});
@@ -122,8 +122,8 @@ hterm.NaSSH.GoogleRelay.prototype.init = function(username, hostname, port) {
     }
   }
 
-  sessionStorage.removeItem('googleRelayServer');
-  sessionStorage.removeItem('googleRelayDestination');
+  sessionStorage.removeItem('googleRelay.server');
+  sessionStorage.removeItem('googleRelay.destination');
 
   if (this.relayServer)
     return true;

@@ -235,6 +235,76 @@ hterm.getFileErrorMnemonic = function(code) {
 };
 
 /**
+ * Overwrite a file on an HTML5 filesystem.
+ *
+ * Replace the contents of a file with the string provided.  If the file
+ * doesn't exist it is created.  If it does, it is removed and re-created.
+ *
+ * @param {DirectoryEntry} root The directory to consider as the root of the
+ *     path.
+ * @param {string} path The path of the target file, relative to root.
+ * @param {string} contents The new contents of the file.
+ * @param {function()} successCallback The function to invoke after success.
+ * @param {function(FileError)} errorCallback The function to invoke if the
+ *     operation fails.
+ */
+hterm.overwriteFile = function(root, path, contents,
+                               successCallback, errorCallback) {
+  function onFileRemoved() {
+    hterm.getOrCreateFile(root, path,
+                          onFileFound,
+                          hterm.flog('Error creating: ' + path,
+                                     errorCallback));
+  }
+
+  function onFileFound(fileEntry) {
+    fileEntry.createWriter(onFileWriter,
+                           hterm.flog('Error creating writer for: ' + path));
+  }
+
+  function onFileWriter(writer) {
+    writer.onwriteend = successCallback;
+    writer.onerror = hterm.flog('Error writing to: ' + path,
+                                errorCallback);
+
+    var bb = new (window.BlobBuilder || window.WebKitBlobBuilder)();
+    bb.append(contents);
+    writer.write(bb.getBlob('text/plain'));
+  }
+
+  root.getFile(path, {create: false},
+               function(fileEntry) {
+                 fileEntry.remove(onFileRemoved, onFileRemoved);
+               },
+               onFileRemoved);
+};
+
+/**
+ * Read a file on an HTML5 filesystem.
+ *
+ * @param {DirectoryEntry} root The directory to consider as the root of the
+ *     path.
+ * @param {string} path The path of the target file, relative to root.
+ * @param {string} contents The new contents of the file.
+ * @param {function(string)} successCallback The function to invoke after
+ *     success.
+ * @param {function(FileError)} errorCallback The function to invoke if the
+ *     operation fails.
+ */
+hterm.readFile = function(root, path, successCallback, errorCallback) {
+  function onFileFound(fileEntry) {
+    fileEntry.file(function(file) {
+        var reader = new FileReader();
+        reader.onloadend = function() { successCallback(reader.result) };
+
+        reader.readAsText(file);
+      }, errorCallback);
+  }
+
+  root.getFile(path, {create: false}, onFileFound, errorCallback);
+};
+
+/**
  * Locate the file referred to by path, creating directories or the file
  * itself if necessary.
  */

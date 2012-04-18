@@ -1020,8 +1020,15 @@ hterm.VT.ESC['.'] =
 hterm.VT.ESC['/'] = function(args, code) {
   this.parser_ = function(str, i) {
     var ch = str.substr(i, 1);
-    if ('0AB4C5RQKYEZH7='.indexOf(ch) == -1)
-      this.terminal.print('\x1b' + code + ch);
+    if (ch == '\x1b')
+      return this.parseUnknown_(str, i);
+
+    if ('0AB4C5RQKYEZH7='.indexOf(ch) != -1) {
+      if (this.warnUnimplemented)
+        console.log('Unimplemented character set: ' + ch);
+    } else if (this.warnUnimplemented) {
+      console.log('Invalid character set for "' + code + '": ' + ch);
+    }
 
     this.parser_ = this.parseUnknown_;
     return i + 1;
@@ -1126,6 +1133,43 @@ hterm.VT.OSC['0'] = function(args) {
  * Change window title.
  */
 hterm.VT.OSC['2'] = hterm.VT.OSC['0'];
+
+/**
+ * Set/read color palette.
+ */
+hterm.VT.OSC['4'] = function(args) {
+  // Args come in as a single 'index1;rgb1 ... ;indexN;rgbN' string.
+  // We split on the semicolon and iterate through the pairs.
+  args = args[0].split(';');
+
+  var pairCount = parseInt(args.length / 2);
+  var colorPalette = this.terminal.getTextAttributes().colorPalette;
+  var responseArray = [];
+
+  for (var pairNumber = 0; pairNumber < pairCount; ++pairNumber) {
+    var colorIndex = parseInt(args[pairNumber * 2]);
+    var colorValue = args[pairNumber * 2 + 1];
+
+    if (colorIndex >= colorPalette.length)
+      continue;
+
+    if (colorValue == '?') {
+      // '?' means we should report back the current color value.
+      colorValue = hterm.colors.cssToX11(colorPalette[colorIndex]);
+      if (colorValue)
+        responseArray.push(colorIndex + ';' + colorValue);
+
+      continue;
+    }
+
+    colorValue = hterm.colors.x11ToCSS(colorValue);
+    if (colorValue)
+      colorPalette[colorIndex] = colorValue;
+  }
+
+  if (responseArray.length)
+    this.terminal.io.sendString('\x1b]4;' + responseArray.join(';') + '\x07');
+};
 
 /**
  * Insert (blank) characters (ICH).
@@ -1501,6 +1545,20 @@ hterm.VT.CSI['?l'] = function(args) {
  * the color selection.
  */
 hterm.VT.CSI['m'] = function (args) {
+  function getBrightIndex(i) {
+    if (i < 8) {
+      // If the color is from the lower half of the ANSI 16, add 8.
+      return i + 8;
+    }
+
+    if (i >= 16 && i <= 250) {
+      // If it's from the extended palette, add 6.
+      return i + 6;
+    }
+
+    return i;
+  }
+
   function get256(i) {
     if (args.length < i + 2 || args[i + 1] != '5')
       return null;
@@ -1521,12 +1579,12 @@ hterm.VT.CSI['m'] = function (args) {
     if (arg < 30) {
       if (arg == 0) {
         attrs.reset();
-      } else if (arg == 1) {
+      } else if (arg == 1 && !attrs.bold) {
         attrs.bold = true;
-        if (attrs.foregroundIndex16 != null &&
-            attrs.foregroundIndex16 < 7) {
-          attrs.foregroundIndex16 += 8;
-          attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
+
+        if (attrs.foregroundIndex != null) {
+          attrs.foregroundIndex = getBrightIndex(attrs.foregroundIndex);
+          attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
         }
 
       } else if (arg == 4) {
@@ -1534,7 +1592,7 @@ hterm.VT.CSI['m'] = function (args) {
       } else if (arg == 5) {
         attrs.blink = true;
       } else if (arg == 7) {  // Inverse.
-        attrs.foregroundIndex16 = null;
+        attrs.foregroundIndex = null;
         attrs.foreground = this.terminal.getBackgroundColor();
         attrs.background = this.terminal.getForegroundColor();
       } else if (arg == 8) {  // Invisible.
@@ -1546,11 +1604,11 @@ hterm.VT.CSI['m'] = function (args) {
       } else if (arg == 25) {
         attrs.blink = false;
       } else if (arg == 27) {
-        attrs.foregroundIndex16 = null;
+        attrs.foregroundIndex = null;
         attrs.foreground = attrs.DEFAULT_COLOR;
         attrs.background = attrs.DEFAULT_COLOR;
       } else if (arg == 28) {
-        attrs.foregroundIndex16 = null;
+        attrs.foregroundIndex = null;
         attrs.foreground = attrs.DEFAULT_COLOR;
       }
 
@@ -1558,8 +1616,8 @@ hterm.VT.CSI['m'] = function (args) {
       // Select fore/background color from bottom half of 16 color palette
       // or from the 256 color palette.
       if (arg < 38) {
-        attrs.foregroundIndex16 = attrs.bold ? arg - 22 : arg - 30;
-        attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
+        attrs.foregroundIndex = attrs.bold ? arg - 22 : arg - 30;
+        attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
 
       } else if (arg == 38) {
         var c = get256(i);
@@ -1568,19 +1626,22 @@ hterm.VT.CSI['m'] = function (args) {
 
         i += 2;
 
-        if (c > 256)
+        if (c >= attrs.colorPalette.length)
           continue;
 
-        attrs.foregroundIndex16 = null;
-        attrs.foreground = attrs.COLORS_256[c];
+        if (attrs.bold)
+          c = getBrightIndex(c);
+
+        attrs.foregroundIndex = c;
+        attrs.foreground = attrs.colorPalette[c];
 
       } else if (arg == 39) {
-        attrs.foregroundIndex16 = null;
+        attrs.foregroundIndex = null;
         attrs.foreground = attrs.DEFAULT_COLOR;
 
       } else if (arg < 48) {
-        attrs.foregroundIndex16 = null;
-        attrs.background = attrs.COLORS_16[arg - 40];
+        attrs.foregroundIndex = arg - 40;
+        attrs.background = attrs.colorPalette[attrs.foregroundIndex];
 
       } else if (arg == 48) {
         var c = get256(i);
@@ -1592,18 +1653,18 @@ hterm.VT.CSI['m'] = function (args) {
         if (c > 256)
           continue;
 
-        attrs.background = attrs.COLORS_256[c];
+        attrs.background = attrs.colorPalette[c];
       } else {
         attrs.background = attrs.DEFAULT_COLOR;
       }
 
     } else if (arg >= 90 && arg <= 97) {
-      attrs.foregroundIndex16 = arg - 90 + 8;
-      attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
+      attrs.foregroundIndex = arg - 90 + 8;
+      attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
 
     } else if (arg >= 100 && arg <= 107) {
-      attrs.foregroundIndex16 = arg - 100 + 8;
-      attrs.foreground = attrs.COLORS_16[attrs.foregroundIndex16];
+      attrs.foregroundIndex = arg - 100 + 8;
+      attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
 
     }
   }

@@ -366,6 +366,12 @@ hterm.Keyboard.KeyMap.Default.prototype.onMetaC_ = function(e, keyDef) {
  * avoid the issue.
  */
 hterm.Keyboard.KeyMap.Default.prototype.onZoom_ = function(e, keyDef) {
+  if (this.keyboard.terminal.getZoomFactor() != 1) {
+    // If we're not at 1:1 zoom factor, let the Ctrl +/-/0 keys control the
+    // browser zoom, so it's easier to for the user to get back to 100%.
+    return hterm.Keyboard.KeyActions.PASS;
+  }
+
   var cap = keyDef.keyCap.substr(0, 1);
   if (cap == '0') {
       this.keyboard.terminal.setFontSize(0);

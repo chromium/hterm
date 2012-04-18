@@ -1,3 +1,40 @@
+0.7.9.2, 2012-04-19, rginda@chromium.org
+
+* More sanitary handling of color names in the palette set/get sequence.
+* Added colors.js file to contain color utilities and palettes.
+* Remove old vt100.js file.
+
+0.7.9.1, 2012-04-18, rginda@chromium.org
+
+* Allow Ctrl +/-/0 to control browser zoom when the browser zoom isn't already
+  set to 100%.  This makes it possible to dismiss the new "zoom warning" using
+  keyboard shortcuts.
+
+0.7.9.0, 2012-04-18, rginda@chromium.org
+
+* Modify nassh plugin to accept a hash of environment variables.
+* Add 'environment' preference, set by default to { TERM: 'xterm-256color' }.
+* Implement Operating System Command (OSC) 4.  This allows the host to set
+  or read the terminal color palette.
+* Reset color palette on soft terminal reset.
+* Add JSDoc to text_attributes.js.
+* Merge COLORS_16 and COLORS_256 objects into a single
+  TextAttributes.prototype.defaultColorPalette object.
+* Fix bold-implies-bright logic for extended colors.
+* Add a stern warning message when the browser zoom is not 100%.
+* Change the naming convention for sessionStorage keys (added a dot, as in
+  googleRelay.queryString).
+* Add logic to re-display the connect-to dialog on reload, only if nassh was not
+  started from a bookmark.
+* Fetch the HTML5 persistent filesystem at nassh startup.
+* Add NaSSH..removeAllKnownHosts() and NaSSH..removeKnownHostByIndex(i).  These
+  can be accessed from the JS console as 'term_.command.remove...()'.
+* Fix Terminal.isPrimaryScreen() assign-instead-of-test typo.
+* Fix G0/G2/G3 character set control "ESC (", etc. to properly handle a
+  mid-sequence ESC character.  (Thanks to nethack for turning this up :)
+
+BUG=chromium-os:28050,chromium-os:25122
+
 0.7.8.3, 2012-04-11, rginda@chromium.org
 
 * Fix 'home-keys-scroll' preference.

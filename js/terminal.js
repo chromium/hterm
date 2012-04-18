@@ -291,6 +291,11 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * The default environment variables.
+     */
+    ['environment', {TERM: 'xterm-256color'}, null],
+
+    /**
      * If true, page up/down will control the terminal scrollbar and shift
      * page up/down will send the VT keycodes.  If false then page up/down
      * sends VT codes and shift page up/down scrolls.
@@ -334,10 +339,15 @@ hterm.Terminal.prototype.getForegroundColor = function() {
  * @param {string} argString The argument string to pass to the command.
  */
 hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
+  var environment = this.prefs_.get('environment');
+  if (typeof environment != 'object' || environment == null)
+    environment = {};
+
   var self = this;
   this.command = new commandClass(
       { argString: argString || '',
         io: this.io.push(),
+        environment: environment,
         onExit: function(code) {
           self.io.pop();
           self.io.println(hterm.msg('COMMAND_COMPLETE',
@@ -354,7 +364,7 @@ hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
  * Returns true if the current screen is the primary screen, false otherwise.
  */
 hterm.Terminal.prototype.isPrimaryScreen = function() {
-  return this.screen_ = this.primaryScreen_;
+  return this.screen_ == this.primaryScreen_;
 };
 
 /**
@@ -437,6 +447,15 @@ hterm.Terminal.prototype.saveCursor = function() {
 
 hterm.Terminal.prototype.getTextAttributes = function() {
   return this.screen_.textAttributes;
+};
+
+/**
+ * Return the current browser zoom factor applied to the terminal.
+ *
+ * @return {number} The current browser zoom factor.
+ */
+hterm.Terminal.prototype.getZoomFactor = function() {
+  return this.scrollPort_.characterSize.zoomFactor;
 };
 
 /**
@@ -650,6 +669,10 @@ hterm.Terminal.prototype.reset = function() {
  */
 hterm.Terminal.prototype.softReset = function() {
   this.options_ = new hterm.Options();
+
+  this.primaryScreen_.textAttributes.resetColorPalette();
+  this.alternateScreen_.textAttributes.resetColorPalette();
+
   this.setCursorVisible(true);
   this.setCursorBlink(false);
 };
@@ -1846,6 +1869,48 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
 };
 
 /**
+ * Show or hide the zoom warning.
+ *
+ * The zoom warning is a message warning the user that their browser zoom must
+ * be set to 100% in order for hterm to function properly.
+ *
+ * @param {boolean} state True to show the message, false to hide it.
+ */
+hterm.Terminal.prototype.showZoomWarning_ = function(state) {
+  if (!this.zoomWarningNode_) {
+    if (!state)
+      return;
+
+    this.zoomWarningNode_ = this.document_.createElement('div');
+    this.zoomWarningNode_.style.cssText = (
+        'color: black;' +
+        'background-color: #ff2222;' +
+        'font-size: large;' +
+        'border-radius: 8px;' +
+        'opacity: 0.75;' +
+        'padding: 0.2em 0.5em 0.2em 0.5em;' +
+        'top: 0.5em;' +
+        'right: 1.2em;' +
+        'position: absolute;' +
+        '-webkit-text-size-adjust: none;' +
+        '-webkit-user-select: none;');
+
+    this.zoomWarningNode_.textContent = hterm.msg('ZOOM_WARNING') ||
+        ('!! ' + parseInt(this.scrollPort_.characterSize.zoomFactor * 100) +
+         '% !!');
+  }
+
+  this.zoomWarningNode_.style.fontFamily = this.prefs_.get('font-family');
+
+  if (state) {
+    if (!this.zoomWarningNode_.parentNode)
+      this.div_.parentNode.appendChild(this.zoomWarningNode_);
+  } else if (this.zoomWarningNode_.parentNode) {
+    this.zoomWarningNode_.parentNode.removeChild(this.zoomWarningNode_);
+  }
+};
+
+/**
  * Show the terminal overlay for a given amount of time.
  *
  * The terminal overlay appears in inverse video in a large font, centered
@@ -1961,6 +2026,7 @@ hterm.Terminal.prototype.onResize_ = function() {
 
   this.realizeSize_(columnCount, rowCount);
   this.scheduleSyncCursorPosition_();
+  this.showZoomWarning_(this.scrollPort_.characterSize.zoomFactor != 1);
   this.overlaySize();
 };
 
