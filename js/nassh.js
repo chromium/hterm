@@ -71,31 +71,60 @@ hterm.NaSSH.prototype.run = function() {
   this.io = this.argv_.io.push();
   var self = this;
 
-  this.initFileSystem_(function() {
-      if (window.sessionStorage.getItem('nassh.promptOnReload') ||
-          !self.argv_.argString) {
-        // If promptOnReload isn't set and we haven't gotten the destination
-        // as an argument then we need to ask the user for the destination.
-        //
-        // The promptOnReload session item allows us to remember that we've
-        // displayed the dialog, so we can re-display it if the user reloads
-        // the page.  (Items in sessionStorage are scoped to the tab, kept
-        // between page reloads, and discarded when the tab goes away.)
-        window.sessionStorage.setItem('nassh.promptOnReload', 'yes');
+  function onInitialized() {
+    if (window.sessionStorage.getItem('nassh.promptOnReload') ||
+        !self.argv_.argString) {
+      // If promptOnReload isn't set and we haven't gotten the destination
+      // as an argument then we need to ask the user for the destination.
+      //
+      // The promptOnReload session item allows us to remember that we've
+      // displayed the dialog, so we can re-display it if the user reloads
+      // the page.  (Items in sessionStorage are scoped to the tab, kept
+      // between page reloads, and discarded when the tab goes away.)
+      window.sessionStorage.setItem('nassh.promptOnReload', 'yes');
 
-        // Timeout is a hack to give the dom a chance to draw the terminal.
-        // Without the timeout, the destination prompt sometimes appears off
-        // center.
-        setTimeout(function() {
-            self.promptForDestination_(document.location.hash.substr(1));
-          }, 250);
-      } else {
-        if (!self.connectToDestination(self.argv_.argString)) {
-          self.io.println(hterm.msg('BAD_DESTINATION', [self.argv_.argString]));
-          self.exit(1);
-        }
+      // Timeout is a hack to give the dom a chance to draw the terminal.
+      // Without the timeout, the destination prompt sometimes appears off
+      // center.
+      setTimeout(function() {
+          self.promptForDestination_(document.location.hash.substr(1));
+        }, 250);
+    } else {
+      if (!self.connectToDestination(self.argv_.argString)) {
+        self.io.println(hterm.msg('BAD_DESTINATION', [self.argv_.argString]));
+        self.exit(1);
       }
+    }
+  }
+
+  this.loadManifest_(function() {
+      self.io.println(
+          hterm.msg('WELCOME_VERSION',
+                    ['\x1b[1m' + self.extensionManifest_.name + '\x1b[m',
+                     '\x1b[1m' + self.extensionManifest_.version + '\x1b[m']));
+      self.io.println(
+          hterm.msg('WELCOME_FAQ', ['\x1b[1mhttp://goo.gl/m6Nj8\x1b[m']));
+      self.initFileSystem_(onInitialized);
     });
+};
+
+hterm.NaSSH.prototype.loadManifest_ = function(onComplete) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/manifest.json');
+
+  var self = this;
+  xhr.onloadend = function() {
+    if (xhr.status != 200) {
+      self.io.print(hterm.msg('MANIFEST_ERROR', [xhr.status]));
+      self.extensionManifest_ = {};
+    } else {
+      self.extensionManifest_ = JSON.parse(xhr.responseText);
+    }
+
+    onComplete();
+  };
+
+  xhr.send();
 };
 
 hterm.NaSSH.prototype.initFileSystem_ = function(onComplete) {

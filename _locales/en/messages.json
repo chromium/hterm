@@ -1,7 +1,28 @@
 {
-  "WELCOME": {
-    "message": "Welcome!  Open a new ssh connection with the 'open' command.",
-    "description": "Message displayed to the user when the application is first launched"
+  "WELCOME_VERSION": {
+    "message": "Welcome to $NAME$ version $VERSION$.",
+    "description": "Message displayed to the user when the application is first launched",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "Secure Shell"
+      },
+      "version": {
+        "content": "$2",
+        "example": "1.0"
+      }
+    }
+  },
+
+  "WELCOME_FAQ": {
+    "message": "The list of Frequently Asked Questions is available here: $URL$",
+    "description": "A link to the frequently asked questions, displayed at startup",
+    "placeholders": {
+      "url": {
+        "content": "$1",
+        "example": "http://goo.gl/m6Nj8"
+      }
+    }
   },
 
   "WELCOME_TIP": {
@@ -9,6 +30,16 @@
     "description": "A short tip displayed after the WELCOME message."
   },
 
+  "MANIFEST_ERROR": {
+    "message": "Unable to load extension manifest: $CODE$",
+    "description": "Displayed to the user if we encounter an error trying to load the extension manifest.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+	"example": "500"
+      }
+    }
+  },
   "CONNECT_MESSAGE": {
     "message": "Please enter a destination to connect to.",
     "description": "Message displayed in the connect dialog."

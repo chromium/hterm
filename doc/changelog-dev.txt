@@ -1,3 +1,9 @@
+0.7.9.3, 2012-04-20, rginda@chromium.org
+
+* Show app name and version number at startup.
+* Add cursor blink preference.
+* Add doc/faq.txt.
+
 0.7.9.2, 2012-04-19, rginda@chromium.org
 
 * More sanitary handling of color names in the palette set/get sequence.

@@ -200,6 +200,14 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * Whether or not to blink the cursor by default.
+     */
+    ['cursor-blink', false, function(v) {
+        self.setCursorBlink(!!v);
+      }
+    ],
+
+    /**
      * The color of the visible cursor.
      */
     ['cursor-color', 'rgba(255,0,0,0.5)', function(v) {
@@ -674,7 +682,7 @@ hterm.Terminal.prototype.softReset = function() {
   this.alternateScreen_.textAttributes.resetColorPalette();
 
   this.setCursorVisible(true);
-  this.setCursorBlink(false);
+  this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
 };
 
 /**
@@ -838,6 +846,7 @@ hterm.Terminal.prototype.decorate = function(div) {
        'background-color: ' + this.prefs_.get('cursor-color'));
   this.document_.body.appendChild(this.cursorNode_);
 
+  this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
   this.setReverseVideo(false);
 
   this.scrollPort_.focus();
@@ -1894,12 +1903,11 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
         'position: absolute;' +
         '-webkit-text-size-adjust: none;' +
         '-webkit-user-select: none;');
-
-    this.zoomWarningNode_.textContent = hterm.msg('ZOOM_WARNING') ||
-        ('!! ' + parseInt(this.scrollPort_.characterSize.zoomFactor * 100) +
-         '% !!');
   }
 
+  this.zoomWarningNode_.textContent = hterm.msg('ZOOM_WARNING') ||
+      ('!! ' + parseInt(this.scrollPort_.characterSize.zoomFactor * 100) +
+       '% !!');
   this.zoomWarningNode_.style.fontFamily = this.prefs_.get('font-family');
 
   if (state) {
