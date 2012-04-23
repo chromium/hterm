@@ -1,20 +1,25 @@
 
 
-                           .--~~~~~~~~~~~~~------.
-                          /--===============------\
-                          | |```````````````|     |
-                          | |               |     |
-                          | |      >_<      |     |
-                          | |               |     |
-                          | |_______________|     |
-                          |                   ::::|
-                           =======================
-                          //-"-"-"-"-"-"-"-"-"-"-\\
-                         //_"_"_"_"_"_"_"_"_"_"_"_\\
-                        [ ========================= ]
-                         \_```````````````````````_/
+                            .--~~~~~~~~~~~~~------.
+                           /--===============------\
+                           | |```````````````|     |
+                           | |               |     |
+                           | |      >_<      |     |
+                           | |               |     |
+                           | |_______________|     |
+                           |                   ::::|
+                           '======================='
+                           //-"-"-"-"-"-"-"-"-"-"-\\
+                          //_"_"_"_"_"_"_"_"_"_"_"_\\
+                          [-------------------------]
+                          \_________________________/
 
-                                 h t e r m
+
+
+                            hterm and  Secure Shell
+                          Frequently  Asked Questions
+
+                                April 23,  2012
 
 
 Hello World.  This is the hterm/Secure Shell FAQ.  If you have a question that
@@ -60,7 +65,7 @@ at <http://goo.gl/RYHiK>.
 
   If you're primarily using crosh for its ssh command, you should try using
   the Secure Shell application instead.  If it doesn't meet your needs, please
-  speak up.  The crosh and crosh based shh command are not guaranteed to be
+  speak up.  The crosh and crosh based ssh command are not guaranteed to be
   accessible in the ChromeOS "Stable Channel" forever.
 
 
@@ -129,6 +134,13 @@ at <http://goo.gl/RYHiK>.
 
    If all else fails then join the chromium-hterm mailing list and post
    about what you've found.
+
+   If your bug involves some mis-interpreted escape sequence and you want
+   to file a really useful bug report, then add in a recording of the
+   session.  For bonus points, track down the troublesome sequence and
+   incude the offset into the log file.  For more information about how to
+   do this, see the "Debugging escape sequences" section in the hack.txt file
+   in this directory.
 
 
 >> Is there a mailing list to discuss hterm or Secure Shell?
@@ -468,3 +480,8 @@ at <http://goo.gl/RYHiK>.
    In general, the dev series of the form 0.X.Y.Z becomes the stable
    version 0.X.Y.  So SecureShell-dev-0.7.2.0, 0.7.2.1 and 0.7.2.2 all lead up
    to SecureShell-0.7.2.
+
+
+>> What if I want to make changes to the source?
+
+   Read the hack.txt file in this directory.

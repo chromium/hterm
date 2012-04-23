@@ -38,7 +38,7 @@ class VTScope(object):
   over a TCP socket to port 8383.  VT Scope only listens on the local
   127.0.0.1 interface.
 
-  Canned VT sessions can be created by enabling loggin in xterm.
+  Canned VT sessions can be created by enabling logging in xterm.
 
   Sample usage looks like this:
 
@@ -90,6 +90,9 @@ class VTScope(object):
 
       # Exit vtscope.  Pressing Ctrl-D on a blank line works too.
       vtscope> exit
+
+  Check the comments in the "cmd_*" methods below for details about specific
+  commands.
   """
 
   # The list of connected terminals.
