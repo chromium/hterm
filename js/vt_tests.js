@@ -175,6 +175,85 @@ hterm.VT.Tests.addTest('double-sequence', function(result, cx) {
     result.pass();
   });
 
+/**
+ * Test that 8-bit control characters are properly ignored.
+ */
+hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
+    var title = null;
+    this.terminal.setWindowTitle = function(t) {
+      // Set a default title so we can catch the potential for this function
+      // to be called on accident with no parameter.
+      title = t || 'XXX';
+    };
+
+    result.assertEQ(this.terminal.vt.enable8BitControl, false);
+
+    // Send a "set window title" command using a disabled 8-bit control.
+    this.terminal.interpret('\x9d0;test title\x07!!');
+
+    result.assertEQ(title, null);
+    result.assertEQ(this.terminal.getRowsText(0, 1), '0;test title!!');
+
+    // Try again with the two-byte version of the code.
+    title = null;
+    this.terminal.reset();
+    this.terminal.interpret('\x1b]0;test title\x07!!');
+    result.assertEQ(title, 'test title');
+    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
+
+    // Now enable 8-bit control and see how it goes.
+    title = null;
+    this.terminal.reset();
+    this.terminal.vt.enable8BitControl = true;
+    this.terminal.interpret('\x9d0;test title\x07!!');
+    result.assertEQ(title, 'test title');
+    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
+
+    result.pass();
+  });
+
+/**
+ * Test that long unterminated sequences are properly ignored.
+ */
+hterm.VT.Tests.addTest('unterminated-sequence', function(result, cx) {
+    var title = null;
+    this.terminal.setWindowTitle = function(t) {
+      // Set a default title so we can catch the potential for this function
+      // to be called on accident with no parameter.
+      title = t || 'XXX';
+    };
+
+    // Lower this threshold to make the test simpler.
+    this.terminal.vt.maxStringSequence = 10;
+
+    // The "0;" is part of the sequence, so we only have 8 bytes left.
+    this.terminal.interpret('\x1b]0;12345678\x07!!');
+    result.assertEQ(title, '12345678');
+    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
+
+    title = null;
+    terminal.reset();
+    this.terminal.interpret('\x1b]0;12345');
+    this.terminal.interpret('678\x07!!');
+    result.assertEQ(title, '12345678');
+    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
+
+    title = null;
+    terminal.reset();
+    this.terminal.interpret('\x1b]0;123456789\x07!!');
+    result.assertEQ(title, null);
+    result.assertEQ(this.terminal.getRowsText(0, 1), '0;123456789!!');
+
+    title = null;
+    terminal.reset();
+    this.terminal.interpret('\x1b]0;12345');
+    this.terminal.interpret('6789\x07!!');
+    result.assertEQ(title, null);
+    result.assertEQ(this.terminal.getRowsText(0, 1), '0;123456789!!');
+
+    result.pass();
+  });
+
 hterm.VT.Tests.addTest('dec-screen-test', function(result, cx) {
     this.terminal.interpret('\x1b#8');
 

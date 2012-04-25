@@ -38,11 +38,7 @@ hterm.VT = function(terminal) {
    */
   this.terminal = terminal;
 
-  // The current parser function.  Escapes that mark the start of a longer
-  // sequence will alter the parser function to handle the remainder of the
-  // escape sequence.  Once the sequence has been fully parsed this parser
-  // function should be set back to this.parseUnknown_.
-  this.parser_ = this.parseUnknown_;
+  this.parseState_ = new hterm.VT.ParseState(this.parseUnknown_);
 
   // The arguments collected for the current escape sequence.
   this.args_ = [];
@@ -57,6 +53,10 @@ hterm.VT = function(terminal) {
 
   // Whether or not to respect the escape codes for setting terminal width.
   this.allowColumnWidthChanges_ = false;
+
+  // Temporary storage for DCS, OSC, PM, and APC sequences while we wait for the
+  // terminator.
+  this.unterminatedSequence_ = '';
 
   // Construct a regular expression to match the known one-byte control chars.
   // This is used in parseUnknown_ to quickly scan a string for the next
@@ -83,6 +83,28 @@ hterm.VT = function(terminal) {
       'g');
 
   /**
+   * Whether to accept the 8-bit control characters.
+   *
+   * An 8-bit control character is one with the eighth bit set.  These
+   * didn't work on 7-bit terminals so they all have two byte equivalents.
+   * Most hosts still only use the two-byte versions.
+   *
+   * We ignore 8-bit control codes by default.  This is in order to avoid
+   * issues with "accidental" usage of codes that need to be terminated.
+   * The "accident" usually involves cat'ing binary data.
+   */
+  this.enable8BitControl = false;
+
+  /**
+   * Max length of an unterminated DCS, OSC, PM or APC sequence before we give
+   * up and ignore the code.
+   *
+   * These all end with a String Terminator (ST, '\x9c', ESC '\\') or
+   * (BEL, '\x07') character, hence the "string sequence" moniker.
+   */
+  this.maxStringSequence = 1024;
+
+  /**
    * If true, emit warnings when we encounter a control character or escape
    * sequence that we don't recognize or explicitly ignore.
    */
@@ -90,35 +112,115 @@ hterm.VT = function(terminal) {
 };
 
 /**
+ * ParseState constructor.
+ *
+ * This object tracks the current state of the parse.  It has fields for the
+ * current buffer, position in the buffer, and the parse function.
+ *
+ * @param {function} defaultFunc The default parser function.
+ * @param {string} opt_buf Optional string to use as the current buffer.
+ */
+hterm.VT.ParseState = function(defaultFunction, opt_buf) {
+  this.defaultFunction = defaultFunction;
+  this.buf = opt_buf || null;
+  this.pos = 0;
+  this.func = defaultFunction;
+};
+
+/**
+ * Reset the parser function, buffer, and position.
+ */
+hterm.VT.ParseState.prototype.reset = function(opt_buf) {
+  this.resetParseFunction();
+  this.resetBuf(opt_buf || '');
+};
+
+/**
+ * Reset the parser function only.
+ */
+hterm.VT.ParseState.prototype.resetParseFunction = function() {
+  this.func = this.defaultFunction;
+};
+
+/**
+ * Reset the buffer and position only.
+ */
+hterm.VT.ParseState.prototype.resetBuf = function(buf) {
+  this.buf = buf;
+  this.pos = 0;
+};
+
+/**
+ * Advance the parse postion.
+ *
+ * @param {integer} count The number of bytes to advance.
+ */
+hterm.VT.ParseState.prototype.advance = function(count) {
+  this.pos += count;
+};
+
+/**
+ * Return the remaining portion of the buffer without affecting the parse
+ * position.
+ *
+ * @return {string} The remaining portion of the buffer.
+ */
+hterm.VT.ParseState.prototype.peekRemainingBuf = function() {
+  return this.buf.substr(this.pos);
+};
+
+/**
+ * Return the next single character in the buffer without affecting the parse
+ * position.
+ *
+ * @return {string} The next character in the buffer.
+ */
+hterm.VT.ParseState.prototype.peekChar = function() {
+  return this.buf.substr(this.pos, 1);
+};
+
+/**
+ * Return the next single character in the buffer and advance the parse
+ * position one byte.
+ *
+ * @return {string} The next character in the buffer.
+ */
+hterm.VT.ParseState.prototype.consumeChar = function() {
+  return this.buf.substr(this.pos++, 1);
+};
+
+/**
+ * Return true if the buffer is empty, or the position is past the end.
+ */
+hterm.VT.ParseState.prototype.isComplete = function() {
+  return this.buf == null || this.buf.length <= this.pos;
+};
+
+/**
  * Interpret a string of characters, displaying the results on the associated
  * terminal object.
  */
-hterm.VT.prototype.interpret = function(str) {
-  var i = 0;
-  var step = 0;
+hterm.VT.prototype.interpret = function(buf) {
+  this.parseState_.resetBuf(this.decodeUTF8(buf));
 
-  str = this.decodeUTF8(str);
+  while (!this.parseState_.isComplete()) {
+    var func = this.parseState_.func;
+    var pos = this.parseState_.pos;
+    var buf = this.parseState_.buf;
 
-  while (i < str.length) {
-    if (this.stepSize) {
-      if (step++ == this.stepSize) {
-        step = 0;
-        debugger;
-      }
+    this.parseState_.func.call(this);
+
+    if (this.parseState_.func == func && this.parseState_.pos == pos &&
+        this.parseState_.buf == buf) {
+      throw 'Parser did not alter the state!';
     }
-
-    var nextIndex = this.parser_(str, i);
-    if (i == nextIndex)
-      throw 'Parser did not advance index!';
-
-    i = nextIndex;
   }
 };
 
 /**
  * Encode a UTF-16 string as UTF-8.
  *
- * Currently only works with codepoints <= 0xffff.
+ * This fails above 0xffff because it doesn't grok 4 byte UTF-16 characters.
  * TODO(rginda): Generalize for higher codepoints.
  *
  * See also: http://en.wikipedia.org/wiki/UTF-16
@@ -209,38 +311,34 @@ hterm.VT.prototype.decodeUTF8 = function(str) {
 };
 
 /**
- * The default parse function.  (The default value of this.parser_.)
+ * The default parse function.
  *
  * This will scan the string for the first 1-byte control character (C0/C1
  * characters from [CTRL]).  Any plain text coming before the code will be
  * printed to the terminal, then the control character will be dispatched.
- *
- * The control character may modify this.parser_ in order to put a different
- * parser in place for the characters that  follow.
- *
- * When a custom parser function has completed parsing a sequence, it should
- * reset this.parser_ back to this function.
  */
-hterm.VT.prototype.parseUnknown_ = function(str, i) {
+hterm.VT.prototype.parseUnknown_ = function() {
   // Search for the next contiguous block of plain text.
-  var substr = str.substr(i);
-  var nextControl = substr.search(this.cc1Pattern_);
+  var buf = this.parseState_.peekRemainingBuf();
+  var nextControl = buf.search(this.cc1Pattern_);
 
   if (nextControl == 0) {
     // We've stumbled right into a control character.
-    this.dispatch('CC1', str.substr(i, 1));
-    return i + 1;
+    this.dispatch('CC1', buf.substr(0, 1));
+    this.parseState_.advance(1);
+    return;
   }
 
   if (nextControl == -1) {
     // There are no control characters in this string.
-    this.terminal.print(substr);
-    return str.length;
+    this.terminal.print(buf);
+    this.parseState_.reset();
+    return;
   }
 
-  this.terminal.print(str.substr(i, nextControl));
-  this.dispatch('CC1', str.substr(i + nextControl, 1));
-  return i + nextControl + 1;
+  this.terminal.print(buf.substr(0, nextControl));
+  this.dispatch('CC1', buf.substr(nextControl, 1));
+  this.parseState_.advance(nextControl + 1);
 };
 
 /**
@@ -248,21 +346,20 @@ hterm.VT.prototype.parseUnknown_ = function(str, i) {
  *
  * See [CSI] for some useful information about these codes.
  */
-hterm.VT.prototype.parseCSI_ = function(str, i) {
-  var ch = str.substr(i, 1);
+hterm.VT.prototype.parseCSI_ = function() {
+  var ch = this.parseState_.peekChar();
 
   if (ch >= '@' && ch <= '~') {
     // This is the final character.
     this.dispatch('CSI', this.leadingModifier_ + this.trailingModifier_ + ch,
                   this.args_);
-
-    this.parser_ = this.parseUnknown_;
+    this.parseState_.resetParseFunction();
 
   } else if (ch == ';') {
     // Parameter delimeter.
     if (this.trailingModifier_) {
       // Parameter delimiter after the trailing modifier.  That's a paddlin'.
-      this.parser_ = this.parseUnknown_;
+      this.parseState_.resetParseFunction();
 
     } else {
       if (!this.args_.length) {
@@ -278,7 +375,7 @@ hterm.VT.prototype.parseCSI_ = function(str, i) {
 
     if (this.trailingModifier_) {
       // Numeric parameter after the trailing modifier.  That's a paddlin'.
-      this.parser_ = this.parseUnknown_;
+      this.parseState_.resetParseFunction();
     } else {
       if (!this.args_.length) {
         this.args_[0] = ch;
@@ -301,26 +398,62 @@ hterm.VT.prototype.parseCSI_ = function(str, i) {
 
   } else {
     // Unexpected character in sequence, bail out.
-    this.parser_ = this.parseUnknown_;
+    this.parseState_.resetParseFunction();
   }
 
-  return i + 1;
+  this.parseState_.advance(1);
 };
 
 /**
  * Skip over the string until the next String Terminator (ST, 'ESC \') or
  * Bell (BEL, '\x07').
+ *
+ * The string is accumulated in this.args_[0].  Make sure to reset the
+ * args_ array and set args_[0] to '' before starting the parse.
+ *
+ * You can detect that parsing in complete by checking that the parse
+ * function has changed back to the default parse function.
+ *
+ * If we encounter more than maxStringSequence characters, we send back
+ * the unterminated sequence to be re-parsed with the default parser function.
+ *
+ * @return {boolean} If true, parsing is ongoing or complete.  If false, we've
+ *     exceeded the max string sequence.
  */
-hterm.VT.prototype.parseUntilStringTerminator_ = function(str, i) {
-  var nextTerminator = str.substr(i).search(/(\x1b\\|\x07)/);
+hterm.VT.prototype.parseUntilStringTerminator_ = function() {
+  var buf = this.parseState_.peekRemainingBuf();
+  var nextTerminator = buf.search(/(\x1b\\|\x07)/);
   if (nextTerminator == -1) {
     // No terminator here, have to wait for the next string.
-    return str.length;
+
+    this.args_[0] += buf;
+
+    if (this.unterminatedSequence_.length <= this.maxStringSequence) {
+      // If we're at or under the limit for a runaway sequence, consume
+      // what we've seen and wait for more.
+      this.parseState_.advance(buf.length);
+      return true;
+    }
+
+    // Otherwise, re-parse using the default parser.
+    this.unterminatedSequence_ = '';
+    this.parseState_.reset(this.unterminatedSequence_);
+    return false;
   }
 
-  this.parser_ = this.parseUnknown_;
-  return i + nextTerminator + (str.substr(i + nextTerminator, 1) == '\x1b' ?
-                               2 : 1);
+  if (this.args_[0].length + nextTerminator > this.maxStringSequence) {
+    // We found the end of the sequence, but we still think it's too long.
+    this.parseState_.reset(this.args_[0] + buf);
+    return false;
+  }
+
+  this.args_[0] += buf.substr(0, nextTerminator);
+
+  this.parseState_.resetParseFunction();
+  this.parseState_.advance(nextTerminator +
+                           (buf.substr(nextTerminator, 1) == '\x1b' ? 2 : 1));
+
+  return true;
 };
 
 /**
@@ -337,6 +470,20 @@ hterm.VT.prototype.dispatch = function(type, code, args) {
   if (handler == hterm.VT.ignore) {
     if (this.warnUnimplemented)
       console.warn('Ignored ' + type + ' code: ' + JSON.stringify(code));
+    return;
+  }
+
+  if (type == 'CC1' && code > '\x7f' && !this.enable8BitControl) {
+    // It's kind of a hack to put this here, but...
+    //
+    // If we're dispatching a 'CC1' code, and it's got the eighth bit set,
+    // but we're not supposed to handle 8-bit codes?  Just ignore it.
+    //
+    // This prevents an errant (DCS, '\x90'), (OSC, '\x9d'), (PM, '\x9e') or
+    // (APC, '\x9f') from locking up the terminal waiting for its expected
+    // (ST, '\x9c') or (BEL, '\x07').
+    console.warn('Ignoring 8-bit control code: 0x' +
+                 code.charCodeAt(0).toString(16));
     return;
   }
 
@@ -687,7 +834,7 @@ hterm.VT.CC1['\x13'] = hterm.VT.ignore;
  * It also causes the error character to be displayed.
  */
 hterm.VT.CC1['\x18'] = function() {
-  this.parser_ = this.parseUnknown_;
+  this.parseState_.resetParseFunction();
   this.terminal.print('?');
 };
 
@@ -702,21 +849,19 @@ hterm.VT.CC1['\x1A'] = hterm.VT.CC1['\x18'];
  * Escape (ESC).
  */
 hterm.VT.CC1['\x1B'] = function() {
-  function parseESC(str, i) {
-    var ch = str.substr(i, 1);
+  function parseESC() {
+    var ch = this.parseState_.consumeChar();
 
     if (ch == '\x1b')
-      return i + 1;
+      return;
 
     this.dispatch('ESC', ch);
 
-    if (this.parser_ == parseESC)
-      this.parser_ = this.parseUnknown_;
-
-    return i + 1;
+    if (this.parseState_.func == parseESC)
+      this.parseState_.resetParseFunction();
   };
 
-  this.parser_ = parseESC;
+  this.parseState_.func = parseESC;
 };
 
 /**
@@ -795,7 +940,9 @@ hterm.VT.ESC['O'] = hterm.VT.ignore;
  */
 hterm.VT.CC1['\x90'] =
 hterm.VT.ESC['P'] = function() {
-  this.parser_ = this.parseUntilStringTerminator_;
+  this.args_.length = 0;
+  this.args_[0] = '';
+  this.parseState_.func = this.parseUntilStringTerminator_;
 };
 
 /**
@@ -842,13 +989,13 @@ hterm.VT.ESC['['] = function() {
   this.args_.length = 0;
   this.leadingModifier_ = '';
   this.trailingModifier_ = '';
-  this.parser_ = this.parseCSI_;
+  this.parseState_.func = this.parseCSI_;
 };
 
 /**
  * String Terminator (ST).
  *
- * Used to terminate OSC/DCS/APC commands which may take string arguments.
+ * Used to terminate DCS/OSC/PM/APC commands which may take string arguments.
  *
  * We don't directly handle it here, as it's only used to terminate other
  * sequences.  See the 'parseUntilStringTerminator_' method.
@@ -866,22 +1013,28 @@ hterm.VT.ESC[']'] = function() {
   this.args_.length = 0;
   this.args_[0] = '';
 
-  this.parser_ = function(str, i) {
-    var endIndex = this.parseUntilStringTerminator_(str, i);
-    this.args_[0] += str.substring(i, endIndex);
-    if (this.parser_ == this.parseUnknown_) {
-      // We're done.
-      var ary = this.args_[0].match(/^(\d+);(.*)(\x1b\\|\x07)$/);
-      if (ary) {
-        this.args_[0] = ary[2];
-        this.dispatch('OSC', ary[1], this.args_);
-      } else {
-        console.warn('Invalid OSC: ' + JSON.stringify(this.args_[0]));
-      }
+  function parseOSC() {
+    if (!this.parseUntilStringTerminator_()) {
+      // The string sequence was too long.
+      return;
     }
 
-    return endIndex;
+    if (this.parseState_.func == parseOSC) {
+      // We're not done parsing the string yet.
+      return;
+    }
+
+    // We're done.
+    var ary = this.args_[0].match(/^(\d+);(.*)$/);
+    if (ary) {
+      this.args_[0] = ary[2];
+      this.dispatch('OSC', ary[1], this.args_);
+    } else {
+      console.warn('Invalid OSC: ' + JSON.stringify(this.args_[0]));
+    }
   };
+
+  this.parseState_.func = parseOSC;
 };
 
 /**
@@ -891,7 +1044,9 @@ hterm.VT.ESC[']'] = function() {
  */
 hterm.VT.CC1['\x9e'] =
 hterm.VT.ESC['^'] = function() {
-  this.parser_ = this.parseUntilStringTerminator_;
+  this.args_.length = 0;
+  this.args_[0] = '';
+  this.parseState_.func = this.parseUntilStringTerminator_;
 };
 
 /**
@@ -901,7 +1056,9 @@ hterm.VT.ESC['^'] = function() {
  */
 hterm.VT.CC1['\x9f'] =
 hterm.VT.ESC['_'] = function() {
-  this.parser_ = this.parseUntilStringTerminator_;
+  this.args_.length = 0;
+  this.args_[0] = '';
+  this.parseState_.func = this.parseUntilStringTerminator_;
 };
 
 /**
@@ -918,14 +1075,11 @@ hterm.VT.ESC['_'] = function() {
  *   ESC \x20 N - Set ANSI conformance level 3.
  */
 hterm.VT.ESC['\x20'] = function(args) {
-  var self = this;
-
-  this.parser_ = function(str, i) {
-    var ch = str.substr(i, 1);
+  this.parseState_.func = function() {
+    var ch = this.parseState_.consumeChar();
     if (this.warnUnimplemented)
       console.warn('Unimplemented sequence: ESC 0x20 ' + ch);
-    self.parser_ = self.parseUnknown_;
-    return i + 1;
+    this.parseState_.resetParseFunction();
   };
 };
 
@@ -945,16 +1099,15 @@ hterm.VT.ESC['\x20'] = function(args) {
  * All other ESC # sequences are echoed to the terminal.
  */
 hterm.VT.ESC['#'] = function() {
-  this.parser_ = function(str, i) {
-    var ch = str.substr(i, 1);
+  this.parseState_.func = function() {
+    var ch = this.parseState_.consumeChar();
     if (ch == '8') {
       this.terminal.fill('E');
     } else if ("3456".indexOf(ch) == -1) {
       this.terminal.print('\x1b#' + ch);
     }
 
-    this.parser_ = this.parseUnknown_;
-    return i + 1;
+    this.parseState_.resetParseFunction();
   };
 };
 
@@ -970,13 +1123,11 @@ hterm.VT.ESC['#'] = function() {
  * TODO(rginda): Implement.
  */
 hterm.VT.ESC['%'] = function() {
-  this.parser_ = function(str, i) {
-    var ch = str.substr(i, 1);
-    if (ch != '@' && ch != 'G')
-      this.terminal.print('\x1b%' + ch);
-
-    this.parser_ = this.parseUnknown_;
-    return i + 1;
+  this.parseState_.func = function() {
+    var ch = this.parseState_.consumeChar();
+    if (ch != '@' && ch != 'G' && this.warnUnimplemented)
+      console.warn('Unknown ESC % argument: ' + JSON.stringify(ch));
+    this.parserState.resetParseFunction();
   };
 };
 
@@ -1018,10 +1169,13 @@ hterm.VT.ESC['+'] =
 hterm.VT.ESC['-'] =
 hterm.VT.ESC['.'] =
 hterm.VT.ESC['/'] = function(args, code) {
-  this.parser_ = function(str, i) {
-    var ch = str.substr(i, 1);
-    if (ch == '\x1b')
-      return this.parseUnknown_(str, i);
+  this.parseState_.func = function() {
+    var ch = this.parseState_.consumeChar();
+    if (ch == '\x1b') {
+      this.parseState_.resetParseFunction();
+      this.parseState_.defaultParser();
+      return;
+    }
 
     if ('0AB4C5RQKYEZH7='.indexOf(ch) != -1) {
       if (this.warnUnimplemented)
@@ -1030,8 +1184,7 @@ hterm.VT.ESC['/'] = function(args, code) {
       console.log('Invalid character set for "' + code + '": ' + ch);
     }
 
-    this.parser_ = this.parseUnknown_;
-    return i + 1;
+    this.parseState_.resetParseFunction();
   };
 };
 

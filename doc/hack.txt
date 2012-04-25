@@ -31,7 +31,7 @@ Shell and Native Client OpenSSH wrapper source code.
    <http://src.chromium.org/viewvc/chrome/trunk/src/LICENSE?view=markup>.
 
    The source code itself is in the Chromium OS "assets" repository, located
-   at on git.chromium.org.  (The Secure Shell application works on recent
+   on git.chromium.org.  (The Secure Shell application works on recent
    Chromium based browsers on Windows, Mac and Linux platforms too.  The source
    just happens to live in a Chromium OS repository.)
 

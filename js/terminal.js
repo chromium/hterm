@@ -88,6 +88,8 @@ hterm.Terminal = function(opt_profileName) {
 
   // The VT escape sequence interpreter.
   this.vt = new hterm.VT(this);
+  this.vt.enable8BitControl = this.prefs_.get('enable-8-bit-control');
+  this.vt.maxStringSequence = this.prefs_.get('max-string-sequence');
 
   // The keyboard hander.
   this.keyboard = new hterm.Keyboard(this);
@@ -216,6 +218,17 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * True to enable 8-bit control characters, false to ignore them.
+     *
+     * We'll respect the two-byte versions of these control characters
+     * regardless of this setting.
+     */
+    ['enable-8-bit-control', false, function(v) {
+        self.vt.enable8BitControl = !!v;
+      }
+    ],
+
+    /**
      * True if we should use bold weight font for text with the bold/bright
      * attribute.  False to use bright colors only.  Null to autodetect.
      */
@@ -263,6 +276,15 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      */
     ['home-keys-scroll', false, function(v) {
         self.keyboard.homeKeysScroll = v;
+      }
+    ],
+
+    /**
+     * Max length of a DCS, OSC, PM, or APS sequence before we give up and
+     * ignore the code.
+     */
+    ['max-string-sequence', 1024, function(v) {
+        self.vt.maxStringSequence = v;
       }
     ],
 
@@ -1311,6 +1333,11 @@ hterm.Terminal.prototype.fill = function(ch) {
 hterm.Terminal.prototype.clearHome = function(opt_screen) {
   var screen = opt_screen || this.screen_;
   var bottom = screen.getHeight();
+
+  if (bottom == 0) {
+    // Empty screen, nothing to do.
+    return;
+  }
 
   for (var i = 0; i < bottom; i++) {
     screen.setCursorPosition(i, 0);

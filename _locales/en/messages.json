@@ -15,7 +15,7 @@
   },
 
   "WELCOME_FAQ": {
-    "message": "The list of Frequently Asked Questions is available here: $URL$",
+    "message": "Answers to Frequently Asked Questions: $URL$",
     "description": "A link to the frequently asked questions, displayed at startup",
     "placeholders": {
       "url": {

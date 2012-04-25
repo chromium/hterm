@@ -280,11 +280,16 @@ hterm.Screen.prototype.clearCursorRow = function() {
  * @param {integer} column The zero based column.
  */
 hterm.Screen.prototype.setCursorPosition = function(row, column) {
+  if (!this.rowsArray.length) {
+    console.warn('Attempt to set cursor position on empty screen.');
+    return;
+  }
+
   if (row >= this.rowsArray.length) {
-    console.log('Row out of bounds: ' + row, hterm.getStack(1));
+    console.warn('Row out of bounds: ' + row, hterm.getStack(1));
     row = this.rowsArray.length - 1;
   } else if (row < 0) {
-    console.log('Row out of bounds: ' + row, hterm.getStack(1));
+    console.warn('Row out of bounds: ' + row, hterm.getStack(1));
     row = 0;
   }
 
