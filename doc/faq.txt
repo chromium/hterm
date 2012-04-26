@@ -19,7 +19,7 @@
                             hterm and  Secure Shell
                           Frequently  Asked Questions
 
-                                April 23,  2012
+                                April 25,  2012
 
 
 Hello World.  This is the hterm/Secure Shell FAQ.  If you have a question that
@@ -29,11 +29,12 @@ at <http://goo.gl/RYHiK>.
 
 > What is "Secure Shell"?
 
-  Secure Shell is a Chrome Application that combines the OpenSSH library with
-  the "hterm" terminal emulator to provide SSH access from the Chrome browser.
+  Secure Shell is a Chrome Application that combines the "ssh" command (see
+  http://openssh.org/ for details) ported to NativeClient with the "hterm"
+  terminal emulator to provide a secure shell client for the Chrome browser.
 
   Secure Shell provides similar functionality to PuTTY on Microsoft Windows(c)
-  systems, and the 'ssh' command-line application on Mac OS X and Linux systems.
+  systems, and the ssh command-line application on Mac OS X and Linux systems.
 
 
 > What is "hterm"?
@@ -49,24 +50,13 @@ at <http://goo.gl/RYHiK>.
 
 
 > How do Secure Shell and hterm relate to the "crosh" (Ctrl-Alt-T) command in
-  ChromeOS?
+  Chrome OS?
 
-  In ChromeOS, the key sequence Ctrl-Alt-T brings up the "crosh" shell.  This
-  shell provides access to some ChromeOS debugging commands, as well as
-  a command-line version of SSH.
+  See chromeos-crosh.txt in this directory for the details.
 
-  The "crosh" shell uses a version of hterm that ships with ChromeOS.  If you
-  install Secure Shell on your ChromeOS device, then crosh will use the
-  newer version of hterm that comes with Secure Shell.  You can disable or
-  uninstall Secure Shell to get back to the stock version of crosh+hterm.
-
-  You can launch crosh from the Secure Shell application by entering
-  "crosh" at the destination prompt.
-
-  If you're primarily using crosh for its ssh command, you should try using
-  the Secure Shell application instead.  If it doesn't meet your needs, please
-  speak up.  The crosh and crosh based ssh command are not guaranteed to be
-  accessible in the ChromeOS "Stable Channel" forever.
+  TL;DR - Don't use crosh for ssh any more, use the Secure Shell app instead.
+  The crosh shell will use the newer terminal emulator from Secure Shell when
+  possible.
 
 
 > How do hterm and Secure Shell differ from existing web terminals?
@@ -86,402 +76,406 @@ at <http://goo.gl/RYHiK>.
   are even required to hand the proxy your credentials in plain text.
 
 
->> Is my data sent through Google's (or anyone else's) servers?
+> Is my data sent through Google's (or anyone else's) servers?
 
-   No.  By default all connections are made directly to the sshd server on the
-   destination machine.
+  No.  By default all connections are made directly to the sshd server on the
+  destination machine.
 
 
->> Can I make SSH connections over HTTP?
+> Can I make SSH connections over HTTP?
 
-   Sort of.  Secure Shell comes with the ability to use an HTTP based relay
-   server.  The connection setup and read/write protocol was built inside
-   Google to facilitate secure access by Google employees.  You can read the
-   source and documentation in the google_relay.js file for the details.
+  Sort of.  Secure Shell comes with the ability to use an HTTP based relay
+  server.  The connection setup and read/write protocol was built inside
+  Google to facilitate secure access by Google employees.  You can read the
+  source and documentation in the google_relay.js file for the details.
 
-   The Google relay server expects that traffic is encrypted by the client and
-   server.  This means it would be very difficult for the relay to perform a
-   "Man In The Middle" attack.  It also supports a single-signon step during
-   connection setup.
+  The Google relay server expects that traffic is encrypted by the client and
+  server.  This means it would be very difficult for the relay to perform a
+  "Man In The Middle" attack.  It also supports a single-signon step during
+  connection setup.
 
-   The relay source is not public, but you're free to build one that works the
-   same way.  There should be enough documentation in google_relay.js to
-   reverse engineer a compatible relay.
+  The relay source is not public, but you're free to build one that works the
+  same way.  There should be enough documentation in google_relay.js to
+  reverse engineer a compatible relay.
 
-   Secure Shell is set up to accept pluggable relay libraries.   If there were
-   an agreed-upon open relay protocol, Secure Shell could add support for it
-   without much overhead work.
+  Secure Shell is set up to accept pluggable relay libraries.   If there were
+  an agreed-upon open relay protocol, Secure Shell could add support for it
+  without much overhead work.
 
 
->> Is my connection really secure?
+> Is my connection really secure?
 
-   The Secure Shell app uses the OpenSSH library to manage the encrypted
-   communication channel.  This makes it about as secure as any other "ssh"
-   connection based on the OpenSSH library.
+  The Secure Shell app uses ssh to manage the encrypted communication channels.
+  This makes it about as secure as any other connection based on the ssh
+  command.
 
-   It does have the added advantage of running OpenSSH as a sandboxed
-   Native Client plugin, which in theory makes it more secure than an
-   unsandboxed ssh connection.
+  It does have the added advantage of running ssh as a sandboxed
+  Native Client plugin, which in theory makes it more secure than an
+  unsandboxed ssh connection.
 
+  Additionally, the Secure Shell application follows a string Content Security
+  Policy that does not allow access to the JavaScript 'eval' command.  This
+  helps lower the risk that a terminal exploit could run arbitrary JavaScript.
 
->> What should I do if I notice a bug?
 
-   First, please continue reading this FAQ to make sure your issue isn't
-   mentioned.  Then check the bug list at <http://goo.gl/hpqWk>.
+> What should I do if I notice a bug?
 
-   If you don't see the issue there, you can search the archives of the
-   chromium-hterm mailing list here: <http://goo.gl/RYHiK>.
+  First, please continue reading this FAQ to make sure your issue isn't
+  mentioned.  Then check the bug list at <http://goo.gl/hpqWk>.
 
-   If all else fails then join the chromium-hterm mailing list and post
-   about what you've found.
+  If you don't see the issue there, you can search the archives of the
+  chromium-hterm mailing list here: <http://goo.gl/RYHiK>.
 
-   If your bug involves some mis-interpreted escape sequence and you want
-   to file a really useful bug report, then add in a recording of the
-   session.  For bonus points, track down the troublesome sequence and
-   incude the offset into the log file.  For more information about how to
-   do this, see the "Debugging escape sequences" section in the hack.txt file
-   in this directory.
+  If all else fails then join the chromium-hterm mailing list and post
+  about what you've found.
 
+  If your bug involves some mis-interpreted escape sequence and you want
+  to file a really useful bug report, then add in a recording of the
+  session.  For bonus points, track down the troublesome sequence and
+  incude the offset into the log file.  For more information about how to
+  do this, see the "Debugging escape sequences" section in the hack.txt file
+  in this directory.
 
->> Is there a mailing list to discuss hterm or Secure Shell?
 
-   Yes, the public chromium-hterm mailing list is here: <http://goo.gl/RYHiK>.
+> Is there a mailing list to discuss hterm or Secure Shell?
 
+  Yes, the public chromium-hterm mailing list is here: <http://goo.gl/RYHiK>.
 
->> Can I connect using a keypair or certificate?
 
-   Sorry, not yet.  We're working on it though.  Join the chromium-hterm
-   mailing list if you want to be notified when it's ready.
+> Can I connect using a keypair or certificate?
 
+  Sorry, not yet.  We're working on it though.  Join the chromium-hterm
+  mailing list if you want to be notified when it's ready.
 
->> How do I set terminal preferences?
 
-   The Secure Shell application does not currently have a preferences page.
-   It's in the works, and will be available before Secure Shell leaves
-   "beta" status.  For now, you need to open the JavaScript console to
-   change the user preferences.  Sorry about that.
+> How do I set terminal preferences?
 
-   In general, you open the JavaScript console and type something like...
+  The Secure Shell application does not currently have a preferences page.
+  It's in the works, and will be available before Secure Shell leaves
+  "beta" status.  For now, you need to open the JavaScript console to
+  change the user preferences.  Sorry about that.
 
-      term_.prefs_.set('pref-name', 'pref-value')
+  In general, you open the JavaScript console and type something like...
 
-   Preferences are saved in your local storage, so they're remembered the
-   next time you launch Secure Shell.
+     term_.prefs_.set('pref-name', 'pref-value')
 
-   If you want to check the current value of a preference, type this...
+  Preferences are saved in your local storage, so they're remembered the
+  next time you launch Secure Shell.
 
-      term_.prefs_.get('pref-name')
+  If you want to check the current value of a preference, type this...
 
-   To reset a single preference to its default state, type this...
+     term_.prefs_.get('pref-name')
 
-      term_.prefs_.reset('pref-name')
+  To reset a single preference to its default state, type this...
 
-   To reset all preferences to their default state, type this...
+     term_.prefs_.reset('pref-name')
 
-      localStorage.clear()
+  To reset all preferences to their default state, type this...
 
-   Most preference changes take effect immediately, in all open instances of
-   Secure Shell.  The exception is the 'environment' setting, which won't
-   take effect until the next time you reconnect.
+     localStorage.clear()
 
-   Some common preferences are listed in questions that follow.  For the full
-   list, you'll have to read through the "setProfile" function in terminal.js.
-   It's here: <http://goo.gl/FDEXb>, around line 130.
+  Most preference changes take effect immediately, in all open instances of
+  Secure Shell.  The exception is the 'environment' setting, which won't
+  take effect until the next time you reconnect.
 
+  Some common preferences are listed in questions that follow.  For the full
+  list, you'll have to read through the "setProfile" function in terminal.js.
+  It's here: <http://goo.gl/FDEXb>, around line 130.
 
->> How do I change the audible bell sound?
 
-   Open the JavaScript console and type...
+> How do I change the audible bell sound?
 
-      term_.prefs_.set('audible-bell-sound', 'http://example.com/bell.ogg')
+  Open the JavaScript console and type...
 
-   Change the example url to point to the sound file you want to use.
-   Unfortunately, local file: urls are not supported at this time.  If you
-   want to get fancy you could construct a data: url, but the details of
-   that are beyond the scope of this FAQ.
+     term_.prefs_.set('audible-bell-sound', 'http://example.com/bell.ogg')
 
+  Change the example url to point to the sound file you want to use.
+  Unfortunately, local file: urls are not supported at this time.  If you
+  want to get fancy you could construct a data: url, but the details of
+  that are beyond the scope of this FAQ.
 
->> How do I disable the audible bell?
 
-   Open the JavaScript console and type...
+> How do I disable the audible bell?
 
-      term_.prefs_.set('audible-bell-sound', '')
+  Open the JavaScript console and type...
 
+     term_.prefs_.set('audible-bell-sound', '')
 
->> How do I change the color scheme?
 
-   You can change the foreground, background or cursor color preferences from
-   the JavaScript console like this...
+> How do I change the color scheme?
 
-      term_.prefs_.set('background-color', 'wheat')
-      term_.prefs_.set('foreground-color', '#533300')
-      term_.prefs_.set('cursor-color', 'rgba(100, 100, 10, 0.5)')
+  You can change the foreground, background or cursor color preferences from
+  the JavaScript console like this...
 
-   You can use any valid CSS color value for any of these colors.  You need
-   to use a semi-transparent color (the fourth parameter in the rgba value)
-   for the cursor if you want to be able to see the character behind it.
+     term_.prefs_.set('background-color', 'wheat')
+     term_.prefs_.set('foreground-color', '#533300')
+     term_.prefs_.set('cursor-color', 'rgba(100, 100, 10, 0.5)')
 
+  You can use any valid CSS color value for any of these colors.  You need
+  to use a semi-transparent color (the fourth parameter in the rgba value)
+  for the cursor if you want to be able to see the character behind it.
 
->> How do I change the font face?
 
-   Open the JavaScript console and type...
+> How do I change the font face?
 
-      term_.prefs_.set('font-family', 'Lucida Console')
+  Open the JavaScript console and type...
 
-   Replace 'Lucida Console' with your favorite monospace font.
+     term_.prefs_.set('font-family', 'Lucida Console')
 
-   Keep in mind that some fonts, especially on Mac OS X systems, have bold
-   characters that are larger than the non-bold version.  hterm will print a
-   warning to the JS console if it detects that you've selected a font like
-   this.  It will also disable "real" bold characters, using only bright
-   colors to indicate bold.
+  Replace 'Lucida Console' with your favorite monospace font.
 
+  Keep in mind that some fonts, especially on Mac OS X systems, have bold
+  characters that are larger than the non-bold version.  hterm will print a
+  warning to the JS console if it detects that you've selected a font like
+  this.  It will also disable "real" bold characters, using only bright
+  colors to indicate bold.
 
->> How to I change the default font size?
 
-   Open the JavaScript console and type...
+> How to I change the default font size?
 
-      term_.prefs_.set('font-size', 15)
+  Open the JavaScript console and type...
 
-   Replace 15 with your desired font size in pixels.  15 is the default, so
-   you'll have to pick a different number to have any effect at all.
+     term_.prefs_.set('font-size', 15)
 
+  Replace 15 with your desired font size in pixels.  15 is the default, so
+  you'll have to pick a different number to have any effect at all.
 
->> Can I quickly make temporarily changes to the font size?
 
-   Yes.  The Ctrl-Plus, Ctrl-Minus and Ctrl-Zero keys can increase, decrease,
-   or reset the current font size.  This zoomed size is not remembered the
-   next time you start hterm.  See the previous question if you want something
-   that will stick.
+> Can I quickly make temporarily changes to the font size?
 
-   It's useful to know that hterm has to handle font zooming on its own.
-   Without interference from the browser's built-in zoom function.
+  Yes.  The Ctrl-Plus, Ctrl-Minus and Ctrl-Zero keys can increase, decrease,
+  or reset the current font size.  This zoomed size is not remembered the
+  next time you start hterm.  See the previous question if you want something
+  that will stick.
 
-   The browser zoom introduces rounding errors in pixel measurements that
-   make it difficult (maybe impossible) for hterm to accurately position the
-   cursor on the screen.  (It could do a little better than it does but
-   probably not enough to be worth the effort.)
+  It's useful to know that hterm has to handle font zooming on its own.
+  Without interference from the browser's built-in zoom function.
 
-   To mitigate this, hterm will display a warning message when your browser
-   zoom is not 100%.  In this mode the Ctrl-Plus, Ctrl-Minus and Ctrl-Zero
-   keys are passed directly to the browser.  Just press Ctrl-Zero to reset your
-   zoom and dismiss the warning.
+  The browser zoom introduces rounding errors in pixel measurements that
+  make it difficult (maybe impossible) for hterm to accurately position the
+  cursor on the screen.  (It could do a little better than it does but
+  probably not enough to be worth the effort.)
 
-   hterm should start handling Ctrl-Plus, Ctrl-Minus and Ctrl-Zero on its
-   own once your zoom setting is fixed.
+  To mitigate this, hterm will display a warning message when your browser
+  zoom is not 100%.  In this mode the Ctrl-Plus, Ctrl-Minus and Ctrl-Zero
+  keys are passed directly to the browser.  Just press Ctrl-Zero to reset your
+  zoom and dismiss the warning.
 
+  hterm should start handling Ctrl-Plus, Ctrl-Minus and Ctrl-Zero on its
+  own once your zoom setting is fixed.
 
->> Why do I get a warning about my browser zoom?
 
-   Because hterm requires you to set your browser to 100%, or 1:1 zoom.
-   Try Ctrl-Zero or the Wrench->Zoom menu to reset your browser zoom.  The
-   warning should go away after you correct the zoom level.
+> Why do I get a warning about my browser zoom?
 
-   See the previous question for more information.
+  Because hterm requires you to set your browser to 100%, or 1:1 zoom.
+  Try Ctrl-Zero or the Wrench->Zoom menu to reset your browser zoom.  The
+  warning should go away after you correct the zoom level.
 
+  See the previous question for more information.
 
->> How do I disable anti-alaising?
 
-   Open the JavaScript console and type...
+> How do I disable anti-alaising?
 
-      term_.prefs_.set('font-smoothing', 'none')
+  Open the JavaScript console and type...
 
-   This directly modifies the '-webkit-font-smoothing' CSS property for the
-   terminal.  As such, 'none', 'antialiased', and 'subpixel-antialiased' are
-   all valid values.
+     term_.prefs_.set('font-smoothing', 'none')
 
-   The default setting is 'antialiased'.
+  This directly modifies the '-webkit-font-smoothing' CSS property for the
+  terminal.  As such, 'none', 'antialiased', and 'subpixel-antialiased' are
+  all valid values.
 
+  The default setting is 'antialiased'.
 
->> How do I make the cursor blink?
 
-   Open the JavaScript console and type...
+> How do I make the cursor blink?
 
-      term_.prefs_.set('cursor-blink', true)
+  Open the JavaScript console and type...
 
-   Notice that true is NOT in quotes.  This is especially important if you try
-   to turn blinking back off, with...
+     term_.prefs_.set('cursor-blink', true)
 
-      term_.prefs_.set('cursor-blink', false)
+  Notice that true is NOT in quotes.  This is especially important if you try
+  to turn blinking back off, with...
 
-   or you could just revert to the default value of false with...
+     term_.prefs_.set('cursor-blink', false)
 
-      term_.prefs_.reset('cursor-blink')
+  or you could just revert to the default value of false with...
 
+     term_.prefs_.reset('cursor-blink')
 
->> How do I change the TERM environment variable?
 
-   Open the JavaScript console and type...
+> How do I change the TERM environment variable?
 
-      term_.prefs_.set('environment', {TERM: 'hterm'})
+  Open the JavaScript console and type...
 
-   Notice that only 'hterm' is quoted, not the entire value.  You can replace
-   'hterm' with whichever value you prefer.
+     term_.prefs_.set('environment', {TERM: 'hterm'})
 
-   The default TERM value is 'xterm-256color'.  If you prefer to simulate a
-   16 color xterm, try setting TERM to 'xterm'.
+  Notice that only 'hterm' is quoted, not the entire value.  You can replace
+  'hterm' with whichever value you prefer.
 
-   You will have to reconnect for this setting to take effect.
+  The default TERM value is 'xterm-256color'.  If you prefer to simulate a
+  16 color xterm, try setting TERM to 'xterm'.
 
+  You will have to reconnect for this setting to take effect.
 
->> How do I enter accented characters?
 
-   That depends on your platform and which accented characters you want to
-   enter.
+> How do I enter accented characters?
 
-   In xterm, you could use Alt-plus-a-letter-or-number to select from the
-   upper 128 characters.  The palette of 128 characters was "hardcoded" and
-   not dependent on your keyboard locale.  You can set hterm to do the same
-   thing by opening the JavaScript console and typing...
+  That depends on your platform and which accented characters you want to
+  enter.
 
-      term_.prefs_.set('alt-sends-what', '8-bit')
+  In xterm, you could use Alt-plus-a-letter-or-number to select from the
+  upper 128 characters.  The palette of 128 characters was "hardcoded" and
+  not dependent on your keyboard locale.  You can set hterm to do the same
+  thing by opening the JavaScript console and typing...
 
-   However, if you are on Mac OS X and you prefer that Alt sends a character
-   based on your keyboard locale, try this instead...
+     term_.prefs_.set('alt-sends-what', '8-bit')
 
-      term_.prefs_.set('alt-sends-what', 'browser-key')
+  However, if you are on Mac OS X and you prefer that Alt sends a character
+  based on your keyboard locale, try this instead...
 
-   Note that composed characters (those that require multiple keystrokes) are
-   not currently supported by this mode.
+     term_.prefs_.set('alt-sends-what', 'browser-key')
 
-   If you are running ChromeOS on a Chromebook you can select your keyboard
-   locale from the system settings and just use the Right-Alt (the small one,
-   on the right) to enter accented characters.  No need to change the
-   'alt-sends-what' preference at all.
+  Note that composed characters (those that require multiple keystrokes) are
+  not currently supported by this mode.
 
-   The default value for 'alt-sends-what' is 'escape'.  This makes Alt work
-   mostly like a traditional Meta key.
+  If you are running Chrome OS on a Chromebook you can select your keyboard
+  locale from the system settings and just use the Right-Alt (the small one,
+  on the right) to enter accented characters.  No need to change the
+  'alt-sends-what' preference at all.
 
-   If you really, really want Alt to be an alias for the Meta key in every
-   sense, use...
+  The default value for 'alt-sends-what' is 'escape'.  This makes Alt work
+  mostly like a traditional Meta key.
 
-      term_.prefs_.set('alt-is-meta', true)
+  If you really, really want Alt to be an alias for the Meta key in every
+  sense, use...
 
+     term_.prefs_.set('alt-is-meta', true)
 
->> How do I make backspace send ^H?
 
-   By default, hterm sends a delete (DEL, '\x7f') character for the
-   backspace key.  Sounds crazy, but it tends to be the right thing for
-   most people.  If you'd prefer it send the backspace (BS, '\x08', aka ^H)
-   character, then open the JavaScript console and type...
+> How do I make backspace send ^H?
 
-      term_.prefs_.set('backspace-sends-backspace', true)
+  By default, hterm sends a delete (DEL, '\x7f') character for the
+  backspace key.  Sounds crazy, but it tends to be the right thing for
+  most people.  If you'd prefer it send the backspace (BS, '\x08', aka ^H)
+  character, then open the JavaScript console and type...
 
+     term_.prefs_.set('backspace-sends-backspace', true)
 
->> How do I remove a known hosts entry?
 
-   If you know the index of the offending host entry (it's usually reported
-   by OpenSSH if the connection fails) you can open the JavaScript console
-   and type...
+> How do I remove a known hosts entry?
 
-      term_.command.removeKnownHostByIndex(index)
+  If you know the index of the offending host entry (it's usually reported
+  by ssh if the connection fails) you can open the JavaScript console and
+  type...
 
-   Replace index with the numeric, one-based host index.
+     term_.command.removeKnownHostByIndex(index)
 
-   If you don't know the index, or you'd like to clear all known hosts,
-   type...
+  Replace index with the numeric, one-based host index.
 
-      term_.command.removeAllKnownHosts()
+  If you don't know the index, or you'd like to clear all known hosts,
+  type...
 
+     term_.command.removeAllKnownHosts()
 
->> How do I send Ctrl-W, Ctrl-N or Ctrl-T to the terminal?
 
-   Chrome blocks tab contents from getting access to these (and a few other)
-   keys.  You can open Secure Shell in a dedicated window to get around
-   this limitation.  Just right-click on the Secure Shell icon and enable
-   "Open as Window".
+> How do I send Ctrl-W, Ctrl-N or Ctrl-T to the terminal?
 
-   After that, any time you launch Secure Shell it will open in a new window
-   and respond properly to these accelerator keys.
+  Chrome blocks tab contents from getting access to these (and a few other)
+  keys.  You can open Secure Shell in a dedicated window to get around
+  this limitation.  Just right-click on the Secure Shell icon and enable
+  "Open as Window".
 
-   If you're running in ChromeOS you may notice that Ctrl-N, Ctrl-Space
-   and a few other keys are reserved by the new window manager.  This is
-   a known issue tracked by <http://crbug.com/123856>.
+  After that, any time you launch Secure Shell it will open in a new window
+  and respond properly to these accelerator keys.
 
+  If you're running in Chrome OS you may notice that Ctrl-N, Ctrl-Space
+  and a few other keys are reserved by the new window manager.  This is
+  a known issue tracked by <http://crbug.com/123856>.
 
->> How do I copy text from the terminal?
 
-   Under Mac OS X the normal Command-C sequence can be used to copy the current
-   selection to the clipboard.
+> How do I copy text from the terminal?
 
-   On other platforms Ctrl-C will perform a Copy only when text is selected.
-   When there is no current selection Ctrl-C will send a "^C" to the host.
+  Under Mac OS X the normal Command-C sequence can be used to copy the current
+  selection to the clipboard.
 
-   Note that after copying text to the clipboard the active selection will be
-   cleared.  If you happen to have text selected but want to send "^C",
-   just hit Ctrl-C twice.
+  On other platforms Ctrl-C will perform a Copy only when text is selected.
+  When there is no current selection Ctrl-C will send a "^C" to the host.
 
-   Under X11, highlighted text is automatically added to the X clipboard.
-   However, due to an hterm limitation, text that is scrolled off screen is
-   not included.
+  Note that after copying text to the clipboard the active selection will be
+  cleared.  If you happen to have text selected but want to send "^C",
+  just hit Ctrl-C twice.
 
-   Under all platforms (except ChromeOS, due to http://crosbug.com/29343) you
-   can also use the "Copy" command from the Wrench menu.
+  Under X11, highlighted text is automatically added to the X clipboard.
+  However, due to an hterm limitation, text that is scrolled off screen is
+  not included.
 
+  Under all platforms (except Chrome OS, due to http://crosbug.com/29343) you
+  can also use the "Copy" command from the Wrench menu.
 
->> How do I paste text to the terminal?
 
-   Under Mac OS X the normal Command-V sequence can be used to paste from
-   the clipboard.
+> How do I paste text to the terminal?
 
-   On other platforms use Ctrl-Shift-V to paste from the clipboard.
+  Under Mac OS X the normal Command-V sequence can be used to paste from
+  the clipboard.
 
-   Under X11, you can use middle-mouse-click to paste from the X clipboard.
+  On other platforms use Ctrl-Shift-V to paste from the clipboard.
 
-   Under all platforms (except ChromeOS, due to http://crosbug.com/29343) you
-   can also use the "Paste" command from the Wrench menu.
+  Under X11, you can use middle-mouse-click to paste from the X clipboard.
 
+  Under all platforms (except Chrome OS, due to http://crosbug.com/29343) you
+  can also use the "Paste" command from the Wrench menu.
 
->> Why does the cursor blink in emacs?
 
-   Do you normally use Terminal.app or xterm?  Those terminals (and probably
-   a few others) ignore the "ESC [ ? 12 h" and "ESC [ ? 12 l" sequences.
-   Emacs uses these sequences (on purpose) to enable and disable cursor blink.
+> Why does the cursor blink in emacs?
 
-   If you prefer a steady cursor in emacs, set visible-cursor to nil as
-   described in <http://goo.gl/i9THb>.
+  Do you normally use Terminal.app or xterm?  Those terminals (and probably
+  a few others) ignore the "ESC [ ? 12 h" and "ESC [ ? 12 l" sequences.
+  Emacs uses these sequences (on purpose) to enable and disable cursor blink.
 
+  If you prefer a steady cursor in emacs, set visible-cursor to nil as
+  described in <http://goo.gl/i9THb>.
 
->> Why does the color scheme look funny in emacs/vi/vim?
 
-   hterm's default value for the TERM environment variable is
-   'xterm-256color'.  This causes emacs, vi, and some other programs to
-   use a different color palette than when TERM='xterm'.
+> Why does the color scheme look funny in emacs/vi/vim?
 
-   You may notice these programs use a font color that is difficult to read
-   over a dark background (such as dark blue).
+  hterm's default value for the TERM environment variable is
+  'xterm-256color'.  This causes emacs, vi, and some other programs to
+  use a different color palette than when TERM='xterm'.
 
-   You can fix vi with ':set bg=dark'.  Emacs can be started in "reverse
-   video" mode with 'emacs -rv'.
+  You may notice these programs use a font color that is difficult to read
+  over a dark background (such as dark blue).
 
-   If you just want your old 16 color palette back, open the JavaScript
-   console and type...
+  You can fix vi with ':set bg=dark'.  Emacs can be started in "reverse
+  video" mode with 'emacs -rv'.
 
-      term_.prefs_.set('environment', {TERM: 'xterm'})
+  If you just want your old 16 color palette back, open the JavaScript
+  console and type...
 
-   Then restart Secure Shell.
+     term_.prefs_.set('environment', {TERM: 'xterm'})
 
+  Then restart Secure Shell.
 
->> Where is the source code?
 
-   The hterm source is here: <http://goo.gl/EqrV0>.  This includes the
-   front-end code for Secure Shell.
+> Where is the source code?
 
-   The Native Client wrapper around OpenSSH is here: <http://goo.gl/760JC>.
+  The hterm source is here: <http://goo.gl/EqrV0>.  This includes the
+  front-end code for Secure Shell.
 
+  The Native Client wrapper around ssh is here: <http://goo.gl/760JC>.
 
->> Is there a change log?
 
-   Yes.  Look under the doc/ directory of the hterm source.
+> Is there a change log?
 
-   There are two change logs.  One shows changes to the development version
-   of Secure Shell.  The other shows stable releases.
+  Yes.  Look under the doc/ directory of the hterm source.
 
-   In general, the dev series of the form 0.X.Y.Z becomes the stable
-   version 0.X.Y.  So SecureShell-dev-0.7.2.0, 0.7.2.1 and 0.7.2.2 all lead up
-   to SecureShell-0.7.2.
+  There are two change logs.  One shows changes to the development version
+  of Secure Shell.  The other shows stable releases.
 
+  In general, the dev series of the form 0.X.Y.Z becomes the stable
+  version 0.X.Y.  So SecureShell-dev-0.7.2.0, 0.7.2.1 and 0.7.2.2 all lead up
+  to SecureShell-0.7.2.
 
->> What if I want to make changes to the source?
 
-   Read the hack.txt file in this directory.
+> What if I want to make changes to the source?
+
+  Read the hack.txt file in this directory.

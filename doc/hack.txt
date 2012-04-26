@@ -23,7 +23,7 @@
 
 
 This developer guide explains how to edit, test and debug the hterm, Secure
-Shell and Native Client OpenSSH wrapper source code.
+Shell and Native Client ssh wrapper source code.
 
 1. The Source Repository
 
@@ -45,7 +45,7 @@ Shell and Native Client OpenSSH wrapper source code.
 
    The second important directory is /assets/chromeapps/ssh_client/
    (gitweb: <http://goo.gl/760JC>).  This contains Native Client wrapper
-   around OpenSSH.  It is written in C and C++.
+   around ssh.  It is written in C and C++.
 
 
 2. Syncing the Source Repository
