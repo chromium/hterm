@@ -40,9 +40,6 @@ hterm.VT = function(terminal) {
 
   this.parseState_ = new hterm.VT.ParseState(this.parseUnknown_);
 
-  // The arguments collected for the current escape sequence.
-  this.args_ = [];
-
   // Any "leading modifiers" for the escape sequence, such as '?', ' ', or the
   // other modifiers handled in this.parseCSI_.
   this.leadingModifier_ = '';
@@ -121,6 +118,7 @@ hterm.VT.ParseState = function(defaultFunction, opt_buf) {
   this.buf = opt_buf || null;
   this.pos = 0;
   this.func = defaultFunction;
+  this.args = [];
 };
 
 /**
@@ -129,6 +127,7 @@ hterm.VT.ParseState = function(defaultFunction, opt_buf) {
 hterm.VT.ParseState.prototype.reset = function(opt_buf) {
   this.resetParseFunction();
   this.resetBuf(opt_buf || '');
+  this.resetArguments();
 };
 
 /**
@@ -140,10 +139,33 @@ hterm.VT.ParseState.prototype.resetParseFunction = function() {
 
 /**
  * Reset the buffer and position only.
+ *
+ * @param {string} buf Optional new value for buf, defaults to null.
  */
-hterm.VT.ParseState.prototype.resetBuf = function(buf) {
-  this.buf = buf;
+hterm.VT.ParseState.prototype.resetBuf = function(opt_buf) {
+  this.buf = (typeof opt_buf == 'string') ? opt_buf : null;
   this.pos = 0;
+};
+
+/**
+ * Reset the arguments list only.
+ *
+ * @param {string} opt_arg_zero Optional initial value for args[0].
+ */
+hterm.VT.ParseState.prototype.resetArguments = function(opt_arg_zero) {
+  this.args.length = 0;
+  if (typeof opt_arg_zero != 'undefined')
+    this.args[0] = opt_arg_zero;
+};
+
+/**
+ * Get an argument as an integer.
+ *
+ * @param {number} argnum The argument number to retreive.
+ */
+hterm.VT.ParseState.prototype.iarg = function(argnum, defaultValue) {
+  var str = this.args[argnum];
+  return str ? parseInt(str, 10) : defaultValue;
 };
 
 /**
@@ -204,7 +226,7 @@ hterm.VT.prototype.interpret = function(buf) {
     var pos = this.parseState_.pos;
     var buf = this.parseState_.buf;
 
-    this.parseState_.func.call(this);
+    this.parseState_.func.call(this, this.parseState_);
 
     if (this.parseState_.func == func && this.parseState_.pos == pos &&
         this.parseState_.buf == buf) {
@@ -313,28 +335,28 @@ hterm.VT.prototype.decodeUTF8 = function(str) {
  * characters from [CTRL]).  Any plain text coming before the code will be
  * printed to the terminal, then the control character will be dispatched.
  */
-hterm.VT.prototype.parseUnknown_ = function() {
+hterm.VT.prototype.parseUnknown_ = function(parseState) {
   // Search for the next contiguous block of plain text.
-  var buf = this.parseState_.peekRemainingBuf();
+  var buf = parseState.peekRemainingBuf();
   var nextControl = buf.search(this.cc1Pattern_);
 
   if (nextControl == 0) {
     // We've stumbled right into a control character.
-    this.dispatch('CC1', buf.substr(0, 1));
-    this.parseState_.advance(1);
+    this.dispatch('CC1', buf.substr(0, 1), parseState);
+    parseState.advance(1);
     return;
   }
 
   if (nextControl == -1) {
     // There are no control characters in this string.
     this.terminal.print(buf);
-    this.parseState_.reset();
+    parseState.reset();
     return;
   }
 
   this.terminal.print(buf.substr(0, nextControl));
-  this.dispatch('CC1', buf.substr(nextControl, 1));
-  this.parseState_.advance(nextControl + 1);
+  this.dispatch('CC1', buf.substr(nextControl, 1), parseState);
+  parseState.advance(nextControl + 1);
 };
 
 /**
@@ -342,28 +364,29 @@ hterm.VT.prototype.parseUnknown_ = function() {
  *
  * See [CSI] for some useful information about these codes.
  */
-hterm.VT.prototype.parseCSI_ = function() {
-  var ch = this.parseState_.peekChar();
+hterm.VT.prototype.parseCSI_ = function(parseState) {
+  var ch = parseState.peekChar();
+  var args = parseState.args;
 
   if (ch >= '@' && ch <= '~') {
     // This is the final character.
     this.dispatch('CSI', this.leadingModifier_ + this.trailingModifier_ + ch,
-                  this.args_);
-    this.parseState_.resetParseFunction();
+                  parseState);
+    parseState.resetParseFunction();
 
   } else if (ch == ';') {
     // Parameter delimeter.
     if (this.trailingModifier_) {
       // Parameter delimiter after the trailing modifier.  That's a paddlin'.
-      this.parseState_.resetParseFunction();
+      parseState.resetParseFunction();
 
     } else {
-      if (!this.args_.length) {
+      if (!args.length) {
         // They omitted the first param, we need to supply it.
-        this.args_.push('');
+        args.push('');
       }
 
-      this.args_.push('');
+      args.push('');
     }
 
   } else if (ch >= '0' && ch <= '9') {
@@ -371,18 +394,18 @@ hterm.VT.prototype.parseCSI_ = function() {
 
     if (this.trailingModifier_) {
       // Numeric parameter after the trailing modifier.  That's a paddlin'.
-      this.parseState_.resetParseFunction();
+      parseState.resetParseFunction();
     } else {
-      if (!this.args_.length) {
-        this.args_[0] = ch;
+      if (!args.length) {
+        args[0] = ch;
       } else {
-        this.args_[this.args_.length - 1] += ch;
+        args[args.length - 1] += ch;
       }
     }
 
   } else if (ch >= ' ' && ch <= '?' && ch != ':') {
     // Modifier character.
-    if (!this.args_.length) {
+    if (!args.length) {
       this.leadingModifier_ += ch;
     } else {
       this.trailingModifier_ += ch;
@@ -390,22 +413,22 @@ hterm.VT.prototype.parseCSI_ = function() {
 
   } else if (this.cc1Pattern_.test(ch)) {
     // Control character.
-    this.dispatch('CC1', ch);
+    this.dispatch('CC1', ch, parseState);
 
   } else {
     // Unexpected character in sequence, bail out.
-    this.parseState_.resetParseFunction();
+    parseState.resetParseFunction();
   }
 
-  this.parseState_.advance(1);
+  parseState.advance(1);
 };
 
 /**
  * Skip over the string until the next String Terminator (ST, 'ESC \') or
  * Bell (BEL, '\x07').
  *
- * The string is accumulated in this.args_[0].  Make sure to reset the
- * args_ array and set args_[0] to '' before starting the parse.
+ * The string is accumulated in parseState.args[0].  Make sure to reset the
+ * arguments (with parseState.resetArguments) before starting the parse.
  *
  * You can detect that parsing in complete by checking that the parse
  * function has changed back to the default parse function.
@@ -416,37 +439,42 @@ hterm.VT.prototype.parseCSI_ = function() {
  * @return {boolean} If true, parsing is ongoing or complete.  If false, we've
  *     exceeded the max string sequence.
  */
-hterm.VT.prototype.parseUntilStringTerminator_ = function() {
-  var buf = this.parseState_.peekRemainingBuf();
+hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
+  var buf = parseState.peekRemainingBuf();
   var nextTerminator = buf.search(/(\x1b\\|\x07)/);
+  var args = parseState.args;
+
+  if (!args.length)
+    args[0] = '';
+
   if (nextTerminator == -1) {
     // No terminator here, have to wait for the next string.
 
-    this.args_[0] += buf;
+    args[0] += buf;
 
-    if (this.args_[0].length <= this.maxStringSequence) {
+    if (args[0].length <= this.maxStringSequence) {
       // If we're at or under the limit for a runaway sequence, consume
       // what we've seen and wait for more.
-      this.parseState_.advance(buf.length);
+      parseState.advance(buf.length);
       return true;
     }
 
     // Otherwise, re-parse using the default parser.
-    this.parseState_.reset(this.args_[0]);
+    parseState.reset(args[0]);
     return false;
   }
 
-  if (this.args_[0].length + nextTerminator > this.maxStringSequence) {
+  if (args[0].length + nextTerminator > this.maxStringSequence) {
     // We found the end of the sequence, but we still think it's too long.
-    this.parseState_.reset(this.args_[0] + buf);
+    parseState.reset(args[0] + buf);
     return false;
   }
 
-  this.args_[0] += buf.substr(0, nextTerminator);
+  args[0] += buf.substr(0, nextTerminator);
 
-  this.parseState_.resetParseFunction();
-  this.parseState_.advance(nextTerminator +
-                           (buf.substr(nextTerminator, 1) == '\x1b' ? 2 : 1));
+  parseState.resetParseFunction();
+  parseState.advance(nextTerminator +
+                     (buf.substr(nextTerminator, 1) == '\x1b' ? 2 : 1));
 
   return true;
 };
@@ -454,7 +482,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function() {
 /**
  * Dispatch to the function that handles a given CC1, ESC, or CSI or VT52 code.
  */
-hterm.VT.prototype.dispatch = function(type, code, args) {
+hterm.VT.prototype.dispatch = function(type, code, parseState) {
   var handler = hterm.VT[type][code];
   if (!handler) {
     if (this.warnUnimplemented)
@@ -482,7 +510,7 @@ hterm.VT.prototype.dispatch = function(type, code, args) {
     return;
   }
 
-  handler.apply(this, [args, code]);
+  handler.apply(this, [parseState, code]);
 };
 
 /**
@@ -828,8 +856,8 @@ hterm.VT.CC1['\x13'] = hterm.VT.ignore;
  *
  * It also causes the error character to be displayed.
  */
-hterm.VT.CC1['\x18'] = function() {
-  this.parseState_.resetParseFunction();
+hterm.VT.CC1['\x18'] = function(parseState) {
+  parseState.resetParseFunction();
   this.terminal.print('?');
 };
 
@@ -843,20 +871,20 @@ hterm.VT.CC1['\x1A'] = hterm.VT.CC1['\x18'];
 /**
  * Escape (ESC).
  */
-hterm.VT.CC1['\x1B'] = function() {
-  function parseESC() {
-    var ch = this.parseState_.consumeChar();
+hterm.VT.CC1['\x1B'] = function(parseState) {
+  function parseESC(parseState) {
+    var ch = parseState.consumeChar();
 
     if (ch == '\x1b')
       return;
 
-    this.dispatch('ESC', ch);
+    this.dispatch('ESC', ch, parseState);
 
-    if (this.parseState_.func == parseESC)
-      this.parseState_.resetParseFunction();
+    if (parseState.func == parseESC)
+      parseState.resetParseFunction();
   };
 
-  this.parseState_.func = parseESC;
+  parseState.func = parseESC;
 };
 
 /**
@@ -934,10 +962,9 @@ hterm.VT.ESC['O'] = hterm.VT.ignore;
  * TODO(rginda): Consider implementing DECRQSS, the rest don't seem applicable.
  */
 hterm.VT.CC1['\x90'] =
-hterm.VT.ESC['P'] = function() {
-  this.args_.length = 0;
-  this.args_[0] = '';
-  this.parseState_.func = this.parseUntilStringTerminator_;
+hterm.VT.ESC['P'] = function(parseState) {
+  parseState.resetArguments();
+  parseState.func = this.parseUntilStringTerminator_;
 };
 
 /**
@@ -980,11 +1007,11 @@ hterm.VT.ESC['Z'] = function() {
  * The lead into most escape sequences.  See [CSI].
  */
 hterm.VT.CC1['\x9b'] =
-hterm.VT.ESC['['] = function() {
-  this.args_.length = 0;
+hterm.VT.ESC['['] = function(parseState) {
+  parseState.resetArguments();
   this.leadingModifier_ = '';
   this.trailingModifier_ = '';
-  this.parseState_.func = this.parseCSI_;
+  parseState.func = this.parseCSI_;
 };
 
 /**
@@ -1004,32 +1031,31 @@ hterm.VT.ESC['\\'] = hterm.VT.ignore;
  * Commands relating to the operating system.
  */
 hterm.VT.CC1['\x9d'] =
-hterm.VT.ESC[']'] = function() {
-  this.args_.length = 0;
-  this.args_[0] = '';
+hterm.VT.ESC[']'] = function(parseState) {
+  parseState.resetArguments();
 
-  function parseOSC() {
-    if (!this.parseUntilStringTerminator_()) {
+  function parseOSC(parseState) {
+    if (!this.parseUntilStringTerminator_(parseState)) {
       // The string sequence was too long.
       return;
     }
 
-    if (this.parseState_.func == parseOSC) {
+    if (parseState.func == parseOSC) {
       // We're not done parsing the string yet.
       return;
     }
 
     // We're done.
-    var ary = this.args_[0].match(/^(\d+);(.*)$/);
+    var ary = parseState.args[0].match(/^(\d+);(.*)$/);
     if (ary) {
-      this.args_[0] = ary[2];
-      this.dispatch('OSC', ary[1], this.args_);
+      parseState.args[0] = ary[2];
+      this.dispatch('OSC', ary[1], parseState);
     } else {
-      console.warn('Invalid OSC: ' + JSON.stringify(this.args_[0]));
+      console.warn('Invalid OSC: ' + JSON.stringify(parseState.args[0]));
     }
   };
 
-  this.parseState_.func = parseOSC;
+  parseState.func = parseOSC;
 };
 
 /**
@@ -1038,10 +1064,9 @@ hterm.VT.ESC[']'] = function() {
  * Will not implement.
  */
 hterm.VT.CC1['\x9e'] =
-hterm.VT.ESC['^'] = function() {
-  this.args_.length = 0;
-  this.args_[0] = '';
-  this.parseState_.func = this.parseUntilStringTerminator_;
+hterm.VT.ESC['^'] = function(parseState) {
+  parseState.resetArguments();
+  parseState.func = this.parseUntilStringTerminator_;
 };
 
 /**
@@ -1050,10 +1075,9 @@ hterm.VT.ESC['^'] = function() {
  * Will not implement.
  */
 hterm.VT.CC1['\x9f'] =
-hterm.VT.ESC['_'] = function() {
-  this.args_.length = 0;
-  this.args_[0] = '';
-  this.parseState_.func = this.parseUntilStringTerminator_;
+hterm.VT.ESC['_'] = function(parseState) {
+  parseState.resetArguments();
+  parseState.func = this.parseUntilStringTerminator_;
 };
 
 /**
@@ -1069,12 +1093,12 @@ hterm.VT.ESC['_'] = function() {
  *   ESC \x20 M - Set ANSI conformance level 2.
  *   ESC \x20 N - Set ANSI conformance level 3.
  */
-hterm.VT.ESC['\x20'] = function(args) {
-  this.parseState_.func = function() {
-    var ch = this.parseState_.consumeChar();
+hterm.VT.ESC['\x20'] = function(parseState) {
+  parseState.func = function(parseState) {
+    var ch = parseState.consumeChar();
     if (this.warnUnimplemented)
       console.warn('Unimplemented sequence: ESC 0x20 ' + ch);
-    this.parseState_.resetParseFunction();
+    parseState.resetParseFunction();
   };
 };
 
@@ -1093,16 +1117,16 @@ hterm.VT.ESC['\x20'] = function(args) {
  *
  * All other ESC # sequences are echoed to the terminal.
  */
-hterm.VT.ESC['#'] = function() {
-  this.parseState_.func = function() {
-    var ch = this.parseState_.consumeChar();
+hterm.VT.ESC['#'] = function(parseState) {
+  parseState.func = function(parseState) {
+    var ch = parseState.consumeChar();
     if (ch == '8') {
       this.terminal.fill('E');
     } else if ("3456".indexOf(ch) == -1) {
       this.terminal.print('\x1b#' + ch);
     }
 
-    this.parseState_.resetParseFunction();
+    parseState.resetParseFunction();
   };
 };
 
@@ -1117,12 +1141,12 @@ hterm.VT.ESC['#'] = function() {
  *
  * TODO(rginda): Implement.
  */
-hterm.VT.ESC['%'] = function() {
-  this.parseState_.func = function() {
-    var ch = this.parseState_.consumeChar();
+hterm.VT.ESC['%'] = function(parseState) {
+  parseState_.func = function(parseState) {
+    var ch = parseState.consumeChar();
     if (ch != '@' && ch != 'G' && this.warnUnimplemented)
       console.warn('Unknown ESC % argument: ' + JSON.stringify(ch));
-    this.parseState_.resetParseFunction();
+    parseState.resetParseFunction();
   };
 };
 
@@ -1163,12 +1187,12 @@ hterm.VT.ESC['*'] =
 hterm.VT.ESC['+'] =
 hterm.VT.ESC['-'] =
 hterm.VT.ESC['.'] =
-hterm.VT.ESC['/'] = function(args, code) {
-  this.parseState_.func = function() {
-    var ch = this.parseState_.consumeChar();
+hterm.VT.ESC['/'] = function(parseState, code) {
+  parseState.func = function(parseState) {
+    var ch = parseState.consumeChar();
     if (ch == '\x1b') {
-      this.parseState_.resetParseFunction();
-      this.parseState_.func();
+      parseState.resetParseFunction();
+      parseState.func();
       return;
     }
 
@@ -1179,7 +1203,7 @@ hterm.VT.ESC['/'] = function(args, code) {
       console.log('Invalid character set for "' + code + '": ' + ch);
     }
 
-    this.parseState_.resetParseFunction();
+    parseState.resetParseFunction();
   };
 };
 
@@ -1273,8 +1297,8 @@ hterm.VT.ESC['~'] = hterm.VT.ignore;
  *
  * We only change the window title.
  */
-hterm.VT.OSC['0'] = function(args) {
-  this.terminal.setWindowTitle(args[0]);
+hterm.VT.OSC['0'] = function(parseState) {
+  this.terminal.setWindowTitle(parseState.args[0]);
 };
 
 /**
@@ -1285,12 +1309,12 @@ hterm.VT.OSC['2'] = hterm.VT.OSC['0'];
 /**
  * Set/read color palette.
  */
-hterm.VT.OSC['4'] = function(args) {
+hterm.VT.OSC['4'] = function(parseState) {
   // Args come in as a single 'index1;rgb1 ... ;indexN;rgbN' string.
   // We split on the semicolon and iterate through the pairs.
-  args = args[0].split(';');
+  var args = parseState.args[0].split(';');
 
-  var pairCount = parseInt(args.length / 2);
+  var pairCount = parseInt(parseState.args.length / 2);
   var colorPalette = this.terminal.getTextAttributes().colorPalette;
   var responseArray = [];
 
@@ -1322,36 +1346,36 @@ hterm.VT.OSC['4'] = function(args) {
 /**
  * Insert (blank) characters (ICH).
  */
-hterm.VT.CSI['@'] = function(args) {
-  this.terminal.insertSpace(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['@'] = function(parseState) {
+  this.terminal.insertSpace(parseState.iarg(0, 1));
 };
 
 /**
  * Cursor Up (CUU).
  */
-hterm.VT.CSI['A'] = function(args) {
-  this.terminal.cursorUp(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['A'] = function(parseState) {
+  this.terminal.cursorUp(parseState.iarg(0, 1));
 };
 
 /**
  * Cursor Down (CUD).
  */
-hterm.VT.CSI['B'] = function(args) {
-  this.terminal.cursorDown(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['B'] = function(parseState) {
+  this.terminal.cursorDown(parseState.iarg(0, 1));
 };
 
 /**
  * Cursor Forward (CUF).
  */
-hterm.VT.CSI['C'] = function(args) {
-  this.terminal.cursorRight(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['C'] = function(parseState) {
+  this.terminal.cursorRight(parseState.iarg(0, 1));
 };
 
 /**
  * Cursor Backward (CUB).
  */
-hterm.VT.CSI['D'] = function(args) {
-  this.terminal.cursorLeft(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['D'] = function(parseState) {
+  this.terminal.cursorLeft(parseState.iarg(0, 1));
 };
 
 /**
@@ -1360,8 +1384,8 @@ hterm.VT.CSI['D'] = function(args) {
  * This is like Cursor Down, except the cursor moves to the beginning of the
  * line as well.
  */
-hterm.VT.CSI['E'] = function(args) {
-  this.terminal.cursorDown(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['E'] = function(parseState) {
+  this.terminal.cursorDown(parseState.iarg(0, 1));
   this.terminal.setCursorColumn(0);
 };
 
@@ -1371,31 +1395,31 @@ hterm.VT.CSI['E'] = function(args) {
  * This is like Cursor Up, except the cursor moves to the beginning of the
  * line as well.
  */
-hterm.VT.CSI['F'] = function(args) {
-  this.terminal.cursorUp(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['F'] = function(parseState) {
+  this.terminal.cursorUp(parseState.iarg(0, 1));
   this.terminal.setCursorColumn(0);
 };
 
 /**
  * Cursor Character Absolute (CHA).
  */
-hterm.VT.CSI['G'] = function(args) {
-  this.terminal.setCursorColumn(args[0] ? parseInt(args[0], 10) - 1 : 0);
+hterm.VT.CSI['G'] = function(parseState) {
+  this.terminal.setCursorColumn(parseState.iarg(0, 1) - 1);
 };
 
 /**
  * Cursor Position (CUP).
  */
-hterm.VT.CSI['H'] = function(args) {
-  this.terminal.setCursorPosition(args[0] ? parseInt(args[0], 10) - 1 : 0,
-                                  args[1] ? parseInt(args[1], 10) - 1 : 0);
+hterm.VT.CSI['H'] = function(parseState) {
+  this.terminal.setCursorPosition(parseState.iarg(0, 1) - 1,
+                                  parseState.iarg(1, 1) - 1);
 };
 
 /**
  * Cursor Forward Tabulation (CHT).
  */
-hterm.VT.CSI['I'] = function(args) {
-  var count = args[0] ? parseInt(args[0], 10) : 1;
+hterm.VT.CSI['I'] = function(parseState) {
+  var count = parseState.iarg(0, 1);
   count = hterm.clamp(count, 1, this.terminal.screenSize.width);
   for (var i = 0; i < count; i++) {
     this.terminal.forwardTabStop();
@@ -1406,8 +1430,8 @@ hterm.VT.CSI['I'] = function(args) {
  * Erase in Display (ED, DECSED).
  */
 hterm.VT.CSI['J'] =
-hterm.VT.CSI['?J'] = function(args, code) {
-  var arg = args[0];
+hterm.VT.CSI['?J'] = function(parseState, code) {
+  var arg = parseState.args[0];
 
   if (!arg || arg == '0') {
       this.terminal.eraseBelow();
@@ -1428,8 +1452,8 @@ hterm.VT.CSI['?J'] = function(args, code) {
  * Erase in line (EL, DECSEL).
  */
 hterm.VT.CSI['K'] =
-hterm.VT.CSI['?K'] = function(args, code) {
-  var arg = args[0];
+hterm.VT.CSI['?K'] = function(parseState, code) {
+  var arg = parseState.args[0];
 
   if (!arg || arg == '0') {
     this.terminal.eraseToRight();
@@ -1445,15 +1469,15 @@ hterm.VT.CSI['?K'] = function(args, code) {
 /**
  * Insert Lines (IL).
  */
-hterm.VT.CSI['L'] = function(args) {
-  this.terminal.insertLines(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['L'] = function(parseState) {
+  this.terminal.insertLines(parseState.iarg(0, 1));
 };
 
 /**
  * Delete Lines (DL).
  */
-hterm.VT.CSI['M'] = function(args) {
-  this.terminal.deleteLines(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['M'] = function(parseState) {
+  this.terminal.deleteLines(parseState.iarg(0, 1));
 };
 
 /**
@@ -1461,24 +1485,24 @@ hterm.VT.CSI['M'] = function(args) {
  *
  * This command shifts the line contents left, starting at the cursor position.
  */
-hterm.VT.CSI['P'] = function(args) {
-  this.terminal.deleteChars(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['P'] = function(parseState) {
+  this.terminal.deleteChars(parseState.iarg(0, 1));
 };
 
 /**
  * Scroll Up (SU).
  */
-hterm.VT.CSI['S'] = function(args) {
-  this.terminal.vtScrollUp(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['S'] = function(parseState) {
+  this.terminal.vtScrollUp(parseState.iarg(0, 1));
 };
 
 /**
  * Scroll Down (SD).
  * Also 'Initiate highlight mouse tracking'.  Will not implement this part.
  */
-hterm.VT.CSI['T'] = function(args) {
-  if (args.length <= 1)
-    this.terminal.vtScrollDown(args[0] ? parseInt(args[0], 10) : 1);
+hterm.VT.CSI['T'] = function(parseState) {
+  if (parseState.args.length <= 1)
+    this.terminal.vtScrollDown(parseState.iarg(0, 1));
 };
 
 /**
@@ -1503,15 +1527,15 @@ hterm.VT.CSI['>T'] = hterm.VT.ignore;
 /**
  * Erase Characters (ECH).
  */
-hterm.VT.CSI['X'] = function(args) {
-  this.terminal.eraseToRight(args[0] || 1);
+hterm.VT.CSI['X'] = function(parseState) {
+  this.terminal.eraseToRight(parseState.iarg(0, 1));
 };
 
 /**
  * Cursor Backward Tabulation (CBT).
  */
-hterm.VT.CSI['Z'] = function(args) {
-  var count = args[0] ? parseInt(args[0], 10) : 1;
+hterm.VT.CSI['Z'] = function(parseState) {
+  var count = parseState.iarg(0, 1);
   count = hterm.clamp(count, 1, this.terminal.screenSize.width);
   for (var i = 0; i < count; i++) {
     this.terminal.backwardTabStop();
@@ -1521,8 +1545,8 @@ hterm.VT.CSI['Z'] = function(args) {
 /**
  * Character Position Absolute (HPA).
  */
-hterm.VT.CSI['`'] = function(args) {
-  this.terminal.setCursorColumn(args[0] ? args[0] - 1 : 0);
+hterm.VT.CSI['`'] = function(parseState) {
+  this.terminal.setCursorColumn(parseState.iarg(0, 1) - 1);
 };
 
 /**
@@ -1539,8 +1563,8 @@ hterm.VT.CSI['b'] = hterm.VT.ignore;
  * Option', but it may be more correct to send a VT220 response once
  * we fill out the 'Not currently implemented' parts.
  */
-hterm.VT.CSI['c'] = function(args) {
-  if (!args[0] || args[0] == '0') {
+hterm.VT.CSI['c'] = function(parseState) {
+  if (!parseState.args[0] || parseState.args[0] == '0') {
     this.terminal.io.sendString('\x1b[?1;2c');
   }
 };
@@ -1552,15 +1576,15 @@ hterm.VT.CSI['c'] = function(args) {
  * correct to send a VT220 response once we fill out more 'Not currently
  * implemented' parts.
  */
-hterm.VT.CSI['>c'] = function(args) {
+hterm.VT.CSI['>c'] = function(parseState) {
   this.terminal.io.sendString('\x1b[>0;256;0c');
 };
 
 /**
  * Line Position Absolute (VPA).
  */
-hterm.VT.CSI['d'] = function(args) {
-  this.terminal.setAbsoluteCursorRow(args[0] ? parseInt(args[0], 10) - 1 : 0);
+hterm.VT.CSI['d'] = function(parseState) {
+  this.terminal.setAbsoluteCursorRow(parseState.iarg(0, 1) - 1);
 };
 
 /**
@@ -1573,11 +1597,11 @@ hterm.VT.CSI['f'] = hterm.VT.CSI['H'];
 /**
  * Tab Clear (TBC).
  */
-hterm.VT.CSI['g'] = function(args) {
-  if (!args[0] || args[0] == '0') {
+hterm.VT.CSI['g'] = function(parseState) {
+  if (!parseState.args[0] || parseState.args[0] == '0') {
     // Clear tab stop at cursor.
     this.terminal.clearTabStopAtCursor(false);
-  } else if (args[0] == '3') {
+  } else if (parseState.args[0] == '3') {
     // Clear all tab stops.
     this.terminal.clearAllTabStops();
   }
@@ -1586,18 +1610,18 @@ hterm.VT.CSI['g'] = function(args) {
 /**
  * Set Mode (SM).
  */
-hterm.VT.CSI['h'] = function(args) {
-  for (var i = 0; i < args.length; i++) {
-    this.setANSIMode(args[i], true);
+hterm.VT.CSI['h'] = function(parseState) {
+  for (var i = 0; i < parseState.args.length; i++) {
+    this.setANSIMode(parseState.args[i], true);
   }
 };
 
 /**
  * DEC Private Mode Set (DECSET).
  */
-hterm.VT.CSI['?h'] = function(args) {
-  for (var i = 0; i < args.length; i++) {
-    this.setDECMode(args[i], true);
+hterm.VT.CSI['?h'] = function(parseState) {
+  for (var i = 0; i < parseState.args.length; i++) {
+    this.setDECMode(parseState.args[i], true);
   }
 };
 
@@ -1613,18 +1637,18 @@ hterm.VT.CSI['?i'] = hterm.VT.ignore;
 /**
  * Reset Mode (RM).
  */
-hterm.VT.CSI['l'] = function(args) {
-  for (var i = 0; i < args.length; i++) {
-    this.setANSIMode(args[i], false);
+hterm.VT.CSI['l'] = function(parseState) {
+  for (var i = 0; i < parseState.args.length; i++) {
+    this.setANSIMode(parseState.args[i], false);
   }
 };
 
 /**
  * DEC Private Mode Reset (DECRST).
  */
-hterm.VT.CSI['?l'] = function(args) {
-  for (var i = 0; i < args.length; i++) {
-    this.setDECMode(args[i], false);
+hterm.VT.CSI['?l'] = function(parseState) {
+  for (var i = 0; i < parseState.args.length; i++) {
+    this.setDECMode(parseState.args[i], false);
   }
 };
 
@@ -1692,7 +1716,7 @@ hterm.VT.CSI['?l'] = function(args) {
  * bold as bold-bright here too, but only when the "bold" setting comes before
  * the color selection.
  */
-hterm.VT.CSI['m'] = function (args) {
+hterm.VT.CSI['m'] = function(parseState) {
   function getBrightIndex(i) {
     if (i < 8) {
       // If the color is from the lower half of the ANSI 16, add 8.
@@ -1708,21 +1732,21 @@ hterm.VT.CSI['m'] = function (args) {
   }
 
   function get256(i) {
-    if (args.length < i + 2 || args[i + 1] != '5')
+    if (parseState.args.length < i + 2 || parseState.args[i + 1] != '5')
       return null;
 
-    return parseInt(args[i + 2], 10);
+    return parseState.iarg(i + 2, 0);
   }
 
   var attrs = this.terminal.getTextAttributes();
 
-  if (!args.length) {
+  if (!parseState.args.length) {
     attrs.reset();
     return;
   }
 
-  for (var i = 0; i < args.length; i++) {
-    var arg = parseInt(args[i] || 0, 10);
+  for (var i = 0; i < parseState.args.length; i++) {
+    var arg = parseState.iarg(i, 0);
 
     if (arg < 30) {
       if (arg == 0) {
@@ -1831,10 +1855,10 @@ hterm.VT.CSI['>m'] = hterm.VT.ignore;
  * 5 - Status Report. Result (OK) is CSI 0 n
  * 6 - Report Cursor Position (CPR) [row;column]. Result is CSI r ; c R
  */
-hterm.VT.CSI['n'] = function(args) {
-  if (args[0] == '5') {
+hterm.VT.CSI['n'] = function(parseState) {
+  if (parseState.args[0] == '5') {
     this.terminal.io.sendString('\x1b0n');
-  } else if (args[0] == '6') {
+  } else if (parseState.args[0] == '6') {
     var row = this.terminal.getCursorRow() + 1;
     var col = this.terminal.getCursorColumn() + 1;
     this.terminal.io.sendString('\x1b[' + row + ';' + col + 'R');
@@ -1861,18 +1885,18 @@ hterm.VT.CSI['>n'] = hterm.VT.ignore;
  * 53 - Report Locator status as CSI ? 5 3 n Locator available, if compiled-in,
  *      or CSI ? 5 0 n No Locator, if not.
  */
-hterm.VT.CSI['?n'] = function(args) {
-  if (args[0] == '6') {
+hterm.VT.CSI['?n'] = function(parseState) {
+  if (parseState.args[0] == '6') {
     var row = this.terminal.getCursorRow() + 1;
     var col = this.terminal.getCursorColumn() + 1;
     this.terminal.io.sendString('\x1b[' + row + ';' + col + 'R');
-  } else if (args[0] == '15') {
+  } else if (parseState.args[0] == '15') {
     this.terminal.io.sendString('\x1b[?11n');
-  } else if (args[0] == '25') {
+  } else if (parseState.args[0] == '25') {
     this.terminal.io.sendString('\x1b[?21n');
-  } else if (args[0] == '26') {
+  } else if (parseState.args[0] == '26') {
     this.terminal.io.sendString('\x1b[?12;1;0;0n');
-  } else if (args[0] == '53') {
+  } else if (parseState.args[0] == '53') {
     this.terminal.io.sendString('\x1b[?50n');
   }
 };
@@ -1944,11 +1968,12 @@ hterm.VT.CSI['"q'] = hterm.VT.ignore;
 /**
  * Set Scrolling Region (DECSTBM).
  */
-hterm.VT.CSI['r'] = function(args) {
+hterm.VT.CSI['r'] = function(parseState) {
+  var args = parseState.args;
   var scrollTop = args[0] ? parseInt(args[0], 10) -1 : null;
   var scrollBottom = args[1] ? parseInt(args[1], 10) - 1 : null;
   this.terminal.setVTScrollRegion(scrollTop, scrollBottom);
-  this.terminal.setRelativeCursorPosition(0, 0);
+  this.terminal.setCursorPosition(0, 0);
 };
 
 /**

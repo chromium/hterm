@@ -10,6 +10,8 @@ Unreleased tip-of-trunk changes:
 * Squelch warning that used to appear when clearing an empty screen.
 * Refactor the parser logic a bit to make it easier to back up when
   we fail to find the end of a string sequence.
+* Fix to DECSTBM to resepect origin mode when resetting the cursor position
+  after setting the VT scroll region.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
