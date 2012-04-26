@@ -54,10 +54,6 @@ hterm.VT = function(terminal) {
   // Whether or not to respect the escape codes for setting terminal width.
   this.allowColumnWidthChanges_ = false;
 
-  // Temporary storage for DCS, OSC, PM, and APC sequences while we wait for the
-  // terminator.
-  this.unterminatedSequence_ = '';
-
   // Construct a regular expression to match the known one-byte control chars.
   // This is used in parseUnknown_ to quickly scan a string for the next
   // control character.
@@ -428,7 +424,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function() {
 
     this.args_[0] += buf;
 
-    if (this.unterminatedSequence_.length <= this.maxStringSequence) {
+    if (this.args_[0].length <= this.maxStringSequence) {
       // If we're at or under the limit for a runaway sequence, consume
       // what we've seen and wait for more.
       this.parseState_.advance(buf.length);
@@ -436,8 +432,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function() {
     }
 
     // Otherwise, re-parse using the default parser.
-    this.unterminatedSequence_ = '';
-    this.parseState_.reset(this.unterminatedSequence_);
+    this.parseState_.reset(this.args_[0]);
     return false;
   }
 
@@ -1127,7 +1122,7 @@ hterm.VT.ESC['%'] = function() {
     var ch = this.parseState_.consumeChar();
     if (ch != '@' && ch != 'G' && this.warnUnimplemented)
       console.warn('Unknown ESC % argument: ' + JSON.stringify(ch));
-    this.parserState.resetParseFunction();
+    this.parseState_.resetParseFunction();
   };
 };
 
@@ -1173,7 +1168,7 @@ hterm.VT.ESC['/'] = function(args, code) {
     var ch = this.parseState_.consumeChar();
     if (ch == '\x1b') {
       this.parseState_.resetParseFunction();
-      this.parseState_.defaultParser();
+      this.parseState_.func();
       return;
     }
 

@@ -121,7 +121,7 @@ hterm.VT.CannedTests.addTest = function(fileName) {
         self.loadCannedData(result, fileName, self.testCannedData.bind(self));
       }, 0);
 
-    result.requestTime(1000);
+    result.requestTime(5000);
   }
 
   var ary = fileName.match(/([^\/.]+)(\.[^.]+)?$/);
