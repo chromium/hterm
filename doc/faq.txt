@@ -113,8 +113,8 @@ at <http://goo.gl/RYHiK>.
   Native Client plugin, which in theory makes it more secure than an
   unsandboxed ssh connection.
 
-  Additionally, the Secure Shell application follows a string Content Security
-  Policy that does not allow access to the JavaScript 'eval' command.  This
+  Additionally, the Secure Shell application follows a strict Content Security
+  Policy that does not allow access to the JavaScript 'eval' function.  This
   helps lower the risk that a terminal exploit could run arbitrary JavaScript.
 
 
