@@ -132,7 +132,7 @@ at <http://goo.gl/RYHiK>.
   If your bug involves some mis-interpreted escape sequence and you want
   to file a really useful bug report, then add in a recording of the
   session.  For bonus points, track down the troublesome sequence and
-  incude the offset into the log file.  For more information about how to
+  include the offset into the log file.  For more information about how to
   do this, see the "Debugging escape sequences" section in the hack.txt file
   in this directory.
 
@@ -142,10 +142,22 @@ at <http://goo.gl/RYHiK>.
   Yes, the public chromium-hterm mailing list is here: <http://goo.gl/RYHiK>.
 
 
-> Can I connect using a keypair or certificate?
+> Can I connect using a public key pair or certificate?
 
   Sorry, not yet.  We're working on it though.  Join the chromium-hterm
   mailing list if you want to be notified when it's ready.
+
+
+> Why does the destination IP address always show 0.0.0.0?
+
+  This is a limitation in Native Client, you can follow the bug for more
+  details as they're available: <http://crosbug.com/25788>.
+
+
+> Can I use Secure Shell for port forwarding?
+
+  Not yet.  We have support in the Native Client side, but haven't built the
+  User Interface for it.  See <http://crosbug.cm/30103>.
 
 
 > How do I set terminal preferences?
@@ -274,7 +286,7 @@ at <http://goo.gl/RYHiK>.
   See the previous question for more information.
 
 
-> How do I disable anti-alaising?
+> How do I disable anti-aliasing?
 
   Open the JavaScript console and type...
 
@@ -330,6 +342,12 @@ at <http://goo.gl/RYHiK>.
 
      term_.prefs_.set('alt-sends-what', '8-bit')
 
+  +-------------------------------------------------------------------------+
+  |  Note that due to <http://crosbug.com/30105>, you'll see an error in    |
+  |  the JavaScript console and your setting won't take effect until the    |
+  |  next restart.  Check the bug for more details.                         |
+  +-------------------------------------------------------------------------+
+
   However, if you are on Mac OS X and you prefer that Alt sends a character
   based on your keyboard locale, try this instead...
 
@@ -362,7 +380,7 @@ at <http://goo.gl/RYHiK>.
      term_.prefs_.set('backspace-sends-backspace', true)
 
 
-> How do I remove a known hosts entry?
+> How do I remove a known host key (aka known_hosts) entry?
 
   If you know the index of the offending host entry (it's usually reported
   by ssh if the connection fails) you can open the JavaScript console and
@@ -384,6 +402,8 @@ at <http://goo.gl/RYHiK>.
   keys.  You can open Secure Shell in a dedicated window to get around
   this limitation.  Just right-click on the Secure Shell icon and enable
   "Open as Window".
+
+  Note that this workaround requires Chrome 19 or higher.
 
   After that, any time you launch Secure Shell it will open in a new window
   and respond properly to these accelerator keys.
