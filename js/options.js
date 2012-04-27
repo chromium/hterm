@@ -16,6 +16,10 @@
  * Constructor for the hterm.Options class, optionally acting as a copy
  * constructor.
  *
+ * The defaults are as defined in http://www.vt100.net/docs/vt510-rm/DECSTR
+ * except that we enable autowrap (wraparound) by defaut since that seems to
+ * be what xterm does.
+ *
  * @param {hterm.Options=} opt_copy Optional instance to copy.
  * @constructor
  */

@@ -683,7 +683,6 @@ hterm.Terminal.prototype.scrollPageDown = function() {
 hterm.Terminal.prototype.reset = function() {
   this.clearAllTabStops();
   this.setDefaultTabStops();
-  this.setVTScrollRegion(null, null);
 
   this.clearHome(this.primaryScreen_);
   this.primaryScreen_.textAttributes.reset();
@@ -691,20 +690,32 @@ hterm.Terminal.prototype.reset = function() {
   this.clearHome(this.alternateScreen_);
   this.alternateScreen_.textAttributes.reset();
 
+  this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
+
   this.softReset();
 };
 
 /**
  * Soft terminal reset.
+ *
+ * Perform a soft reset to the default values listed in
+ * http://www.vt100.net/docs/vt510-rm/DECSTR#T5-9
  */
 hterm.Terminal.prototype.softReset = function() {
+  // Reset terminal options to their default values.
   this.options_ = new hterm.Options();
 
+  // Xterm also resets the color palette on soft reset, even though it doesn't
+  // seem to be documented anywhere.
   this.primaryScreen_.textAttributes.resetColorPalette();
   this.alternateScreen_.textAttributes.resetColorPalette();
 
+  // The xterm man page explicitly says this will happen on soft reset.
+  this.setVTScrollRegion(null, null);
+
+  // Xterm also shows the cursor on soft reset, but does not alter the blink
+  // state.
   this.setCursorVisible(true);
-  this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
 };
 
 /**

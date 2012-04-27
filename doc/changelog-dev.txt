@@ -12,9 +12,15 @@ Unreleased tip-of-trunk changes:
   we fail to find the end of a string sequence.
 * Fix to DECSTBM to resepect origin mode when resetting the cursor position
   after setting the VT scroll region.
+* Make soft-reset more like xterm.
+* Resize the terminal after the character measurements change rather than
+  re-measure the character during a resize.  The latter causes the terminal
+  to get the row, column count wrong based on event ordering.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
+
+BUG=chromium-os:30142
 
 0.7.9.3, 2012-04-20, rginda@chromium.org
 

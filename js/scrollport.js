@@ -399,8 +399,7 @@ hterm.ScrollPort.prototype.scheduleInvalidate = function() {
  */
 hterm.ScrollPort.prototype.setFontSize = function(px) {
   this.screen_.style.fontSize = px + 'px';
-  this.resize();
-  this.invalidate();
+  this.syncCharacterSize();
 };
 
 /**
@@ -463,6 +462,8 @@ hterm.ScrollPort.prototype.syncCharacterSize = function() {
   this.topSelectBag_.style.height = lineHeight;
   this.bottomSelectBag_.style.height = lineHeight;
 
+  this.resize();
+
   if (this.DEBUG_) {
     // When we're debugging we add padding to the body so that the offscreen
     // elements are visible.
@@ -484,7 +485,6 @@ hterm.ScrollPort.prototype.resize = function() {
   this.lastScreenHeight_ = screenHeight;
 
   this.syncScrollHeight();
-  this.syncCharacterSize();
 
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
