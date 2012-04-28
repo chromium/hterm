@@ -63,11 +63,11 @@ at <http://goo.gl/RYHiK>.
 
   hterm stands out from many existing web terminals in that it was built from
   the start to match the performance and correctness of "native" terminals such
-  as xterm and Terminal.app.  It expects to be your main terminal.
+  as xterm and Terminal.app.
 
-  This means it can handle large bursts of text quickly, support very large
-  scrollback buffers, and it closely matches xterm's behavior (but there's
-  a few fixes left here).
+  It can handle large bursts of text quickly, support very large scrollback
+  buffers, and it closely matches xterm's behavior.  The keyboard even mostly
+  works.  (ha!  See the note about how to get Ctrl-W below.)
 
   The Secure Shell app is different because it does not require a proxy or
   relay server to function.  Secure Shell can make a direct connection to
@@ -76,31 +76,24 @@ at <http://goo.gl/RYHiK>.
   are even required to hand the proxy your credentials in plain text.
 
 
-> Is my data sent through Google's (or anyone else's) servers?
+> Is my connection proxied in any way?
 
   No.  By default all connections are made directly to the sshd server on the
   destination machine.
 
 
-> Can I make SSH connections over HTTP?
+> But, what if I *want* to ssh over HTTP?
 
-  Sort of.  Secure Shell comes with the ability to use an HTTP based relay
-  server.  The connection setup and read/write protocol was built inside
-  Google to facilitate secure access by Google employees.  You can read the
-  source and documentation in the google_relay.js file for the details.
+  Secure Shell also knows how to connect to an HTTP-to-ssh relay that was
+  built inside Google.  Unfortunately that relay isn't open source, and Google
+  doesn't maintain a public pool of relays.
 
-  The Google relay server expects that traffic is encrypted by the client and
-  server.  This means it would be very difficult for the relay to perform a
-  "Man In The Middle" attack.  It also supports a single-signon step during
-  connection setup.
+  However, you're free to build one that works the same way.  There should be
+  enough documentation in google_relay.js to reverse engineer a compatible
+  relay.
 
-  The relay source is not public, but you're free to build one that works the
-  same way.  There should be enough documentation in google_relay.js to
-  reverse engineer a compatible relay.
-
-  Secure Shell is set up to accept pluggable relay libraries.   If there were
-  an agreed-upon open relay protocol, Secure Shell could add support for it
-  without much overhead work.
+  If you're interested in writing an alternative relay library, please mention
+  it on the mailing list.
 
 
 > Is my connection really secure?
