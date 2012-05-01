@@ -24,12 +24,16 @@ Unreleased tip-of-trunk changes:
   area.
 * Fix a number of issues in color handling. In particular, treat toggling bold
   and inverse independently from setting color indices.
+* Fix to ECH to not shift text to the right of the cursor.
+* Fix to argument parsing to always treat zero as a default value.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
 
 BUG=chromium-os:30142
 BUG=chromium-os:30303
+BUG=chromium-os:30305
+BUG=chromium-os:30345
 
 0.7.9.3, 2012-04-20, rginda@chromium.org
 

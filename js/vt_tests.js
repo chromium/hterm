@@ -488,9 +488,18 @@ hterm.VT.Tests.addTest('erase-char', function(result, cx) {
                             '\x1b[4Xtwo');
 
     var text = this.terminal.getRowsText(0, 3);
+    // See TODO in hterm.Terminal.prototype.eraseToRight for the extra space.
     result.assertEQ(text,
                     'line one\n' +
-                    'line two\n' +
+                    'line two \n' +
+                    'line three');
+
+    this.terminal.interpret('\x1b[3D' +
+                            '\x1b[X');
+    text = this.terminal.getRowsText(0, 3);
+    result.assertEQ(text,
+                    'line one\n' +
+                    'line  wo \n' +
                     'line three');
     result.pass();
   });

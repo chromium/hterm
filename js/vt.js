@@ -165,7 +165,14 @@ hterm.VT.ParseState.prototype.resetArguments = function(opt_arg_zero) {
  */
 hterm.VT.ParseState.prototype.iarg = function(argnum, defaultValue) {
   var str = this.args[argnum];
-  return str ? parseInt(str, 10) : defaultValue;
+  if (str) {
+    var ret = parseInt(str, 10);
+    // An argument of zero is treated as the default value.
+    if (ret == 0)
+      ret = defaultValue;
+    return ret;
+  }
+  return defaultValue;
 };
 
 /**

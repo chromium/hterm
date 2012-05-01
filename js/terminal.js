@@ -1242,8 +1242,7 @@ hterm.Terminal.prototype.eraseToLeft = function() {
 };
 
 /**
- * Erase a given number of characters to the right of the cursor, shifting
- * remaining characters to the left.
+ * Erase a given number of characters to the right of the cursor.
  *
  * The cursor position is unchanged.
  *
@@ -1252,13 +1251,20 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  *
  * TODO(rginda): This likely has text-attribute related troubles similar to the
  * todo on hterm.Screen.prototype.clearCursorRow.
+ *
+ * TODO(davidben): Probably better to not add the whitespace to the clipboard
+ * if erasing to the end of the drawn portion of the line. That said, xterm
+ * behaves the same here.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
   var cursor = this.saveCursor();
 
   var maxCount = this.screenSize.width - cursor.column;
-  var count = (opt_count && opt_count < maxCount) ? opt_count : maxCount;
-  this.screen_.deleteChars(count);
+  if (opt_count === undefined || opt_count >= maxCount) {
+    this.screen_.deleteChars(maxCount);
+  } else {
+    this.screen_.overwriteString(hterm.getWhitespace(opt_count));
+  }
   this.restoreCursor(cursor);
 };
 
