@@ -18,16 +18,19 @@
  */
 hterm.TextAttributes = function(document) {
   this.document_ = document;
-  // This property contains the index that the foreground color came from.
-  // This allows us to switch to the bright version of the color when the bold
-  // attribute is set, which is what most other terminals do.
   this.foregroundIndex = null;
+  this.backgroundIndex = null;
 
+  // These properties cache the value in the color table, but foregroundIndex
+  // and backgroundIndex contain the canonical values.
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
+
   this.bold = false;
   this.blink = false;
   this.underline = false;
+  this.inverse = false;
+  this.invisible = false;
 
   this.colorPalette = null;
   this.resetColorPalette();
@@ -78,11 +81,14 @@ hterm.TextAttributes.prototype.clone = function() {
  */
 hterm.TextAttributes.prototype.reset = function() {
   this.foregroundIndex = null;
+  this.backgroundIndex = null;
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
   this.bold = false;
   this.blink = false;
   this.underline = false;
+  this.inverse = false;
+  this.invisible = false;
 };
 
 /**
@@ -98,11 +104,13 @@ hterm.TextAttributes.prototype.resetColorPalette = function() {
  * @return {boolean} True if the current attributes describe unstyled text.
  */
 hterm.TextAttributes.prototype.isDefault = function() {
-  return (this.foreground == this.DEFAULT_COLOR &&
-          this.background == this.DEFAULT_COLOR &&
+  return (this.foregroundIndex == null &&
+          this.backgroundIndex == null &&
           !this.bold &&
           !this.blink &&
-          !this.underline);
+          !this.underline &&
+          !this.inverse &&
+          !this.invisible);
 };
 
 /**
@@ -173,6 +181,59 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           (this.enableBold && this.bold) == !!style.fontWeight &&
           this.blink == !!style.fontStyle &&
           this.underline == !!style.textDecoration);
+};
+
+/**
+ * Updates foreground and background properties based on current indices and
+ * other state.
+ *
+ * @param {string} terminalForeground The terminal foreground color for use as
+ *     inverse text background.
+ * @param {string} terminalBackground The terminal background color for use as
+ *     inverse text foreground.
+ *
+ */
+hterm.TextAttributes.prototype.updateColors = function(terminalForeground,
+                                                       terminalBackground) {
+  function getBrightIndex(i) {
+    if (i < 8) {
+      // If the color is from the lower half of the ANSI 16, add 8.
+      return i + 8;
+    }
+
+    if (i >= 16 && i <= 250) {
+      // If it's from the extended palette, add 6.
+      return i + 6;
+    }
+
+    return i;
+  }
+
+  var foregroundIndex = this.foregroundIndex;
+  var backgroundIndex = this.backgroundIndex;
+  var defaultForeground = this.DEFAULT_COLOR;
+  var defaultBackground = this.DEFAULT_COLOR;
+
+  if (this.inverse) {
+    foregroundIndex = this.backgroundIndex;
+    backgroundIndex = this.foregroundIndex;
+    // We can't inherit the container's color anymore.
+    defaultForeground = terminalBackground;
+    defaultBackground = terminalForeground;
+  }
+
+  if (this.bold) {
+    if (foregroundIndex != null)
+      foregroundIndex = getBrightIndex(foregroundIndex);
+  }
+
+  if (this.invisible)
+    foregroundIndex = backgroundIndex;
+
+  this.foreground = ((foregroundIndex == null) ? defaultForeground :
+                     this.colorPalette[foregroundIndex]);
+  this.background = ((backgroundIndex == null) ? defaultBackground :
+                     this.colorPalette[backgroundIndex]);
 };
 
 /**

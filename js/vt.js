@@ -1717,20 +1717,6 @@ hterm.VT.CSI['?l'] = function(parseState) {
  * the color selection.
  */
 hterm.VT.CSI['m'] = function(parseState) {
-  function getBrightIndex(i) {
-    if (i < 8) {
-      // If the color is from the lower half of the ANSI 16, add 8.
-      return i + 8;
-    }
-
-    if (i >= 16 && i <= 250) {
-      // If it's from the extended palette, add 6.
-      return i + 6;
-    }
-
-    return i;
-  }
-
   function get256(i) {
     if (parseState.args.length < i + 2 || parseState.args[i + 1] != '5')
       return null;
@@ -1751,24 +1737,16 @@ hterm.VT.CSI['m'] = function(parseState) {
     if (arg < 30) {
       if (arg == 0) {
         attrs.reset();
-      } else if (arg == 1 && !attrs.bold) {
+      } else if (arg == 1) {
         attrs.bold = true;
-
-        if (attrs.foregroundIndex != null) {
-          attrs.foregroundIndex = getBrightIndex(attrs.foregroundIndex);
-          attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
-        }
-
       } else if (arg == 4) {
         attrs.underline = true;
       } else if (arg == 5) {
         attrs.blink = true;
       } else if (arg == 7) {  // Inverse.
-        attrs.foregroundIndex = null;
-        attrs.foreground = this.terminal.getBackgroundColor();
-        attrs.background = this.terminal.getForegroundColor();
+        attrs.inverse = true;
       } else if (arg == 8) {  // Invisible.
-        attrs.foreground = this.terminal.getBackgroundColor();
+        attrs.invisible = true;
       } else if (arg == 22) {
         attrs.bold = false;
       } else if (arg == 24) {
@@ -1776,70 +1754,61 @@ hterm.VT.CSI['m'] = function(parseState) {
       } else if (arg == 25) {
         attrs.blink = false;
       } else if (arg == 27) {
-        attrs.foregroundIndex = null;
-        attrs.foreground = attrs.DEFAULT_COLOR;
-        attrs.background = attrs.DEFAULT_COLOR;
+        attrs.inverse = false;
       } else if (arg == 28) {
-        attrs.foregroundIndex = null;
-        attrs.foreground = attrs.DEFAULT_COLOR;
+        attrs.invisible = false;
       }
 
     } else if (arg < 50) {
       // Select fore/background color from bottom half of 16 color palette
       // or from the 256 color palette.
       if (arg < 38) {
-        attrs.foregroundIndex = attrs.bold ? arg - 22 : arg - 30;
-        attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
+        attrs.foregroundIndex = arg - 30;
 
       } else if (arg == 38) {
         var c = get256(i);
         if (c == null)
-          return;
+          break;
 
         i += 2;
 
         if (c >= attrs.colorPalette.length)
           continue;
 
-        if (attrs.bold)
-          c = getBrightIndex(c);
-
         attrs.foregroundIndex = c;
-        attrs.foreground = attrs.colorPalette[c];
 
       } else if (arg == 39) {
         attrs.foregroundIndex = null;
-        attrs.foreground = attrs.DEFAULT_COLOR;
 
       } else if (arg < 48) {
-        attrs.foregroundIndex = arg - 40;
-        attrs.background = attrs.colorPalette[attrs.foregroundIndex];
+        attrs.backgroundIndex = arg - 40;
 
       } else if (arg == 48) {
         var c = get256(i);
         if (!c)
-          return;
+          break;
 
         i += 2;
 
-        if (c > 256)
+        if (c >= attrs.colorPalette.length)
           continue;
 
-        attrs.background = attrs.colorPalette[c];
+        attrs.backgroundIndex = c;
       } else {
-        attrs.background = attrs.DEFAULT_COLOR;
+        attrs.backgroundIndex = null;
       }
 
     } else if (arg >= 90 && arg <= 97) {
       attrs.foregroundIndex = arg - 90 + 8;
-      attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
 
     } else if (arg >= 100 && arg <= 107) {
       attrs.foregroundIndex = arg - 100 + 8;
-      attrs.foreground = attrs.colorPalette[attrs.foregroundIndex];
 
     }
   }
+
+  attrs.updateColors(this.terminal.getForegroundColor(),
+                     this.terminal.getBackgroundColor());
 };
 
 /**

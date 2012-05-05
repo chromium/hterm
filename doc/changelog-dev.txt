@@ -22,6 +22,8 @@ Unreleased tip-of-trunk changes:
   some cases where tab-stops would be dropped.
 * Fix ED to erase to the start and end of the screen, independent of scroll
   area.
+* Fix a number of issues in color handling. In particular, treat toggling bold
+  and inverse independently from setting color indices.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
