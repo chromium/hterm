@@ -20,6 +20,8 @@ Unreleased tip-of-trunk changes:
   wrap newly-printed text.
 * Fix default tab-stop handling to not restore on resize after TBC. Also fix
   some cases where tab-stops would be dropped.
+* Fix ED to erase to the start and end of the screen, independent of scroll
+  area.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed

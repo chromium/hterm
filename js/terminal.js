@@ -1277,8 +1277,8 @@ hterm.Terminal.prototype.eraseLine = function() {
 };
 
 /**
- * Erase all characters from the start of the scroll region to the current
- * cursor position.
+ * Erase all characters from the start of the screen to the current cursor
+ * position, regardless of scroll region.
  *
  * The cursor position is unchanged.
  *
@@ -1290,8 +1290,7 @@ hterm.Terminal.prototype.eraseAbove = function() {
 
   this.eraseToLeft();
 
-  var top = this.getVTScrollTop();
-  for (var i = top; i < cursor.row; i++) {
+  for (var i = 0; i < cursor.row; i++) {
     this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
@@ -1301,7 +1300,7 @@ hterm.Terminal.prototype.eraseAbove = function() {
 
 /**
  * Erase all characters from the current cursor position to the end of the
- * scroll region.
+ * screen, regardless of scroll region.
  *
  * The cursor position is unchanged.
  *
@@ -1313,7 +1312,7 @@ hterm.Terminal.prototype.eraseBelow = function() {
 
   this.eraseToRight();
 
-  var bottom = this.getVTScrollBottom();
+  var bottom = this.screenSize.height - 1;
   for (var i = cursor.row + 1; i <= bottom; i++) {
     this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
