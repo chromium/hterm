@@ -413,27 +413,35 @@ hterm.Screen.prototype.clipAtCursor_ = function() {
 /**
  * Ensure that the current row does not overflow the current column count.
  *
- * If the current row is too long, it will be clipped and the overflow content
- * will be returned as an array of DOM nodes.  Otherwise this function returns
- * null.
+ * If the current row is too long, it will be clipped.  Text before the cursor
+ * will be returned as an array of DOM nodes to overflow.  If there is nothing
+ * to overflow, this function returns null.
+ *
+ * Note that text after the cursor is simply clipped and never overflowed.
+ * Text that overflows the margin because it is offset during insert mode is
+ * NOT wrapped.  However, new text printed as part of the insert IS wrapped.
  *
  * @return {Array} An array of DOM nodes that overflowed in the current row,
- *     or null if the row did not overflow.
+ *     or null if there is nothing to overflow.
  */
 hterm.Screen.prototype.maybeClipCurrentRow = function() {
   var currentColumn = this.cursorPosition.column;
 
   if (currentColumn >= this.columnCount_) {
+    // Text to the right of the cursor does not wrap.
+    this.deleteChars(this.cursorRowNode_.textContent.length);
+    // Now clip the parts we want to wrap.
     this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
     this.cursorPosition.overflow = true;
     return this.clipAtCursor_();
   }
 
   if (this.cursorRowNode_.textContent.length > this.columnCount_) {
+    // Text to the right of the cursor does not wrap.
     this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
-    var overflow = this.clipAtCursor_();
+    this.clipAtCursor_();
     this.setCursorPosition(this.cursorPosition.row, currentColumn);
-    return overflow;
+    return null;
   }
 
   return null;

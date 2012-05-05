@@ -247,34 +247,23 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     // Fetch enough whitespace to ensure that the row is full.
     var ws = hterm.getWhitespace(this.screen.getWidth());
 
-    // Check simple overflow.
+    // Check overflow. Two spaces overflow to the next line; only
+    // newly-inserted text overflows.
     this.screen.clearCursorRow();
     this.screen.insertString('XXXX');
-    this.screen.setCursorPosition(0, 0);
+    this.screen.setCursorPosition(0, 2);
     this.screen.insertString(ws);
     var overflow = this.screen.maybeClipCurrentRow();
     result.assertEQ(overflow.length, 1);
     result.assertEQ(overflow[0].nodeType, 3);
-    result.assertEQ(overflow[0].textContent, 'XXXX');
+    result.assertEQ(overflow[0].textContent, '  ');
+    result.assertEQ(ary[0].innerHTML, 'XX' + ws.substr(2));
 
     // Insert into a more complicated row.
     this.screen.setCursorPosition(1, 3);
     this.screen.insertString('XXXXX');
     result.assertEQ(ary[1].innerHTML, 'helXXXXXlo<div id="1"> </div>' +
                     '<div id="2">world</div>');
-
-    // Check multi-attribute overflow.
-    this.screen.setCursorPosition(1, 0);
-    this.screen.insertString(ws);
-    overflow = this.screen.maybeClipCurrentRow();
-    result.assert(overflow instanceof Array);
-    result.assertEQ(overflow.length, 3);
-    result.assertEQ(overflow[0].nodeType, 3);
-    result.assertEQ(overflow[0].textContent, "helXXXXXlo");
-    result.assertEQ(overflow[1].tagName, 'DIV');
-    result.assertEQ(overflow[1].textContent, " ");
-    result.assertEQ(overflow[2].tagName, 'DIV');
-    result.assertEQ(overflow[2].textContent, "world");
 
     result.pass();
   });

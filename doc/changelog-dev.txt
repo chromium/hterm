@@ -16,6 +16,8 @@ Unreleased tip-of-trunk changes:
 * Resize the terminal after the character measurements change rather than
   re-measure the character during a resize.  The latter causes the terminal
   to get the row, column count wrong based on event ordering.
+* Fix text wrapping to not wrap text pushed to the right in insert mode. Only
+  wrap newly-printed text.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
