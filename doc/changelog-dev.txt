@@ -18,11 +18,14 @@ Unreleased tip-of-trunk changes:
   to get the row, column count wrong based on event ordering.
 * Fix text wrapping to not wrap text pushed to the right in insert mode. Only
   wrap newly-printed text.
+* Fix default tab-stop handling to not restore on resize after TBC. Also fix
+  some cases where tab-stops would be dropped.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
 
 BUG=chromium-os:30142
+BUG=chromium-os:30303
 
 0.7.9.3, 2012-04-20, rginda@chromium.org
 

@@ -59,6 +59,10 @@ hterm.Terminal = function(opt_profileName) {
   // Saved tab stops.
   this.tabStops_ = [];
 
+  // Keep track of whether default tab stops have been erased; after a TBC
+  // clears all tab stops, defaults aren't restored on resize until a reset.
+  this.defaultTabStops = true;
+
   // The VT's notion of the top and bottom rows.  Used during some VT
   // cursor positioning and scrolling commands.
   this.vtScrollTop_ = null;
@@ -573,10 +577,11 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
   this.screen_.setColumnCount(columnCount);
 
   if (deltaColumns > 0) {
-    this.setDefaultTabStops(this.screenSize.width - deltaColumns);
+    if (this.defaultTabStops)
+      this.setDefaultTabStops(this.screenSize.width - deltaColumns);
   } else {
     for (var i = this.tabStops_.length - 1; i >= 0; i--) {
-      if (this.tabStops_[i] <= columnCount)
+      if (this.tabStops_[i] < columnCount)
         break;
 
       this.tabStops_.pop();
@@ -732,7 +737,10 @@ hterm.Terminal.prototype.forwardTabStop = function() {
     }
   }
 
+  // xterm does not clear the overflow flag on HT or CHT.
+  var overflow = this.screen_.cursorPosition.overflow;
   this.setCursorColumn(this.screenSize.width - 1);
+  this.screen_.cursorPosition.overflow = overflow;
 };
 
 /**
@@ -791,13 +799,15 @@ hterm.Terminal.prototype.clearTabStopAtCursor = function() {
  */
 hterm.Terminal.prototype.clearAllTabStops = function() {
   this.tabStops_.length = 0;
+  this.defaultTabStops = false;
 };
 
 /**
  * Set up the default tab stops, starting from a given column.
  *
  * This sets a tabstop every (column % this.tabWidth) column, starting
- * from the specified column, or 0 if no column is provided.
+ * from the specified column, or 0 if no column is provided.  It also flags
+ * future resizes to set them up.
  *
  * This does not clear the existing tab stops first, use clearAllTabStops
  * for that.
@@ -808,10 +818,13 @@ hterm.Terminal.prototype.clearAllTabStops = function() {
 hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
   var start = opt_start || 0;
   var w = this.tabWidth;
-  var stopCount = Math.floor((this.screenSize.width - start) / this.tabWidth)
-  for (var i = 0; i < stopCount; i++) {
-    this.setTabStop(Math.floor((start + i * w) / w) * w + w);
+  // Round start up to a default tab stop.
+  start = start - 1 - ((start - 1) % w) + w;
+  for (var i = start; i < this.screenSize.width; i += w) {
+    this.setTabStop(i);
   }
+
+  this.defaultTabStops = true;
 };
 
 /**
