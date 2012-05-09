@@ -142,7 +142,7 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      * Set whether the alt key acts as a meta key or as a distinct alt key.
      */
     ['alt-is-meta', false, function(v) {
-        self.vt.keyboard.altIsMeta = v;
+        self.keyboard.altIsMeta = v;
       }
     ],
 
@@ -159,7 +159,7 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
         if (!/^(escape|8-bit|browser-key)$/.test(v))
           v = 'escape';
 
-        self.vt.keyboard.altSendsWhat = v;
+        self.keyboard.altSendsWhat = v;
       }
     ],
 
