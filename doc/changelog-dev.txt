@@ -26,6 +26,7 @@ Unreleased tip-of-trunk changes:
   and inverse independently from setting color indices.
 * Fix to ECH to not shift text to the right of the cursor.
 * Fix to argument parsing to always treat zero as a default value.
+* Remove extra '/' from google_relay.js proxy request.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed

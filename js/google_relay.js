@@ -220,7 +220,7 @@ hterm.NaSSH.GoogleRelay.Socket.prototype.asyncOpen_ = function(
   }
 
   sessionRequest.open('GET', this.relay_.relayServer +
-                      '/proxy?host=' + this.host_ + '&port=' + this.port_,
+                      'proxy?host=' + this.host_ + '&port=' + this.port_,
                       true);
   sessionRequest.withCredentials = true;  // We need to see cookies for /proxy.
   sessionRequest.onabort = sessionRequest.ontimeout =
