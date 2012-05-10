@@ -162,9 +162,19 @@ function switch_manifest() {
     exit 1
   fi
 
+  local manifest_path="$extension_dir/manifest-$channel.json"
+
   ORIGINAL_MANIFEST_TARGET="$(readlink $extension_dir/manifest.json)"
 
-  ln -sf "$extension_dir/manifest-$channel.json" "$extension_dir/manifest.json"
+  if [ "$FLAGS_type" == 'zip' ]; then
+    if grep -q '"key":' "$manifest_path"; then
+      echo_err "Creating 'keyless' copy of manifest."
+      grep -v '"key":' "$manifest_path" > "$manifest_path.nokey"
+      manifest_path="$manifest_path.nokey"
+    fi
+  fi
+
+  ln -sf "$manifest_path" "$extension_dir/manifest.json"
 }
 
 #

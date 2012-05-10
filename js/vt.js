@@ -1149,7 +1149,7 @@ hterm.VT.ESC['#'] = function(parseState) {
  * TODO(rginda): Implement.
  */
 hterm.VT.ESC['%'] = function(parseState) {
-  parseState_.func = function(parseState) {
+  parseState.func = function(parseState) {
     var ch = parseState.consumeChar();
     if (ch != '@' && ch != 'G' && this.warnUnimplemented)
       console.warn('Unknown ESC % argument: ' + JSON.stringify(ch));

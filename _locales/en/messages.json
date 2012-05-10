@@ -135,7 +135,7 @@
       "destination": {
         "content": "$1",
         "example": "username@example.com"
-      },
+      }
     }
   },
 

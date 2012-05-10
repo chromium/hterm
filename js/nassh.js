@@ -132,6 +132,9 @@ hterm.NaSSH.prototype.initFileSystem_ = function(onComplete) {
 
   function onFileSystem(fileSystem) {
     self.fileSystem_ = fileSystem;
+    hterm.getOrCreateDirectory(fileSystem.root, '/.ssh',
+                               onComplete,
+                               hterm.flog('Error creating /.ssh', onComplete));
     onComplete();
   }
 

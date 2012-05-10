@@ -1,5 +1,21 @@
 Unreleased tip-of-trunk changes:
 
+* None.
+
+0.8.0.3, 2012-05-10, rginda@chromium.org
+
+* Fix "parseState_" typo in 'ESC %' handler.
+
+0.8.0.2, 2012-05-10, rginda@chromium.org
+
+* Remove trailing comma from messages.json.
+* Ensure that /.ssh directory exists before starting.
+* Update FAQ to point out that keys don't work on 0.7.9.
+* Change manifest-dev.json and package.sh script to move dev version from
+  internal home directory to public web store.
+
+0.8.0.1, 2012-05-10, rginda@chromium.org
+
 * Add 'enable-8-bit-control' preference to enable eight bit control sequences.
   This is off by default (which matches xterm) in order to avoid accidental
   usage of some sequences that require termination.  If you encounter one of
