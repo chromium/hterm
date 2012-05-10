@@ -105,9 +105,12 @@ hterm.NaSSH.GoogleRelay.prototype.requestRelayServer = function(destination) {
  *
  * If we have just come back from the cookie server, then we'll return true.
  */
-hterm.NaSSH.GoogleRelay.prototype.init = function(username, hostname, port) {
-  var destination = (username + '@' + hostname + ':' +
-                     (port || 22) + '@' + this.proxy);
+hterm.NaSSH.GoogleRelay.prototype.init = function(username, hostname,
+                                                  opt_port) {
+  var destination = username + '@' + hostname;
+  if (opt_port)
+    destination += ':' + opt_port;
+  destination += '@' + this.proxy;
 
   // This session storage item comes from /html/google_relay.html.
   var relayHost = sessionStorage.getItem('googleRelay.host');

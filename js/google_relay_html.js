@@ -17,6 +17,7 @@ window.onload = function() {
   var queryString = sessionStorage.getItem('googleRelay.queryString');
   var url = chrome.extension.getURL('html/nassh.html' + queryString +
                                     '#' + destination);
+
   console.log(url);
   document.location = url;
 };

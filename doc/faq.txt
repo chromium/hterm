@@ -137,8 +137,58 @@ at <http://goo.gl/RYHiK>.
 
 > Can I connect using a public key pair or certificate?
 
-  Sorry, not yet.  We're working on it though.  Join the chromium-hterm
-  mailing list if you want to be notified when it's ready.
+  Yes, it's a little rough around the edges though.
+
+  The way it works is that you import your public/private key files into the
+  HTML5 filesystem associated with Secure Shell.  There should be no way
+  for another extension, app, or web page to access this sandboxed filesystem.
+
+  +-------------------------------------------------------------------------+
+  | Keep in mind that HTML5 filesystems are relatively new.  As always,     |
+  | it's possible that there are still exploits to be found or disclosed.   |
+  |                                                                         |
+  | Additionaly, Chrome stores HTML5 filesystems as normal files (with mode |
+  | 600, "-rw-------") under your profile directory.  Non-Chrome            |
+  | applications on your system may be able to access these files.          |
+  |                                                                         |
+  | For your own good, protect your important private keys with a strong    |
+  | passphrase.                                                             |
+  +-------------------------------------------------------------------------+
+
+  Open the JavaScript console and type...
+
+    term_.command.showFileImporter();
+
+  This will display a file picker widget in the lower left corner of the
+  terminal.  Click on the "Choose Files" button and select one or more files
+  to import into Secure Shell.  These files will be copied to the equivalent
+  of ~/.ssh/ on a Unix-like system.
+
+  You can import public/private key pairs, certificates, and even a traditional
+  ssh 'config' file.  Nearly anything that ssh might care about from your
+  ~/.ssh directory can go here.
+
+  See <http://www.openbsd.org/cgi-bin/man.cgi?query=ssh_config> for more
+  information about the ssh configuration syntax.  Keep in mind that any
+  directives that would require access outside of the NaCl sandbox will not
+  function properly.  This includes (but is not limited to) X11 forwarding
+  and syslog functionality.
+
+
+> Can Secure Shell use my ~/.ssh/config file?
+
+  Probably.  It depends on what it does.  See the answer to the previous
+  question for more details.
+
+
+> Does Secure Shell support a keychain of some sort?
+
+  Sorry, not yet.  This is a bit of a technical challenge given the nature
+  of the NaCl sandbox.  We have a few options that we're exploring.  Feel
+  free to post your ideas to the mailing list.
+
+  (And yes, we're already considering integrating with the Chrome NSS
+  certificate store.)
 
 
 > Why does the destination IP address always show 0.0.0.0?

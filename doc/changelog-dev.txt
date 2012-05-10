@@ -29,12 +29,17 @@ Unreleased tip-of-trunk changes:
 * Remove extra '/' from google_relay.js proxy request.
 * Fix alt-sends-what/alt-is-meta pref change handlers.
 * Don't re-display connection dialog after a relay redirect.
+* Add showFileImporter hack.  This makes it possible to import files from the
+  device filesystem into the Secure Shell filesystem.  This makes it "easy"
+  to get keypairs and ssh configs into Secure Shell.
+* Stop assuming an unspecified port means port 22, since the config file may
+  have a different default set.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
 
 BUG=chromium-os:30142,chromium-os:30303,chromium-os:30305,chromium-os:30345
-BUG=chromium-os:30105,chromium-os:29955
+BUG=chromium-os:30105,chromium-os:29955,chromium-os:25563
 
 0.7.9.3, 2012-04-20, rginda@chromium.org
 

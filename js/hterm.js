@@ -247,7 +247,7 @@ hterm.getFileErrorMnemonic = function(code) {
  * @param {DirectoryEntry} root The directory to consider as the root of the
  *     path.
  * @param {string} path The path of the target file, relative to root.
- * @param {string} contents The new contents of the file.
+ * @param {Blob|string} contents The new contents of the file.
  * @param {function()} successCallback The function to invoke after success.
  * @param {function(FileError)} errorCallback The function to invoke if the
  *     operation fails.
@@ -271,9 +271,13 @@ hterm.overwriteFile = function(root, path, contents,
     writer.onerror = hterm.flog('Error writing to: ' + path,
                                 errorCallback);
 
-    var bb = new (window.BlobBuilder || window.WebKitBlobBuilder)();
-    bb.append(contents);
-    writer.write(bb.getBlob('text/plain'));
+    if (!(contents instanceof Blob)) {
+      var bb = new (window.BlobBuilder || window.WebKitBlobBuilder)();
+      bb.append(contents);
+      contents = bb.getBlob('text/plain');
+    }
+
+    writer.write(contents);
   }
 
   root.getFile(path, {create: false},
