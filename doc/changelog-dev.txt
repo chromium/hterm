@@ -28,12 +28,13 @@ Unreleased tip-of-trunk changes:
 * Fix to argument parsing to always treat zero as a default value.
 * Remove extra '/' from google_relay.js proxy request.
 * Fix alt-sends-what/alt-is-meta pref change handlers.
+* Don't re-display connection dialog after a relay redirect.
 
 Internal bug:
 6375936 hterm hangs when \x90, \x9D, or \x9E is printed
 
 BUG=chromium-os:30142,chromium-os:30303,chromium-os:30305,chromium-os:30345
-BUG=chromium-os:30105
+BUG=chromium-os:30105,chromium-os:29955
 
 0.7.9.3, 2012-04-20, rginda@chromium.org
 

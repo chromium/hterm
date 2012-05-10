@@ -242,6 +242,10 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
       // A false return value means we have to redirect to complete
       // initialization.  Bail out of the connect for now.  We'll resume it
       // when the relay is done with its redirect.
+
+      // If we're going to have to redirect for the relay then we should make
+      // sure not to re-prompt for the destination when we return.
+      sessionStorage.removeItem('nassh.promptOnReload');
       return true;
     }
   }
