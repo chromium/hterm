@@ -122,6 +122,7 @@ hterm.NaSSH.GoogleRelay.prototype.init = function(username, hostname,
     } else {
       console.warn('Destination mismatch: ' + savedDestination + ' != ' +
                    destination);
+      this.relayServer = null;
     }
   }
 

@@ -135,7 +135,6 @@ hterm.NaSSH.prototype.initFileSystem_ = function(onComplete) {
     hterm.getOrCreateDirectory(fileSystem.root, '/.ssh',
                                onComplete,
                                hterm.flog('Error creating /.ssh', onComplete));
-    onComplete();
   }
 
   var requestFS = window.requestFileSystem || window.webkitRequestFileSystem;
@@ -227,6 +226,8 @@ hterm.NaSSH.prototype.reportUnexpectedError_ = function(err) {
  * Initiate a connection to a remote host given a destination string.
  *
  * @param {string} destination A string of the form username@host[:port].
+ * @return {boolean} True if we were able to parse the destination string,
+ *     false otherwise.
  */
 hterm.NaSSH.prototype.connectToDestination = function(destination) {
   if (destination == 'crosh') {
@@ -241,7 +242,7 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
   if (ary[4]) {
     this.relay_ = new hterm.NaSSH.GoogleRelay(this.io, ary[4]);
     this.io.println(hterm.msg('INITIALIZING_RELAY', [ary[4]]));
-    if (!this.relay_.init(ary[1], ary[2], (ary[3] || 22))) {
+    if (!this.relay_.init(ary[1], ary[2], ary[3])) {
       // A false return value means we have to redirect to complete
       // initialization.  Bail out of the connect for now.  We'll resume it
       // when the relay is done with its redirect.

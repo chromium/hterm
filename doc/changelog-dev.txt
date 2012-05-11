@@ -2,6 +2,12 @@ Unreleased tip-of-trunk changes:
 
 * None.
 
+0.8.0.5, 2012-05-11, rginda@chromium.org
+
+* Fix double invocation of initialization code.  This also fixed the reload
+  loop when connecting via a relay.
+* Minor faq and jsdoc cleanup.
+
 0.8.0.4, 2012-05-11, rginda@chromium.org
 
 * Add hterm.NaSSH..removeFile().

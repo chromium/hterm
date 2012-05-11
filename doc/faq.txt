@@ -138,7 +138,7 @@ at <http://goo.gl/RYHiK>.
 > Can I connect using a public key pair or certificate?
 
   [ NOTE: This answer only applies to development versions starting with ]
-  [ the 0.8.0.1 series.  The stable 0.7.x version does not support key   ]
+  [ the 0.8.0.x series.  The stable 0.7.9 version does not support key   ]
   [ based authentication at all.                                         ]
 
   Yes, it's a little rough around the edges though.
