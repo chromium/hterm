@@ -258,6 +258,24 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
 };
 
 /**
+ * Removes a file from the HTML5 filesystem.
+ *
+ * Most likely you want to remove something from the /.ssh/ directory.
+ *
+ * @param {string} fullPath The full path to the file to remove.
+ */
+hterm.NaSSH.prototype.removeFile = function(fullPath) {
+  this.fileSystem_.root.getFile(
+      fullPath, {},
+      function (f) {
+        f.remove(hterm.flog('Removed: ' + fullPath),
+                 hterm.ferr('Error removing' + fullPath));
+      },
+      hterm.flog('Error finding: ' + fullPath)
+  );
+};
+
+/**
  * Import File objects into the HTML5 filesystem.
  *
  * @param {string} dest The target directory for the import.

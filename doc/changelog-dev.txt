@@ -2,6 +2,10 @@ Unreleased tip-of-trunk changes:
 
 * None.
 
+0.8.0.4, 2012-05-11, rginda@chromium.org
+
+* Add hterm.NaSSH..removeFile().
+
 0.8.0.3, 2012-05-10, rginda@chromium.org
 
 * Fix "parseState_" typo in 'ESC %' handler.
