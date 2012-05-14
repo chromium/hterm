@@ -416,6 +416,7 @@ NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
   argv.terminalWidth = this.io.terminal_.screenSize.width;
   argv.terminalHeight = this.io.terminal_.screenSize.height;
   argv.useJsSocket = !!this.relay_;
+  argv.environment = this.environment_;
   argv.arguments = ['-C'];  // enable compression
 
   var self = this;
@@ -424,7 +425,6 @@ NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
         self.io.println(hterm.msg('WELCOME_TIP'));
 
       window.onbeforeunload = self.onBeforeUnload_.bind(self);
-      self.sendToPlugin_('setEnvironment', [self.environment_]);
       self.sendToPlugin_('startSession', [argv]);
     });
 
