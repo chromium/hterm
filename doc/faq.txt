@@ -179,6 +179,25 @@ at <http://goo.gl/RYHiK>.
   and syslog functionality.
 
 
+> How do I remove a key?
+
+  Open the JavaScript console and type...
+
+    term_.command.removeFile('/.ssh/FILE_NAME')
+
+  Replace FILE_NAME with the name of the key (or any other file) to remove.
+
+
+> How do I remove ALL keys?
+
+  Open the JavaScript console and type...
+
+    term_.command.removeDirectory('/.ssh/')
+
+  This will remove any non-key files you may have uploaded as well.  It will
+  *not* affect your preferences.
+
+
 > Can Secure Shell use my ~/.ssh/config file?
 
   Probably.  It depends on what it does.  See the answer to the previous
@@ -290,7 +309,7 @@ at <http://goo.gl/RYHiK>.
   colors to indicate bold.
 
 
-> How to I change the default font size?
+> How do I change the default font size?
 
   Open the JavaScript console and type...
 
@@ -427,7 +446,7 @@ at <http://goo.gl/RYHiK>.
      term_.prefs_.set('backspace-sends-backspace', true)
 
 
-> How do I remove a known host key (aka known_hosts) entry?
+> How do I remove a known host fingerprint (aka known_hosts) entry?
 
   If you know the index of the offending host entry (it's usually reported
   by ssh if the connection fails) you can open the JavaScript console and
@@ -441,7 +460,6 @@ at <http://goo.gl/RYHiK>.
   type...
 
      term_.command.removeAllKnownHosts()
-
 
 > How do I send Ctrl-W, Ctrl-N or Ctrl-T to the terminal?
 

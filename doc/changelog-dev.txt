@@ -2,6 +2,10 @@ Unreleased tip-of-trunk changes:
 
 * None.
 
+0.8.0.6, 2012-05-14, rginda@chromium.org
+
+* Add hterm.NaSSH..removeDirectory().
+
 0.8.0.5, 2012-05-11, rginda@chromium.org
 
 * Fix double invocation of initialization code.  This also fixed the reload

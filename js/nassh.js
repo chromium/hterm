@@ -277,6 +277,24 @@ hterm.NaSSH.prototype.removeFile = function(fullPath) {
 };
 
 /**
+ * Removes a directory from the HTML5 filesystem.
+ *
+ * Most likely you'll want to remove the entire /.ssh/ directory.
+ *
+ * @param {string} fullPath The full path to the file to remove.
+ */
+hterm.NaSSH.prototype.removeDirectory = function(fullPath) {
+  this.fileSystem_.root.getDirectory(
+      fullPath, {},
+      function (f) {
+        f.removeRecursively(hterm.flog('Removed: ' + fullPath),
+                            hterm.ferr('Error removing' + fullPath));
+      },
+      hterm.flog('Error finding: ' + fullPath)
+  );
+};
+
+/**
  * Import File objects into the HTML5 filesystem.
  *
  * @param {string} dest The target directory for the import.
