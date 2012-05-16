@@ -5,7 +5,7 @@
 // CSP means that we can't kick off the initialization from the html file,
 // so we do it like this instead.
 window.onload = function() {
-    hterm.init(hterm.NaSSH.init);
+    hterm.init(NaSSH.init);
 };
 
 /**
@@ -21,7 +21,7 @@ window.onload = function() {
  *
  * @param {Object} argv The argument object passed in from the Terminal.
  */
-hterm.NaSSH = function(argv) {
+function NaSSH(argv) {
   this.argv_ = argv;
   this.environment_ = argv.environment || {};
   this.io = null;
@@ -38,7 +38,7 @@ hterm.NaSSH = function(argv) {
  * This constructs a new Terminal instance and instructs it to run the NaSSH
  * command.
  */
-hterm.NaSSH.init = function() {
+NaSSH.init = function() {
   var profileName = hterm.parseQuery(document.location.search)['profile'];
   var terminal = new hterm.Terminal(profileName);
   terminal.decorate(document.querySelector('#terminal'));
@@ -50,7 +50,7 @@ hterm.NaSSH.init = function() {
   setTimeout(function() {
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
-      terminal.runCommandClass(hterm.NaSSH, document.location.hash.substr(1));
+      terminal.runCommandClass(NaSSH, document.location.hash.substr(1));
     }, 0);
 };
 
@@ -60,14 +60,14 @@ hterm.NaSSH.init = function() {
  * Perhaps this will also be used by the user to invoke this command, if we
  * build a shell command.
  */
-hterm.NaSSH.prototype.commandName = 'nassh';
+NaSSH.prototype.commandName = 'nassh';
 
 /**
  * Start the nassh command.
  *
  * This is invoked by the terminal as a result of terminal.runCommandClass().
  */
-hterm.NaSSH.prototype.run = function() {
+NaSSH.prototype.run = function() {
   this.io = this.argv_.io.push();
   var self = this;
 
@@ -108,7 +108,7 @@ hterm.NaSSH.prototype.run = function() {
     });
 };
 
-hterm.NaSSH.prototype.loadManifest_ = function(onComplete) {
+NaSSH.prototype.loadManifest_ = function(onComplete) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/manifest.json');
 
@@ -127,7 +127,7 @@ hterm.NaSSH.prototype.loadManifest_ = function(onComplete) {
   xhr.send();
 };
 
-hterm.NaSSH.prototype.initFileSystem_ = function(onComplete) {
+NaSSH.prototype.initFileSystem_ = function(onComplete) {
   var self = this;
 
   function onFileSystem(fileSystem) {
@@ -144,7 +144,7 @@ hterm.NaSSH.prototype.initFileSystem_ = function(onComplete) {
             hterm.flog('Error initializing filesystem', onComplete));
 };
 
-hterm.NaSSH.prototype.initPlugin_ = function(onComplete) {
+NaSSH.prototype.initPlugin_ = function(onComplete) {
   var self = this;
   function onPluginLoaded() {
     self.io.println(hterm.msg('PLUGIN_LOADING_COMPLETE'));
@@ -173,7 +173,7 @@ hterm.NaSSH.prototype.initPlugin_ = function(onComplete) {
  * @param {string} name The name of the message to send.
  * @param {Array} arguments The message arguments.
  */
-hterm.NaSSH.prototype.sendToPlugin_ = function(name, arguments) {
+NaSSH.prototype.sendToPlugin_ = function(name, arguments) {
   var str = JSON.stringify({name: name, arguments: arguments});
 
   if (this.verbose_ && name != 'onRead')
@@ -187,7 +187,7 @@ hterm.NaSSH.prototype.sendToPlugin_ = function(name, arguments) {
  *
  * @param {string} string The string to send.
  */
-hterm.NaSSH.prototype.sendString_ = function(string) {
+NaSSH.prototype.sendString_ = function(string) {
   this.sendToPlugin_('onRead', [0, btoa(string)]);
 };
 
@@ -197,7 +197,7 @@ hterm.NaSSH.prototype.sendString_ = function(string) {
  * @param {string|integer} terminal width.
  * @param {string|integer} terminal height.
  */
-hterm.NaSSH.prototype.onTerminalResize_ = function(width, height) {
+NaSSH.prototype.onTerminalResize_ = function(width, height) {
   this.sendToPlugin_('onResize', [Number(width), Number(height)]);
 };
 
@@ -207,7 +207,7 @@ hterm.NaSSH.prototype.onTerminalResize_ = function(width, height) {
  * This indicates to the user that something fatal happend when the only
  * alternative is to appear comatose.
  */
-hterm.NaSSH.prototype.reportUnexpectedError_ = function(err) {
+NaSSH.prototype.reportUnexpectedError_ = function(err) {
   var msg;
   if (this.messages_) {
     msg = this.msg('UNEXPECTED_ERROR');
@@ -229,7 +229,7 @@ hterm.NaSSH.prototype.reportUnexpectedError_ = function(err) {
  * @return {boolean} True if we were able to parse the destination string,
  *     false otherwise.
  */
-hterm.NaSSH.prototype.connectToDestination = function(destination) {
+NaSSH.prototype.connectToDestination = function(destination) {
   if (destination == 'crosh') {
     document.location = "crosh.html"
     return true;
@@ -240,7 +240,7 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
     return false;
 
   if (ary[4]) {
-    this.relay_ = new hterm.NaSSH.GoogleRelay(this.io, ary[4]);
+    this.relay_ = new NaSSH.GoogleRelay(this.io, ary[4]);
     this.io.println(hterm.msg('INITIALIZING_RELAY', [ary[4]]));
     if (!this.relay_.init(ary[1], ary[2], ary[3])) {
       // A false return value means we have to redirect to complete
@@ -265,7 +265,7 @@ hterm.NaSSH.prototype.connectToDestination = function(destination) {
  *
  * @param {string} fullPath The full path to the file to remove.
  */
-hterm.NaSSH.prototype.removeFile = function(fullPath) {
+NaSSH.prototype.removeFile = function(fullPath) {
   this.fileSystem_.root.getFile(
       fullPath, {},
       function (f) {
@@ -283,7 +283,7 @@ hterm.NaSSH.prototype.removeFile = function(fullPath) {
  *
  * @param {string} fullPath The full path to the file to remove.
  */
-hterm.NaSSH.prototype.removeDirectory = function(fullPath) {
+NaSSH.prototype.removeDirectory = function(fullPath) {
   this.fileSystem_.root.getDirectory(
       fullPath, {},
       function (f) {
@@ -301,7 +301,7 @@ hterm.NaSSH.prototype.removeDirectory = function(fullPath) {
  * @param {FileList} fileList A FileList object containing one or more File
  *     objects to import.
  */
-hterm.NaSSH.prototype.importFiles = function(dest, fileList) {
+NaSSH.prototype.importFiles = function(dest, fileList) {
   console.log('Importing ' + fileList.length + ' file(s).');
 
   if (dest.substr(dest.length - 1) != '/')
@@ -319,7 +319,7 @@ hterm.NaSSH.prototype.importFiles = function(dest, fileList) {
 /**
  * Show a little bit of UI to allow users to import files into /.ssh.
  */
-hterm.NaSSH.prototype.showFileImporter = function() {
+NaSSH.prototype.showFileImporter = function() {
   var self = this;
   var div, input;
 
@@ -385,7 +385,7 @@ hterm.NaSSH.prototype.showFileImporter = function() {
  * @param {string} hostname The hostname or IP address to connect to.
  * @param {string|integer} opt_port The optional port number to connect to.
  */
-hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
+NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
   var hash = username + '@' + hostname;
 
   var port = opt_port ? Number(opt_port) : '';
@@ -434,7 +434,7 @@ hterm.NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
 /**
  * Exit the nassh command.
  */
-hterm.NaSSH.prototype.exit = function(code) {
+NaSSH.prototype.exit = function(code) {
   this.io.pop();
   window.onbeforeunload = null;
 
@@ -445,7 +445,7 @@ hterm.NaSSH.prototype.exit = function(code) {
 /**
  * Remove all known hosts.
  */
-hterm.NaSSH.prototype.removeAllKnownHosts = function() {
+NaSSH.prototype.removeAllKnownHosts = function() {
   this.fileSystem_.root.getFile(
       '/.ssh/known_hosts', {create: false},
       function(fileEntry) { fileEntry.remove(function() {}) });
@@ -456,7 +456,7 @@ hterm.NaSSH.prototype.removeAllKnownHosts = function() {
  *
  * @param {integer} index One-based index of the known host entry to remove.
  */
-hterm.NaSSH.prototype.removeKnownHostByIndex = function(index) {
+NaSSH.prototype.removeKnownHostByIndex = function(index) {
   var onError = hterm.flog('Error accessing /.ssh/known_hosts');
   var self = this;
 
@@ -481,7 +481,7 @@ hterm.NaSSH.prototype.removeKnownHostByIndex = function(index) {
  * @param {string} opt_default The default destination string to show in the
  *     prompt dialog.
  */
-hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
+NaSSH.prototype.promptForDestination_ = function(opt_default) {
   var self = this;
 
   function onOk(result) {
@@ -500,7 +500,7 @@ hterm.NaSSH.prototype.promptForDestination_ = function(opt_default) {
                          onOk, onCancel);
 };
 
-hterm.NaSSH.prototype.onBeforeUnload_ = function(e) {
+NaSSH.prototype.onBeforeUnload_ = function(e) {
   var msg = hterm.msg('BEFORE_UNLOAD');
   e.returnValue = msg;
   return msg;
@@ -511,7 +511,7 @@ hterm.NaSSH.prototype.onBeforeUnload_ = function(e) {
  *
  * This parses the message and dispatches an appropriate onPlugin_[*] method.
  */
-hterm.NaSSH.prototype.onPluginMessage_ = function(msg) {
+NaSSH.prototype.onPluginMessage_ = function(msg) {
   var obj = JSON.parse(msg.data);
 
   if (this.verbose_ && obj.name != 'write')
@@ -529,19 +529,19 @@ hterm.NaSSH.prototype.onPluginMessage_ = function(msg) {
 /**
  * Plugin message handlers.
  */
-hterm.NaSSH.prototype.onPlugin_ = {};
+NaSSH.prototype.onPlugin_ = {};
 
 /**
  * Log a message from the plugin.
  */
-hterm.NaSSH.prototype.onPlugin_.printLog = function(str) {
+NaSSH.prototype.onPlugin_.printLog = function(str) {
   console.log('plugin log: ' + str);
 };
 
 /**
  * Plugin has exited.
  */
-hterm.NaSSH.prototype.onPlugin_.exit = function(code) {
+NaSSH.prototype.onPlugin_.exit = function(code) {
   console.log('plugin exit: ' + code);
   this.exit(code);
 };
@@ -554,15 +554,15 @@ hterm.NaSSH.prototype.onPlugin_.exit = function(code) {
  *
  * In the future, the plugin may handle its own files.
  */
-hterm.NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
+NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
   var self = this;
   function onOpen(success) {
     self.sendToPlugin_('onOpenFile', [fd, success]);
   }
 
   if (path == '/dev/random') {
-    var streamClass = hterm.NaSSH.Stream.Random;
-    var stream = hterm.NaSSH.Stream.openStream(streamClass, fd, path, onOpen);
+    var streamClass = NaSSH.Stream.Random;
+    var stream = NaSSH.Stream.openStream(streamClass, fd, path, onOpen);
     stream.onClose = function(reason) {
       self.sendToPlugin_('onClose', [fd, reason]);
     };
@@ -571,7 +571,7 @@ hterm.NaSSH.prototype.onPlugin_.openFile = function(fd, path, mode) {
   }
 };
 
-hterm.NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
+NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
   if (!this.relay_) {
     this.sendToPlugin_('onOpenSocket', [fd, false]);
     return;
@@ -599,14 +599,14 @@ hterm.NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
  *
  * This is used to write to HTML5 Filesystem files.
  */
-hterm.NaSSH.prototype.onPlugin_.write = function(fd, data) {
+NaSSH.prototype.onPlugin_.write = function(fd, data) {
   if (fd == 1 || fd == 2) {
     var string = atob(data);
     this.io.print(string);
     return;
   }
 
-  var stream = hterm.NaSSH.Stream.getStreamByFd(fd);
+  var stream = NaSSH.Stream.getStreamByFd(fd);
   if (!stream) {
     console.warn('Attempt to write to unknown fd: ' + fd);
     return;
@@ -618,9 +618,9 @@ hterm.NaSSH.prototype.onPlugin_.write = function(fd, data) {
 /**
  * Plugin wants to read from a fd.
  */
-hterm.NaSSH.prototype.onPlugin_.read = function(fd, size) {
+NaSSH.prototype.onPlugin_.read = function(fd, size) {
   var self = this;
-  var stream = hterm.NaSSH.Stream.getStreamByFd(fd);
+  var stream = NaSSH.Stream.getStreamByFd(fd);
 
   if (!stream) {
     if (fd)
@@ -636,9 +636,9 @@ hterm.NaSSH.prototype.onPlugin_.read = function(fd, size) {
 /**
  * Plugin wants to close a file descriptor.
  */
-hterm.NaSSH.prototype.onPlugin_.close = function(fd) {
+NaSSH.prototype.onPlugin_.close = function(fd) {
   var self = this;
-  var stream = hterm.NaSSH.Stream.getStreamByFd(fd);
+  var stream = NaSSH.Stream.getStreamByFd(fd);
   if (!stream) {
     console.warn('Attempt to close unknown fd: ' + fd);
     return;
