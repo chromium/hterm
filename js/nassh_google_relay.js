@@ -61,7 +61,7 @@
  * 6. Writes are queued up and sent to /write.
  */
 
-NaSSH.GoogleRelay = function(io, proxy) {
+nassh.GoogleRelay = function(io, proxy) {
   this.io = io;
   this.proxy = proxy;
 };
@@ -69,30 +69,31 @@ NaSSH.GoogleRelay = function(io, proxy) {
 /**
  * The pattern for the cookie server's url.
  */
-NaSSH.GoogleRelay.prototype.cookieServerPattern =
+nassh.GoogleRelay.prototype.cookieServerPattern =
     'http://%(host):8022/cookie?ext=%encodeURIComponent(return_to)' +
-    '&path=html/google_relay.html';
+    '&path=html/nassh_google_relay.html';
 
 /**
  * The pattern for the relay server's url.
  *
  * We'll be appending 'proxy', 'read' and 'write' to this as necessary.
  */
-NaSSH.GoogleRelay.prototype.relayServerPattern =
+nassh.GoogleRelay.prototype.relayServerPattern =
     'http://%(host):8023/';
 
-NaSSH.GoogleRelay.prototype.requestRelayServer = function(destination) {
+nassh.GoogleRelay.prototype.redirect = function(opt_resumePath) {
+  var resumePath = opt_resumePath ||
+      document.location.href.substr(document.location.origin.length);
+
   // Save off our destination in session storage before we leave for the
   // proxy page.
-  sessionStorage.setItem('googleRelay.destination', destination);
-  var queryString = document.location.search;
-  if (queryString.length < 2)
-    queryString = '';
-  sessionStorage.setItem('googleRelay.queryString', queryString);
+  sessionStorage.setItem('googleRelay.resumePath', resumePath);
 
   document.location = hterm.replaceVars(
       this.cookieServerPattern,
       { host: this.proxy,
+        // This returns us to nassh_google_relay.html so we can pick the relay
+        // host out of the reply.  From there we continue on to the resumePath.
         return_to:  document.location.host
       });
 };
@@ -105,44 +106,45 @@ NaSSH.GoogleRelay.prototype.requestRelayServer = function(destination) {
  *
  * If we have just come back from the cookie server, then we'll return true.
  */
-NaSSH.GoogleRelay.prototype.init = function(username, hostname,
-                                                  opt_port) {
-  var destination = username + '@' + hostname;
-  if (opt_port)
-    destination += ':' + opt_port;
-  destination += '@' + this.proxy;
+nassh.GoogleRelay.prototype.init = function(opt_resumePath) {
+  var resumePath = opt_resumePath ||
+      document.location.href.substr(document.location.origin.length);
 
-  // This session storage item comes from /html/google_relay.html.
-  var relayHost = sessionStorage.getItem('googleRelay.host');
+  // This session storage item is created by /html/nassh_google_relay.html
+  // if we succeed at finding a relay host.
+  var relayHost = sessionStorage.getItem('googleRelay.relayHost');
   if (relayHost) {
-    var savedDestination = sessionStorage.getItem('googleRelay.destination');
-    if (savedDestination == destination) {
+    var expectedResumePath =
+        sessionStorage.getItem('googleRelay.resumePath');
+    if (expectedResumePath == resumePath) {
       this.relayServer = hterm.replaceVars(this.relayServerPattern,
                                            {host: relayHost});
     } else {
-      console.warn('Destination mismatch: ' + savedDestination + ' != ' +
-                   destination);
+      // If everything is ok, this should be the second time we've been asked
+      // to do the same init.  (The first time would have redirected.)  If this
+      // init specifies a different resumePath, then something is probably
+      // wrong.
+      console.warn('Destination mismatch: ' + expectedResumePath + ' != ' +
+                   resumePath);
       this.relayServer = null;
     }
   }
 
-  sessionStorage.removeItem('googleRelay.server');
-  sessionStorage.removeItem('googleRelay.destination');
+  sessionStorage.removeItem('googleRelay.relayHost');
+  sessionStorage.removeItem('googleRelay.resumePath');
 
   if (this.relayServer)
     return true;
 
-  this.requestRelayServer(destination);
   return false;
 };
 
 /**
- * Return an NaSSH.Stream object that will handle the socket stream
+ * Return an nassh.Stream object that will handle the socket stream
  * for this relay.
  */
-NaSSH.GoogleRelay.prototype.openSocket = function(
-    fd, host, port, onOpen) {
-  return NaSSH.Stream.openStream(NaSSH.GoogleRelay.Socket,
+nassh.GoogleRelay.prototype.openSocket = function(fd, host, port, onOpen) {
+  return nassh.Stream.openStream(nassh.GoogleRelay.Socket,
             fd, {relay: this, host: host, port: port}, onOpen);
 };
 
@@ -152,8 +154,8 @@ NaSSH.GoogleRelay.prototype.openSocket = function(
  * This class manages the read and write XML http requests used to communicate
  * with the Google relay server.
  */
-NaSSH.GoogleRelay.Socket = function(fd) {
-  NaSSH.Stream.apply(this, [fd]);
+nassh.GoogleRelay.Socket = function(fd) {
+  nassh.Stream.apply(this, [fd]);
 
   this.host_ = null;
   this.port_ = null;
@@ -179,16 +181,16 @@ NaSSH.GoogleRelay.Socket = function(fd) {
 };
 
 /**
- * We are a subclass of NaSSH.Stream.
+ * We are a subclass of nassh.Stream.
  */
-NaSSH.GoogleRelay.Socket.prototype = {
-  __proto__: NaSSH.Stream.prototype
+nassh.GoogleRelay.Socket.prototype = {
+  __proto__: nassh.Stream.prototype
 };
 
 /**
  * Maximum length of message that can be sent to avoid request limits.
  */
-NaSSH.GoogleRelay.Socket.prototype.maxMessageLength = 1024;
+nassh.GoogleRelay.Socket.prototype.maxMessageLength = 1024;
 
 /**
  * Open a relay socket.
@@ -196,7 +198,7 @@ NaSSH.GoogleRelay.Socket.prototype.maxMessageLength = 1024;
  * This fires off the /proxy request, and if it succeeds starts the /read
  * hanging GET.
  */
-NaSSH.GoogleRelay.Socket.prototype.asyncOpen_ = function(
+nassh.GoogleRelay.Socket.prototype.asyncOpen_ = function(
     args, onComplete) {
 
   this.relay_ = args.relay;
@@ -233,7 +235,7 @@ NaSSH.GoogleRelay.Socket.prototype.asyncOpen_ = function(
   sessionRequest.send();
 };
 
-NaSSH.GoogleRelay.Socket.prototype.resumeRead_ = function() {
+nassh.GoogleRelay.Socket.prototype.resumeRead_ = function() {
   if (this.isRequestBusy_(this.readRequest_))
     return;
 
@@ -250,7 +252,7 @@ NaSSH.GoogleRelay.Socket.prototype.resumeRead_ = function() {
 /**
  * Queue up some data to write.
  */
-NaSSH.GoogleRelay.Socket.prototype.asyncWrite = function(data) {
+nassh.GoogleRelay.Socket.prototype.asyncWrite = function(data, onSuccess) {
   if (!data.length)
     return;
 
@@ -258,11 +260,12 @@ NaSSH.GoogleRelay.Socket.prototype.asyncWrite = function(data) {
 
   data = this.base64ToWebSafe_(data);
   while (data.length > this.maxMessageLength) {
-    this.writeQueue_.push(data.substr(0, this.maxMessageLength));
+    this.writeQueue_.push({data: data.substr(0, this.maxMessageLength),
+                           onSuccess: onSuccess});
     data = data.substr(this.maxMessageLength);
   }
 
-  this.writeQueue_.push(data);
+  this.writeQueue_.push({data: data, onSuccess: onSuccess});
 
   if (needService)
     this.serviceWriteQueue_();
@@ -271,7 +274,7 @@ NaSSH.GoogleRelay.Socket.prototype.asyncWrite = function(data) {
 /**
  * Returns true if the given XHR is busy.
  */
-NaSSH.GoogleRelay.Socket.prototype.isRequestBusy_ = function(r) {
+nassh.GoogleRelay.Socket.prototype.isRequestBusy_ = function(r) {
   return (r.readyState != XMLHttpRequest.DONE &&
           r.readyState != XMLHttpRequest.UNSENT);
 };
@@ -279,7 +282,7 @@ NaSSH.GoogleRelay.Socket.prototype.isRequestBusy_ = function(r) {
 /**
  * Send the next pending write.
  */
-NaSSH.GoogleRelay.Socket.prototype.serviceWriteQueue_ = function() {
+nassh.GoogleRelay.Socket.prototype.serviceWriteQueue_ = function() {
   if (!this.writeQueue_.length || this.isRequestBusy_(this.writeRequest_)) {
     // Nothing to write, or a write is in progress.
     return;
@@ -290,14 +293,14 @@ NaSSH.GoogleRelay.Socket.prototype.serviceWriteQueue_ = function() {
     return;
   }
 
-  var msg = this.writeQueue_[0];
+  var data = this.writeQueue_[0].data;
   this.writeRequest_.open('GET', this.relay_.relayServer +
                           'write?sid=' + this.sessionID_ +
-                          '&wcnt=' + this.writeCount_ + '&data=' + msg, true);
+                          '&wcnt=' + this.writeCount_ + '&data=' + data, true);
   this.writeRequest_.send();
 };
 
-NaSSH.GoogleRelay.Socket.prototype.webSafeToBase64_ = function(s) {
+nassh.GoogleRelay.Socket.prototype.webSafeToBase64_ = function(s) {
   s = s.replace(/[-_]/g, function(ch) { return (ch == '-' ? '+' : '/'); });
 
   var mod4 = s.length % 4;
@@ -314,7 +317,7 @@ NaSSH.GoogleRelay.Socket.prototype.webSafeToBase64_ = function(s) {
   return s;
 };
 
-NaSSH.GoogleRelay.Socket.prototype.base64ToWebSafe_ = function(s) {
+nassh.GoogleRelay.Socket.prototype.base64ToWebSafe_ = function(s) {
   return s.replace(/[+/=]/g, function(ch) {
       if (ch == '+')
         return '-';
@@ -329,7 +332,7 @@ NaSSH.GoogleRelay.Socket.prototype.base64ToWebSafe_ = function(s) {
  *
  * Instead we push data to the client using the onDataAvailable event.
  */
-NaSSH.GoogleRelay.Socket.prototype.asyncRead = function(size, onRead) {
+nassh.GoogleRelay.Socket.prototype.asyncRead = function(size, onRead) {
   setTimeout(function() { onRead('') }, 0);
 };
 
@@ -339,7 +342,7 @@ NaSSH.GoogleRelay.Socket.prototype.asyncRead = function(size, onRead) {
  * This indicates that the response entity has the data for us to send to the
  * terminal.
  */
-NaSSH.GoogleRelay.Socket.prototype.onReadReady_ = function(e) {
+nassh.GoogleRelay.Socket.prototype.onReadReady_ = function(e) {
   if (this.readRequest_.readyState != XMLHttpRequest.DONE)
     return;
 
@@ -366,7 +369,7 @@ NaSSH.GoogleRelay.Socket.prototype.onReadReady_ = function(e) {
  * This indicates that data we wrote has either been successfully written, or
  * failed somewhere along the way.
  */
-NaSSH.GoogleRelay.Socket.prototype.onWriteDone_ = function(e) {
+nassh.GoogleRelay.Socket.prototype.onWriteDone_ = function(e) {
   if (this.writeRequest_.readyState != XMLHttpRequest.DONE)
     return;
 
@@ -379,19 +382,21 @@ NaSSH.GoogleRelay.Socket.prototype.onWriteDone_ = function(e) {
   if (this.writeRequest_.status != 200)
     return this.onRequestError_(e);
 
-  var lastCount = this.writeQueue_[0].length;
-  this.writeQueue_.shift();
-  this.writeCount_ += Math.floor(lastCount * 3 / 4);
-  this.onWriteAcknowledge(this.writeCount_);
+  var lastWrite = this.writeQueue_.shift();
+
+  this.writeCount_ += Math.floor(lastWrite.data.length * 3 / 4);
 
   this.onRequestSuccess_(this.writeRequest_);
+
+  if (typeof lastWrite.onSuccess == 'function')
+    lastWrite.onSuccess(this.writeCount_);
 };
 
 /**
  * Called after a successful read or write to indicate that communication
  * is working as expected.
  */
-NaSSH.GoogleRelay.Socket.prototype.onRequestSuccess_ = function(request) {
+nassh.GoogleRelay.Socket.prototype.onRequestSuccess_ = function(request) {
   this.backoffMS_ = 0;
 
   if (this.backoffTimeout_) {
@@ -419,13 +424,13 @@ NaSSH.GoogleRelay.Socket.prototype.onRequestSuccess_ = function(request) {
  * This does not guarantee that communications have been restored, only
  * that we can try again.
  */
-NaSSH.GoogleRelay.Socket.prototype.onBackoffExpired_ = function() {
+nassh.GoogleRelay.Socket.prototype.onBackoffExpired_ = function() {
   this.backoffTimeout_ = null;
   this.resumeRead_();
   this.serviceWriteQueue_();
 };
 
-NaSSH.GoogleRelay.Socket.prototype.onRequestError_ = function(e) {
+nassh.GoogleRelay.Socket.prototype.onRequestError_ = function(e) {
   if (this.backoffTimeout_)
     return;
 

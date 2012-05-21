@@ -5,19 +5,18 @@
 // This file handles the onload event for google_relay.html.  It would have
 // been included inline in the html file if Content Security Policy (CSP) didn't
 // forbid it.
-//
-// This is separate from google_relay.js because that file depends on the
-// 'hterm.NaSSH' object.
 
 window.onload = function() {
   var relayHost = document.location.hash.substr(1).split('@')[1];
-  sessionStorage.setItem('googleRelay.host', relayHost);
+  sessionStorage.setItem('googleRelay.relayHost', relayHost);
 
-  var destination = sessionStorage.getItem('googleRelay.destination');
-  var queryString = sessionStorage.getItem('googleRelay.queryString');
-  var url = chrome.extension.getURL('html/nassh.html' + queryString +
-                                    '#' + destination);
+  var path = sessionStorage.getItem('googleRelay.resumePath')
+  if (!path) {
+    console.error('Nowhere to resume to!');
+    return;
+  }
 
+  var url = chrome.extension.getURL(path);
   console.log(url);
   document.location = url;
 };

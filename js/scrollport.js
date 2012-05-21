@@ -207,7 +207,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'height: 100%;' +
       'overflow-y: scroll; overflow-x: hidden;' +
       'white-space: pre;' +
-      'width: 100%;');
+      'width: 100%;' +
+      'outline: none !important');
 
   doc.body.appendChild(this.screen_);
 

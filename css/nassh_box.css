@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * Utility css to make box layout easier to specify.
+ *
+ * Treats <x-hbox>...</x-hbox> and <x-vbox>...</x-vbox> as horizontal and
+ * vertical boxes.  Also allows <sometag x-vbox> attributes, for times when
+ * some specific tag behavior is important.
+ */
+
+*[x-box] {
+  display: -webkit-box;
+}
+
+x-vbox, *[x-vbox] {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+x-hbox, *[x-hbox] {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+*[x-flex="1"], *[x-flex="1"] { -webkit-box-flex: 1 }
+*[x-flex="2"], *[x-flex="2"] { -webkit-box-flex: 2 }
+*[x-flex="3"], *[x-flex="3"] { -webkit-box-flex: 3 }
+*[x-flex="4"], *[x-flex="4"] { -webkit-box-flex: 4 }
+
+*[x-pack="justify"] { -webkit-box-pack: justify }
+*[x-pack="center"] { -webkit-box-pack: center }
+*[x-pack="start"] { -webkit-box-pack: start }
+*[x-pack="end"] { -webkit-box-pack: end }
+
+*[x-align="center"] { -webkit-box-align: center }
+*[x-align="baseline"] { -webkit-box-align: baseline }

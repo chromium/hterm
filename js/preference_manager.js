@@ -23,7 +23,7 @@
  *     events for the provided storage object.  These events tell us when
  *     another page has made a modification to the stored data.
  */
-hterm.PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
+PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
   var prefix = opt_prefix || '';
   if (prefix.substr(prefix.length - 1) != '/')
     prefix += '/';
@@ -32,7 +32,11 @@ hterm.PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
   this.storage_ = opt_storage || window.localStorage;
   this.eventSource_ = opt_eventsource || window;
 
-  this.defaults_ = {};
+  this.prefDefs_ = {};
+  this.globalObservers_ = [];
+
+  // Pending set operations managed by the setLater method.
+  this.pendingSets_ = {};
 
   this.eventSource_.addEventListener('storage',
                                      this.onStorageEvent_.bind(this), false);
@@ -49,9 +53,10 @@ hterm.PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
  *     this preference.  Anything that can be represented in JSON is a valid
  *     default value.
  */
-hterm.PreferenceManager.prototype.definePreference = function(
-    key, value, onChange) {
-  this.defaults_[key] = { defaultValue: value, onChange: onChange };
+PreferenceManager.prototype.definePreference = function(
+    key, value, opt_onChange) {
+  var observers = opt_onChange ? [opt_onChange] : [];
+  this.prefDefs_[key] = { defaultValue: value, observers: observers };
 };
 
 /**
@@ -61,9 +66,32 @@ hterm.PreferenceManager.prototype.definePreference = function(
  *     array should contain the [key, value, onChange] parameters for a
  *     preference.
  */
-hterm.PreferenceManager.prototype.definePreferences = function(defaults) {
+PreferenceManager.prototype.definePreferences = function(defaults) {
   for (var i = 0; i < defaults.length; i++) {
     this.definePreference(defaults[i][0], defaults[i][1], defaults[i][2]);
+  }
+};
+
+/**
+ * Define multiple preferences with a single function call.
+ *
+ * @param {Array} defaults An array of 3-element arrays.  Each three element
+ *     array should contain the [key, value, onChange] parameters for a
+ *     preference.
+ */
+PreferenceManager.prototype.observePreferences = function(global, map) {
+  if (global)
+    this.globalObservers_.push(global);
+
+  if (!map)
+    return;
+
+  for (key in map) {
+    if (!(key in this.prefDefs_))
+      throw new Error('Unknown preference: ' + key);
+
+    var prefDef = this.prefDefs_[key];
+    prefDef.observers.push(map[key]);
   }
 };
 
@@ -74,8 +102,8 @@ hterm.PreferenceManager.prototype.definePreferences = function(defaults) {
  * a live object (say to switch to a different prefix), in order to get
  * the application state in sync with the backing store.
  */
-hterm.PreferenceManager.prototype.notifyAll = function() {
-  for (var key in this.defaults_) {
+PreferenceManager.prototype.notifyAll = function() {
+  for (var key in this.prefDefs_) {
     this.notifyChange_(key);
   }
 };
@@ -86,11 +114,13 @@ hterm.PreferenceManager.prototype.notifyAll = function() {
  * @param {string} key The preference to notify for, minus the prefix of
  *     this PreferenceManager.
  */
-hterm.PreferenceManager.prototype.notifyChange_ = function(key) {
-  var onChange = this.defaults_[key].onChange;
+PreferenceManager.prototype.notifyChange_ = function(key) {
+  for (var i = 0; i < this.globalObservers_.length; i++)
+    this.globalObservers_[i](key, this.get(key));
 
-  if (typeof onChange == 'function')
-    onChange(this.get(key));
+  var observers = this.prefDefs_[key].observers;
+  for (var i = 0; i < observers.length; i++)
+    observers[i](this.get(key), key, this);
 };
 
 /**
@@ -101,11 +131,17 @@ hterm.PreferenceManager.prototype.notifyChange_ = function(key) {
  *
  * @param {string} key The preference to reset.
  */
-hterm.PreferenceManager.prototype.reset = function(key) {
+PreferenceManager.prototype.reset = function(key) {
   var oldValue = this.get(key);
   this.storage_.removeItem(this.prefix_ + key);
   if (oldValue != this.get(key))
     this.notifyChange_(key);
+};
+
+PreferenceManager.prototype.resetAll = function() {
+  for (var key in this.prefDefs_) {
+    this.reset(key);
+  }
 };
 
 /**
@@ -118,11 +154,29 @@ hterm.PreferenceManager.prototype.reset = function(key) {
  * @param {*} value The value to set.  Anything that can be represented in
  *     JSON is a valid value.
  */
-hterm.PreferenceManager.prototype.set = function(key, value) {
+PreferenceManager.prototype.set = function(key, value) {
+  var prefDef = this.prefDefs_[key];
+  if (!prefDef)
+    throw new Error('Request to set unknown pref: ' + key);
+
   var oldValue = this.get(key);
   this.storage_.setItem(this.prefix_ + key, JSON.stringify(value));
   if (oldValue != this.get(key))
     this.notifyChange_(key);
+};
+
+PreferenceManager.prototype.setLater = function(key, value, opt_delay_ms) {
+  var delay_ms = opt_delay_ms || 500;
+
+  if (!(key in this.pendingSets_)) {
+    setTimeout(function() {
+        this.set(key, this.pendingSets_[key]);
+        delete this.pendingSets_[key];
+      }.bind(this),
+      delay_ms);
+  }
+
+  this.pendingSets_[key] = value;
 };
 
 /**
@@ -130,16 +184,16 @@ hterm.PreferenceManager.prototype.set = function(key, value) {
  *
  * @param {string} key The preference to get.
  */
-hterm.PreferenceManager.prototype.get = function(key) {
+PreferenceManager.prototype.get = function(key) {
   var rv = this.storage_.getItem(this.prefix_ + key);
   if (rv === null) {
-    var d = this.defaults_[key];
-    if (!d) {
+    var prefDef = this.prefDefs_[key];
+    if (!prefDef) {
       console.warn('Request for unknown pref: ' + key);
       return null;
     }
 
-    return d.defaultValue;
+    return prefDef.defaultValue;
   }
 
   return JSON.parse(rv);
@@ -152,7 +206,7 @@ hterm.PreferenceManager.prototype.get = function(key) {
  *
  * @param {string} opt_prefix Optional prefix.
  */
-hterm.PreferenceManager.prototype.listKeys = function(opt_prefix) {
+PreferenceManager.prototype.listKeys = function(opt_prefix) {
   var rv = [];
 
   for (var i = 0; i < this.storage_.length; i++) {
@@ -184,12 +238,11 @@ hterm.PreferenceManager.prototype.listKeys = function(opt_prefix) {
 /**
  * Called when a key in the storage changes.
  */
-hterm.PreferenceManager.prototype.onStorageEvent_ = function(e) {
+PreferenceManager.prototype.onStorageEvent_ = function(e) {
   if (e.storageArea != this.storage_)
     return;
 
   var key = e.key;
-
   if (this.prefix_) {
     if (key.substr(0, this.prefix_.length) != this.prefix_)
       return;
@@ -197,5 +250,8 @@ hterm.PreferenceManager.prototype.onStorageEvent_ = function(e) {
     key = key.substr(this.prefix_.length);
   }
 
-  this.notifyChange_(key);
+  if (key in this.prefDefs_) {
+    // Sometimes we'll get notified about prefs that are no longer defined.
+    this.notifyChange_(key);
+  }
 };

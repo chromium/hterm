@@ -75,6 +75,8 @@ hterm.Terminal = function(opt_profileName) {
   // each output and keystroke.
   this.scrollOnOutput_ = this.prefs_.get('scroll-on-output');
   this.scrollOnKeystroke_ = this.prefs_.get('scroll-on-keystroke');
+  this.foregroundColor_ = this.prefs_.get('foreground-color');
+  this.backgroundColor_ = this.prefs_.get('background-color');
 
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
@@ -132,7 +134,7 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
 
   this.profileName_ = profileName.replace(/\//g, '');
 
-  this.prefs_ = new hterm.PreferenceManager(
+  this.prefs_ = new PreferenceManager(
       '/hterm/prefs/profiles/' + this.profileName_);
 
   var self = this;
@@ -175,22 +177,14 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      * The background color for text with no other color attributes.
      */
     ['background-color', 'rgb(16, 16, 16)', function(v) {
-        self.scrollPort_.setBackgroundColor(v);
+        self.setBackgroundColor(v);
       }
     ],
 
     /**
      * The background image.
-     *
-     * Defaults to a subtle light-to-transparent-to-dark gradient that is
-     * mostly transparent.
      */
-    ['background-image',
-     ('-webkit-linear-gradient(bottom, ' +
-      'rgba(0,0,0,0.01) 0%, ' +
-      'rgba(0,0,0,0) 30%, ' +
-      'rgba(255,255,255,0) 70%, ' +
-      'rgba(255,255,255,0.05) 100%)'),
+    ['background-image', '',
      function(v) {
         self.scrollPort_.setBackgroundImage(v);
       }
@@ -237,7 +231,7 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      * The color of the visible cursor.
      */
     ['cursor-color', 'rgba(255,0,0,0.5)', function(v) {
-        self.cursorNode_.style.backgroundColor = v;
+        self.setCursorColor(v);
       }
     ],
 
@@ -289,7 +283,7 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      * The foreground color for text with no other color attributes.
      */
     ['foreground-color', 'rgb(240, 240, 240)', function(v) {
-        self.scrollPort_.setForegroundColor(v);
+        self.setForegroundColor(v);
       }
     ],
 
@@ -365,6 +359,36 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     this.prefs_.notifyAll();
 };
 
+
+/**
+ * Set the color for the cursor.
+ *
+ * If you want this setting to persist, set it through prefs_, rather than
+ * with this method.
+ */
+hterm.Terminal.prototype.setCursorColor = function(color) {
+  this.cursorNode_.style.backgroundColor = color;
+  this.cursorNode_.style.borderColor = color;
+};
+
+/**
+ * Return the current cursor color as a string.
+ */
+hterm.Terminal.prototype.getCursorColor = function() {
+  return this.cursorNode_.style.backgroundColor;
+};
+
+/**
+ * Set the background color.
+ *
+ * If you want this setting to persist, set it through prefs_, rather than
+ * with this method.
+ */
+hterm.Terminal.prototype.setBackgroundColor = function(color) {
+  this.backgroundColor_ = hterm.colors.normalizeCSS(color);
+  this.scrollPort_.setBackgroundColor(color);
+};
+
 /**
  * Return the current terminal background color.
  *
@@ -372,7 +396,18 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
  * prefs_ object.
  */
 hterm.Terminal.prototype.getBackgroundColor = function() {
-  return this.prefs_.get('background-color');
+  return this.backgroundColor_;
+};
+
+/**
+ * Set the foreground color.
+ *
+ * If you want this setting to persist, set it through prefs_, rather than
+ * with this method.
+ */
+hterm.Terminal.prototype.setForegroundColor = function(color) {
+  this.foregroundColor_ = hterm.colors.normalizeCSS(color);
+  this.scrollPort_.setForegroundColor(color);
 };
 
 /**
@@ -382,7 +417,7 @@ hterm.Terminal.prototype.getBackgroundColor = function() {
  * prefs_ object.
  */
 hterm.Terminal.prototype.getForegroundColor = function() {
-  return this.prefs_.get('foreground-color');
+  return this.foregroundColor_;
 };
 
 /**
@@ -459,6 +494,13 @@ hterm.Terminal.prototype.setFontSize = function(px) {
  */
 hterm.Terminal.prototype.getFontSize = function() {
   return this.scrollPort_.getFontSize();
+};
+
+/**
+ * Get the current font family.
+ */
+hterm.Terminal.prototype.getFontFamily = function() {
+  return this.scrollPort_.getFontFamily();
 };
 
 /**
@@ -911,15 +953,31 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.document_ = this.scrollPort_.getDocument();
 
+  this.document_.body.firstChild.addEventListener(
+      'focus', this.onFocusChange_.bind(this, true));
+  this.document_.body.firstChild.addEventListener(
+      'blur', this.onFocusChange_.bind(this, false));
+
+  var style = this.document_.createElement('style');
+  style.textContent =
+      ('.cursor-node[focus="false"] {' +
+       '  box-sizing: border-box;' +
+       '  background-color: transparent !important;' +
+       '  border-width: 2px;' +
+       '  border-style: solid;' +
+       '}');
+  this.document_.head.appendChild(style);
+
   this.cursorNode_ = this.document_.createElement('div');
+  this.cursorNode_.className = 'cursor-node';
   this.cursorNode_.style.cssText =
       ('position: absolute;' +
        'top: -99px;' +
        'display: block;' +
        'width: ' + this.scrollPort_.characterSize.width + 'px;' +
        'height: ' + this.scrollPort_.characterSize.height + 'px;' +
-       '-webkit-transition: opacity, background-color 100ms linear;' +
-       'background-color: ' + this.prefs_.get('cursor-color'));
+       '-webkit-transition: opacity, background-color 100ms linear;');
+  this.setCursorColor(this.prefs_.get('cursor-color'));
   this.document_.body.appendChild(this.cursorNode_);
 
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
@@ -2089,6 +2147,13 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
 
   this.io.onVTKeystroke(string);
+};
+
+/**
+ * React when focus changes.
+ */
+hterm.Terminal.prototype.onFocusChange_ = function(state) {
+  this.cursorNode_.setAttribute('focus', state ? 'true' : 'false');
 };
 
 /**

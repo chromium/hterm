@@ -1,0 +1,142 @@
+/*
+ * Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * Styles used by the connect dialog box.
+ */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(background-color);
+  color: var(foreground-color);
+}
+
+:focus {
+  outline: 2px var(cursor-color-50) solid;
+}
+
+.dialog-body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 1em;
+  box-sizing: border-box;
+}
+
+input, select {
+  border: none;
+  padding: 3px;
+  line-height: 1.2;
+  font-size: inherit;
+  font-family: inherit;
+  margin: 0.25em;
+  background-color: rgba(255, 255, 255, 0.95); /* yes, white */
+}
+
+input[type="file"] {
+  position: absolute;
+  top: -100px;
+  left: 0px;
+}
+
+input:invalid {
+  font-weight: bold;
+  color: var(cursor-color);
+}
+
+div[role="button"] {
+  border: 2px var(foreground-color-75) solid;
+  background-color: var(foreground-color-20);
+  margin: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: var(foreground-color);
+  font-size: smaller;
+  cursor: default;
+  -webkit-user-select: none;
+}
+
+div[role="button"] .key {
+  font-weight: bold;
+}
+
+div[role="button"][disabled] {
+  opacity: 0.5;
+}
+
+.shortcut {
+  color: var(foreground-color);
+}
+
+a {
+  color: var(foreground-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.column-list-item.active span {
+  background-color: var(foreground-color-75);
+  color: var(background-color);
+  font-weight: bold;
+}
+
+.column-list-item span {
+  cursor: pointer;
+}
+
+.column-list:focus {
+  outline: none;
+}
+
+.column-list:focus .column-list-item.active span {
+  background-color: var(cursor-color-75);
+  outline: none;
+}
+
+/**
+ * The billboard is the large area with the contrasting background.
+ */
+.dialog-billboard {
+  padding: 1em;
+  background-color: var(foreground-color-20);
+  color: var(foreground-color);
+  margin: 6px;
+  margin-bottom: 2em;
+  box-shadow:
+    0 0 0 2px var(background-color),
+    0 0 0 4px var(foreground-color-75);
+}
+
+/**
+ * The road is the smaller area with the dotted border.
+ */
+.dialog-road {
+  margin: 0.25em;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  padding: 0.5em;
+  border: 1px var(foreground-color-75) dotted;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#field-username,
+#field-port {
+  max-width: 10em;
+}
+
+.terminal-profile,
+#field-identity {
+  min-width: 15em;
+}

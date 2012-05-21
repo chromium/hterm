@@ -631,20 +631,24 @@ hterm.Screen.prototype.overwriteString = function(str) {
 hterm.Screen.prototype.deleteChars = function(count) {
   var node = this.cursorNode_;
   var offset = this.cursorOffset_;
+  var textContent = node.textContent;
 
-  if (node.textContent.length <= offset && !node.nextSibling) {
+  if (textContent.length <= offset && !node.nextSibling) {
     // There's nothing after this node/offset to delete, buh bye.
     return;
   }
 
   while (node && count) {
-    var startLength = node.textContent.length;
+    var startLength = textContent.length;
 
-    node.textContent = node.textContent.substr(0, offset) +
-        node.textContent.substr(offset + count);
+    textContent = textContent.substr(0, offset) +
+        textContent.substr(offset + count);
 
-    var endLength = node.textContent.length;
+    var endLength = textContent.length;
+
     count -= startLength - endLength;
+
+    node.textContent = textContent;
 
     if (endLength == 0 && node != this.cursorNode_) {
       var nextNode = node.nextSibling;
@@ -654,6 +658,8 @@ hterm.Screen.prototype.deleteChars = function(count) {
       node = node.nextSibling;
     }
 
+    if (node)
+      textContent = node.textContent;
     offset = 0;
   }
 };

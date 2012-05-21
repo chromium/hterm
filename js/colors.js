@@ -8,6 +8,62 @@
 hterm.colors = {};
 
 /**
+ * First, some canned regular expressions we're going to use in this file.
+ *
+ *
+ *                              BRACE YOURSELF
+ *
+ *                                 ,~~~~.
+ *                                 |>_< ~~
+ *                                3`---'-/.
+ *                                3:::::\v\
+ *                               =o=:::::\,\
+ *                                | :::::\,,\
+ *
+ *                        THE REGULAR EXPRESSIONS
+ *                               ARE COMING.
+ *
+ * There's no way to break long RE literals in JavaScript.  Fix that why don't
+ * you?  Oh, and also there's no way to write a string that doesn't interpret
+ * escapes.
+ *
+ * Instead, we stoop to this .replace() trick.
+ */
+hterm.colors.re_ = {
+  // CSS hex color, #RGB.
+  hex16: /#([a-f0-9])([a-f0-9])([a-f0-9])/i,
+
+  // CSS hex color, #RRGGBB.
+  hex24: /#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i,
+
+  // CSS rgb color, rgb(rrr,ggg,bbb).
+  rgb: new RegExp(
+      ('^/s*rgb/s*/(/s*(/d{1,3})/s*,/s*(/d{1,3})/s*,' +
+       '/s*(/d{1,3})/s*/)/s*$'
+       ).replace(/\//g, '\\'), 'i'),
+
+  // CSS rgb color, rgb(rrr,ggg,bbb,aaa).
+  rgba: new RegExp(
+      ('^/s*rgba/s*' +
+       '/(/s*(/d{1,3})/s*,/s*(/d{1,3})/s*,/s*(/d{1,3})/s*' +
+       '(?:,/s*(/d+(?:/./d+)?)/s*)/)/s*$'
+       ).replace(/\//g, '\\'), 'i'),
+
+  // Either RGB or RGBA.
+  rgbx: new RegExp(
+      ('^/s*rgba?/s*' +
+       '/(/s*(/d{1,3})/s*,/s*(/d{1,3})/s*,/s*(/d{1,3})/s*' +
+       '(?:,/s*(/d+(?:/./d+)?)/s*)?/)/s*$'
+       ).replace(/\//g, '\\'), 'i'),
+
+  // An X11 "rgb:ddd/ddd/ddd" value.
+  x11rgb: /^\s*rgb:([a-f0-9]{1,4})\/([a-f0-9]{1,4})\/([a-f0-9]{1,4})\s*$/i,
+
+  // English color name.
+  name: /[a-z][a-z0-9\s]+/,
+};
+
+/**
  * Convert a CSS rgb(ddd,ddd,ddd) color value into an X11 color value.
  *
  * Other CSS color values are ignored to ensure sanitary data handling.
@@ -18,7 +74,7 @@ hterm.colors = {};
  * @return {string} The X11 color value or null if the value could not be
  *     converted.
  */
-hterm.colors.cssToX11 = function(value) {
+hterm.colors.rgbToX11 = function(value) {
   function scale(v) {
     v = (Math.min(v, 255) * 257).toString(16);
     while (v.length < 4)
@@ -27,8 +83,7 @@ hterm.colors.cssToX11 = function(value) {
     return v;
   }
 
-  var ary = value.match(
-      /^\s*rgb\s*\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)\s*$/i);
+  var ary = value.match(hterm.colors.re_.rgbx);
   if (!ary)
     return null;
 
@@ -78,13 +133,11 @@ hterm.colors.x11ToCSS = function(v) {
     return Math.round(parseInt(v, 16) / 257);
   }
 
-  var ary = v.match(
-      /^\s*rgb:([a-f0-9]{1,4})\/([a-f0-9]{1,4})\/([a-f0-9]{1,4})\s*$/i);
+  var ary = v.match(hterm.colors.re_.x11rgb);
   if (!ary)
     return hterm.colors.nameToRGB(v);
 
-  return 'rgb(' + scale(ary[1]) + ', ' + scale(ary[2]) + ', ' +
-      scale(ary[3]) + ')';
+  return hterm.colors.arrayToRGB(ary[3]);
 };
 
 /**
@@ -100,7 +153,9 @@ hterm.colors.x11ToCSS = function(v) {
  */
 hterm.colors.hexToRGB = function(arg) {
   function convert(hex) {
-    var ary = hex.match(/#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i);
+    var re = (hex.length == 4) ?
+        hterm.colors.re_.hex16 : hterm.colors.re_.hex24;
+    var ary = hex.match(re)
     if (!ary)
       return null;
 
@@ -118,6 +173,77 @@ hterm.colors.hexToRGB = function(arg) {
   }
 
   return arg;
+};
+
+/**
+ * Take any valid css color definition and turn it into an rgb or rgba value.
+ */
+hterm.colors.normalizeCSS = function(def) {
+  if (def.substr(0, 1) == '#')
+    return hterm.colors.hexToRGB(def);
+
+  if (hterm.colors.re_.rgbx.test(def))
+    return def;
+
+  return hterm.colors.nameToRGB(def);
+};
+
+/**
+ * Convert a 3 or 4 element array into an rgba(...) string.
+ */
+hterm.colors.arrayToRGBA = function(ary) {
+  var alpha = (ary.length > 3) ? ary[3] : 1;
+  return 'rgba(' + ary[0] + ', ' + ary[1] + ', ' + ary[2] + ', ' + alpha + ')';
+};
+
+/**
+ * Overwrite the alpha channel of an rgb/rgba color.
+ */
+hterm.colors.setAlpha = function(rgb, alpha) {
+  var ary = hterm.colors.crackRGB(rgb);
+  ary[3] = alpha;
+  return hterm.colors.arrayToRGBA(ary);
+};
+
+/**
+ * Mix a percentage of a tint color into a base color.
+ */
+hterm.colors.mix = function(base, tint, percent) {
+  var ary1 = hterm.colors.crackRGB(base);
+  var ary2 = hterm.colors.crackRGB(tint);
+
+  for (var i = 0; i < 4; ++i) {
+    var diff = ary1[i] - ary2[i];
+    ary1[i] += diff * percent;
+  }
+
+  return hterm.colors.arrayToRGBA(ary);
+};
+
+/**
+ * Split an rgb/rgba color into an array of its components.
+ *
+ * On success, a 4 element array will be returned.  For rgb values, the alpha
+ * will be set to 1.
+ */
+hterm.colors.crackRGB = function(color) {
+  if (color.substr(0, 4) == 'rgba') {
+    var ary = color.match(hterm.colors.re_.rgba);
+    if (ary) {
+      ary.shift();
+      return ary;
+    }
+  } else {
+    var ary = color.match(hterm.colors.re_.rgb);
+    if (ary) {
+      ary.shift();
+      ary.push(1);
+      return ary;
+    }
+  }
+
+  console.error('Couldn\'t crack: ' + color);
+  return null;
 };
 
 /**

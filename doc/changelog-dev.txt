@@ -1,12 +1,91 @@
-Unreleased tip-of-trunk changes:
+0.8.1.0 - New connection dialog, flow control
 
+* New nassh binary:
+  - Support for flow control (try aafire!)
+  - Use Pepper host resolver when possible.
+  - Smaller TCP window in ssh (try ^C in aafire!)
 * Add preferences for background-size and background-position
 * Move hterm.NaSSH out to NaSSH.  This is in preparation for upcoming changes
   to further isolate the terminal from commands that run within it.
 * Fix handling of the cursor overflow flag for the ICH, ED, EL, DL,
   DCH, and ECH commands.
+* nassh_box.css: Add box layout css library.
+* nassh_connect_dialog.css: New file, connect dialog styles.
+* google_relay.js: Moved to nassh_google_relay.js
+* nassh.html: Update script tags.
+* nassh_connect_dialog.html:
+  - New file, connect dialog UI, making liberal use of nassh_box.css.
+  - TODO: i18n, a11y.
+* nassh_google_relay.html: Moved from google_relay.html
+* colors.js:
+  - Added Ned Stark reference.
+  - Added rgba color support.
+  - Added setAlpha(), mix(), and crackRGB().
+* frame.js:
+  - First draft of the interface between the terminal and a third party dialog.
+  - This will change substantially as the interface is fleshed out.
+* google_relay_html.js: moved to nassh_google_relay_html.js.
+* hterm.js:
+  - Add getURL().
+  - Rename old ferr() to fthrow(), make ferr() be like flog() except using
+    console.error().
+  - Add removeFile() and readDirectory() utility functions.
+* nassh.js:
+  - Moved most code out into nassh_command_instance.js, some into nassh_main.js.
+  - Only static utility functions (and the namespace delcaration) remaing here,
+    since this file is now shared by nassh_command_instance.js and
+    nassh_connect_dialog.js.
+* nassh_column_list.js: "Resuable" multicolumn list control.
+* nassh_command_instance.js:
+  - Sorry, rename and modifications in the same CL.
+  - Update to work with Dmitry's outputWindow changes.
+  - Add another session variable so we can distinguish between a
+    reload-for-relay-auth, and a user initiated reload.  Now we can re-display
+    the connect dialog ONLY for user initiated reloads, even when using a relay.
+  - Integrate with nassh_connect_dialog.js.
+* nassh_connect_dialog.js:
+  - New file containing most of the code backing the new connect dialog.
+  - TODO: i18n.
+* nassh_css_variables.js:
+  - OMG.  CSS variables hack until they land for real.
+  - This allows the connect dialog to adapt to the user's color scheme.
+* nassh_google_relay.js:
+  - s/NaSSH./nassh./g
+  - Refactor "destination" into "resumePath", since it was really only being
+    used as an opaque place to resume to.
+  - Integrate with Dmitry's writeWindow changes.
+* nassh_google_relay_html.js: Move from google_relay_html.js.
+* nassh_main.js: Split out of nassh.js.
+* nassh_preferences.js:
+  - New file containing nassh specific preferences.
+  - Contains "global" nassh preferences, as well as a collection of remembered
+    connection "profiles".
+* nassh_streams.js: s/NaSSH./nassh./g
+* preference_manager.js:
+  - Promote out of the hterm namespace.
+  - Allow for multiple preference observers.
+  - Allow for after-the-fact registration of preference observers.
+  - Throw an error when set() called for unknown pref.
+  - Add setLater to set a pref after a timeout and coalesce multiple calls.
+  - Fix error when notified about changes to prefs that are no longer declared.
+* screen.js:
+  - Cache textContent in deleteChars for a decent speedup.
+* scrollport.js:
+  - Remove focus outline now that the cursor changes style for focus.
+* terminal.js:
+  - Cache foreground and background colors for major speedup.
+  - Add focus/unfocused cursor styles.
+  - Remove default background gradient.
+* terminal_io.js:
+  - Add createFrame().
+  - Add setTerminalProfile().
+* vt.js: s/cssToX11/rgbToX11/.
 
-BUG=chromium-os:30302
+BUG=chromium-os:25417, Split screen scrolling in hterm about 5x slower than in
+    konsole
+BUG=chromium-os:25563, Support specifying imported keys files in hterm
+BUG=chromium-os:30103, Add a UI for port forwarding.
+BUG=chromium-os:30302, CSI K (erase in line) does not clear wrap-around flag
 
 0.8.0.6, 2012-05-14, rginda@chromium.org
 

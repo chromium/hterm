@@ -1334,7 +1334,7 @@ hterm.VT.OSC['4'] = function(parseState) {
 
     if (colorValue == '?') {
       // '?' means we should report back the current color value.
-      colorValue = hterm.colors.cssToX11(colorPalette[colorIndex]);
+      colorValue = hterm.colors.rgbToX11(colorPalette[colorIndex]);
       if (colorValue)
         responseArray.push(colorIndex + ';' + colorValue);
 

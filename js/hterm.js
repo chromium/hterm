@@ -99,6 +99,13 @@ hterm.parseQuery = function(queryString) {
   return rv;
 };
 
+hterm.getURL = function(path) {
+  if (chrome.extension && chrome.extension.getURL)
+    return chrome.extension.getURL(path);
+
+  return path;
+};
+
 /**
  * Return the current call stack after skipping a given number of frames.
  *
@@ -196,12 +203,27 @@ hterm.flog = function(msg, opt_callback) {
 };
 
 /**
+ * Returns a function that console.error's its arguments, prefixed by |msg|.
+ *
+ * @param {string} msg The message prefix to use in the log.
+ * @param {function(*)} opt_callback A function to invoke after logging.
+ */
+hterm.ferr = function(msg, opt_callback) {
+  return function() {
+    var ary = Array.apply(null, arguments);
+    console.error(msg + ': ' + ary.join(', '), hterm.getStack());
+    if (opt_callback)
+      opt_callback.call(null, arguments);
+  };
+};
+
+/**
  * Returns a function that throws an exception that includes its arguments
  * prefixed by |msg|.
  *
  * @param {string} msg The message prefix to use in the exception.
  */
-hterm.ferr = function(msg) {
+hterm.fthrow = function(msg) {
   return function() {
     var ary = Array.apply(null, arguments);
     throw new Error(msg + ': ' + ary.join(', '));
@@ -293,7 +315,6 @@ hterm.overwriteFile = function(root, path, contents,
  * @param {DirectoryEntry} root The directory to consider as the root of the
  *     path.
  * @param {string} path The path of the target file, relative to root.
- * @param {string} contents The new contents of the file.
  * @param {function(string)} successCallback The function to invoke after
  *     success.
  * @param {function(FileError)} errorCallback The function to invoke if the
@@ -310,6 +331,60 @@ hterm.readFile = function(root, path, successCallback, errorCallback) {
   }
 
   root.getFile(path, {create: false}, onFileFound, errorCallback);
+};
+
+
+/**
+ * Remove a file from an HTML5 filesystem.
+ *
+ * @param {DirectoryEntry} root The directory to consider as the root of the
+ *     path.
+ * @param {string} path The path of the target file, relative to root.
+ * @param {function(string)} successCallback The function to invoke after
+ *     success.
+ * @param {function(FileError)} errorCallback The function to invoke if the
+ *     operation fails.
+ */
+hterm.removeFile = function(root, path, opt_onSuccess, opt_onError) {
+  root.getFile(
+      path, {},
+      function (f) {
+        f.remove(hterm.flog('Removed: ' + path, opt_onSuccess),
+                 hterm.ferr('Error removing' + path, opt_onError));
+      },
+      hterm.flog('Error finding: ' + path, opt_onError)
+  );
+};
+
+/**
+ * Build a list of all FileEntrys in an HTML5 filesystem.
+ *
+ * @param {DirectoryEntry} root The directory to consider as the root of the
+ *     path.
+ * @param {string} path The path of the target file, relative to root.
+ * @param {function(Object)} successCallback The function to invoke after
+ *     success.
+ * @param {function(FileError)} errorCallback The function to invoke if the
+ *     operation fails.
+ */
+hterm.readDirectory = function(root, path, successCallback, errorCallback) {
+  var entries = {};
+
+  function onDirectoryFound(dirEntry) {
+    var reader = dirEntry.createReader();
+    reader.readEntries(function(results) {
+        for (var i = 0; i < results.length; i++) {
+          entries[results[i].name] = results[i];
+        }
+
+        if (true || !results.length) {
+          successCallback(entries);
+          return;
+        }
+      }, errorCallback);
+  }
+
+  root.getDirectory(path, {create: false}, onDirectoryFound, errorCallback);
 };
 
 /**

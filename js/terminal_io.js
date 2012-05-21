@@ -48,6 +48,29 @@ hterm.Terminal.IO.prototype.showOverlay = function(message, opt_timeout) {
 };
 
 /**
+ * Open an frame in the current terminal window, pointed to the specified
+ * url.
+ *
+ * Eventually we'll probably need size/position/decoration options.
+ * The user should also be able to move/resize the frame.
+ *
+ * @param {string} url The URL to load in the frame.
+ * @param {Object} opt_options Optional frame options.  Not implemented.
+ */
+hterm.Terminal.IO.prototype.createFrame = function(url, opt_options) {
+  return new hterm.Frame(this.terminal_, url, opt_options);
+};
+
+/**
+ * Change the preference profile for the terminal.
+ *
+ * @param profileName {string} The name of the preference profile to activate.
+ */
+hterm.Terminal.IO.prototype.setTerminalProfile = function(profileName) {
+  this.terminal_.setProfile(profileName);
+};
+
+/**
  * Create a new hterm.Terminal.IO instance and make it active on the Terminal
  * object associated with this instance.
  *

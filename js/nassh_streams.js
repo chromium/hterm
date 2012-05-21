@@ -11,7 +11,7 @@
 /**
  * Base class for streams required by the plugin.
  */
-NaSSH.Stream = function(fd, path) {
+nassh.Stream = function(fd, path) {
   this.fd_ = fd;
   this.path = path;
   this.open = false;
@@ -20,29 +20,29 @@ NaSSH.Stream = function(fd, path) {
 /**
  * Errors we may raise.
  */
-NaSSH.Stream.ERR_STREAM_CLOSED = 'Stream closed';
-NaSSH.Stream.ERR_STREAM_OPENED = 'Stream opened';
-NaSSH.Stream.ERR_FD_IN_USE = 'File descriptor in use';
-NaSSH.Stream.ERR_NOT_IMPLEMENTED = 'Not implemented';
+nassh.Stream.ERR_STREAM_CLOSED = 'Stream closed';
+nassh.Stream.ERR_STREAM_OPENED = 'Stream opened';
+nassh.Stream.ERR_FD_IN_USE = 'File descriptor in use';
+nassh.Stream.ERR_NOT_IMPLEMENTED = 'Not implemented';
 
 /**
  * Collection of currently open stream instances.
  */
-NaSSH.Stream.openStreams_ = {};
+nassh.Stream.openStreams_ = {};
 
 /**
  * Look up a stream instance.
  */
-NaSSH.Stream.getStreamByFd = function(fd) {
+nassh.Stream.getStreamByFd = function(fd) {
   return this.openStreams_[fd];
 };
 
 /**
  * Open a new stream of a given class.
  */
-NaSSH.Stream.openStream = function(streamClass, fd, arg, onOpen) {
+nassh.Stream.openStream = function(streamClass, fd, arg, onOpen) {
   if (fd in this.openStreams_)
-    throw NaSSH.Stream.ERR_FD_IN_USE;
+    throw nassh.Stream.ERR_FD_IN_USE;
 
   var stream = new streamClass(fd, arg);
   var self = this;
@@ -62,9 +62,9 @@ NaSSH.Stream.openStream = function(streamClass, fd, arg, onOpen) {
 /**
  * Clean up after a stream is closed.
  */
-NaSSH.Stream.onClose_ = function(stream) {
+nassh.Stream.onClose_ = function(stream) {
   if (stream.open)
-    throw NaSSH.Stream.ERR_STREAM_OPENED;
+    throw nassh.Stream.ERR_STREAM_OPENED;
 
   delete this.openStreams_[stream.fd_];
 };
@@ -72,28 +72,28 @@ NaSSH.Stream.onClose_ = function(stream) {
 /**
  * Open a stream, calling back when complete.
  */
-NaSSH.Stream.prototype.asyncOpen_ = function(path, onOpen) {
+nassh.Stream.prototype.asyncOpen_ = function(path, onOpen) {
   setTimeout(function() { onOpen(false) }, 0);
 };
 
 /**
  * Read from a stream, calling back with the result.
  */
-NaSSH.Stream.prototype.asyncRead = function(size, onRead) {
-  throw NaSSH.Stream.ERR_NOT_IMPLEMENTED;
+nassh.Stream.prototype.asyncRead = function(size, onRead) {
+  throw nassh.Stream.ERR_NOT_IMPLEMENTED;
 };
 
 /**
  * Write to a stream.
  */
-NaSSH.Stream.prototype.asyncWrite = function(data) {
+nassh.Stream.prototype.asyncWrite = function(data, onSuccess) {
   throw NaSSH.Stream.ERR_NOT_IMPLEMENTED;
 };
 
 /**
  * Close a stream.
  */
-NaSSH.Stream.prototype.close = function(reason) {
+nassh.Stream.prototype.close = function(reason) {
   if (!this.open)
     return;
 
@@ -102,7 +102,7 @@ NaSSH.Stream.prototype.close = function(reason) {
   if (this.onClose)
     this.onClose(reason || 'closed');
 
-  NaSSH.Stream.onClose_(this);
+  nassh.Stream.onClose_(this);
 };
 
 /**
@@ -110,22 +110,22 @@ NaSSH.Stream.prototype.close = function(reason) {
  *
  * This special case stream just returns random bytes when read.
  */
-NaSSH.Stream.Random = function(fd) {
-  NaSSH.Stream.apply(this, [fd]);
+nassh.Stream.Random = function(fd) {
+  nassh.Stream.apply(this, [fd]);
 };
 
-NaSSH.Stream.Random.prototype = {
-  __proto__: NaSSH.Stream.prototype
+nassh.Stream.Random.prototype = {
+  __proto__: nassh.Stream.prototype
 };
 
-NaSSH.Stream.Random.prototype.asyncOpen_ = function(path, onOpen) {
+nassh.Stream.Random.prototype.asyncOpen_ = function(path, onOpen) {
   this.path = path;
   setTimeout(function() { onOpen(true) }, 0);
 };
 
-NaSSH.Stream.Random.prototype.asyncRead = function(size, onRead) {
+nassh.Stream.Random.prototype.asyncRead = function(size, onRead) {
   if (!this.open)
-    throw NaSSH.Stream.ERR_STREAM_CLOSED;
+    throw nassh.Stream.ERR_STREAM_CLOSED;
 
   var bytes = new Uint8Array(size);
   crypto.getRandomValues(bytes);
