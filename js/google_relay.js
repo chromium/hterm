@@ -249,14 +249,8 @@ NaSSH.GoogleRelay.Socket.prototype.resumeRead_ = function() {
 
 /**
  * Queue up some data to write.
- *
- * This does not implement the onWrite callback.  Maybe it should, but at the
- * moment none of the callers care.
  */
-NaSSH.GoogleRelay.Socket.prototype.asyncWrite = function(data, onWrite) {
-  if (onWrite)
-    throw 'Write callback not implemented.';
-
+NaSSH.GoogleRelay.Socket.prototype.asyncWrite = function(data) {
   if (!data.length)
     return;
 
@@ -388,6 +382,7 @@ NaSSH.GoogleRelay.Socket.prototype.onWriteDone_ = function(e) {
   var lastCount = this.writeQueue_[0].length;
   this.writeQueue_.shift();
   this.writeCount_ += Math.floor(lastCount * 3 / 4);
+  this.onWriteAcknowledge(this.writeCount_);
 
   this.onRequestSuccess_(this.writeRequest_);
 };

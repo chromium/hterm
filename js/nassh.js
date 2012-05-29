@@ -27,6 +27,8 @@ function NaSSH(argv) {
   this.io = null;
   this.verbose_ = false;
   this.relay_ = null;
+  this.stdoutAcknowledgeCount_ = 0;
+  this.stderrAcknowledgeCount_ = 0;
 
   this.alertDialog = new AlertDialog(window.document.body);
   this.promptDialog = new PromptDialog(window.document.body);
@@ -418,6 +420,7 @@ NaSSH.prototype.connectTo = function(username, hostname, opt_port) {
   argv.useJsSocket = !!this.relay_;
   argv.environment = this.environment_;
   argv.arguments = ['-C'];  // enable compression
+  argv.writeWindow = 64 * 1024;
 
   var self = this;
   this.initPlugin_(function() {
@@ -592,6 +595,10 @@ NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
     console.log('close: ' + fd);
     self.sendToPlugin_('onClose', [fd, reason]);
   };
+
+  stream.onWriteAcknowledge = function(count) {
+    self.sendToPlugin_('onWriteAcknowledge', [fd, count]);
+  };
 };
 
 /**
@@ -601,8 +608,22 @@ NaSSH.prototype.onPlugin_.openSocket = function(fd, host, port) {
  */
 NaSSH.prototype.onPlugin_.write = function(fd, data) {
   if (fd == 1 || fd == 2) {
+    var self = this;
     var string = atob(data);
     this.io.print(string);
+    if (fd == 1) {
+      this.stdoutAcknowledgeCount_ += string.length;
+      setTimeout(function() {
+          self.sendToPlugin_('onWriteAcknowledge',
+                             [fd, self.stdoutAcknowledgeCount_]);
+        }, 0);
+    } else {
+      this.stderrAcknowledgeCount_ += string.length;
+      setTimeout(function() {
+          self.sendToPlugin_('onWriteAcknowledge',
+                             [fd, self.stderrAcknowledgeCount_]);
+        }, 0);
+    }
     return;
   }
 

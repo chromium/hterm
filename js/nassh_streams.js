@@ -73,7 +73,7 @@ NaSSH.Stream.onClose_ = function(stream) {
  * Open a stream, calling back when complete.
  */
 NaSSH.Stream.prototype.asyncOpen_ = function(path, onOpen) {
-  setTimeout(function() { onOpen(false)}, 0);
+  setTimeout(function() { onOpen(false) }, 0);
 };
 
 /**
@@ -84,11 +84,10 @@ NaSSH.Stream.prototype.asyncRead = function(size, onRead) {
 };
 
 /**
- * Read from a stream, calling back when complete.
+ * Write to a stream.
  */
-NaSSH.Stream.prototype.asyncWrite = function(data, onWrite) {
-  if (onWrite)
-    setTimeout(function() { onWrite(false)}, 0);
+NaSSH.Stream.prototype.asyncWrite = function(data) {
+  throw NaSSH.Stream.ERR_NOT_IMPLEMENTED;
 };
 
 /**
@@ -121,7 +120,7 @@ NaSSH.Stream.Random.prototype = {
 
 NaSSH.Stream.Random.prototype.asyncOpen_ = function(path, onOpen) {
   this.path = path;
-  setTimeout(function() { onOpen(true)}, 0);
+  setTimeout(function() { onOpen(true) }, 0);
 };
 
 NaSSH.Stream.Random.prototype.asyncRead = function(size, onRead) {
