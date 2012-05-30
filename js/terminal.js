@@ -197,6 +197,26 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * The background image size,
+     *
+     * Defaults to none.
+     */
+    ['background-size', '', function(v) {
+        self.scrollPort_.setBackgroundSize(v);
+      }
+    ],
+
+    /**
+     * The background image position,
+     *
+     * Defaults to none.
+     */
+    ['background-position', '', function(v) {
+        self.scrollPort_.setBackgroundPosition(v);
+      }
+    ],
+
+    /**
      * If true, the backspace should send BS ('\x08', aka ^H).  Otherwise
      * the backspace key should send '\x7f'.
      */
@@ -871,6 +891,9 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.scrollPort_.decorate(div);
   this.scrollPort_.setBackgroundImage(this.prefs_.get('background-image'));
+  this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
+  this.scrollPort_.setBackgroundPosition(
+      this.prefs_.get('background-position'));
 
   this.div_.focus = this.focus.bind(this);
 

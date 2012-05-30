@@ -318,6 +318,14 @@ hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
   this.screen_.style.backgroundImage = image;
 };
 
+hterm.ScrollPort.prototype.setBackgroundSize = function(size) {
+  this.screen_.style.backgroundSize = size;
+};
+
+hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
+  this.screen_.style.backgroundPosition = position;
+};
+
 hterm.ScrollPort.prototype.getScreenWidth = function() {
   return this.screen_.clientWidth;
 };

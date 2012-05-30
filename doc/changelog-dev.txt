@@ -1,5 +1,7 @@
 Unreleased tip-of-trunk changes:
 
+* Add preferences for background-size and background-position
+
 * Move hterm.NaSSH out to NaSSH.  This is in preparation for upcoming changes
   to further isolate the terminal from commands that run within it.
 
