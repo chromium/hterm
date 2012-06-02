@@ -1,9 +1,12 @@
 Unreleased tip-of-trunk changes:
 
 * Add preferences for background-size and background-position
-
 * Move hterm.NaSSH out to NaSSH.  This is in preparation for upcoming changes
   to further isolate the terminal from commands that run within it.
+* Fix handling of the cursor overflow flag for the ICH, ED, EL, DL,
+  DCH, and ECH commands.
+
+BUG=chromium-os:30302
 
 0.8.0.6, 2012-05-14, rginda@chromium.org
 

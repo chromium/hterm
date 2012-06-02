@@ -535,6 +535,13 @@ hterm.Terminal.prototype.restoreCursor = function(cursor) {
 };
 
 /**
+ * Clear the cursor's overflow flag.
+ */
+hterm.Terminal.prototype.clearCursorOverflow = function() {
+  this.screen_.cursorPosition.overflow = false;
+};
+
+/**
  * Set the width of the terminal, resizing the UI to match.
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
@@ -1289,6 +1296,7 @@ hterm.Terminal.prototype.eraseToRight = function(opt_count) {
     this.screen_.overwriteString(hterm.getWhitespace(opt_count));
   }
   this.restoreCursor(cursor);
+  this.clearCursorOverflow();
 };
 
 /**
@@ -1303,6 +1311,7 @@ hterm.Terminal.prototype.eraseLine = function() {
   var cursor = this.saveCursor();
   this.screen_.clearCursorRow();
   this.restoreCursor(cursor);
+  this.clearCursorOverflow();
 };
 
 /**
@@ -1325,6 +1334,7 @@ hterm.Terminal.prototype.eraseAbove = function() {
   }
 
   this.restoreCursor(cursor);
+  this.clearCursorOverflow();
 };
 
 /**
@@ -1348,6 +1358,7 @@ hterm.Terminal.prototype.eraseBelow = function() {
   }
 
   this.restoreCursor(cursor);
+  this.clearCursorOverflow();
 };
 
 /**
@@ -1473,6 +1484,7 @@ hterm.Terminal.prototype.deleteLines = function(count) {
   }
 
   this.restoreCursor(cursor);
+  this.clearCursorOverflow();
 };
 
 /**
@@ -1488,6 +1500,7 @@ hterm.Terminal.prototype.insertSpace = function(count) {
   this.screen_.maybeClipCurrentRow();
 
   this.restoreCursor(cursor);
+  this.clearCursorOverflow();
 };
 
 /**
@@ -1498,6 +1511,7 @@ hterm.Terminal.prototype.insertSpace = function(count) {
  */
 hterm.Terminal.prototype.deleteChars = function(count) {
   this.screen_.deleteChars(count);
+  this.clearCursorOverflow();
 };
 
 /**

@@ -998,6 +998,53 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
     result.pass();
   });
 
+/**
+ * Test interactions between the cursor overflow bit and various
+ * escape sequences.
+ */
+hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
+    // Should be on by default.
+    result.assertEQ(this.terminal.options_.wraparound, true);
+
+    // Fill a row with the last hyphen wrong, then run a command that
+    // modifies the screen, then add a hyphen. The wrap bit should be
+    // cleared, so the extra hyphen can fix the row.
+
+    this.terminal.interpret('-----  1  ----X');
+    this.terminal.interpret('\x1b[K-');  // EL
+
+    this.terminal.interpret('-----  2  ----X');
+    this.terminal.interpret('\x1b[J-');  // ED
+
+    this.terminal.interpret('-----  3  ----X');
+    this.terminal.interpret('\x1b[@-');  // ICH
+
+    this.terminal.interpret('-----  4  ----X');
+    this.terminal.interpret('\x1b[P-');  // DCH
+
+    this.terminal.interpret('-----  5  ----X');
+    this.terminal.interpret('\x1b[X-');  // ECH
+
+    // DL will delete the entire line but clear the wrap bit, so we
+    // expect a hyphen at the end and nothing else.
+    this.terminal.interpret('XXXXXXXXXXXXXXX');
+    this.terminal.interpret('\x1b[M-');  // DL
+
+    var text = this.terminal.getRowsText(0, 6);
+    result.assertEQ(text,
+                    '-----  1  -----\n' +
+                    '-----  2  -----\n' +
+                    '-----  3  -----\n' +
+                    '-----  4  -----\n' +
+                    '-----  5  -----\n' +
+                    '              -');
+
+    result.assertEQ(this.terminal.getCursorRow(), 5);
+    result.assertEQ(this.terminal.getCursorColumn(), 14);
+
+    result.pass();
+  });
+
 hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     this.terminal.interpret('1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10');
     this.terminal.interpret('\x1b[3;3f');  // Leave the cursor at (3,3)
