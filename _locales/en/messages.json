@@ -30,11 +30,6 @@
     "description": "A short tip displayed after the WELCOME message."
   },
 
-  "CONNECT_MESSAGE": {
-    "message": "Please enter a destination to connect to.",
-    "description": "Message displayed in the connect dialog."
-  },
-
   "OK_BUTTON_LABEL": {
     "message": "OK",
     "description": "The label for the OK button in dialogs."
@@ -65,9 +60,134 @@
     "description": "Appended to PLUGIN_LOADING message when loading is complete."
   },
 
-  "DESTINATION_PATTERN": {
-    "message": "username@hostname[:port]",
-    "description": "Text displayed in the destination textbox to hint at the expected format."
+  "SHORTCUT_LIST_ARIA_LABEL": {
+    "message": "saved connections",
+    "description": "Text use as the aria-label for the 'shortcut-list'."
+  },
+
+  "FIELD_DESCRIPTION_PLACEHOLDER": {
+    "message": "username@hostname or free form text",
+    "description": "Text use as the placeholder for the 'description' field."
+  },
+
+  "FIELD_DESCRIPTION_ARIA_LABEL": {
+    "message": "description",
+    "description": "Text use as the aria-label for the 'description' field."
+  },
+
+  "FIELD_USERNAME_PLACEHOLDER": {
+    "message": "username",
+    "description": "Text use as the placeholder for the 'username' field."
+  },
+
+  "FIELD_USERNAME_ARIA_LABEL": {
+    "message": "username",
+    "description": "Text use as the aria-label for the 'username' field."
+  },
+
+  "FIELD_HOSTNAME_PLACEHOLDER": {
+    "message": "hostname",
+    "description": "Text use as the placeholder for the 'hostname' field."
+  },
+
+  "FIELD_HOSTNAME_ARIA_LABEL": {
+    "message": "hostname",
+    "description": "Text use as the aria-label for the 'hostname' field."
+  },
+
+  "FIELD_PORT_PLACEHOLDER": {
+    "message": "port",
+    "description": "Text use as the placeholder for the 'port' field."
+  },
+
+  "FIELD_PORT_ARIA_LABEL": {
+    "message": "port",
+    "description": "Text use as the aria-label for the 'port' field."
+  },
+
+  "FIELD_RELAY_HOST_PLACEHOLDER": {
+    "message": "relay hostname",
+    "description": "Text use as the placeholder for the 'relay-host' field."
+  },
+
+  "FIELD_RELAY_HOST_ARIA_LABEL": {
+    "message": "relay host",
+    "description": "Text use as the aria-label for the 'relay-host' field."
+  },
+
+  "IDENTITY_LABEL": {
+    "message": "Identity",
+    "description": "The label for the 'identity' field."
+  },
+
+  "FIELD_IDENTITY_ARIA_LABEL": {
+    "message": "identity",
+    "description": "Text to use as the aria-label for the identity dropdown."
+  },
+
+  "LOADING_LABEL": {
+    "message": "Loading...",
+    "description": "The text displayed in the identity dropdown while we load identities."
+  },
+
+  "IMPORT_LINK_LABEL": {
+    "message": "Import...",
+    "description": "The label for the 'identity' field."
+  },
+
+  "IMPORT_LINK_ARIA_LABEL": {
+    "message": "file import",
+    "description": "The aria-label for the Import link."
+  },
+
+  "SSH_ARGSTR_LABEL": {
+    "message": "SSH Arguments",
+    "description": "The label for the 'argstr' field."
+  },
+
+  "FIELD_ARGSTR_PLACEHOLDER": {
+    "message": "extra command line arguments",
+    "description": "Text use as the placeholder for the 'argstr' field."
+  },
+
+  "FIELD_ARGSTR_ARIA_LABEL": {
+    "message": "additional ssh arguments",
+    "description": "Text use as the aria-label for the 'argstr' field."
+  },
+
+  "TERMINAL_PROFILE_LABEL": {
+    "message": "Terminal Profile",
+    "description": "Text use as the label for the 'terminal-profile' field."
+  },
+
+  "FIELD_TERMINAL_PROFILE_PLACEHOLDER": {
+    "message": "hostname",
+    "description": "Text use as the placeholder for the 'hostname' field."
+  },
+
+  "FIELD_TERMINAL_PROFILE_ARIA_LABEL": {
+    "message": "terminal profile name",
+    "description": "Text use as the aria-label for the 'terminal-profile' field."
+  },
+
+  "DEL_KEYCAP": {
+    "message": "[DEL]",
+    "description": "The keycap for the delete key, displayed on the delete button."
+  },
+
+  "DELETE_BUTTON_LABEL": {
+    "message": "Delete",
+    "description": "The label for the delete button."
+  },
+
+  "ENTER_KEYCAP": {
+    "message": "[ENTER]",
+    "description": "The keycap for the enter key, displayed on the connect button."
+  },
+
+  "CONNECT_BUTTON_LABEL": {
+    "message": "Connect",
+    "description": "The label for the connect button."
   },
 
   "INITIALIZING_RELAY": {
@@ -172,7 +292,7 @@
     "placeholders": {
       "count": {
         "content": "$1",
-	"example": "10"
+        "example": "10"
       }
     }
   },

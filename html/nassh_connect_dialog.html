@@ -7,6 +7,7 @@
 
   <head>
     <script src='../js/preference_manager.js'></script>
+    <script src='../js/message_manager.js'></script>
 
     <script src='../js/hterm.js'></script>
     <script src='../js/colors.js'></script>
@@ -21,46 +22,54 @@
     <link rel='stylesheet' href='../css/nassh_connect_dialog.css'></link>
   </head>
   <body class='dialog-body'>
-    <x-hbox class='dialog-road column-list' x-flex='1'> </x-hbox>
+    <x-hbox class='dialog-road column-list' id='shortcut-list' x-flex='1'
+            i18n='{"aria-label": "$id"}'> </x-hbox>
 
     <form x-vbox class='dialog-billboard'>
       <x-hbox>
         <input x-box x-flex='1' id='field-description' type='text'
-               required>
+               i18n='{"aria-label": "$id"}' required>
       </x-hbox>
       <x-vbox>
         <br>
         <x-hbox>
           <input x-box id='field-username' type='text'
+                 i18n='{"aria-label": "$id"}'
                  required pattern='^\S+$'>
           <input x-box x-flex='1' id='field-hostname' type='text'
+                 i18n='{"aria-label": "$id"}'
                  required pattern='^[a-z0-9\-]+(\.[a-z0-9\-]+)*$'>
         </x-hbox>
         <x-hbox>
           <input x-box id='field-port' type='number' min='1' max='65535'
+                 i18n='{"aria-label": "$id"}'
                  min='1' max='65535'>
           <input x-box id='field-relay-host' x-flex='1' type='text'>
         </x-hbox>
         <br>
         <x-hbox x-align='baseline'>
-          <div x-box>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Identity:&nbsp;</div>
-          <select x-box id='field-identity' type='text'>
-            <option>Loading...</option>
+          <div x-box i18n='{"_": "IDENTITY_LABEL"}'>IDENTITY</div>:&nbsp;
+          <select x-box id='field-identity' type='text'
+                  i18n='{"aria-label": "$id"}'>
+            <option i18n='{"_": "LOADING_LABEL"}'>LOADING...</option>
           </select>
           <div x-box>&nbsp;</div>
-          <a x-box id='import-link' tabindex='0' href='#'>Import...</a>
+          <a x-box id='import-link' tabindex='0' href='go:import'
+             i18n='{"aria-label": "$id", "_": "IMPORT_LINK_LABEL"}'
+             >IMPORT...</a>
           <input type="file" multiple id='import-file-input' tabindex="-1">
         </x-hbox>
         <x-hbox x-align='baseline'>
-          <div x-box>&nbsp;&nbsp;&nbsp;SSH Arguments:&nbsp;</div>
+          <div x-box i18n='{"_": "SSH_ARGSTR_LABEL"}'
+               >SSH ARGUMENTS</div>:&nbsp;
           <input x-box id='field-argstr' x-flex='1' type='text'
-                 placeholder='extra command line arguments'>
+                 i18n='{"aria-label": "$id", "placeholder": "$id"}'>
         </x-hbox>
         <x-hbox x-align='baseline'>
-          <div x-box>Terminal Profile:&nbsp;</div>
+          <div x-box i18n='{"_": "TERMINAL_PROFILE_LABEL"}'
+               >TERMINAL PROFILE</div>:&nbsp;
           <input x-box id='field-terminal-profile' type='text'
-                 placeholder='default'>
+                 i18n='{"aria-label": "$id", "placeholder": "$id"}'>
         </x-hbox>
       </x-vbox>
     </form> <!-- .dialog-billboard -->
@@ -68,12 +77,14 @@
     <x-hbox class='dialog-buttons' x-pack='end'>
       <div x-box id='delete'
            role='button' tabindex='0'
-           ><span class='key'>[DEL]</span>
-        <span class='label'>Delete</span></div>
+           ><span class='key' i18n='{"_": "DEL_KEYCAP"}'>[DEL]</span>
+        <span class='label' i18n='{"_": "DELETE_BUTTON_LABEL"}'
+              >DELETE</span></div>
       <div x-box x-flex='1'></div>
       <div x-box id='connect' role='button' tabindex='0'
-           ><span class='key'>[ENTER]</span>
-        <span class='label'>Connect</span></div>
+           ><span class='key' i18n='{"_": "ENTER_KEYCAP"}'>[ENTER]</span>
+        <span class='label' i18n='{"_": "CONNECT_BUTTON_LABEL"}'
+              >CONNECT</span></div>
     </x-hbox> <!-- .dialog-buttons -->
   </body>
 </html>

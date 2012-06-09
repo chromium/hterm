@@ -324,11 +324,11 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
   var commandArgs;
 
   if (params.argstr) {
-    var ary = params.argstr.match(/^(.*?)(?:(?:^|\s+)--\s+(.*))?$/);
+    var ary = params.argstr.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
     if (ary) {
       console.log(ary);
-      argv.arguments.concat(ary[1].split(/\s+/));
-      commandArgs = ary[2].split(/\s+/);
+      argv.arguments = argv.arguments.concat(ary[1].split(/\s+/));
+      commandArgs = ary[2] ? ary[2].split(/\s+/) : [];
     }
   }
 

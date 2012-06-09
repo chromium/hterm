@@ -72,15 +72,18 @@ hterm.Frame.prototype.onLoad = function() {};
  * Sends the terminal-info message to the iframe.
  */
 hterm.Frame.prototype.sendTerminalInfo_ = function() {
-  this.postMessage('terminal-info', [{
-      foregroundColor: this.terminal_.getForegroundColor(),
-      backgroundColor: this.terminal_.getBackgroundColor(),
-      cursorColor: this.terminal_.getCursorColor(),
-      fontSize: this.terminal_.getFontSize(),
-      fontFamily: this.terminal_.getFontFamily(),
-      baseURL: hterm.getURL('/')
-    }]
-  );
+  hterm.getAcceptLanguages(function(languages) {
+      this.postMessage('terminal-info', [{
+         acceptLanguages: languages,
+         foregroundColor: this.terminal_.getForegroundColor(),
+         backgroundColor: this.terminal_.getBackgroundColor(),
+         cursorColor: this.terminal_.getCursorColor(),
+         fontSize: this.terminal_.getFontSize(),
+         fontFamily: this.terminal_.getFontFamily(),
+         baseURL: hterm.getURL('/')
+          }]
+        );
+    }.bind(this));
 };
 
 /**

@@ -1,3 +1,10 @@
+0.8.2.0 - Localization and Accessibility for the connect dialog
+
+* Add message_manager.js to manage string bundles.
+* Add a bunch of new strings for the dialog.
+* Make nassh_connect_dialog.html/js use the new strings.
+* Fix minor issue with argument parsing.
+
 0.8.1.0 - New connection dialog, flow control
 
 * New nassh binary:

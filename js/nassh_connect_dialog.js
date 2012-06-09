@@ -33,8 +33,8 @@ nassh.ConnectDialog = function() {
     ary[i].setAttribute('spellcheck', 'false');
   }
 
-  // Load localized strings.
-  this.str = this.initStrings_();
+  // The Message Manager instance, null until the messages have loaded.
+  this.mm_ = null;
 
   // The nassh global pref manager.
   this.prefs_ = new nassh.GlobalPreferences();
@@ -58,7 +58,7 @@ nassh.ConnectDialog = function() {
 
   // Create and draw the shortcut list.
   this.shortcutList_ = new nassh.ColumnList(
-      document.querySelector('.dialog-road'), this.profileList_);
+      document.querySelector('#shortcut-list'), this.profileList_);
 
   // We need this hack until CSS variables are supported on the stable channel.
   this.cssVariables_ = new nassh.CSSVariables(document.styleSheets[1]);
@@ -95,24 +95,39 @@ nassh.ConnectDialog.ProfileRecord = function(id, prefs, opt_textContent) {
 };
 
 /**
- * Load i18n strings.
+ * Get a localized message from the Message Manager.
  *
- * TODO(rginda): Do this for real.
+ * This converts all message name to UPPER_AND_UNDER format, since that's
+ * pretty handy in the connect dialog.
  */
-nassh.ConnectDialog.prototype.initStrings_ = function() {
-  rv = {};
+nassh.ConnectDialog.prototype.msg = function(name, opt_args) {
+  if (!this.mm_)
+    return 'loading...';
 
-  rv.placeholders = {
-    'description': 'username@hostname or free-form description',
-    'username': 'username',
-    'hostname': 'hostname',
-    'port': 'port',
-    'relay-host': 'relay',
-    'argstr': 'extra command line arguments',
-    'terminal-profile': 'default',
-  };
+  return this.mm_.get(name.toUpperCase().replace(/-/g, '_'), opt_args);
+};
 
-  return rv;
+/**
+ * Align the bottom fields.
+ *
+ * We want a grid-like layout for these fields.  This is not easily done
+ * with box layout, but since we're using a fixed width font it's a simple
+ * hack.  We just left-pad all of the labels with &nbsp; so they're all
+ * the same length.
+ */
+nassh.ConnectDialog.prototype.alignLabels_ = function() {
+  var labels = [
+      this.$f('identity').previousElementSibling,
+      this.$f('argstr').previousElementSibling,
+      this.$f('terminal-profile').previousElementSibling
+  ];
+
+  var labelWidth = Math.max.apply(
+      null, labels.map(function(el) { return el.textContent.length }));
+
+  labels.forEach(function(el) {
+      el.textContent = hterm.lpad(el.textContent, labelWidth, '\xa0');
+    });
 };
 
 /**
@@ -209,8 +224,9 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
       'change', this.onImportFiles_.bind(this));
 
   var importLink = document.querySelector('#import-link');
-  importLink.addEventListener('click', function() {
+  importLink.addEventListener('click', function(e) {
       this.importFileInput_.click();
+      e.preventDefault();
     }.bind(this));
 };
 
@@ -364,8 +380,10 @@ nassh.ConnectDialog.prototype.maybeCopyPlaceholders_ = function() {
 nassh.ConnectDialog.prototype.maybeCopyPlaceholder_ = function(fieldName) {
   var field = this.$f(fieldName);
   var placeholder = field.getAttribute('placeholder');
-  if (!field.value && placeholder != this.str.placeholders[fieldName])
+  if (!field.value && placeholder != this.msg('FIELD_' + fieldName +
+                                              '_PLACEHOLDER')) {
     field.value = placeholder;
+  }
 };
 
 /**
@@ -400,7 +418,12 @@ nassh.ConnectDialog.prototype.updateDetailPlaceholders_ = function() {
   // for any field that was not matched.
   ['username', 'hostname', 'port', 'relay-host'
   ].forEach(function(name) {
-      this.$f(name, 'placeholder', ary.shift() || this.str.placeholders[name]);
+      var value = ary.shift();
+      if (!value) {
+        value = this.msg('FIELD_' + name + '_PLACEHOLDER');
+      }
+
+      this.$f(name, 'placeholder', value);
     }.bind(this));
 };
 
@@ -424,7 +447,7 @@ nassh.ConnectDialog.prototype.updateDescriptionPlaceholder_ = function() {
     if (v)
       placeholder += '@' + v;
   } else {
-    placeholder = this.str.placeholders.description;
+    placeholder = this.msg('FIELD_DESCRIPTION_PLACEHOLDER');
   }
 
   this.$f('description', 'placeholder', placeholder);
@@ -572,6 +595,17 @@ nassh.ConnectDialog.prototype.syncProfiles_ = function() {
 };
 
 /**
+ * Called when the message manager finishes loading the translations.
+ */
+nassh.ConnectDialog.prototype.onMessagesLoaded_ = function(mm, loaded, failed) {
+  this.mm_ = mm;
+  this.mm_.processI18nAttributes(document.body);
+  this.alignLabels_();
+  this.updateDetailPlaceholders_();
+  this.updateDescriptionPlaceholder_();
+};
+
+/**
  * Success callback for hterm.getFileSystem().
  *
  * Kick off the "Identity" dropdown now that we have access to the filesystem.
@@ -603,6 +637,8 @@ nassh.ConnectDialog.prototype.onImportFiles_ = function(e) {
     return;
 
   nassh.importFiles(this.fileSystem_, '/.ssh/', input.files, onImportSuccess);
+
+  return false;
 };
 
 /**
@@ -741,6 +777,10 @@ nassh.ConnectDialog.prototype.onMessageName_ = {};
  * termianl-info: The terminal introduces itself.
  */
 nassh.ConnectDialog.prototype.onMessageName_['terminal-info'] = function(info) {
+  var mm = new MessageManager(info.acceptLanguages);
+  mm.findAndLoadMessages('/_locales/$1/messages.json',
+                         this.onMessagesLoaded_.bind(this, mm));
+
   document.body.style.fontFamily = info.fontFamily;
   document.body.style.fontSize = info.fontSize + 'px';
 

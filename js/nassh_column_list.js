@@ -78,6 +78,14 @@ nassh.ColumnList.prototype.redraw = function() {
   }
 
   div.setAttribute('tabindex', '0');
+  div.setAttribute('role', 'listbox');
+
+  var baseID = div.getAttribute('id');
+  if (!baseID) {
+    baseID = Math.floor(Math.random() * 0xffff + 1).toString(16);
+    baseID = hterm.zpad(baseID, 4);
+    baseID = 'columnlist-' + baseID;
+  }
 
   if (!this.items_.length)
     return;
@@ -93,6 +101,8 @@ nassh.ColumnList.prototype.redraw = function() {
   for (var i = 0; i < this.items_.length; i++) {
     var box = this.document_.createElement('div');
     box.setAttribute('x-box', 'x-box');
+    box.setAttribute('role', 'option');
+    box.setAttribute('id', baseID + '-item-' + i);
     box.className = 'column-list-item';
 
     var item = this.document_.createElement('span');
@@ -127,6 +137,8 @@ nassh.ColumnList.prototype.setActiveIndex = function(i) {
   this.activeIndex = i;
   var node = this.getActiveNode_();
   node.classList.add('active');
+  this.div_.setAttribute('aria-activedescendant', node.getAttribute('id'));
+
   setTimeout(node.scrollIntoViewIfNeeded.bind(node), 0);
 };
 

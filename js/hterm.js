@@ -71,6 +71,16 @@ hterm.msg = function(name, opt_args) {
 };
 
 /**
+ * Get the list of accepted UI languages.
+ *
+ * @param {function(Array)} callback Function to invoke with the results.  The
+ *     parameter is a list of locale names.
+ */
+hterm.getAcceptLanguages = function(callback) {
+  chrome.i18n.getAcceptLanguages(callback);
+};
+
+/**
  * Parse a query string into a hash.
  *
  * This takes a url query string in the form 'name1=value&name2=value' and
