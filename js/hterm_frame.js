@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f');
+
 /**
  * First draft of the interface between the terminal and a third party dialog.
  *
@@ -72,7 +76,7 @@ hterm.Frame.prototype.onLoad = function() {};
  * Sends the terminal-info message to the iframe.
  */
 hterm.Frame.prototype.sendTerminalInfo_ = function() {
-  hterm.getAcceptLanguages(function(languages) {
+  lib.f.getAcceptLanguages(function(languages) {
       this.postMessage('terminal-info', [{
          acceptLanguages: languages,
          foregroundColor: this.terminal_.getForegroundColor(),
@@ -80,7 +84,7 @@ hterm.Frame.prototype.sendTerminalInfo_ = function() {
          cursorColor: this.terminal_.getCursorColor(),
          fontSize: this.terminal_.getFontSize(),
          fontFamily: this.terminal_.getFontFamily(),
-         baseURL: hterm.getURL('/')
+         baseURL: lib.f.getURL('/')
           }]
         );
     }.bind(this));
@@ -138,7 +142,7 @@ hterm.Frame.prototype.show = function() {
   var self = this;
 
   if (this.container_ && this.container_.parentNode) {
-    console.warn('Frame already visible', hterm.getStack());
+    console.error('Frame already visible');
     return;
   }
 

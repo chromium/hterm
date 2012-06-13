@@ -1,14 +1,16 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+'use strict';
 
 /**
  * Utility class used to add publish/subscribe/unsubscribe functionality to
  * an existing object.
  */
-function PubSub() {
+hterm.PubSub = function() {
   this.observers_ = {};
-}
+};
 
 /**
  * Add publish, subscribe, and unsubscribe methods to an existing object.
@@ -18,12 +20,12 @@ function PubSub() {
  *
  * @param {Object} obj The object to add this behavior to.
  */
-PubSub.addBehavior = function(obj) {
-  var pubsub = new PubSub();
-  for (var m in PubSub.prototype) {
-    obj[m] = PubSub.prototype[m].bind(pubsub);
+hterm.PubSub.addBehavior = function(obj) {
+  var pubsub = new hterm.PubSub();
+  for (var m in hterm.PubSub.prototype) {
+    obj[m] = hterm.PubSub.prototype[m].bind(pubsub);
   }
-}
+};
 
 /**
  * Subscribe to be notified of messages about a subject.
@@ -31,7 +33,7 @@ PubSub.addBehavior = function(obj) {
  * @param {string} subject The subject to subscribe to.
  * @param {function(Object)} callback The function to invoke for notifications.
  */
-PubSub.prototype.subscribe = function(subject, callback) {
+hterm.PubSub.prototype.subscribe = function(subject, callback) {
   if (!(subject in this.observers_))
     this.observers_[subject] = [];
 
@@ -45,7 +47,7 @@ PubSub.prototype.subscribe = function(subject, callback) {
  * @param {function(Object)} callback A callback previously registered via
  *     subscribe().
  */
-PubSub.prototype.unsubscribe = function(subject, callback) {
+hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
   var list = this.observers_[subject];
   if (!list)
     throw 'Invalid subject: ' + subject;
@@ -68,7 +70,7 @@ PubSub.prototype.unsubscribe = function(subject, callback) {
  * @param {function(Object)} opt_lastCallback An optional function to call after
  *     all subscribers have been notified.
  */
-PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
+hterm.PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
   function notifyList(i) {
     // Set this timeout before invoking the callback, so we don't have to
     // concern ourselves with exceptions.

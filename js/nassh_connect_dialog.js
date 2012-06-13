@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.colors', 'lib.f', 'lib.fs', 'lib.MessageManager');
+
 /**
  * Window onLoad handler for nassh_connect_dialog.html.
  */
 window.onload = function() {
+  lib.ensureRuntimeDependencies();
   window.dialog_ = new nassh.ConnectDialog();
 };
 
@@ -126,7 +131,7 @@ nassh.ConnectDialog.prototype.alignLabels_ = function() {
       null, labels.map(function(el) { return el.textContent.length }));
 
   labels.forEach(function(el) {
-      el.textContent = hterm.lpad(el.textContent, labelWidth, '\xa0');
+      el.textContent = lib.f.lpad(el.textContent, labelWidth, '\xa0');
     });
 };
 
@@ -529,8 +534,8 @@ nassh.ConnectDialog.prototype.syncIdentityDropdown_ = function(opt_onSuccess) {
 
   }.bind(this);
 
-  hterm.readDirectory(this.fileSystem_.root, '/.ssh/', onReadSuccess,
-                      hterm.ferr('Error enumerating /.ssh/', onReadError));
+  lib.fs.readDirectory(this.fileSystem_.root, '/.ssh/', onReadSuccess,
+                       lib.fs.err('Error enumerating /.ssh/', onReadError));
 };
 
 /**
@@ -544,10 +549,10 @@ nassh.ConnectDialog.prototype.deleteIdentity_ = function(identityName) {
       this.syncIdentityDropdown_();
   }.bind(this);
 
-  hterm.removeFile(this.fileSystem_.root, '/.ssh/' + identityName,
-                   onRemove());
-  hterm.removeFile(this.fileSystem_.root, '/.ssh/' + identityName + '.pub',
-                   onRemove());
+  lib.fs.removeFile(this.fileSystem_.root, '/.ssh/' + identityName,
+                    onRemove);
+  lib.fs.removeFile(this.fileSystem_.root, '/.ssh/' + identityName + '.pub',
+                    onRemove);
 };
 
 /**
@@ -606,7 +611,7 @@ nassh.ConnectDialog.prototype.onMessagesLoaded_ = function(mm, loaded, failed) {
 };
 
 /**
- * Success callback for hterm.getFileSystem().
+ * Success callback for lib.fs.getFileSystem().
  *
  * Kick off the "Identity" dropdown now that we have access to the filesystem.
  */
@@ -777,16 +782,16 @@ nassh.ConnectDialog.prototype.onMessageName_ = {};
  * termianl-info: The terminal introduces itself.
  */
 nassh.ConnectDialog.prototype.onMessageName_['terminal-info'] = function(info) {
-  var mm = new MessageManager(info.acceptLanguages);
+  var mm = new lib.MessageManager(info.acceptLanguages);
   mm.findAndLoadMessages('/_locales/$1/messages.json',
                          this.onMessagesLoaded_.bind(this, mm));
 
   document.body.style.fontFamily = info.fontFamily;
   document.body.style.fontSize = info.fontSize + 'px';
 
-  var fg = hterm.colors.normalizeCSS(info.foregroundColor);
-  var bg = hterm.colors.normalizeCSS(info.backgroundColor);
-  var cursor = hterm.colors.normalizeCSS(info.cursorColor);
+  var fg = lib.colors.normalizeCSS(info.foregroundColor);
+  var bg = lib.colors.normalizeCSS(info.backgroundColor);
+  var cursor = lib.colors.normalizeCSS(info.cursorColor);
 
   var vars = {
     'background-color': bg,
@@ -795,9 +800,9 @@ nassh.ConnectDialog.prototype.onMessageName_['terminal-info'] = function(info) {
   };
 
   for (var i = 10; i < 100; i += 5) {
-    vars['background-color-' + i] = hterm.colors.setAlpha(bg, i / 100);
-    vars['foreground-color-' + i] = hterm.colors.setAlpha(fg, i / 100);
-    vars['cursor-color-' + i] = hterm.colors.setAlpha(cursor, i / 100);
+    vars['background-color-' + i] = lib.colors.setAlpha(bg, i / 100);
+    vars['foreground-color-' + i] = lib.colors.setAlpha(fg, i / 100);
+    vars['cursor-color-' + i] = lib.colors.setAlpha(cursor, i / 100);
   }
 
   this.cssVariables_.reset(vars);

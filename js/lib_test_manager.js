@@ -1,34 +1,36 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+'use strict';
 
 /**
  * @fileoverview JavaScript unit testing framework for synchronous and
  *     asynchronous tests.
  *
- * This file contains the TestManager and related classes.  At the moment it's
- * all collected in a single file since it's reasonably small (=~1k lines), and
- * it's a lot easier to include one file into your test harness than it is to
- * include seven.
+ * This file contains the lib.TestManager and related classes.  At the moment
+ * it's all collected in a single file since it's reasonably small
+ * (=~1k lines), and it's a lot easier to include one file into your test
+ * harness than it is to include seven.
  *
  * The following classes are defined...
  *
- *   TestManager - The root class and entrypoint for creating test runs.
- *   TestManager.Log - Logging service.
- *   TestManager.Suite - A collection of tests.
- *   TestManager.Test - A single test.
- *   TestManager.TestRun - Manages the execution of a set of tests.
- *   TestManager.Result - A single test result.
+ *   lib.TestManager - The root class and entrypoint for creating test runs.
+ *   lib.TestManager.Log - Logging service.
+ *   lib.TestManager.Suite - A collection of tests.
+ *   lib.TestManager.Test - A single test.
+ *   lib.TestManager.TestRun - Manages the execution of a set of tests.
+ *   lib.TestManager.Result - A single test result.
  */
 
 /**
  * Root object in the unit test heirarchy, and keeper of the log object.
  *
- * @param {TestManager.Log} opt_log Optional TestManager.Log object.  Logs
- *     to the JavaScript console if ommitted.
+ * @param {lib.TestManager.Log} opt_log Optional lib.TestManager.Log object.
+ *     Logs to the JavaScript console if ommitted.
  */
-function TestManager(opt_log) {
-  this.log = opt_log || new TestManager.Log();
+lib.TestManager = function(opt_log) {
+  this.log = opt_log || new lib.TestManager.Log();
 }
 
 /**
@@ -36,11 +38,11 @@ function TestManager(opt_log) {
  *
  * @param {Object} opt_cx An object to be passed to test suite setup(),
  *     preamble(), and test cases during this test run.  This object is opaque
- *     to TestManager.* code.  It's entirely up to the test suite what it's
+ *     to lib.TestManager.* code.  It's entirely up to the test suite what it's
  *     used for.
  */
-TestManager.prototype.createTestRun = function(opt_cx) {
-  return new TestManager.TestRun(this, opt_cx);
+lib.TestManager.prototype.createTestRun = function(opt_cx) {
+  return new lib.TestManager.TestRun(this, opt_cx);
 };
 
 /**
@@ -48,7 +50,7 @@ TestManager.prototype.createTestRun = function(opt_cx) {
  *
  * Clients may override this to call an appropriate function.
  */
-TestManager.prototype.onTestRunComplete = function(testRun) {};
+lib.TestManager.prototype.onTestRunComplete = function(testRun) {};
 
 /**
  * Destination for test case output.
@@ -56,7 +58,7 @@ TestManager.prototype.onTestRunComplete = function(testRun) {};
  * @param {function(string)} opt_logFunction Optional function to call to
  *     write a string to the log.  If ommitted, console.log is used.
  */
-TestManager.Log = function(opt_logFunction) {
+lib.TestManager.Log = function(opt_logFunction) {
   this.logFunction_ = opt_logFunction || function(s) { console.log(s) };
   this.pending_ = '';
   this.prefix_ = '';
@@ -70,7 +72,7 @@ TestManager.Log = function(opt_logFunction) {
  *
  * @param {string} str The prefix to prepend to future log messages.
  */
-TestManager.Log.prototype.pushPrefix = function(str) {
+lib.TestManager.Log.prototype.pushPrefix = function(str) {
   this.prefixStack_.push(str);
   this.prefix_ = this.prefixStack_.join('');
 };
@@ -78,7 +80,7 @@ TestManager.Log.prototype.pushPrefix = function(str) {
 /**
  * Remove the most recently added message prefix.
  */
-TestManager.Log.prototype.popPrefix = function() {
+lib.TestManager.Log.prototype.popPrefix = function() {
   this.prefixStack_.pop();
   this.prefix_ = this.prefixStack_.join('');
 };
@@ -101,7 +103,7 @@ TestManager.Log.prototype.popPrefix = function() {
  *
  * @param {string} str The string to add to the log.
  */
-TestManager.Log.prototype.print = function(str) {
+lib.TestManager.Log.prototype.print = function(str) {
   if (this.pending_) {
     this.pending_ += str;
   } else {
@@ -114,7 +116,7 @@ TestManager.Log.prototype.print = function(str) {
  *
  * @param {string} str The string to add to the log.
  */
-TestManager.Log.prototype.println = function(str) {
+lib.TestManager.Log.prototype.println = function(str) {
   if (this.pending_)
     this.flush();
 
@@ -124,7 +126,7 @@ TestManager.Log.prototype.println = function(str) {
 /**
  * Flush any pending log message.
  */
-TestManager.Log.prototype.flush = function() {
+lib.TestManager.Log.prototype.flush = function() {
   if (!this.pending_)
     return;
 
@@ -133,14 +135,15 @@ TestManager.Log.prototype.flush = function() {
 };
 
 /**
- * Returns a new constructor function that will inherit from TestManager.Suite.
+ * Returns a new constructor function that will inherit from
+ * lib.TestManager.Suite.
  *
  * Use this function to create a new test suite subclass.  It will return a
  * properly initialized constructor function for the subclass.  You can then
  * override the setup() and preamble() methods if necessary and add test cases
  * to the subclass.
  *
- *   var MyTests = new TestManager.Suite('MyTests');
+ *   var MyTests = new lib.TestManager.Suite('MyTests');
  *
  *   MyTests.prototype.setup = function(cx) {
  *     // Sets this.size to cx.size if it exists, or the default value of 10
@@ -192,7 +195,7 @@ TestManager.Log.prototype.flush = function() {
  *
  * @param {string} suiteName The name of the test suite.
  */
-TestManager.Suite = function(suiteName) {
+lib.TestManager.Suite = function(suiteName) {
   function ctor(testManager, cx) {
     this.testManager_ = testManager;
     this.suiteName = suiteName;
@@ -201,34 +204,34 @@ TestManager.Suite = function(suiteName) {
   }
 
   ctor.suiteName = suiteName;
-  ctor.addTest = TestManager.Suite.addTest;
-  ctor.disableTest = TestManager.Suite.disableTest;
-  ctor.getTest = TestManager.Suite.getTest;
-  ctor.getTestList = TestManager.Suite.getTestList;
+  ctor.addTest = lib.TestManager.Suite.addTest;
+  ctor.disableTest = lib.TestManager.Suite.disableTest;
+  ctor.getTest = lib.TestManager.Suite.getTest;
+  ctor.getTestList = lib.TestManager.Suite.getTestList;
   ctor.testList_ = [];
   ctor.testMap_ = {};
-  ctor.prototype = { __proto__: TestManager.Suite.prototype };
+  ctor.prototype = { __proto__: lib.TestManager.Suite.prototype };
 
-  TestManager.Suite.subclasses.push(ctor);
+  lib.TestManager.Suite.subclasses.push(ctor);
 
   return ctor;
 };
 
 /**
- * List of TestManager.Suite subclasses, in the order they were defined.
+ * List of lib.TestManager.Suite subclasses, in the order they were defined.
  */
-TestManager.Suite.subclasses = [];
+lib.TestManager.Suite.subclasses = [];
 
 /**
- * Add a test to a TestManager.Suite.
+ * Add a test to a lib.TestManager.Suite.
  *
  * This method is copied to new subclasses when they are created.
  */
-TestManager.Suite.addTest = function(testName, testFunction) {
+lib.TestManager.Suite.addTest = function(testName, testFunction) {
   if (testName in this.testMap_)
     throw 'Duplicate test name: ' + testName;
 
-  var test = new TestManager.Test(this, testName, testFunction);
+  var test = new lib.TestManager.Test(this, testName, testFunction);
   this.testMap_[testName] = test;
   this.testList_.push(test);
 };
@@ -236,33 +239,33 @@ TestManager.Suite.addTest = function(testName, testFunction) {
 /**
  * Defines a disabled test.
  */
-TestManager.Suite.disableTest = function(testName, testFunction) {
+lib.TestManager.Suite.disableTest = function(testName, testFunction) {
   if (testName in this.testMap_)
     throw 'Duplicate test name: ' + testName;
 
-  var test = new TestManager.Test(this, testName, testFunction);
+  var test = new lib.TestManager.Test(this, testName, testFunction);
   console.log('Disabled test: ' + test.fullName);
 };
 
 /**
- * Get a TestManager.Test instance by name.
+ * Get a lib.TestManager.Test instance by name.
  *
  * This method is copied to new subclasses when they are created.
  *
  * @param {string} testName The name of the desired test.
- * @return {TestManager.Test} The requested test, or undefined if it was not
+ * @return {lib.TestManager.Test} The requested test, or undefined if it was not
  *     found.
  */
-TestManager.Suite.getTest = function(testName) {
+lib.TestManager.Suite.getTest = function(testName) {
   return this.testMap_[testName];
 };
 
 /**
- * Get an array of TestManager.Tests associated with this Suite.
+ * Get an array of lib.TestManager.Tests associated with this Suite.
  *
  * This method is copied to new subclasses when they are created.
  */
-TestManager.Suite.getTestList = function() {
+lib.TestManager.Suite.getTestList = function() {
   return this.testList_;
 };
 
@@ -286,7 +289,7 @@ TestManager.Suite.getTestList = function() {
  *     this test suite instance.  The value listed here will be used if the
  *     name is not defined on the context object.
  */
-TestManager.Suite.prototype.setDefaults = function(cx, defaults) {
+lib.TestManager.Suite.prototype.setDefaults = function(cx, defaults) {
   for (var k in defaults) {
     this[k] = (k in cx) ? cx[k] : defaults[k];
   }
@@ -313,7 +316,7 @@ TestManager.Suite.prototype.setDefaults = function(cx, defaults) {
  *
  * @param {Object} cx The context object for a test run.
  */
-TestManager.Suite.prototype.setup = function(cx) {};
+lib.TestManager.Suite.prototype.setup = function(cx) {};
 
 /**
  * Subclassable method called to do pre-test set up.
@@ -326,10 +329,11 @@ TestManager.Suite.prototype.setup = function(cx) {};
  *
  * Any exception here will abort the remainder of the test run.
  *
- * @param {TestManager.Result} result The result object for the upcoming test.
+ * @param {lib.TestManager.Result} result The result object for the upcoming
+ *     test.
  * @param {Object} cx The context object for a test run.
  */
-TestManager.Suite.prototype.preamble = function(result, cx) {};
+lib.TestManager.Suite.prototype.preamble = function(result, cx) {};
 
 /**
  * Subclassable method called to do post-test tear-down.
@@ -342,27 +346,28 @@ TestManager.Suite.prototype.preamble = function(result, cx) {};
  *
  * Any exception here will abort the remainder of the test run.
  *
- * @param {TestManager.Result} result The result object for the upcoming test.
+ * @param {lib.TestManager.Result} result The result object for the upcoming
+ *     test.
  * @param {Object} cx The context object for a test run.
  */
-TestManager.Suite.prototype.postamble = function(result, cx) {};
+lib.TestManager.Suite.prototype.postamble = function(result, cx) {};
 
 /**
  * Object representing a single test in a test suite.
  *
- * These are created as part of the TestManager.Suite.addTest() method.  You
- * should never have to construct one by hand.
+ * These are created as part of the lib.TestManager.Suite.addTest() method.
+ * You should never have to construct one by hand.
  *
- * @param {TestManager.Suite} suiteClass The test suite class containing this
- *     test.
+ * @param {lib.TestManager.Suite} suiteClass The test suite class containing
+ *     this test.
  * @param {string} testName The local name of this test case, not including the
  *     test suite name.
- * @param {function(TestManager.Result, Object)} testFunction The function to
- *     invoke for this test case.  This is passed a Result instance and the
+ * @param {function(lib.TestManager.Result, Object)} testFunction The function
+ *     to invoke for this test case.  This is passed a Result instance and the
  *     context object associated with the test run.
  *
  */
-TestManager.Test = function(suiteClass, testName, testFunction) {
+lib.TestManager.Test = function(suiteClass, testName, testFunction) {
   /**
    * The test suite class containing this function.
    */
@@ -385,18 +390,18 @@ TestManager.Test = function(suiteClass, testName, testFunction) {
 /**
  * Execute this test.
  *
- * This is called by a TestManager.Result instance, as part of a
- * TestManager.TestRun.  You should not call it by hand.
+ * This is called by a lib.TestManager.Result instance, as part of a
+ * lib.TestManager.TestRun.  You should not call it by hand.
  *
- * @param {TestManager.Result} result The result object for the test.
+ * @param {lib.TestManager.Result} result The result object for the test.
  */
-TestManager.Test.prototype.run = function(result) {
+lib.TestManager.Test.prototype.run = function(result) {
   try {
-    // Tests are applied to the parent TestManager.Suite subclass.
+    // Tests are applied to the parent lib.TestManager.Suite subclass.
     this.testFunction_.apply(result.suite,
                              [result, result.testRun.cx]);
   } catch (ex) {
-    if (ex instanceof TestManager.Result.TestComplete)
+    if (ex instanceof lib.TestManager.Result.TestComplete)
       return;
 
     result.println(ex.stack ? ex.stack : 'Test raised an exception: ' + ex);
@@ -408,27 +413,27 @@ TestManager.Test.prototype.run = function(result) {
  * Used to choose a set of tests and run them.
  *
  * It's slightly more convenient to construct one of these from
- * TestManager.prototype.createTestRun().
+ * lib.TestManager.prototype.createTestRun().
  *
- * @param {TestManager} testManager The testManager associated with this
+ * @param {lib.TestManager} testManager The testManager associated with this
  *     TestRun.
  * @param {Object} cx A context to be passed into the tests.  This can be used
  *     to set parameters for the test suite or individual test cases.
  */
-TestManager.TestRun = function(testManager, cx) {
+lib.TestManager.TestRun = function(testManager, cx) {
   /**
-   * The associated TestManager instance.
+   * The associated lib.TestManager instance.
    */
   this.testManager = testManager;
 
   /**
-   * Shortcut to the TestManager's log.
+   * Shortcut to the lib.TestManager's log.
    */
   this.log = testManager.log;
 
   /**
    * The test run context.  It's entirely up to the test suite and test cases
-   * how this is used.  It is opaque to TestManager.* classes.
+   * how this is used.  It is opaque to lib.TestManager.* classes.
    */
   this.cx = cx || {};
 
@@ -481,16 +486,17 @@ TestManager.TestRun = function(testManager, cx) {
  * This value can be passed to select() to indicate that all tests should
  * be selected.
  */
-TestManager.TestRun.prototype.ALL_TESTS = new String('<all-tests>');
+lib.TestManager.TestRun.prototype.ALL_TESTS = new String('<all-tests>');
 
 /**
  * Add a single test to the test run.
  */
-TestManager.TestRun.prototype.selectTest = function(test) {
+lib.TestManager.TestRun.prototype.selectTest = function(test) {
   this.testQueue_.push(test);
 };
 
-TestManager.TestRun.prototype.selectSuite = function(suiteClass, opt_pattern) {
+lib.TestManager.TestRun.prototype.selectSuite = function(
+    suiteClass, opt_pattern) {
   var pattern = opt_pattern || this.ALL_TESTS;
   var selectCount = 0;
   var testList = suiteClass.getTestList();
@@ -528,11 +534,12 @@ TestManager.TestRun.prototype.selectSuite = function(suiteClass, opt_pattern) {
  * @return {int} The number of additional tests that have been selected into
  *     this TestRun.
  */
-TestManager.TestRun.prototype.selectPattern = function(pattern) {
+lib.TestManager.TestRun.prototype.selectPattern = function(pattern) {
   var selectCount = 0;
 
-  for (var i = 0; i < TestManager.Suite.subclasses.length; i++) {
-    selectCount += this.selectSuite(TestManager.Suite.subclasses[i], pattern);
+  for (var i = 0; i < lib.TestManager.Suite.subclasses.length; i++) {
+    selectCount += this.selectSuite(lib.TestManager.Suite.subclasses[i],
+                                    pattern);
   }
 
   if (!selectCount) {
@@ -546,10 +553,10 @@ TestManager.TestRun.prototype.selectPattern = function(pattern) {
  * Hooked up to window.onerror during a test run in order to catch exceptions
  * that would otherwise go uncaught.
  */
-TestManager.TestRun.prototype.onUncaughtException_ = function(
+lib.TestManager.TestRun.prototype.onUncaughtException_ = function(
     message, file, line) {
 
-  if (message.indexOf('Uncaught TestManager.Result.TestComplete') == 0) {
+  if (message.indexOf('Uncaught lib.TestManager.Result.TestComplete') == 0) {
     // This is a result.pass() or result.fail() call from a callback.  We're
     // already going to deal with it as part of the completeTest_() call
     // that raised it.  We can safely squelch this error message.
@@ -589,7 +596,8 @@ TestManager.TestRun.prototype.onUncaughtException_ = function(
  *     test run is completed immediately.  This should only be used from within
  *     this function.
  */
-TestManager.TestRun.prototype.onTestRunComplete_ = function(opt_skipTimeout) {
+lib.TestManager.TestRun.prototype.onTestRunComplete_ = function(
+    opt_skipTimeout) {
   if (!opt_skipTimeout) {
     // The final test may have left a lingering setTimeout(..., 0), or maybe
     // poked at the DOM in a way that will trigger a event to fire at the end
@@ -615,12 +623,12 @@ TestManager.TestRun.prototype.onTestRunComplete_ = function(opt_skipTimeout) {
 };
 
 /**
- * Called by the TestManager.Result object when a test completes.
+ * Called by the lib.TestManager.Result object when a test completes.
  *
- * @param {TestManager.Result} result The result object which has just
+ * @param {lib.TestManager.Result} result The result object which has just
  *     completed.
  */
-TestManager.TestRun.prototype.onResultComplete = function(result) {
+lib.TestManager.TestRun.prototype.onResultComplete = function(result) {
   try {
     result.suite.postamble();
   } catch (ex) {
@@ -649,7 +657,7 @@ TestManager.TestRun.prototype.onResultComplete = function(result) {
 };
 
 /**
- * Called by the TestManager.Result object when a test which has already
+ * Called by the lib.TestManager.Result object when a test which has already
  * completed reports another completion.
  *
  * This is usually indicative of a buggy testcase.  It is probably reporting a
@@ -662,12 +670,12 @@ TestManager.TestRun.prototype.onResultComplete = function(result) {
  *
  * In any case, re-completing a test ALWAYS moves it into the failure pile.
  *
- * @param {TestManager.Result} result The result object which has just
+ * @param {lib.TestManager.Result} result The result object which has just
  *     completed.
  * @param {string} lateStatus The status that the test attempted to record this
  *     time around.
  */
-TestManager.TestRun.prototype.onResultReComplete = function(
+lib.TestManager.TestRun.prototype.onResultReComplete = function(
     result, lateStatus) {
   this.log.println('Late complete for test: ' + result.test.fullName + ': ' +
                    lateStatus);
@@ -684,7 +692,7 @@ TestManager.TestRun.prototype.onResultReComplete = function(
 /**
  * Run the next test in the queue.
  */
-TestManager.TestRun.prototype.runNextTest_ = function() {
+lib.TestManager.TestRun.prototype.runNextTest_ = function() {
   if (this.panic || !this.testQueue_.length)
     return this.onTestRunComplete_();
 
@@ -716,7 +724,7 @@ TestManager.TestRun.prototype.runNextTest_ = function() {
     this.log.print('Test: ' + test.fullName + ' {');
     this.log.pushPrefix('  ');
 
-    this.currentResult = new TestManager.Result(this, suite, test);
+    this.currentResult = new lib.TestManager.Result(this, suite, test);
     suite.preamble(this.currentResult, this.cx);
 
     this.testQueue_.shift();
@@ -750,17 +758,17 @@ TestManager.TestRun.prototype.runNextTest_ = function() {
  * called back when the run has completed.
  *
  * This function will log the results of the test run as they happen into the
- * log defined by the associated TestManager.  By default this is console.log,
- * which can be viewed in the JavaScript console of most browsers.
+ * log defined by the associated lib.TestManager.  By default this is
+ * console.log, which can be viewed in the JavaScript console of most browsers.
  *
  * The browser state is determined by the last test to run.  We intentionally
  * don't do any cleanup so that you can inspect the state of a failed test, or
  * leave the browser ready for manual testing.
  *
- * Any failures in TestManager.* code or test suite setup or test case preamble
- * will cause the test run to abort.
+ * Any failures in lib.TestManager.* code or test suite setup or test case
+ * preamble will cause the test run to abort.
  */
-TestManager.TestRun.prototype.run = function() {
+lib.TestManager.TestRun.prototype.run = function() {
   this.log.println('Running ' + this.testQueue_.length + ' test(s) {');
   this.log.pushPrefix('  ');
 
@@ -772,7 +780,7 @@ TestManager.TestRun.prototype.run = function() {
 /**
  * Format milliseconds as fractional seconds.
  */
-TestManager.TestRun.prototype.msToSeconds_ = function(ms) {
+lib.TestManager.TestRun.prototype.msToSeconds_ = function(ms) {
   var secs = (ms / 1000).toFixed(2);
   return secs + 's';
 };
@@ -780,7 +788,7 @@ TestManager.TestRun.prototype.msToSeconds_ = function(ms) {
 /**
  * Log the current result summary.
  */
-TestManager.TestRun.prototype.summarize = function() {
+lib.TestManager.TestRun.prototype.summarize = function() {
   if (this.failures.length) {
     for (var i = 0; i < this.failures.length; i++) {
       this.log.println('FAILED: ' + this.failures[i].test.fullName);
@@ -804,13 +812,13 @@ TestManager.TestRun.prototype.summarize = function() {
  * test assertions, or to create exception-proof wrappers for callback
  * functions.
  *
- * @param {TestManager.TestRun} testRun The TestRun instance associated with
+ * @param {lib.TestManager.TestRun} testRun The TestRun instance associated with
  *     this result.
- * @param {TestManager.Suit} suite The Suite containing the test we're
+ * @param {lib.TestManager.Suit} suite The Suite containing the test we're
  *     collecting this result for.
- * @param {TestManager.Test} test The test we're collecting this result for.
+ * @param {lib.TestManager.Test} test The test we're collecting this result for.
  */
-TestManager.Result = function(testRun, suite, test) {
+lib.TestManager.Result = function(testRun, suite, test) {
   /**
    * The TestRun instance associated with this result.
    */
@@ -849,27 +857,27 @@ TestManager.Result = function(testRun, suite, test) {
 /**
  * Possible values for this.status.
  */
-TestManager.Result.prototype.PENDING = 'pending';
-TestManager.Result.prototype.FAILED  = 'FAILED';
-TestManager.Result.prototype.PASSED  = 'passed';
+lib.TestManager.Result.prototype.PENDING = 'pending';
+lib.TestManager.Result.prototype.FAILED  = 'FAILED';
+lib.TestManager.Result.prototype.PASSED  = 'passed';
 
 /**
  * Exception thrown when a test completes (pass or fail), to ensure no more of
  * the test is run.
  */
-TestManager.Result.TestComplete = function(result) {
+lib.TestManager.Result.TestComplete = function(result) {
   this.result = result;
 };
 
-TestManager.Result.TestComplete.prototype.toString = function() {
-  return 'TestManager.Result.TestComplete: ' + this.result.test.fullName +
+lib.TestManager.Result.TestComplete.prototype.toString = function() {
+  return 'lib.TestManager.Result.TestComplete: ' + this.result.test.fullName +
       ', status: ' + this.result.status;
 }
 
 /**
  * Start the test associated with this result.
  */
-TestManager.Result.prototype.run = function() {
+lib.TestManager.Result.prototype.run = function() {
   var self = this;
 
   this.startDate = new Date();
@@ -890,14 +898,14 @@ TestManager.Result.prototype.run = function() {
  * The test case does *not* automatically fail if the error message is not
  * encountered.
  */
-TestManager.Result.prototype.expectErrorMessage = function(str) {
+lib.TestManager.Result.prototype.expectErrorMessage = function(str) {
   this.expectedErrorMessage_ = str;
 };
 
 /**
  * Function called when a test times out.
  */
-TestManager.Result.prototype.onTimeout_ = function() {
+lib.TestManager.Result.prototype.onTimeout_ = function() {
   this.timeout_ = null;
 
   if (this.status != this.PENDING)
@@ -923,7 +931,7 @@ TestManager.Result.prototype.onTimeout_ = function() {
  *
  * @param {int} ms Number of milliseconds requested.
  */
-TestManager.Result.prototype.requestTime = function(ms) {
+lib.TestManager.Result.prototype.requestTime = function(ms) {
   if (this.timeout_)
     clearTimeout(this.timeout_);
 
@@ -937,7 +945,7 @@ TestManager.Result.prototype.requestTime = function(ms) {
  * @param {boolean} opt_throw Optional boolean indicating whether or not
  *     to throw the TestComplete exception.
  */
-TestManager.Result.prototype.completeTest_ = function(status, opt_throw) {
+lib.TestManager.Result.prototype.completeTest_ = function(status, opt_throw) {
   if (this.status != this.PENDING) {
     this.testRun.onResultReComplete(this, status);
     return;
@@ -949,7 +957,7 @@ TestManager.Result.prototype.completeTest_ = function(status, opt_throw) {
   this.testRun.onResultComplete(this);
 
   if (arguments.length < 2 || opt_throw)
-    throw new TestManager.Result.TestComplete(this);
+    throw new lib.TestManager.Result.TestComplete(this);
 };
 
 /**
@@ -966,7 +974,8 @@ TestManager.Result.prototype.completeTest_ = function(status, opt_throw) {
  *     assertion in the test log.  If ommitted it will be the file:line
  *     of the caller.
  */
-TestManager.Result.prototype.assertEQ = function(actual, expected, opt_name) {
+lib.TestManager.Result.prototype.assertEQ = function(
+    actual, expected, opt_name) {
   // Utility function to pretty up the log.
   function format(value) {
     if (typeof value == 'number')
@@ -1006,7 +1015,7 @@ TestManager.Result.prototype.assertEQ = function(actual, expected, opt_name) {
  *     assertion in the test log.  If ommitted it will be the file:line
  *     of the caller.
  */
-TestManager.Result.prototype.assert = function(actual, opt_name) {
+lib.TestManager.Result.prototype.assert = function(actual, opt_name) {
   if (actual === true)
     return;
 
@@ -1026,7 +1035,7 @@ TestManager.Result.prototype.assert = function(actual, opt_name) {
  *     called this method, 1 is its caller, and so on.
  * @return {string} A string of the format "filename:linenumber".
  */
-TestManager.Result.prototype.getCallerLocation_ = function(frameIndex) {
+lib.TestManager.Result.prototype.getCallerLocation_ = function(frameIndex) {
   try {
     throw new Error();
   } catch (ex) {
@@ -1039,7 +1048,7 @@ TestManager.Result.prototype.getCallerLocation_ = function(frameIndex) {
 /**
  * Write a message to the result log.
  */
-TestManager.Result.prototype.println = function(message) {
+lib.TestManager.Result.prototype.println = function(message) {
   this.testRun.log.println(message);
 };
 
@@ -1050,7 +1059,7 @@ TestManager.Result.prototype.println = function(message) {
  *
  * @param {string} opt_message Optional message to add to the log.
  */
-TestManager.Result.prototype.fail = function(opt_message) {
+lib.TestManager.Result.prototype.fail = function(opt_message) {
   if (arguments.length)
     this.println(opt_message);
 
@@ -1064,7 +1073,7 @@ TestManager.Result.prototype.fail = function(opt_message) {
  *
  * @param {string} opt_message Optional message to add to the log.
  */
-TestManager.Result.prototype.pass  = function(opt_message) {
+lib.TestManager.Result.prototype.pass  = function(opt_message) {
   if (arguments.length)
     this.println(opt_message);
 

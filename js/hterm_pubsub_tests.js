@@ -1,15 +1,17 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-PubSub.Tests = new TestManager.Suite('PubSub.Tests');
+'use strict';
+
+hterm.PubSub.Tests = new lib.TestManager.Suite('hterm.PubSub.Tests');
 
 /**
- * Test that the appropriate methods are added to a PubSub target object.
+ * Test that the appropriate methods are added to a hterm.PubSub target object.
  */
-PubSub.Tests.addTest('methods', function(result, cx) {
+hterm.PubSub.Tests.addTest('methods', function(result, cx) {
     var obj = {};
-    PubSub.addBehavior(obj);
+    hterm.PubSub.addBehavior(obj);
 
     result.assertEQ(3, Object.keys(obj).length);
 
@@ -24,7 +26,7 @@ PubSub.Tests.addTest('methods', function(result, cx) {
 /**
  * Test that subscribers are notified in the proper order.
  */
-PubSub.Tests.addTest('publish-order', function(result, cx) {
+hterm.PubSub.Tests.addTest('publish-order', function(result, cx) {
     var callbackCount = 0;
 
     function one() { result.assertEQ(1, ++callbackCount) }
@@ -33,7 +35,7 @@ PubSub.Tests.addTest('publish-order', function(result, cx) {
     function last() { result.assertEQ(4, ++callbackCount); result.pass() }
 
     var obj = {};
-    PubSub.addBehavior(obj);
+    hterm.PubSub.addBehavior(obj);
 
     obj.subscribe('test', one);
     obj.subscribe('test', two);
@@ -47,7 +49,7 @@ PubSub.Tests.addTest('publish-order', function(result, cx) {
 /**
  * Test that a published parameter is haneded off to all subscribers.
  */
-PubSub.Tests.addTest('parameter', function(result, cx) {
+hterm.PubSub.Tests.addTest('parameter', function(result, cx) {
     var expected = {};
 
     function one(param) { result.assertEQ(expected, param) }
@@ -56,7 +58,7 @@ PubSub.Tests.addTest('parameter', function(result, cx) {
     function last(param) { result.assertEQ(expected, param); result.pass() }
 
     var obj = {};
-    PubSub.addBehavior(obj);
+    hterm.PubSub.addBehavior(obj);
 
     obj.subscribe('test', one);
     obj.subscribe('test', two);
@@ -70,7 +72,7 @@ PubSub.Tests.addTest('parameter', function(result, cx) {
 /**
  * Test that the final callback is invoked, even if nobody has subscribed.
  */
-PubSub.Tests.addTest('forever-alone', function(result, cx) {
+hterm.PubSub.Tests.addTest('forever-alone', function(result, cx) {
     result.pass();
     return;
 
@@ -79,7 +81,7 @@ PubSub.Tests.addTest('forever-alone', function(result, cx) {
     function last(param) { calledLast = true }
 
     var obj = {};
-    PubSub.addBehavior(obj);
+    hterm.PubSub.addBehavior(obj);
 
     obj.publish('test', null, last);
 
@@ -96,7 +98,7 @@ PubSub.Tests.addTest('forever-alone', function(result, cx) {
  * Test that an exception raised by a subscriber does not stop the remaining
  * notifications.
  */
-PubSub.Tests.addTest('exception', function(result, cx) {
+hterm.PubSub.Tests.addTest('exception', function(result, cx) {
     var calledFoo = false;
     var calledBar = false;
     var calledLast = false;
@@ -106,7 +108,7 @@ PubSub.Tests.addTest('exception', function(result, cx) {
     function last() { calledLast = true }
 
     var obj = {};
-    PubSub.addBehavior(obj);
+    hterm.PubSub.addBehavior(obj);
 
     obj.subscribe('test', foo);
     obj.subscribe('test', bar);

@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f', 'lib.fs',
+          // TODO(rginda): Nassh should not depend directly on hterm.  These
+          // dependencies need to be refactored.
+          'hterm.msg');
+
 /**
  * The NaCl-ssh-powered terminal command.
  *
@@ -68,11 +75,11 @@ nassh.CommandInstance.run = function(argv) {
 nassh.CommandInstance.prototype.run = function() {
   this.io = this.argv_.io.push();
 
-  // Similar to hterm.ferr, except this logs to the terminal too.
+  // Similar to lib.fs.err, except this logs to the terminal too.
   var ferr = function(msg) {
     return function(err) {
       var ary = Array.apply(null, arguments);
-      console.error(msg + ': ' + ary.join(', '), hterm.getStack());
+      console.error(msg + ': ' + ary.join(', '));
 
       this.io.println(hterm.msg('UNEXPECTED_ERROR'));
       this.io.println(err);
@@ -138,7 +145,7 @@ nassh.CommandInstance.prototype.run = function() {
  * @param {string} fullPath The full path to the file to remove.
  */
 nassh.CommandInstance.prototype.removeFile = function(fullPath) {
-  hterm.removeFile(this.fileSystem_.root, '/.ssh/' + identityName);
+  lib.fs.removeFile(this.fileSystem_.root, '/.ssh/' + identityName);
 };
 
 /**
@@ -155,10 +162,10 @@ nassh.CommandInstance.prototype.removeDirectory = function(fullPath) {
   this.fileSystem_.root.getDirectory(
       fullPath, {},
       function (f) {
-        f.removeRecursively(hterm.flog('Removed: ' + fullPath),
-                            hterm.ferr('Error removing' + fullPath));
+        f.removeRecursively(lib.fs.log('Removed: ' + fullPath),
+                            lib.fs.err('Error removing' + fullPath));
       },
-      hterm.flog('Error finding: ' + fullPath)
+      lib.fs.log('Error finding: ' + fullPath)
   );
 };
 
@@ -183,24 +190,24 @@ nassh.CommandInstance.prototype.removeAllKnownHosts = function() {
  * @param {integer} index One-based index of the known host entry to remove.
  */
 nassh.CommandInstance.prototype.removeKnownHostByIndex = function(index) {
-  var onError = hterm.flog('Error accessing /.ssh/known_hosts');
+  var onError = lib.fs.log('Error accessing /.ssh/known_hosts');
   var self = this;
 
-  hterm.readFile(
+  lib.fs.readFile(
       self.fileSystem_.root, '/.ssh/known_hosts',
       function(contents) {
         var ary = contents.split('\n');
         ary.splice(index - 1, 1);
-        hterm.overwriteFile(self.fileSystem_.root, '/.ssh/known_hosts',
-                            ary.join('\n'),
-                            hterm.flog('done'),
-                            onError);
+        lib.fs.overwriteFile(self.fileSystem_.root, '/.ssh/known_hosts',
+                             ary.join('\n'),
+                             lib.fs.log('done'),
+                             onError);
       }, onError);
 };
 
 nassh.CommandInstance.prototype.promptForDestination_ = function(opt_default) {
   var connectDialog = this.io.createFrame(
-      hterm.getURL('/html/nassh_connect_dialog.html'), null);
+      lib.f.getURL('/html/nassh_connect_dialog.html'), null);
 
   connectDialog.onMessage = function(event) {
     event.data.argv.unshift(connectDialog);
@@ -396,8 +403,8 @@ nassh.CommandInstance.prototype.initPlugin_ = function(onComplete) {
  * @param {string} name The name of the message to send.
  * @param {Array} arguments The message arguments.
  */
-nassh.CommandInstance.prototype.sendToPlugin_ = function(name, arguments) {
-  var str = JSON.stringify({name: name, arguments: arguments});
+nassh.CommandInstance.prototype.sendToPlugin_ = function(name, args) {
+  var str = JSON.stringify({name: name, arguments: args});
 
   this.plugin_.postMessage(str);
 };

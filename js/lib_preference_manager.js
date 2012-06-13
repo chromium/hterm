@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
- * Constructor for PreferenceManager objects.
+ * Constructor for lib.PreferenceManager objects.
  *
  * These objects deal with persisting changes to stable storage and notifying
  * consumers when preferences change.
@@ -23,7 +25,7 @@
  *     events for the provided storage object.  These events tell us when
  *     another page has made a modification to the stored data.
  */
-PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
+lib.PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
   var prefix = opt_prefix || '';
   if (prefix.substr(prefix.length - 1) != '/')
     prefix += '/';
@@ -53,7 +55,7 @@ PreferenceManager = function(opt_prefix, opt_storage, opt_eventsource) {
  *     this preference.  Anything that can be represented in JSON is a valid
  *     default value.
  */
-PreferenceManager.prototype.definePreference = function(
+lib.PreferenceManager.prototype.definePreference = function(
     key, value, opt_onChange) {
   var observers = opt_onChange ? [opt_onChange] : [];
   this.prefDefs_[key] = { defaultValue: value, observers: observers };
@@ -66,7 +68,7 @@ PreferenceManager.prototype.definePreference = function(
  *     array should contain the [key, value, onChange] parameters for a
  *     preference.
  */
-PreferenceManager.prototype.definePreferences = function(defaults) {
+lib.PreferenceManager.prototype.definePreferences = function(defaults) {
   for (var i = 0; i < defaults.length; i++) {
     this.definePreference(defaults[i][0], defaults[i][1], defaults[i][2]);
   }
@@ -79,14 +81,14 @@ PreferenceManager.prototype.definePreferences = function(defaults) {
  *     array should contain the [key, value, onChange] parameters for a
  *     preference.
  */
-PreferenceManager.prototype.observePreferences = function(global, map) {
+lib.PreferenceManager.prototype.observePreferences = function(global, map) {
   if (global)
     this.globalObservers_.push(global);
 
   if (!map)
     return;
 
-  for (key in map) {
+  for (var key in map) {
     if (!(key in this.prefDefs_))
       throw new Error('Unknown preference: ' + key);
 
@@ -102,7 +104,7 @@ PreferenceManager.prototype.observePreferences = function(global, map) {
  * a live object (say to switch to a different prefix), in order to get
  * the application state in sync with the backing store.
  */
-PreferenceManager.prototype.notifyAll = function() {
+lib.PreferenceManager.prototype.notifyAll = function() {
   for (var key in this.prefDefs_) {
     this.notifyChange_(key);
   }
@@ -114,7 +116,7 @@ PreferenceManager.prototype.notifyAll = function() {
  * @param {string} key The preference to notify for, minus the prefix of
  *     this PreferenceManager.
  */
-PreferenceManager.prototype.notifyChange_ = function(key) {
+lib.PreferenceManager.prototype.notifyChange_ = function(key) {
   for (var i = 0; i < this.globalObservers_.length; i++)
     this.globalObservers_[i](key, this.get(key));
 
@@ -131,14 +133,14 @@ PreferenceManager.prototype.notifyChange_ = function(key) {
  *
  * @param {string} key The preference to reset.
  */
-PreferenceManager.prototype.reset = function(key) {
+lib.PreferenceManager.prototype.reset = function(key) {
   var oldValue = this.get(key);
   this.storage_.removeItem(this.prefix_ + key);
   if (oldValue != this.get(key))
     this.notifyChange_(key);
 };
 
-PreferenceManager.prototype.resetAll = function() {
+lib.PreferenceManager.prototype.resetAll = function() {
   for (var key in this.prefDefs_) {
     this.reset(key);
   }
@@ -154,7 +156,7 @@ PreferenceManager.prototype.resetAll = function() {
  * @param {*} value The value to set.  Anything that can be represented in
  *     JSON is a valid value.
  */
-PreferenceManager.prototype.set = function(key, value) {
+lib.PreferenceManager.prototype.set = function(key, value) {
   var prefDef = this.prefDefs_[key];
   if (!prefDef)
     throw new Error('Request to set unknown pref: ' + key);
@@ -165,7 +167,19 @@ PreferenceManager.prototype.set = function(key, value) {
     this.notifyChange_(key);
 };
 
-PreferenceManager.prototype.setLater = function(key, value, opt_delay_ms) {
+/**
+ * Set a preference after a short delay, in order to debounce multiple sets.
+ *
+ * If this function is invoked multiple times before the delay expires, the
+ * pref will be saved just once, with the most recent value.
+ *
+ * @param {string} key The preference to set.
+ * @param {*} value The value to set.  Anything that can be represented in
+ *     JSON is a valid value.
+ * @param {integer} opt_delay_ms Optional amount of time to wait, in
+ *     milliseconds.  Defaults to 500ms.
+ */
+lib.PreferenceManager.prototype.setLater = function(key, value, opt_delay_ms) {
   var delay_ms = opt_delay_ms || 500;
 
   if (!(key in this.pendingSets_)) {
@@ -184,7 +198,7 @@ PreferenceManager.prototype.setLater = function(key, value, opt_delay_ms) {
  *
  * @param {string} key The preference to get.
  */
-PreferenceManager.prototype.get = function(key) {
+lib.PreferenceManager.prototype.get = function(key) {
   var rv = this.storage_.getItem(this.prefix_ + key);
   if (rv === null) {
     var prefDef = this.prefDefs_[key];
@@ -206,7 +220,7 @@ PreferenceManager.prototype.get = function(key) {
  *
  * @param {string} opt_prefix Optional prefix.
  */
-PreferenceManager.prototype.listKeys = function(opt_prefix) {
+lib.PreferenceManager.prototype.listKeys = function(opt_prefix) {
   var rv = [];
 
   for (var i = 0; i < this.storage_.length; i++) {
@@ -238,7 +252,7 @@ PreferenceManager.prototype.listKeys = function(opt_prefix) {
 /**
  * Called when a key in the storage changes.
  */
-PreferenceManager.prototype.onStorageEvent_ = function(e) {
+lib.PreferenceManager.prototype.onStorageEvent_ = function(e) {
   if (e.storageArea != this.storage_)
     return;
 

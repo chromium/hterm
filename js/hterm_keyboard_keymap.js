@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('hterm.Keyboard.KeyActions');
+
 /**
  * The default key map for hterm.
+ *
+ * Contains a mapping of keyCodes to keyDefs (aka key definitions).  The key
+ * definition tells the hterm.Keyboard class how to handle keycodes.
  *
  * This should work for most cases, as the printable characters get handled
  * in the keypress event.  In that case, even if the keycap is wrong in the
@@ -20,23 +27,89 @@
  * The sequences defined in this key map come from [XTERM] as referenced in
  * vt.js, starting with the section titled "Alt and Meta Keys".
  */
-hterm.Keyboard.KeyMap.Default = function(keyboard) {
-  hterm.Keyboard.KeyMap.apply(this, [keyboard, 'default']);
+hterm.Keyboard.KeyMap = function(keyboard) {
+  this.keyboard = keyboard;
+  this.keyDefs = {};
   this.reset();
+};
+
+/**
+ * Add a single key definition.
+ *
+ * The definition is a hash containing the following keys: 'keyCap', 'normal',
+ * 'control', and 'alt'.
+ *
+ *  - keyCap is a string identifying the key.  For printable
+ *    keys, the key cap should be exactly two characters, starting with the
+ *    unshifted version.  For example, 'aA', 'bB', '1!' and '=+'.  For
+ *    non-printable the key cap should be surrounded in square braces, as in
+ *    '[INS]', '[LEFT]'.  By convention, non-printable keycaps are in uppercase
+ *    but this is not a strict requirement.
+ *
+ *  - Normal is the action that should be performed when they key is pressed
+ *    in the absence of any modifier.  See below for the supported actions.
+ *
+ *  - Control is the action that should be performed when they key is pressed
+ *    along with the control modifier.  See below for the supported actions.
+ *
+ *  - Alt is the action that should be performed when they key is pressed
+ *    along with the alt modifier.  See below for the supported actions.
+ *
+ *  - Meta is the action that should be performed when they key is pressed
+ *    along with the meta modifier.  See below for the supported actions.
+ *
+ * Actions can be one of the hterm.Keyboard.KeyActions as documented below,
+ * a literal string, or an array.  If the action is a literal string then
+ * the string is sent directly to the host.  If the action is an array it
+ * is taken to be an escape sequence that may be altered by modifier keys.
+ * The second-to-last element of the array will be overwritten with the
+ * state of the modifier keys, as specified in the final table of "PC-Style
+ * Function Keys" from [XTERM].
+ */
+hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
+  if (keyCode in this.keyDefs)
+    console.warn('Duplicate keyCode: ' + keyCode);
+
+  this.keyDefs[keyCode] = def;
+};
+
+/**
+ * Add mutiple key definitions in a single call.
+ *
+ * This function takes the key definitions as variable argument list.  Each
+ * argument is the key definition specified as an array.
+ *
+ * (If the function took everything as one big hash we couldn't detect
+ * duplicates, and there would be a lot more typing involved.)
+ *
+ * Each key definition should have 6 elements: (keyCode, keyCap, normal action,
+ * control action, alt action and meta action).  See KeyMap.addKeyDef for the
+ * meaning of these elements.
+ */
+hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(var_args) {
+  for (var i = 0; i < arguments.length; i++) {
+    this.addKeyDef(arguments[i][0],
+                   { keyCap: arguments[i][1],
+                     normal: arguments[i][2],
+                     control: arguments[i][3],
+                     alt: arguments[i][4],
+                     meta: arguments[i][5]
+                   });
+  }
 };
 
 /**
  * Inherit from hterm.Keyboard.KeyMap, as defined in keyboard.js.
  */
-hterm.Keyboard.KeyMap.Default.prototype = {
+hterm.Keyboard.KeyMap.prototype = {
   __proto__: hterm.Keyboard.KeyMap.prototype
 };
 
 /**
  * Set up the default state for this keymap.
  */
-hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
-  hterm.Keyboard.KeyMap.prototype.reset.apply(this);
+hterm.Keyboard.KeyMap.prototype.reset = function() {
+  this.keyDefs = {};
 
   var self = this;
 
@@ -254,7 +327,7 @@ hterm.Keyboard.KeyMap.Default.prototype.reset = function() {
 /**
  * Either scroll the scrollback buffer or send a key sequence.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onKeyHome_ = function(e) {
+hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
   if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
     if ((e.altey || e.ctrlKey || e.shiftKey) ||
         !this.keyboard.applicationKeypad) {
@@ -271,7 +344,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onKeyHome_ = function(e) {
 /**
  * Either scroll the scrollback buffer or send a key sequence.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onKeyEnd_ = function(e) {
+hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
   if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
     if ((e.altKey || e.ctrlKey || e.shiftKey) ||
         !this.keyboard.applicationKeypad) {
@@ -288,7 +361,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onKeyEnd_ = function(e) {
 /**
  * Either scroll the scrollback buffer or send a key sequence.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onKeyPageUp_ = function(e) {
+hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
   if (!this.keyboard.pageKeysScroll ^ e.shiftKey)
     return '\x1b[5~';
 
@@ -299,7 +372,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onKeyPageUp_ = function(e) {
 /**
  * Either scroll the scrollback buffer or send a key sequence.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onKeyPageDown_ = function(e) {
+hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
   if (!this.keyboard.pageKeysScroll ^ e.shiftKey)
     return '\x1b[6~';
 
@@ -317,7 +390,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onKeyPageDown_ = function(e) {
  * heard them, and also to give them a chance to send a ^C by just hitting
  * the key again.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onCtrlC_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
   var document = this.keyboard.terminal.getDocument();
   if (e.shiftKey || document.getSelection().isCollapsed) {
     // If the shift key is being held, or there is no document selection, send
@@ -341,7 +414,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onCtrlC_ = function(e, keyDef) {
  * the selection so the user knows we heard them, and also to give them a
  * chance to send a Meta-C by just hitting the key again.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onMetaC_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
   var document = this.keyboard.terminal.getDocument();
   if (e.shiftKey || document.getSelection().isCollapsed) {
     // If the shift key is being held, or there is no document selection, send
@@ -365,7 +438,7 @@ hterm.Keyboard.KeyMap.Default.prototype.onMetaC_ = function(e, keyDef) {
  * We override the browser zoom keys to change the ScrollPort's font size to
  * avoid the issue.
  */
-hterm.Keyboard.KeyMap.Default.prototype.onZoom_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onZoom_ = function(e, keyDef) {
   if (this.keyboard.terminal.getZoomFactor() != 1) {
     // If we're not at 1:1 zoom factor, let the Ctrl +/-/0 keys control the
     // browser zoom, so it's easier to for the user to get back to 100%.

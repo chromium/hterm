@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f');
+
 /**
  * @fileoverview VT test suite.
  *
@@ -10,7 +14,7 @@
  * the terminal to verify that everyone did the right thing.
  */
 
-hterm.VT.Tests = new TestManager.Suite('hterm.VT.Tests');
+hterm.VT.Tests = new lib.TestManager.Suite('hterm.VT.Tests');
 
 hterm.VT.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
@@ -74,7 +78,7 @@ hterm.VT.Tests.addTest = function(name, callback) {
     result.requestTime(200);
   }
 
-  TestManager.Suite.addTest.apply(this, [name, testProxy]);
+  lib.TestManager.Suite.addTest.apply(this, [name, testProxy]);
 };
 
 /**
@@ -1093,8 +1097,8 @@ hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
           if (indent > 20)
             indent = 40 - indent;
 
-          self.terminal.interpret('Line ' + hterm.zpad(i, 3) + ': ' +
-                                  hterm.getWhitespace(indent) + '*\n');
+          self.terminal.interpret('Line ' + lib.f.zpad(i, 3) + ': ' +
+                                  lib.f.getWhitespace(indent) + '*\n');
         }
 
         result.pass();

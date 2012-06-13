@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.colors', 'lib.f');
+
 /**
  * Constructor for the VT escape sequence interpreter.
  *
@@ -56,7 +60,7 @@ hterm.VT = function(terminal) {
   // control character.
   var cc1 = Object.keys(hterm.VT.CC1).map(
       function(e) {
-        return '\\x' + hterm.zpad(e.charCodeAt().toString(16), 2)
+        return '\\x' + lib.f.zpad(e.charCodeAt().toString(16), 2)
       }).join('');
   this.cc1Pattern_ = new RegExp('[' + cc1 + ']');
 
@@ -1427,7 +1431,7 @@ hterm.VT.CSI['H'] = function(parseState) {
  */
 hterm.VT.CSI['I'] = function(parseState) {
   var count = parseState.iarg(0, 1);
-  count = hterm.clamp(count, 1, this.terminal.screenSize.width);
+  count = lib.f.clamp(count, 1, this.terminal.screenSize.width);
   for (var i = 0; i < count; i++) {
     this.terminal.forwardTabStop();
   }
@@ -1543,7 +1547,7 @@ hterm.VT.CSI['X'] = function(parseState) {
  */
 hterm.VT.CSI['Z'] = function(parseState) {
   var count = parseState.iarg(0, 1);
-  count = hterm.clamp(count, 1, this.terminal.screenSize.width);
+  count = lib.f.clamp(count, 1, this.terminal.screenSize.width);
   for (var i = 0; i < count; i++) {
     this.terminal.backwardTabStop();
   }

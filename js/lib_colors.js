@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * Namespace for color utilities.
  */
-hterm.colors = {};
+lib.colors = {};
 
 /**
  * First, some canned regular expressions we're going to use in this file.
@@ -29,7 +31,7 @@ hterm.colors = {};
  *
  * Instead, we stoop to this .replace() trick.
  */
-hterm.colors.re_ = {
+lib.colors.re_ = {
   // CSS hex color, #RGB.
   hex16: /#([a-f0-9])([a-f0-9])([a-f0-9])/i,
 
@@ -74,7 +76,7 @@ hterm.colors.re_ = {
  * @return {string} The X11 color value or null if the value could not be
  *     converted.
  */
-hterm.colors.rgbToX11 = function(value) {
+lib.colors.rgbToX11 = function(value) {
   function scale(v) {
     v = (Math.min(v, 255) * 257).toString(16);
     while (v.length < 4)
@@ -83,7 +85,7 @@ hterm.colors.rgbToX11 = function(value) {
     return v;
   }
 
-  var ary = value.match(hterm.colors.re_.rgbx);
+  var ary = value.match(lib.colors.re_.rgbx);
   if (!ary)
     return null;
 
@@ -101,7 +103,7 @@ hterm.colors.rgbToX11 = function(value) {
  * @return {string} The CSS color value or null if the value could not be
  *     converted.
  */
-hterm.colors.x11ToCSS = function(v) {
+lib.colors.x11ToCSS = function(v) {
   function scale(v) {
     // Pad out values with less than four digits.  This padding (probably)
     // matches xterm.  It's difficult to say for sure since xterm seems to
@@ -133,11 +135,11 @@ hterm.colors.x11ToCSS = function(v) {
     return Math.round(parseInt(v, 16) / 257);
   }
 
-  var ary = v.match(hterm.colors.re_.x11rgb);
+  var ary = v.match(lib.colors.re_.x11rgb);
   if (!ary)
-    return hterm.colors.nameToRGB(v);
+    return lib.colors.nameToRGB(v);
 
-  return hterm.colors.arrayToRGB(ary[3]);
+  return lib.colors.arrayToRGB(ary[3]);
 };
 
 /**
@@ -151,10 +153,10 @@ hterm.colors.x11ToCSS = function(v) {
  *     convert.
  * @return {string|Array.<string>} The converted value or values.
  */
-hterm.colors.hexToRGB = function(arg) {
+lib.colors.hexToRGB = function(arg) {
   function convert(hex) {
     var re = (hex.length == 4) ?
-        hterm.colors.re_.hex16 : hterm.colors.re_.hex24;
+        lib.colors.re_.hex16 : lib.colors.re_.hex24;
     var ary = hex.match(re)
     if (!ary)
       return null;
@@ -178,20 +180,20 @@ hterm.colors.hexToRGB = function(arg) {
 /**
  * Take any valid css color definition and turn it into an rgb or rgba value.
  */
-hterm.colors.normalizeCSS = function(def) {
+lib.colors.normalizeCSS = function(def) {
   if (def.substr(0, 1) == '#')
-    return hterm.colors.hexToRGB(def);
+    return lib.colors.hexToRGB(def);
 
-  if (hterm.colors.re_.rgbx.test(def))
+  if (lib.colors.re_.rgbx.test(def))
     return def;
 
-  return hterm.colors.nameToRGB(def);
+  return lib.colors.nameToRGB(def);
 };
 
 /**
  * Convert a 3 or 4 element array into an rgba(...) string.
  */
-hterm.colors.arrayToRGBA = function(ary) {
+lib.colors.arrayToRGBA = function(ary) {
   var alpha = (ary.length > 3) ? ary[3] : 1;
   return 'rgba(' + ary[0] + ', ' + ary[1] + ', ' + ary[2] + ', ' + alpha + ')';
 };
@@ -199,25 +201,25 @@ hterm.colors.arrayToRGBA = function(ary) {
 /**
  * Overwrite the alpha channel of an rgb/rgba color.
  */
-hterm.colors.setAlpha = function(rgb, alpha) {
-  var ary = hterm.colors.crackRGB(rgb);
+lib.colors.setAlpha = function(rgb, alpha) {
+  var ary = lib.colors.crackRGB(rgb);
   ary[3] = alpha;
-  return hterm.colors.arrayToRGBA(ary);
+  return lib.colors.arrayToRGBA(ary);
 };
 
 /**
  * Mix a percentage of a tint color into a base color.
  */
-hterm.colors.mix = function(base, tint, percent) {
-  var ary1 = hterm.colors.crackRGB(base);
-  var ary2 = hterm.colors.crackRGB(tint);
+lib.colors.mix = function(base, tint, percent) {
+  var ary1 = lib.colors.crackRGB(base);
+  var ary2 = lib.colors.crackRGB(tint);
 
   for (var i = 0; i < 4; ++i) {
     var diff = ary1[i] - ary2[i];
     ary1[i] += diff * percent;
   }
 
-  return hterm.colors.arrayToRGBA(ary);
+  return lib.colors.arrayToRGBA(ary);
 };
 
 /**
@@ -226,15 +228,15 @@ hterm.colors.mix = function(base, tint, percent) {
  * On success, a 4 element array will be returned.  For rgb values, the alpha
  * will be set to 1.
  */
-hterm.colors.crackRGB = function(color) {
+lib.colors.crackRGB = function(color) {
   if (color.substr(0, 4) == 'rgba') {
-    var ary = color.match(hterm.colors.re_.rgba);
+    var ary = color.match(lib.colors.re_.rgba);
     if (ary) {
       ary.shift();
       return ary;
     }
   } else {
-    var ary = color.match(hterm.colors.re_.rgb);
+    var ary = color.match(lib.colors.re_.rgb);
     if (ary) {
       ary.shift();
       ary.push(1);
@@ -258,17 +260,17 @@ hterm.colors.crackRGB = function(color) {
  * @param {string} name The color name to convert.
  * @return {string} The corresponding CSS rgb(...) value.
  */
-hterm.colors.nameToRGB = function(name) {
-  if (name in hterm.colors.colorNames)
-    return hterm.colors.colorNames[name];
+lib.colors.nameToRGB = function(name) {
+  if (name in lib.colors.colorNames)
+    return lib.colors.colorNames[name];
 
   name = name.toLowerCase();
-  if (name in hterm.colors.colorNames)
-    return hterm.colors.colorNames[name];
+  if (name in lib.colors.colorNames)
+    return lib.colors.colorNames[name];
 
   name = name.replace(/\s+/g, '');
-  if (name in hterm.colors.colorNames)
-    return hterm.colors.colorNames[name];
+  if (name in lib.colors.colorNames)
+    return lib.colors.colorNames[name];
 
   return null;
 };
@@ -276,7 +278,7 @@ hterm.colors.nameToRGB = function(name) {
 /**
  * The default color palette.
  */
-hterm.colors.defaultColorPalette = hterm.colors.hexToRGB
+lib.colors.defaultColorPalette = lib.colors.hexToRGB
   ([// The "ANSI 16"...
     '#000000', '#CC0000', '#4E9A06', '#C4A000',
     '#3465A4', '#75507B', '#06989A', '#D3D7CF',
@@ -337,7 +339,7 @@ hterm.colors.defaultColorPalette = hterm.colors.hexToRGB
 /**
  * Named colors according to the stock X11 rgb.txt file.
  */
-hterm.colors.colorNames = {
+lib.colors.colorNames = {
   "aliceblue": "rgb(240, 248, 255)",
   "antiquewhite": "rgb(250, 235, 215)",
   "antiquewhite1": "rgb(255, 239, 219)",

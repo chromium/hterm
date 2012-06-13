@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * @fileoverview: The NaCl plugin leans on its host to provide some basic
  * stream-like objects for /dev/random. The interface is likely to change

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * @fileoverview hterm.Terminal unit tests.
  */
 
-hterm.Terminal.Tests = new TestManager.Suite('hterm.Terminal.Tests');
+hterm.Terminal.Tests = new lib.TestManager.Suite('hterm.Terminal.Tests');
 
 hterm.Terminal.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
@@ -59,7 +61,7 @@ hterm.Terminal.Tests.addTest = function(name, callback) {
     result.requestTime(200);
   }
 
-  TestManager.Suite.addTest.apply(this, [name, testProxy]);
+  lib.TestManager.Suite.addTest.apply(this, [name, testProxy]);
 };
 
 hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {

@@ -1,3 +1,12 @@
+Unreleased trunk changes:
+
+* Moved common libraries under the "lib" object.
+* Add "hterm_" prefix to the hterm source files.
+* Add 'use strict' everywhere, fix some fallout.
+* Split hterm.js filesystem functions into lib.fs.
+* Split hterm.js utility functions into lib.f.
+* Remove unused dialogs.js,css code.
+
 0.8.2.0 - Localization and Accessibility for the connect dialog
 
 * Add message_manager.js to manage string bundles.

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.fs');
+
 var nassh = {};
 
 /**
@@ -36,16 +40,17 @@ nassh.loadManifest = function(onSuccess, opt_onError) {
  */
 nassh.getFileSystem = function(onSuccess, opt_onError) {
   function onFileSystem(fileSystem) {
-    hterm.getOrCreateDirectory(fileSystem.root, '/.ssh',
-                               onSuccess.bind(null, fileSystem),
-                               hterm.ferr('Error creating /.ssh', opt_onError));
+    lib.fs.getOrCreateDirectory(fileSystem.root, '/.ssh',
+                                onSuccess.bind(null, fileSystem),
+                                lib.fs.err('Error creating /.ssh',
+                                           opt_onError));
   }
 
   var requestFS = window.requestFileSystem || window.webkitRequestFileSystem;
   requestFS(window.PERSISTENT,
             16 * 1024 * 1024,
             onFileSystem,
-            hterm.ferr('Error initializing filesystem', opt_onError));
+            lib.fs.err('Error initializing filesystem', opt_onError));
 };
 
 /**
@@ -64,10 +69,9 @@ nassh.importFiles = function(fileSystem, dest, fileList,
   for (var i = 0; i < fileList.length; ++i) {
     var file = fileList[i];
     var targetPath = dest + file.name;
-    hterm.overwriteFile(fileSystem.root, targetPath, file,
-                        hterm.flog('Imported: '+ targetPath,
-                                   opt_onSuccess),
-                        hterm.ferr('Error importing: ' + targetPath,
-                                   opt_onError));
+    lib.fs.overwriteFile(fileSystem.root, targetPath, file,
+                         lib.fs.log('Imported: '+ targetPath, opt_onSuccess),
+                         lib.fs.err('Error importing: ' + targetPath,
+                                    opt_onError));
   }
 };

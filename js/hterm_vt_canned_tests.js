@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * @fileoverview VT canned data test suite.
  *
@@ -57,7 +59,7 @@
  * ignored.
  */
 
-hterm.VT.CannedTests = new TestManager.Suite('hterm.VT.CannedTests');
+hterm.VT.CannedTests = new lib.TestManager.Suite('hterm.VT.CannedTests');
 
 hterm.VT.CannedTests.prototype.setup = function(cx) {
   this.setDefaults(cx,
@@ -125,7 +127,7 @@ hterm.VT.CannedTests.addTest = function(fileName) {
   }
 
   var ary = fileName.match(/([^\/.]+)(\.[^.]+)?$/);
-  TestManager.Suite.addTest.apply(this, [ary[1], testProxy]);
+  lib.TestManager.Suite.addTest.apply(this, [ary[1], testProxy]);
 };
 
 /**

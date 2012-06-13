@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f',
+          'hterm');
+
 // CSP means that we can't kick off the initialization from the html file,
 // so we do it like this instead.
 window.onload = function() {
-    hterm.init(hterm.Crosh.init);
+  lib.ensureRuntimeDependencies();
+  hterm.init(Crosh.init);
 };
 
 /**
@@ -18,7 +24,7 @@ window.onload = function() {
  *
  * @param {Object} argv The argument object passed in from the Terminal.
  */
-hterm.Crosh = function(argv) {
+function Crosh(argv) {
   this.argv_ = argv;
   this.io = null;
   this.pid_ = -1;
@@ -30,8 +36,8 @@ hterm.Crosh = function(argv) {
  * This constructs a new Terminal instance and instructs it to run the Crosh
  * command.
  */
-hterm.Crosh.init = function() {
-  var profileName = hterm.parseQuery(document.location.search)['profile'];
+Crosh.init = function() {
+  var profileName = lib.f.parseQuery(document.location.search)['profile'];
   var terminal = new hterm.Terminal(profileName);
   terminal.decorate(document.querySelector('#terminal'));
 
@@ -43,7 +49,7 @@ hterm.Crosh.init = function() {
   setTimeout(function() {
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
-      terminal.runCommandClass(hterm.Crosh, document.location.hash.substr(1));
+      terminal.runCommandClass(Crosh, document.location.hash.substr(1));
     }, 500);
   return true;
 };
@@ -54,7 +60,7 @@ hterm.Crosh.init = function() {
  * Perhaps this will also be used by the user to invoke this command, if we
  * build a shell command.
  */
-hterm.Crosh.prototype.commandName = 'crosh';
+Crosh.prototype.commandName = 'crosh';
 
 /**
  * Called when an event from the crosh process is detected.
@@ -65,7 +71,7 @@ hterm.Crosh.prototype.commandName = 'crosh';
  *             'exit': Process has exited.
  * @param text Text that was detected on process output.
 **/
-hterm.Crosh.prototype.onProcessOutput_ = function(pid, type, text) {
+Crosh.prototype.onProcessOutput_ = function(pid, type, text) {
   if (this.pid_ == -1 || pid != this.pid_)
     return;
 
@@ -81,7 +87,7 @@ hterm.Crosh.prototype.onProcessOutput_ = function(pid, type, text) {
  *
  * This is invoked by the terminal as a result of terminal.runCommandClass().
  */
-hterm.Crosh.prototype.run = function() {
+Crosh.prototype.run = function() {
   this.io = this.argv_.io.push();
 
   if (!chrome.terminalPrivate) {
@@ -122,7 +128,7 @@ hterm.Crosh.prototype.run = function() {
   );
 };
 
-hterm.Crosh.prototype.onBeforeUnload_ = function(e) {
+Crosh.prototype.onBeforeUnload_ = function(e) {
   var msg = 'Closing this tab will exit crosh.';
   e.returnValue = msg;
   return msg;
@@ -133,7 +139,7 @@ hterm.Crosh.prototype.onBeforeUnload_ = function(e) {
  *
  * @param {string} string The string to send.
  */
-hterm.Crosh.prototype.sendString_ = function(string) {
+Crosh.prototype.sendString_ = function(string) {
   if (this.pid_ == -1)
     return;
   chrome.terminalPrivate.sendInput(this.pid_, string);
@@ -142,7 +148,7 @@ hterm.Crosh.prototype.sendString_ = function(string) {
 /**
  * Closes crosh terminal and exits the crosh command.
 **/
-hterm.Crosh.prototype.close_ = function() {
+Crosh.prototype.close_ = function() {
     if (this.pid_ == -1)
       return;
     chrome.terminalPrivate.closeTerminalProcess(this.pid_);
@@ -155,7 +161,7 @@ hterm.Crosh.prototype.close_ = function() {
  * @param {string|integer} terminal width.
  * @param {string|integer} terminal height.
  */
-hterm.Crosh.prototype.onTerminalResize_ = function(width, height) {
+Crosh.prototype.onTerminalResize_ = function(width, height) {
   if (this.pid_ == -1)
     return;
 
@@ -175,7 +181,7 @@ hterm.Crosh.prototype.onTerminalResize_ = function(width, height) {
 /**
  * Exit the crosh command.
  */
-hterm.Crosh.prototype.exit = function(code) {
+Crosh.prototype.exit = function(code) {
   this.close_();
   this.io.pop();
   window.onbeforeunload = null;

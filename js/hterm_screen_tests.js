@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f');
+
 /**
  * @fileoverview Unit tests for the hterm.Screen class.
  */
-hterm.Screen.Tests = new TestManager.Suite('hterm.Screen.Tests');
+hterm.Screen.Tests = new lib.TestManager.Suite('hterm.Screen.Tests');
 
 /**
  * Clear out the current document and create a new hterm.Screen object for
@@ -245,7 +249,7 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     result.assertEQ(ary[0].innerHTML, '   XXXXX');
 
     // Fetch enough whitespace to ensure that the row is full.
-    var ws = hterm.getWhitespace(this.screen.getWidth());
+    var ws = lib.f.getWhitespace(this.screen.getWidth());
 
     // Check overflow. Two spaces overflow to the next line; only
     // newly-inserted text overflows.

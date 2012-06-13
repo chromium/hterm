@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('hterm.Keyboard.KeyMap');
+
 /**
  * Keyboard handler.
  *
@@ -29,7 +33,7 @@ hterm.Keyboard = function(terminal) {
   /**
    * The current key map.
    */
-  this.keyMap = new hterm.Keyboard.KeyMap.Default(this);
+  this.keyMap = new hterm.Keyboard.KeyMap(this);
 
   /**
    * If true, home/end will control the terminal scrollbar and shift home/end
@@ -90,90 +94,6 @@ hterm.Keyboard = function(terminal) {
    * True to enable, false to disable, null to autodetect based on platform.
    */
   this.altIsMeta = terminal.prefs_.get('alt-is-meta');
-};
-
-/**
- * A KeyMap object.
- *
- * Contains a mapping of keyCodes to keyDefs (aka key definitions).  The key
- * definition tells the hterm.Keyboard class how to handle keycodes.
- */
-hterm.Keyboard.KeyMap = function(keyboard, name) {
-  this.keyboard = keyboard;
-  this.name = name;
-  this.keyDefs = {};
-};
-
-/**
- * Add a single key definition.
- *
- * The definition is a hash containing the following keys: 'keyCap', 'normal',
- * 'control', and 'alt'.
- *
- *  - keyCap is a string identifying the key.  For printable
- *    keys, the key cap should be exactly two characters, starting with the
- *    unshifted version.  For example, 'aA', 'bB', '1!' and '=+'.  For
- *    non-printable the key cap should be surrounded in square braces, as in
- *    '[INS]', '[LEFT]'.  By convention, non-printable keycaps are in uppercase
- *    but this is not a strict requirement.
- *
- *  - Normal is the action that should be performed when they key is pressed
- *    in the absence of any modifier.  See below for the supported actions.
- *
- *  - Control is the action that should be performed when they key is pressed
- *    along with the control modifier.  See below for the supported actions.
- *
- *  - Alt is the action that should be performed when they key is pressed
- *    along with the alt modifier.  See below for the supported actions.
- *
- *  - Meta is the action that should be performed when they key is pressed
- *    along with the meta modifier.  See below for the supported actions.
- *
- * Actions can be one of the hterm.Keyboard.KeyActions as documented below,
- * a literal string, or an array.  If the action is a literal string then
- * the string is sent directly to the host.  If the action is an array it
- * is taken to be an escape sequence that may be altered by modifier keys.
- * The second-to-last element of the array will be overwritten with the
- * state of the modifier keys, as specified in the final table of "PC-Style
- * Function Keys" from [XTERM].
- */
-hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
-  if (keyCode in this.keyDefs)
-    console.warn('Duplicate keyCode: ' + keyCode);
-
-  this.keyDefs[keyCode] = def;
-};
-
-/**
- * Add mutiple key definitions in a single call.
- *
- * This function takes the key definitions as variable argument list.  Each
- * argument is the key definition specified as an array.
- *
- * (If the function took everything as one big hash we couldn't detect
- * duplicates, and there would be a lot more typing involved.)
- *
- * Each key definition should have 6 elements: (keyCode, keyCap, normal action,
- * control action, alt action and meta action).  See KeyMap.addKeyDef for the
- * meaning of these elements.
- */
-hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(var_args) {
-  for (var i = 0; i < arguments.length; i++) {
-    this.addKeyDef(arguments[i][0],
-                   { keyCap: arguments[i][1],
-                     normal: arguments[i][2],
-                     control: arguments[i][3],
-                     alt: arguments[i][4],
-                     meta: arguments[i][5]
-                   });
-  }
-};
-
-/**
- * Reset the KeyMap to its initial state.
- */
-hterm.Keyboard.KeyMap.prototype.reset = function() {
-  this.keyDefs = {};
 };
 
 /**

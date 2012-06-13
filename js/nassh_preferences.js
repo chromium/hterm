@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f', 'lib.PreferenceManager');
+
 /**
  * PreferenceManager subclass managing global NaSSH preferences.
  *
  * This is currently just an ordered list of known connection profiles.
  */
 nassh.GlobalPreferences = function() {
-  PreferenceManager.call(this, '/nassh/prefs/');
+  lib.PreferenceManager.call(this, '/nassh/prefs/');
 
   this.definePreferences
   ([
@@ -17,7 +21,9 @@ nassh.GlobalPreferences = function() {
    ]);
 };
 
-nassh.GlobalPreferences.prototype = { __proto__: PreferenceManager.prototype };
+nassh.GlobalPreferences.prototype = {
+  __proto__: lib.PreferenceManager.prototype
+};
 
 /**
  * Create a new nassh.ProfilePreferences object and append it to the list
@@ -31,7 +37,7 @@ nassh.GlobalPreferences.prototype.createProfile = function(opt_description) {
 
   while (!id || profileIDs.indexOf(id) != -1) {
     id = Math.floor(Math.random() * 0xffff + 1).toString(16);
-    id = hterm.zpad(id, 4);
+    id = nassh.zpad(id, 4);
   }
 
   profileIDs.push(id);
@@ -82,10 +88,10 @@ nassh.GlobalPreferences.prototype.getProfile = function(id) {
 };
 
 /**
- * PreferenceManager subclass managing per-connection NaSSH preferences.
+ * lib.PreferenceManager subclass managing per-connection NaSSH preferences.
  */
 nassh.ProfilePreferences = function(id) {
-  PreferenceManager.call(this, '/nassh/prefs/profiles/' + id);
+  lib.PreferenceManager.call(this, '/nassh/prefs/profiles/' + id);
 
   this.id = id;
 
@@ -137,4 +143,6 @@ nassh.ProfilePreferences = function(id) {
    ]);
 };
 
-nassh.ProfilePreferences.prototype = { __proto__: PreferenceManager.prototype };
+nassh.ProfilePreferences.prototype = {
+  __proto__: lib.PreferenceManager.prototype
+};

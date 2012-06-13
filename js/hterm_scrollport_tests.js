@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-hterm.ScrollPort.Tests = new TestManager.Suite('hterm.ScrollPort.Tests');
+'use strict';
+
+hterm.ScrollPort.Tests = new lib.TestManager.Suite('hterm.ScrollPort.Tests');
 
 hterm.ScrollPort.Tests.prototype.setup = function(cx) {
   this.setDefaults(cx,
@@ -111,7 +113,7 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     s.collapse(anchorNode, 0);
 
     var focusRow = this.rowProvider.getRowNode(55 + this.visibleRowCount - 10);
-    focusNode = focusRow;
+    var focusNode = focusRow;
     while (focusNode.lastChild)
       focusNode = focusNode.lastChild;
     s.extend(focusNode, focusNode.length || 0);

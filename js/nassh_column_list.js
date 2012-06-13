@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * UI Element that controls the multi-column list in the connect dialog.
  *
@@ -83,7 +85,7 @@ nassh.ColumnList.prototype.redraw = function() {
   var baseID = div.getAttribute('id');
   if (!baseID) {
     baseID = Math.floor(Math.random() * 0xffff + 1).toString(16);
-    baseID = hterm.zpad(baseID, 4);
+    baseID = nassh.zpad(baseID, 4);
     baseID = 'columnlist-' + baseID;
   }
 

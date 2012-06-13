@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.colors');
+
 /**
  * Constructor for TextAttribute objects.
  *
@@ -95,7 +99,7 @@ hterm.TextAttributes.prototype.reset = function() {
  * Reset the color palette to the default state.
  */
 hterm.TextAttributes.prototype.resetColorPalette = function() {
-  this.colorPalette = hterm.colors.defaultColorPalette.concat();
+  this.colorPalette = lib.colors.defaultColorPalette.concat();
 };
 
 /**

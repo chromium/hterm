@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('lib.f',
+          'hterm.RowCol', 'hterm.Size', 'hterm.TextAttributes');
+
 /**
  * @fileoverview This class represents a single terminal screen full of text.
  *
@@ -103,10 +108,8 @@ hterm.Screen.prototype.getWidth = function() {
 hterm.Screen.prototype.setColumnCount = function(count) {
   this.columnCount_ = count;
 
-  if (this.cursorPosition.column >= count) {
-    this.setCursorPosition(this.cursorPosition.row,
-                           this.cursorPosition.column - 1);
-  }
+  if (this.cursorPosition.column >= count)
+    this.setCursorPosition(this.cursorPosition.row, count - 1);
 };
 
 /**
@@ -286,18 +289,18 @@ hterm.Screen.prototype.setCursorPosition = function(row, column) {
   }
 
   if (row >= this.rowsArray.length) {
-    console.warn('Row out of bounds: ' + row, hterm.getStack(1));
+    console.error('Row out of bounds: ' + row);
     row = this.rowsArray.length - 1;
   } else if (row < 0) {
-    console.warn('Row out of bounds: ' + row, hterm.getStack(1));
+    console.error('Row out of bounds: ' + row);
     row = 0;
   }
 
   if (column >= this.columnCount_) {
-    console.log('Column out of bounds: ' + column, hterm.getStack(1));
+    console.error('Column out of bounds: ' + column);
     column = this.columnCount_ - 1;
   } else if (column < 0) {
-    console.log('Column out of bounds: ' + column, hterm.getStack(1));
+    console.error('Column out of bounds: ' + column);
     column = 0;
   }
 
@@ -476,7 +479,7 @@ hterm.Screen.prototype.insertString = function(str) {
     // A negative reverse offset means the cursor is positioned past the end
     // of the characters on this line.  We'll need to insert the missing
     // whitespace.
-    var ws = hterm.getWhitespace(-reverseOffset);
+    var ws = lib.f.getWhitespace(-reverseOffset);
 
     // This whitespace should be completely unstyled.  Underline and background
     // color would be visible on whitespace, so we can't use one of those

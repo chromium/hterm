@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+lib.rtdep('hterm.PubSub', 'hterm.Size');
+
 /**
  * A 'viewport' view of fixed-height rows with support for selection and
  * copy-to-clipboard.
@@ -27,7 +31,7 @@
  *     raw text or row nodes.
  */
 hterm.ScrollPort = function(rowProvider) {
-  PubSub.addBehavior(this);
+  hterm.PubSub.addBehavior(this);
 
   this.rowProvider_ = rowProvider;
 
