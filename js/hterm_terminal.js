@@ -552,6 +552,10 @@ hterm.Terminal.prototype.getTextAttributes = function() {
   return this.screen_.textAttributes;
 };
 
+hterm.Terminal.prototype.setTextAttributes = function(textAttributes) {
+  this.screen_.textAttributes = textAttributes;
+};
+
 /**
  * Return the current browser zoom factor applied to the terminal.
  *
@@ -901,28 +905,6 @@ hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
   }
 
   this.defaultTabStops = true;
-};
-
-/**
- * Save cursor position and attributes.
- *
- * TODO(rginda): Save attributes once we support them.
- */
-hterm.Terminal.prototype.saveOptions = function() {
-  this.savedOptions_.cursor = this.saveCursor();
-  this.savedOptions_.textAttributes = this.screen_.textAttributes.clone();
-};
-
-/**
- * Restore cursor position and attributes.
- *
- * TODO(rginda): Restore attributes once we support them.
- */
-hterm.Terminal.prototype.restoreOptions = function() {
-  if (this.savedOptions_.cursor)
-    this.restoreCursor(this.savedOptions_.cursor);
-  if (this.savedOptions_.textAttributes)
-    this.screen_.textAttributes = this.savedOptions_.textAttributes;
 };
 
 /**

@@ -226,7 +226,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
-    [9,   '[TAB]', '\t',    STRIP,     DEFAULT, DEFAULT],
+    [9,   '[TAB]', '\t',    STRIP,     PASS,    DEFAULT],
     [81,  'qQ',    DEFAULT, ctl('Q'),  DEFAULT, DEFAULT],
     [87,  'wW',    DEFAULT, ctl('W'),  DEFAULT, DEFAULT],
     [69,  'eE',    DEFAULT, ctl('E'),  DEFAULT, DEFAULT],

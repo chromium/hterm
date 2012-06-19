@@ -4,7 +4,8 @@
 
 'use strict';
 
-lib.rtdep('lib.colors', 'lib.f');
+lib.rtdep('lib.colors', 'lib.f',
+          'hterm.VT.CharacterMap');
 
 /**
  * Constructor for the VT escape sequence interpreter.
@@ -106,6 +107,37 @@ hterm.VT = function(terminal) {
    * sequence that we don't recognize or explicitly ignore.
    */
   this.warnUnimplemented = true;
+
+  /**
+   * The default G0...G3 character maps.
+   */
+  this.G0 = hterm.VT.CharacterMap.maps['B'];
+  this.G1 = hterm.VT.CharacterMap.maps['0'];
+  this.G2 = hterm.VT.CharacterMap.maps['B'];
+  this.G3 = hterm.VT.CharacterMap.maps['B'];
+
+  /**
+   * The 7-bit visible character set.
+   *
+   * This is a mapping from inbound data to display glyph.  The GL set
+   * contains the 94 bytes from 0x21 to 0x7e.
+   *
+   * The default GL set is 'B', US ASCII.
+   */
+  this.GL = 'G0';
+
+  /**
+   * The 8-bit visible character set.
+   *
+   * This is a mapping from inbound data to display glyph.  The GR set
+   * contains the 94 bytes from 0xa1 to 0xfe.
+   */
+  this.GR = 'G0';
+
+  // Saved state used in DECSC.
+  //
+  // This is a place to store a copy VT state, it is *not* the active state.
+  this.savedState_ = new hterm.VT.CursorState(this);
 };
 
 /**
@@ -223,6 +255,51 @@ hterm.VT.ParseState.prototype.consumeChar = function() {
  */
 hterm.VT.ParseState.prototype.isComplete = function() {
   return this.buf == null || this.buf.length <= this.pos;
+};
+
+hterm.VT.CursorState = function(vt) {
+  this.vt_ = vt;
+  this.save();
+};
+
+hterm.VT.CursorState.prototype.save = function() {
+  this.cursor = this.vt_.terminal.saveCursor();
+
+  this.textAttributes = this.vt_.terminal.getTextAttributes().clone();
+
+  this.GL = this.vt_.GL;
+  this.GR = this.vt_.GR;
+
+  this.G0 = this.vt_.G0;
+  this.G1 = this.vt_.G1;
+  this.G2 = this.vt_.G2;
+  this.G3 = this.vt_.G3;
+};
+
+hterm.VT.CursorState.prototype.restore = function() {
+  this.vt_.terminal.restoreCursor(this.cursor);
+
+  this.vt_.terminal.setTextAttributes(this.textAttributes.clone());
+
+  this.vt_.GL = this.GL;
+  this.vt_.GR = this.GR;
+
+  this.vt_.G0 = this.G0;
+  this.vt_.G1 = this.G1;
+  this.vt_.G2 = this.G2;
+  this.vt_.G3 = this.G3;
+};
+
+hterm.VT.prototype.reset = function() {
+  this.G0 = hterm.VT.CharacterMap.maps['B'];
+  this.G1 = hterm.VT.CharacterMap.maps['0'];
+  this.G2 = hterm.VT.CharacterMap.maps['B'];
+  this.G3 = hterm.VT.CharacterMap.maps['B'];
+
+  this.GL = 'G0';
+  this.GR = 'G0';
+
+  this.savedState_ = new hterm.VT.CursorState(this);
 };
 
 /**
@@ -347,6 +424,18 @@ hterm.VT.prototype.decodeUTF8 = function(str) {
  * printed to the terminal, then the control character will be dispatched.
  */
 hterm.VT.prototype.parseUnknown_ = function(parseState) {
+  var self = this;
+
+  function print(str) {
+    if (self[self.GL].GL)
+      str = self[self.GL].GL(str);
+
+    if (self[self.GR].GR)
+      str = self[self.GR].GR(str);
+
+    self.terminal.print(str);
+  };
+
   // Search for the next contiguous block of plain text.
   var buf = parseState.peekRemainingBuf();
   var nextControl = buf.search(this.cc1Pattern_);
@@ -360,12 +449,12 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
 
   if (nextControl == -1) {
     // There are no control characters in this string.
-    this.terminal.print(buf);
+    print(buf);
     parseState.reset();
     return;
   }
 
-  this.terminal.print(buf.substr(0, nextControl));
+  print(buf.substr(0, nextControl));
   this.dispatch('CC1', buf.substr(nextControl, 1), parseState);
   parseState.advance(nextControl + 1);
 };
@@ -683,16 +772,16 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '1048':  // Save cursor as in DECSC.
-      this.terminal.saveOptions();
+      this.savedState_.save();
 
     case '1049':  // 1047 + 1048 + clear.
       if (state) {
-        this.terminal.saveOptions();
+        this.savedState_.save();
         this.terminal.setAlternateMode(state);
         this.terminal.clear();
       } else {
         this.terminal.setAlternateMode(state);
-        this.terminal.restoreOptions();
+        this.savedState_.restore();
       }
 
       break;
@@ -800,7 +889,7 @@ hterm.VT.CC1['\x09'] = function() {
  * This code causes a line feed or a new line operation.  See Automatic
  * Newline (LNM).
  */
-hterm.VT.CC1['\x0A'] = function() {
+hterm.VT.CC1['\x0a'] = function() {
   this.terminal.formFeed();
 };
 
@@ -809,14 +898,14 @@ hterm.VT.CC1['\x0A'] = function() {
  *
  * Interpreted as LF.
  */
-hterm.VT.CC1['\x0B'] = hterm.VT.CC1['\x0A'];
+hterm.VT.CC1['\x0b'] = hterm.VT.CC1['\x0a'];
 
 /**
  * Form Feed (FF).
  *
  * Interpreted as LF.
  */
-hterm.VT.CC1['\x0C'] = function() {
+hterm.VT.CC1['\x0c'] = function() {
   this.terminal.formFeed();
 };
 
@@ -825,21 +914,27 @@ hterm.VT.CC1['\x0C'] = function() {
  *
  * Move cursor to the left margin on the current line.
  */
-hterm.VT.CC1['\x0D'] = function() {
+hterm.VT.CC1['\x0d'] = function() {
   this.terminal.setCursorColumn(0);
 };
 
 /**
- * Shift Out (SO).
+ * Shift Out (SO), aka Lock Shift 0 (LS1).
  *
- * Invoke G1 character set, as designated by SCS control sequence.
+ * Invoke G1 character set in GL.
  */
-hterm.VT.CC1['\x0E'] = hterm.VT.ignore;
+hterm.VT.CC1['\x0e'] = function() {
+  this.GL = 'G1';
+};
 
 /**
- * Shift In (SI) - Select G0 character set, as selected by ESC ( sequence.
+ * Shift In (SI), aka Lock Shift 0 (LS0).
+ *
+ * Invoke G0 character set in GL.
  */
-hterm.VT.CC1['\x0F'] = hterm.VT.ignore;
+hterm.VT.CC1['\x0f'] = function() {
+  this.GL = 'G0';
+};
 
 /**
  * Transmit On (XON).
@@ -877,12 +972,12 @@ hterm.VT.CC1['\x18'] = function(parseState) {
  *
  * Interpreted as CAN.
  */
-hterm.VT.CC1['\x1A'] = hterm.VT.CC1['\x18'];
+hterm.VT.CC1['\x1a'] = hterm.VT.CC1['\x18'];
 
 /**
  * Escape (ESC).
  */
-hterm.VT.CC1['\x1B'] = function(parseState) {
+hterm.VT.CC1['\x1b'] = function(parseState) {
   function parseESC(parseState) {
     var ch = parseState.consumeChar();
 
@@ -901,7 +996,7 @@ hterm.VT.CC1['\x1B'] = function(parseState) {
 /**
  * Delete (DEL).
  */
-hterm.VT.CC1['\x7F'] = hterm.VT.ignore;
+hterm.VT.CC1['\x7f'] = hterm.VT.ignore;
 
 // 8 bit control characters and their two byte equivalents, below...
 
@@ -1162,7 +1257,7 @@ hterm.VT.ESC['%'] = function(parseState) {
 };
 
 /**
- * Designate G1, G2 and G3 character sets.  Not currently implemented.
+ * Character Set Selection (SCS).
  *
  *   ESC ( Ps - Set G0 character set (VT100).
  *   ESC ) Ps - Set G1 character set (VT220).
@@ -1171,7 +1266,6 @@ hterm.VT.ESC['%'] = function(parseState) {
  *   ESC - Ps - Set G1 character set (VT300).
  *   ESC . Ps - Set G2 character set (VT300).
  *   ESC / Ps - Set G3 character set (VT300).
- *              These work for 96 character sets only.
  *
  * Values for Ps are:
  *   0 - DEC Special Character and Line Drawing Set.
@@ -1207,9 +1301,16 @@ hterm.VT.ESC['/'] = function(parseState, code) {
       return;
     }
 
-    if ('0AB4C5RQKYEZH7='.indexOf(ch) != -1) {
-      if (this.warnUnimplemented)
-        console.log('Unimplemented character set: ' + ch);
+    if (ch in hterm.VT.CharacterMap.maps) {
+      if (code == '(') {
+        this.G0 = hterm.VT.CharacterMap.maps[ch];
+      } else if (code == ')' || code == '-') {
+        this.G1 = hterm.VT.CharacterMap.maps[ch];
+      } else if (code == '*' || code == '.') {
+        this.G2 = hterm.VT.CharacterMap.maps[ch];
+      } else if (code == '+' || code == '/') {
+        this.G3 = hterm.VT.CharacterMap.maps[ch];
+      }
     } else if (this.warnUnimplemented) {
       console.log('Invalid character set for "' + code + '": ' + ch);
     }
@@ -1229,14 +1330,14 @@ hterm.VT.ESC['6'] = hterm.VT.ignore;
  * Save Cursor (DECSC).
  */
 hterm.VT.ESC['7'] = function() {
-  this.terminal.saveOptions();
+  this.savedState_.save();
 };
 
 /**
  * Restore Cursor (DECSC).
  */
 hterm.VT.ESC['8'] = function() {
-  this.terminal.restoreOptions();
+  this.savedState_.restore();
 };
 
 /**
@@ -1274,6 +1375,7 @@ hterm.VT.ESC['F'] = hterm.VT.ignore;
  * Full Reset (RIS).
  */
 hterm.VT.ESC['c'] = function() {
+  this.reset();
   this.terminal.reset();
 };
 
@@ -1286,22 +1388,49 @@ hterm.VT.ESC['l'] =
 hterm.VT.ESC['m'] = hterm.VT.ignore;
 
 /**
- * Invoke character set.
+ * Lock Shift 2 (LS2)
  *
- *   'ESC n' - Invoke the G2 Character Set as GL (LS2).
- *   'ESC o' - Invoke the G3 Character Set as GL (LS3).
- *   'ESC |' - Invoke the G3 Character Set as GR (LS3R).
- *   'ESC }' - Invoke the G2 Character Set as GR (LS2R).
- *   'ESC ~' - Invoke the G1 Character Set as GR (LS1R).
- *
- * LS3R, LS2R, LS1R will not implement.
- * TODO(rginda): LS2, LS3
+ * Invoke the G2 Character Set as GL.
  */
-hterm.VT.ESC['n'] =
-hterm.VT.ESC['o'] =
-hterm.VT.ESC['|'] =
-hterm.VT.ESC['}'] =
-hterm.VT.ESC['~'] = hterm.VT.ignore;
+hterm.VT.ESC['n'] = function() {
+  this.GL = 'G2';
+};
+
+/**
+ * Lock Shift 3 (LS3)
+ *
+ * Invoke the G3 Character Set as GL.
+ */
+hterm.VT.ESC['o'] = function() {
+  this.GL = 'G3';
+};
+
+/**
+ * Lock Shift 2, Right (LS3R)
+ *
+ * Invoke the G3 Character Set as GR.
+ */
+hterm.VT.ESC['|'] = function() {
+  this.GR = 'G3';
+};
+
+/**
+ * Lock Shift 2, Right (LS2R)
+ *
+ * Invoke the G2 Character Set as GR.
+ */
+hterm.VT.ESC['}'] = function() {
+  this.GR = 'G2';
+};
+
+/**
+ * Lock Shift 1, Right (LS1R)
+ *
+ * Invoke the G1 Character Set as GR.
+ */
+hterm.VT.ESC['~'] = function() {
+  this.GR = 'G1';
+};
 
 /**
  * Change icon name and window title.
@@ -1796,7 +1925,7 @@ hterm.VT.CSI['m'] = function(parseState) {
 
       } else if (arg == 48) {
         var c = get256(i);
-        if (!c)
+        if (c == null)
           break;
 
         i += 2;
@@ -1900,6 +2029,7 @@ hterm.VT.CSI['>p'] = hterm.VT.ignore;
  * Soft terminal reset (DECSTR).
  */
 hterm.VT.CSI['!p'] = function() {
+  this.reset();
   this.terminal.softReset();
 };
 
@@ -1974,7 +2104,7 @@ hterm.VT.CSI['$r'] = hterm.VT.ignore;
  * Save cursor (ANSI.SYS)
  */
 hterm.VT.CSI['s'] = function() {
-  this.terminal.saveOptions();
+  this.savedState_.save();
 };
 
 /**

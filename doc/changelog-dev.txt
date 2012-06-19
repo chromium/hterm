@@ -6,6 +6,8 @@ Unreleased trunk changes:
 * Split hterm.js filesystem functions into lib.fs.
 * Split hterm.js utility functions into lib.f.
 * Remove unused dialogs.js,css code.
+* Implement character set selection (SCS)
+* Pass Alt-*-Tab to the browser.
 
 0.8.2.0 - Localization and Accessibility for the connect dialog
 

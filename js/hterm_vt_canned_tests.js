@@ -227,3 +227,5 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
 hterm.VT.CannedTests.addTest('../test_data/vttest-01.log');
 
 hterm.VT.CannedTests.addTest('../test_data/vttest-02.log');
+
+hterm.VT.CannedTests.addTest('../test_data/charsets.log');

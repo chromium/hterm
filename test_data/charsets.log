@@ -1,0 +1,167 @@
+# -*- coding: no-conversion -*-
+@@ HEADER_START
+@@ OFFSET:2076 LINES:80 CURSOR:24,0
+Line 1: GRAPHICS/0:
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+◆▒␉␌␍␊°±␤␋┘┐┌└┼⎺⎻─⎼⎽├┤┴┬│≤≥π≠£·
+
+Line 6: UK/A:
+!"£$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+Line 11: US/B:
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+Line 16: DUTCH/4:
+!"£$%&'()*+,-./0123456789:;<=>?¾
+ABCDEFGHIJKLMNOPQRSTUVWXYZĲ½|^_
+`abcdefghijklmnopqrstuvwxyz¨f¼´
+
+Line 21: FINNISH/5:
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅÜ_
+éabcdefghijklmnopqrstuvwxyzäöåü
+
+Line 26: FINNISH/C:
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅÜ_
+éabcdefghijklmnopqrstuvwxyzäöåü
+
+Line 31: FRENCH/R:
+!"£$%&'()*+,-./0123456789:;<=>?à
+ABCDEFGHIJKLMNOPQRSTUVWXYZ°ç§^_
+`abcdefghijklmnopqrstuvwxyzéùè¨
+
+Line 36: FRENCH CANADIAN/Q:
+!"#$%&'()*+,-./0123456789:;<=>?à
+ABCDEFGHIJKLMNOPQRSTUVWXYZâçêî_
+ôabcdefghijklmnopqrstuvwxyzéùèû
+
+Line 41: GERMAN/K:
+!"#$%&'()*+,-./0123456789:;<=>?§
+ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ^_
+`abcdefghijklmnopqrstuvwxyzäöüß
+
+Line 46: ITALIAN/Y:
+!"£$%&'()*+,-./0123456789:;<=>?§
+ABCDEFGHIJKLMNOPQRSTUVWXYZ°çé^_
+ùabcdefghijklmnopqrstuvwxyzàòèì
+
+Line 51: NORWEGIAN, DANISH/6:
+!"#$%&'()*+,-./0123456789:;<=>?Ä
+ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅÜ_
+äabcdefghijklmnopqrstuvwxyzæøåü
+
+Line 56: NORWEGIAN, DANISH/E:
+!"#$%&'()*+,-./0123456789:;<=>?Ä
+ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅÜ_
+äabcdefghijklmnopqrstuvwxyzæøåü
+
+Line 61: SPANISH/Z:
+!"£$%&'()*+,-./0123456789:;<=>?§
+ABCDEFGHIJKLMNOPQRSTUVWXYZ¡Ñ¿^_
+`abcdefghijklmnopqrstuvwxyz°ñç~
+
+Line 66: SWEDISH/7:
+!"#$%&'()*+,-./0123456789:;<=>?É
+ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅÜ_
+éabcdefghijklmnopqrstuvwxyzäöåü
+
+Line 71: SWEDISH/H:
+!"#$%&'()*+,-./0123456789:;<=>?É
+ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅÜ_
+éabcdefghijklmnopqrstuvwxyzäöåü
+
+Line 76: SWISS/=:
+!"ù$%&'()*+,-./0123456789:;<=>?à
+ABCDEFGHIJKLMNOPQRSTUVWXYZéçêîè
+ôabcdefghijklmnopqrstuvwxyzäöüû
+
+
+
+@@ HEADER_END
+(ALine 1: GRAPHICS/0:(0
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 6: UK/A:(A
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 11: US/B:(B
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 16: DUTCH/4:(4
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 21: FINNISH/5:(5
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 26: FINNISH/C:(C
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 31: FRENCH/R:(R
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 36: FRENCH CANADIAN/Q:(Q
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 41: GERMAN/K:(K
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 46: ITALIAN/Y:(Y
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 51: NORWEGIAN, DANISH/6:(6
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 56: NORWEGIAN, DANISH/E:(E
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 61: SPANISH/Z:(Z
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 66: SWEDISH/7:(7
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 71: SWEDISH/H:(H
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+(ALine 76: SWISS/=:(=
+!"#$%&'()*+,-./0123456789:;<=>?@
+ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+
