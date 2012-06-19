@@ -12,11 +12,13 @@ Unreleased trunk changes:
 * Encode pasted text as UTF-8.
 * Properly encode and decode UTF-8, handling surrogate pairs and
   retaining state between terminal writes.
+* Add mouse support via DECSET modes 1000, 1002, 1003.
 
 BUG=chromium-os:30296, UTF-8 decoder is not a function of input stream; will
     break when UTF-8 sequence split across reads
 BUG=chromium-os:30297, UTF-8 decoder does not conform to Unicode standard
     re: invalid sequences
+BUG=chromium-os:26288, hterm: Add mouse support via DECSET 1000, 1002, 1003
 
 0.8.2.0 - Localization and Accessibility for the connect dialog
 

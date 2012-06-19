@@ -111,6 +111,9 @@ hterm.Terminal = function(opt_profileName) {
   // the entire terminal object.
   this.io = new hterm.Terminal.IO(this);
 
+  // True if mouse-click-drag should scroll the terminal.
+  this.enableMouseDragScroll = true;
+
   this.realizeSize_(80, 24);
   this.setDefaultTabStops();
 };
@@ -322,6 +325,18 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * Set whether we should treat DEC mode 1002 (mouse cell motion tracking)
+     * as if it were 1000 (mouse click tracking).
+     *
+     * This makes it possible to use vi's ":set mouse=a" mode without losing
+     * access to the system text selection mechanism.
+     */
+    ['mouse-cell-motion-trick', false, function(v) {
+        self.vt.setMouseCellMotionTrick(v);
+      }
+    ],
+
+    /**
      * If true, scroll to the bottom on any keystroke.
      */
     ['scroll-on-keystroke', true, function(v) {
@@ -383,6 +398,14 @@ hterm.Terminal.prototype.setCursorColor = function(color) {
  */
 hterm.Terminal.prototype.getCursorColor = function() {
   return this.cursorNode_.style.backgroundColor;
+};
+
+/**
+ * Enable or disable mouse based text selection in the terminal.
+ */
+hterm.Terminal.prototype.setSelectionEnabled = function(state) {
+  this.enableMouseDragScroll = state;
+  this.scrollPort_.setSelectionEnabled(state);
 };
 
 /**
@@ -967,7 +990,37 @@ hterm.Terminal.prototype.decorate = function(div) {
        'height: ' + this.scrollPort_.characterSize.height + 'px;' +
        '-webkit-transition: opacity, background-color 100ms linear;');
   this.setCursorColor(this.prefs_.get('cursor-color'));
+
   this.document_.body.appendChild(this.cursorNode_);
+
+  // When 'enableMouseDragScroll' is off we reposition this element directly
+  // under the mouse cursor after a click.  This makes Chrome associate
+  // subsequent mousemove events with the scroll-blocker.  Since the
+  // scroll-blocker is a peer (not a child) of the scrollport, the mousemove
+  // events do not cause the scrollport to scroll.
+  //
+  // It's a hack, but it's the cleanest way I could find.
+  this.scrollBlockerNode_ = this.document_.createElement('div');
+  this.scrollBlockerNode_.style.cssText =
+      ('position: absolute;' +
+       'top: -99px;' +
+       'display: block;' +
+       'width: 10px;' +
+       'height: 10px;');
+  this.document_.body.appendChild(this.scrollBlockerNode_);
+
+  var onMouse = this.onMouse_.bind(this);
+  this.scrollPort_.onScrollWheel = onMouse;
+  ['mousedown', 'mouseup', 'mousemove', 'click', 'dblclick',
+   ].forEach(function(event) {
+       this.scrollBlockerNode_.addEventListener(event, onMouse);
+       this.cursorNode_.addEventListener(event, onMouse);
+       this.document_.addEventListener(event, onMouse);
+     }.bind(this));
+
+  this.cursorNode_.addEventListener('mousedown', function() {
+      setTimeout(this.focus.bind(this));
+    }.bind(this));
 
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
   this.setReverseVideo(false);
@@ -2137,6 +2190,61 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
 
   this.io.onVTKeystroke(string);
 };
+
+/**
+ * Add the terminalRow and terminalColumn properties to mouse events and
+ * then forward on to onMouse().
+ *
+ * The terminalRow and terminalColumn properties contain the (row, column)
+ * coordinates for the mouse event.
+ */
+hterm.Terminal.prototype.onMouse_ = function(e) {
+  e.terminalRow = parseInt((e.clientY - this.scrollPort_.visibleRowTopMargin) /
+                           this.scrollPort_.characterSize.height) + 1;
+  e.terminalColumn = parseInt(e.clientX /
+                              this.scrollPort_.characterSize.width) + 1;
+
+  if (e.type == 'mousedown') {
+    if (e.terminalColumn > this.screenSize.width) {
+      // Mousedown in the scrollbar area.
+      return;
+    }
+
+    if (!this.enableMouseDragScroll) {
+      // Move the scroll-blocker into place if we want to keep the scrollport
+      // from scrolling.
+      this.scrollBlockerNode_.engaged = true;
+      this.scrollBlockerNode_.style.top = (e.clientY - 5) + 'px';
+      this.scrollBlockerNode_.style.left = (e.clientX - 5) + 'px';
+    }
+  } else if (this.scrollBlockerNode_.engaged &&
+             (e.type == 'mousemove' || e.type == 'mouseup')) {
+    // Disengage the scroll-blocker after one of these events.
+    this.scrollBlockerNode_.engaged = false;
+    this.scrollBlockerNode_.style.top = '-99px';
+  }
+
+  if (!e.processedByTerminalHandler_) {
+    // We register our event handlers on the document, as well as the cursor
+    // and the scroll blocker.  Mouse events that occur on the cursor or
+    // scroll blocker will also appear on the document, but we don't want to
+    // process them twice.
+    //
+    // We can't just prevent bubbling because that has other side effects, so
+    // we decorate the event object with this property instead.
+    e.processedByTerminalHandler_ = true;
+
+    this.onMouse(e);
+  }
+};
+
+/**
+ * Clients should override this if they care to know about mouse events.
+ *
+ * The event parameter will be a normal DOM mouse click event with additional
+ * 'terminalRow' and 'terminalColumn' properties.
+ */
+hterm.Terminal.prototype.onMouse = function(e) { };
 
 /**
  * React when focus changes.

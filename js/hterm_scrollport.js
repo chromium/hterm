@@ -236,8 +236,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.rowNodes_.style.cssText = (
       'display: block;' +
       'position: fixed;' +
-      'overflow: hidden;' +
-      '-webkit-user-select: text;');
+      'overflow: hidden;');
   this.screen_.appendChild(this.rowNodes_);
 
   // Two nodes to hold offscreen text during the copy event.
@@ -272,7 +271,15 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.scrollArea_.style.cssText = 'visibility: hidden';
   this.screen_.appendChild(this.scrollArea_);
 
+  this.setSelectionEnabled(true);
   this.resize();
+};
+
+/**
+ * Enable or disable mouse based text selection in the scrollport.
+ */
+hterm.ScrollPort.prototype.setSelectionEnabled = function(state) {
+  this.rowNodes_.style.webkitUserSelect = state ? 'text' : 'none';
 };
 
 /**
@@ -1006,6 +1013,14 @@ hterm.ScrollPort.prototype.onScroll_ = function(e) {
 };
 
 /**
+ * Clients can override this if they want to hear scrollwheel events.
+ *
+ * Clients may call event.preventDefault() if they want to keep the scrollport
+ * from also handling the events.
+ */
+hterm.ScrollPort.prototype.onScrollWheel = function(e) {};
+
+/**
  * Handler for scroll-wheel events.
  *
  * The onScrollWheel event fires when the user moves their scrollwheel over this
@@ -1014,6 +1029,11 @@ hterm.ScrollPort.prototype.onScroll_ = function(e) {
  * have to handle it manually.
  */
 hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
+  this.onScrollWheel(e);
+
+  if (e.defaultPrevented)
+    return;
+
   var top = this.screen_.scrollTop - e.wheelDeltaY;
   if (top < 0)
     top = 0;

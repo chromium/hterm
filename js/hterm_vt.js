@@ -43,6 +43,12 @@ hterm.VT = function(terminal) {
    */
   this.terminal = terminal;
 
+  terminal.onMouse = this.onTerminalMouse_.bind(this);
+  this.mouseReport_ = this.MOUSE_REPORT_DISABLED;
+
+  // Parse state left over from the last parse.  You should use the parseState
+  // instance passed into your parse routine, rather than reading
+  // this.parseState_ directly.
   this.parseState_ = new hterm.VT.ParseState(this.parseUnknown_);
 
   // Any "leading modifiers" for the escape sequence, such as '?', ' ', or the
@@ -55,6 +61,9 @@ hterm.VT = function(terminal) {
 
   // Whether or not to respect the escape codes for setting terminal width.
   this.allowColumnWidthChanges_ = false;
+
+  // True if we should fake-out mouse "cell motion" reporting (DECSET 1002)
+  this.mouseCellMotionTrick_ = false;
 
   // Construct a regular expression to match the known one-byte control chars.
   // This is used in parseUnknown_ to quickly scan a string for the next
@@ -127,6 +136,44 @@ hterm.VT = function(terminal) {
   // This is a place to store a copy VT state, it is *not* the active state.
   this.savedState_ = new hterm.VT.CursorState(this);
 };
+
+/**
+ * No mouse events.
+ */
+hterm.VT.prototype.MOUSE_REPORT_DISABLED = 0;
+
+/**
+ * DECSET mode 1000.
+ *
+ * Report mouse down/up events only.
+ */
+hterm.VT.prototype.MOUSE_REPORT_CLICK = 1;
+
+/**
+ * Report only mouse down events.
+ *
+ * This is an hterm specific mode that tricks vi's ':set mouse=a' mode into
+ * working more like emacs xterm-mouse-mode.  Clicks will reposition the
+ * cursor, and the scroll wheel will scroll the buffer.  Selection, however,
+ * will be browser-native, rather than the custom vi selection you usually get
+ * with ':set mouse=a'.
+ *
+ * When the 'mouse-cell-motion-trick' pref is enabled, we'll use this mode
+ * in place of MOUSE_REPORT_DRAG.
+ *
+ * It is distinct from the normal MOUSE_REPORT_CLICK so that we can switch it
+ * off if the user changes their 'mouse-cell-motion-trick' pref while this
+ * is enabled.  (If it weren't distinct, we wouldn't be sure how we got into
+ * MOUSE_REPORT_CLICK mode.)
+ */
+hterm.VT.prototype.MOUSE_REPORT_CLICK_1002 = 2;
+
+/**
+ * DECSET mode 1002.
+ *
+ * Report mouse down/up and movement while a button is down.
+ */
+hterm.VT.prototype.MOUSE_REPORT_DRAG = 3;
 
 /**
  * ParseState constructor.
@@ -288,6 +335,115 @@ hterm.VT.prototype.reset = function() {
   this.GR = 'G0';
 
   this.savedState_ = new hterm.VT.CursorState(this);
+
+  this.mouseReport_ = this.MOUSE_REPORT_DISABLED;
+  this.terminal.setSelectionEnabled(true);
+};
+
+hterm.VT.prototype.setMouseCellMotionTrick = function(state) {
+  this.mouseCellMotionTrick_ = state;
+
+  if ((state && this.mouseReport_ == this.MOUSE_REPORT_DRAG) ||
+      (!state && this.mouseReport_ == this.MOUSE_REPORT_CLICK_1002)) {
+    this.setDECMode('1002', true);
+  }
+};
+
+/**
+ * Handle terminal mouse events.
+ *
+ * See the "Mouse Tracking" section of [xterm].
+ */
+hterm.VT.prototype.onTerminalMouse_ = function(e) {
+  if (this.mouseReport_ == this.MOUSE_REPORT_DISABLED)
+    return;
+
+  // Temporary storage for our response.
+  var response;
+
+  // Modifier key state.
+  var mod = 0;
+  if (e.shiftKey)
+    mod |= 4;
+  if (e.metaKey || (this.terminal.keyboard.altIsMeta && e.altKey))
+    mod |= 8;
+  if (e.ctrlKey)
+    mod |= 16;
+
+  // TODO(rginda): We should also support mode 1005 and/or 1006 to extend the
+  // coordinate space.  Though, after poking around just a little, I wasn't
+  // able to get vi or emacs to use either of these modes.
+  var x = String.fromCharCode(lib.f.clamp(e.terminalColumn + 32, 32, 255));
+  var y = String.fromCharCode(lib.f.clamp(e.terminalRow + 32, 32, 255));
+
+  switch (e.type) {
+    case 'click':
+    case 'dblclick':
+      if (this.mouseReport_ == this.MOUSE_REPORT_CLICK ||
+          this.mouseReport_ == this.MOUSE_REPORT_CLICK_1002) {
+        // Buttons are encoded as button number plus 32.
+        var b = Math.min(e.which - 1, 2) + 32;
+
+        // And mix in the modifier keys.
+        b |= mod;
+
+        response = '\x1b[M' + String.fromCharCode(b) + x + y;
+        response += '\x1b[M\x23' + x + y;
+      }
+      break;
+
+    case 'mousewheel':
+      // Mouse wheel is treated as button 1 or 2 plus an additional 64.
+      b = ((e.wheelDeltaY > 0) ? 0 : 1) + 96;
+      b |= mod;
+      response = '\x1b[M' + String.fromCharCode(b) + x + y;
+
+      // Keep the terminal from scrolling.
+      e.preventDefault();
+      break;
+
+    case 'mousedown':
+      if (this.mouseReport_ == this.MOUSE_REPORT_DRAG && e.which) {
+        // Buttons are encoded as button number plus 32.
+        var b = Math.min(e.which - 1, 2) + 32;
+
+        // And mix in the modifier keys.
+        b |= mod;
+
+        response = '\x1b[M' + String.fromCharCode(b) + x + y;
+      }
+      break;
+
+    case 'mouseup':
+      if (this.mouseReport_ == this.MOUSE_REPORT_DRAG && e.which) {
+        // Mouse up has no indication of which button was released.
+        response = '\x1b[M\x23' + x + y;
+      }
+      break;
+
+    case 'mousemove':
+      if (this.mouseReport_ == this.MOUSE_REPORT_DRAG && e.which) {
+        // Standard button bits.
+        b = 32 + Math.min(e.which - 1, 2);
+
+        // Add 32 to indicate mouse motion.
+        b += 32;
+
+        // And mix in the modifier keys.
+        b |= mod;
+
+        response = '\x1b[M' + String.fromCharCode(b) + x + y;
+      }
+
+      break;
+
+    default:
+      console.error('Unknown mouse event: ' + e.type, e);
+      break;
+  }
+
+  if (response)
+    this.terminal.io.sendString(response);
 };
 
 /**
@@ -580,9 +736,9 @@ hterm.VT.prototype.setANSIMode = function(code, state) {
  *     47 - [!] Use Alternate Screen Buffer.
  *     66 - [!] Application keypad (DECNKM).
  *     67 - Backarrow key sends backspace (DECBKM).
- *   1000 - [!] Send Mouse X & Y on button press and release.
+ *   1000 - Send Mouse X & Y on button press and release.  (MOUSE_REPORT_CLICK)
  *   1001 - [!] Use Hilite Mouse Tracking.
- *   1002 - [!] Use Cell Motion Mouse Tracking.
+ *   1002 - Use Cell Motion Mouse Tracking.  (MOUSE_REPORT_DRAG)
  *   1003 - [!] Use All Motion Mouse Tracking.
  *   1004 - [!] Send FocusIn/FocusOut events.
  *   1005 - [!] Enable Extended Mouse Mode.
@@ -659,6 +815,27 @@ hterm.VT.prototype.setDECMode = function(code, state) {
 
     case '67':  // DECBKM
       this.terminal.keyboard.backspaceSendsBackspace = state;
+      break;
+
+    case '1000':  // Report on mouse clicks only.
+      this.mouseReport_ = (
+          state ? this.MOUSE_REPORT_CLICK : this.MOUSE_REPORT_DISABLED);
+      this.terminal.setSelectionEnabled(true);
+      break;
+
+    case '1002':  // Report on mouse clicks and drags
+      if (!state) {
+        this.mouseReport_ = this.MOUSE_REPORT_DISABLED;
+        this.terminal.setSelectionEnabled(true);
+
+      } else if (this.mouseCellMotionTrick_) {
+        this.mouseReport_ = this.MOUSE_REPORT_CLICK_1002;
+        this.terminal.setSelectionEnabled(true);
+
+      } else {
+        this.mouseReport_ = this.MOUSE_REPORT_DRAG;
+        this.terminal.setSelectionEnabled(false);
+      }
       break;
 
     case '1010':  // rxvt
