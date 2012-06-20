@@ -15,8 +15,10 @@
   "description": "Terminal emulator and SSH client.",
   "offline_enabled": true,
   "permissions": [
-    "unlimitedStorage",
-    "terminalPrivate"
+    "clipboardRead",
+    "clipboardWrite",
+    "terminalPrivate",
+    "unlimitedStorage"
   ],
   "web_accessible_resources": [
     "html/nassh_google_relay.html",

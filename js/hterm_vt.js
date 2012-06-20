@@ -1572,6 +1572,26 @@ hterm.VT.OSC['4'] = function(parseState) {
 };
 
 /**
+ * Set/read system clipboard.
+ *
+ * Read is not implemented due to security considerations.  A remote app
+ * that is able to both write and read to the clipboard could essentially
+ * take over your session.
+ */
+hterm.VT.OSC['52'] = function(parseState) {
+  // Args come in as a single 'clipboard;b64-data' string.  The clipboard
+  // parameter is used to select which of the X clipboards to address.  Since
+  // we're not integrating with X, we treat them all the same.
+  var args = parseState.args[0].match(/^[cps01234567]+;(.*)/);
+  if (!args)
+    return;
+
+  var data = atob(args[1]);
+  if (data)
+    this.terminal.copyStringToClipboard(data);
+};
+
+/**
  * Insert (blank) characters (ICH).
  */
 hterm.VT.CSI['@'] = function(parseState) {

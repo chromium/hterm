@@ -286,7 +286,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [19,  '[BREAK]',  PASS, PASS, PASS, PASS],
 
     // The block of six keys above the arrows.
-    [45,  '[INSERT]', CSI + '2~',             DEFAULT, DEFAULT, DEFAULT],
+    [45,  '[INSERT]', call('onKeyInsert_'),   DEFAULT, DEFAULT, DEFAULT],
     [36,  '[HOME]',   call('onKeyHome_'),     DEFAULT, DEFAULT, DEFAULT],
     [33,  '[PGUP]',   call('onKeyPageUp_'),   DEFAULT, DEFAULT, DEFAULT],
     [46,  '[DEL]',    CSI + '3~',             DEFAULT, DEFAULT, DEFAULT],
@@ -322,6 +322,16 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [111, '[KP/]', ak(DEFAULT, SS3 + 'o'),  DEFAULT, DEFAULT, DEFAULT],
     [110, '[KP.]', ak(DEFAULT, CSI + '3~'), DEFAULT, DEFAULT, DEFAULT]
   );
+};
+
+/**
+ * Either allow the paste or send a key sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onKeyInsert_ = function(e) {
+  if (this.keyboard.shiftInsertPaste && e.shiftKey)
+    return hterm.Keyboard.KeyActions.PASS;
+
+  return '\x1b[2~';
 };
 
 /**

@@ -36,6 +36,12 @@ hterm.Keyboard = function(terminal) {
   this.keyMap = new hterm.Keyboard.KeyMap(this);
 
   /**
+   * If true, Shift-Insert will fall through to the browser as a paste.
+   * If false, the keystroke will be sent to the host.
+   */
+  this.shiftInsertPaste = terminal.prefs_.get('shift-insert-paste');
+
+  /**
    * If true, home/end will control the terminal scrollbar and shift home/end
    * will send the VT keycodes.  If false then home/end sends VT codes and
    * shift home/end scrolls.

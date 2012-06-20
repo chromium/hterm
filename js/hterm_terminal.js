@@ -114,6 +114,10 @@ hterm.Terminal = function(opt_profileName) {
   // True if mouse-click-drag should scroll the terminal.
   this.enableMouseDragScroll = true;
 
+  this.copyOnSelect = this.prefs_.get('copy-on-select');
+  this.mousePasteButton = null;
+  this.syncMousePasteButton();
+
   this.realizeSize_(80, 24);
   this.setDefaultTabStops();
 };
@@ -246,6 +250,14 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * Automatically copy mouse selection to the clipboard.
+     */
+    ['copy-on-select', true, function(v) {
+        self.copyOnSelect = !!v;
+      }
+    ],
+
+    /**
      * True to enable 8-bit control characters, false to ignore them.
      *
      * We'll respect the two-byte versions of these control characters
@@ -337,6 +349,20 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * Mouse paste button, or null to autodetect.
+     *
+     * For autodetect, we'll try to enable middle button paste for non-X11
+     * platforms.
+     *
+     * On X11 we move it to button 3, but that'll probably be a context menu
+     * in the future.
+     */
+    ['mouse-paste-button', null, function(v) {
+        self.syncMousePasteButton();
+      }
+    ],
+
+    /**
      * If true, scroll to the bottom on any keystroke.
      */
     ['scroll-on-keystroke', true, function(v) {
@@ -357,6 +383,14 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      */
     ['scrollbar-visible', true, function(v) {
         self.setScrollbarVisible(v);
+      }
+    ],
+
+    /**
+     * Shift + Insert pastes if true, sent to host if false.
+     */
+    ['shift-insert-paste', true, function(v) {
+        self.keyboard.shiftInsertPaste = v;
       }
     ],
 
@@ -542,6 +576,29 @@ hterm.Terminal.prototype.syncFontFamily = function() {
   this.syncBoldSafeState();
 };
 
+/**
+ * Set this.mousePasteButton based on the mouse-paste-button pref,
+ * autodetecting if necessary.
+ */
+hterm.Terminal.prototype.syncMousePasteButton = function() {
+  var button = this.prefs_.get('mouse-paste-button');
+  if (typeof button == 'number') {
+    this.mousePasteButton = button;
+    return;
+  }
+
+  var ary = navigator.userAgent.match(/\(X11;\s+(\S+)/);
+  if (!ary || ary[2] == 'CrOS') {
+    this.mousePasteButton = 2;
+  } else {
+    this.mousePasteButton = 3;
+  }
+};
+
+/**
+ * Enable or disable bold based on the enable-bold pref, autodetecting if
+ * necessary.
+ */
 hterm.Terminal.prototype.syncBoldSafeState = function() {
   var enableBold = this.prefs_.get('enable-bold');
   if (enableBold !== null) {
@@ -964,6 +1021,14 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.setScrollbarVisible(this.prefs_.get('scrollbar-visible'));
 
   this.document_ = this.scrollPort_.getDocument();
+
+  this.document_.body.oncontextmenu = function() { return false };
+
+  var onMouse = this.onMouse_.bind(this);
+  this.document_.body.firstChild.addEventListener('mousedown', onMouse);
+  this.document_.body.firstChild.addEventListener('mouseup', onMouse);
+  this.document_.body.firstChild.addEventListener('mousemove', onMouse);
+  this.scrollPort_.onScrollWheel = onMouse;
 
   this.document_.body.firstChild.addEventListener(
       'focus', this.onFocusChange_.bind(this, true));
@@ -2175,6 +2240,54 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
     }, opt_timeout || 1500);
 };
 
+/**
+ * Paste from the system clipboard to the terminal.
+ */
+hterm.Terminal.prototype.paste = function() {
+  hterm.pasteFromClipboard(this.document_);
+};
+
+/**
+ * Copy a string to the system clipboard.
+ *
+ * Note: If there is a selected range in the terminal, it'll be cleared.
+ */
+hterm.Terminal.prototype.copyStringToClipboard = function(str) {
+  var copySource = this.document_.createElement('div');
+  copySource.textContent = str;
+  copySource.style.cssText = (
+      '-webkit-user-select: text;' +
+      'position: absolute;' +
+      'top: -99px');
+
+  this.document_.body.appendChild(copySource);
+  var selection = this.document_.getSelection();
+  selection.selectAllChildren(copySource);
+
+  this.copySelectionToClipboard();
+
+  copySource.parentNode.removeChild(copySource);
+};
+
+/**
+ * Copy the current selection to the system clipboard, then clear it after a
+ * short delay.
+ */
+hterm.Terminal.prototype.copySelectionToClipboard = function() {
+  hterm.copySelectionToClipboard(this.document_);
+  this.showOverlay(hterm.msg('NOTIFY_COPY'), 500);
+
+  if (this.copyTimeout_)
+    clearTimeout(this.copyTimeout_);
+
+  this.copyTimeout_ = setTimeout(function() {
+      var selection = this.document_.getSelection();
+      if (!selection.isCollapsed)
+        selection.collapseToEnd();
+      this.copyTimeout_ = null;
+    }.bind(this), 500);
+};
+
 hterm.Terminal.prototype.overlaySize = function() {
   this.showOverlay(this.screenSize.width + 'x' + this.screenSize.height);
 };
@@ -2199,6 +2312,17 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
  * coordinates for the mouse event.
  */
 hterm.Terminal.prototype.onMouse_ = function(e) {
+  if (e.type == 'mousedown' && e.which == this.mousePasteButton) {
+    this.paste();
+    return;
+  }
+
+  if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
+      !this.document_.getSelection().isCollapsed) {
+    this.copySelectionToClipboard();
+    return;
+  }
+
   e.terminalRow = parseInt((e.clientY - this.scrollPort_.visibleRowTopMargin) /
                            this.scrollPort_.characterSize.height) + 1;
   e.terminalColumn = parseInt(e.clientX /

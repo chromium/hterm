@@ -39,6 +39,13 @@
       var testManager;
       var testRun;
 
+      // If you add a new test suite, also add it to the runtime deps.  This
+      // ensures that a parse error in a suite won't result in the entire
+      // set of tests being silently ignored.
+      lib.rtdep('hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
+                'hterm.Terminal.Tests', 'hterm.VT.Tests',
+                'hterm.VT.CannedTests');
+
       function init() {
         lib.ensureRuntimeDependencies();
 

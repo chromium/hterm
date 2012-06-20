@@ -30,6 +30,11 @@
     "description": "A short tip displayed after the WELCOME message."
   },
 
+  "NOTIFY_COPY": {
+    "message": "Selection Copied",
+    "description": "Short status message displayed in a terminal overlay when text is automatically copied to the clipboard."
+  },
+
   "OK_BUTTON_LABEL": {
     "message": "OK",
     "description": "The label for the OK button in dialogs."

@@ -1139,6 +1139,22 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     result.pass();
   });
 
+/**
+ * Test that we can use OSC 52 to copy to the system clipboard.
+ */
+hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
+    // Mock this out since we can't document.execCommand from the
+    // test harness.
+    hterm.copySelectionToClipboard = function(document) {
+      var s = document.getSelection();
+      result.assertEQ(s.anchorNode.textContent, 'copypasta!');
+      result.pass();
+    };
+
+    this.terminal.interpret('\x1b]52;c;Y29weXBhc3RhIQ==\x07');
+    result.requestTime(200);
+  });
+
 hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';

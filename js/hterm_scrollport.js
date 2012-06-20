@@ -997,6 +997,7 @@ hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
  * may be due to the user manually move the scrollbar, or a programmatic change.
  */
 hterm.ScrollPort.prototype.onScroll_ = function(e) {
+  var rect = this.screen_.getBoundingClientRect();
   if (this.screen_.clientWidth != this.lastScreenWidth_ ||
       this.screen_.clientHeight != this.lastScreenHeight_) {
     // This event may also fire during a resize (but before the resize event!).

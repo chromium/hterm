@@ -43,6 +43,24 @@ hterm.msg = function(name, opt_args) {
 };
 
 /**
+ * Copy the current selection to the system clipboard.
+ *
+ * @param {HTMLDocument} The document with the selection to copy.
+ */
+hterm.copySelectionToClipboard = function(document) {
+  document.execCommand('copy');
+};
+
+/**
+ * Paste the system clipboard into the element with focus.
+ *
+ * @param {HTMLDocument} The document to paste into.
+ */
+hterm.pasteFromClipboard = function(document) {
+  document.execCommand('paste');
+};
+
+/**
  * Constructor for a hterm.Size record.
  *
  * Instances of this class have public read/write members for width and height.
