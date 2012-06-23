@@ -89,7 +89,7 @@ nassh.Stream.prototype.asyncRead = function(size, onRead) {
  * Write to a stream.
  */
 nassh.Stream.prototype.asyncWrite = function(data, onSuccess) {
-  throw NaSSH.Stream.ERR_NOT_IMPLEMENTED;
+  throw nassh.Stream.ERR_NOT_IMPLEMENTED;
 };
 
 /**

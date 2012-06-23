@@ -37,7 +37,7 @@ nassh.GlobalPreferences.prototype.createProfile = function(opt_description) {
 
   while (!id || profileIDs.indexOf(id) != -1) {
     id = Math.floor(Math.random() * 0xffff + 1).toString(16);
-    id = nassh.zpad(id, 4);
+    id = lib.f.zpad(id, 4);
   }
 
   profileIDs.push(id);
