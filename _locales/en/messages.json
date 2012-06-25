@@ -320,5 +320,10 @@
   "CMD_SSH_FORGET_HOST_HELP": {
     "message": "This command displays a menu of known hosts and prompts for the host to forget.",
     "description": "Long form help text for this command.  Do not translate the parameter names in |pipes|."
+  },
+
+  "RECONNECT_MESSAGE": {
+    "message": "Press [Enter] to reconnect or [ESC] to exit.",
+    "description": "Message displayed after a connection closes"
   }
 }

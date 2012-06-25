@@ -138,6 +138,20 @@ nassh.CommandInstance.prototype.run = function() {
 };
 
 /**
+ * Reconnects to host, using the same CommandInstance.
+ *
+ * @param {string} argstr The connection ArgString
+ */
+nassh.CommandInstance.prototype.reconnect = function (argstr) {
+  this.io=this.argv_.io.push();
+  this.plugin_.parentNode.removeChild(this.plugin_);
+  this.stdoutAcknowledgeCount_ = 0;
+  this.stderrAcknowledgeCount_ = 0;
+
+  this.connectToArgString(argstr);
+}
+
+/**
  * Removes a file from the HTML5 filesystem.
  *
  * Most likely you want to remove something from the /.ssh/ directory.
@@ -443,15 +457,23 @@ nassh.CommandInstance.prototype.onTerminalResize_ = function(width, height) {
  * Exit the nassh command.
  */
 nassh.CommandInstance.prototype.exit = function(code) {
-  if (this.exited_)
-    return;
-
-  this.exited_ = true;
-  this.io.pop();
   window.onbeforeunload = null;
 
-  if (this.argv_.onExit)
-    this.argv_.onExit(code);
+  this.io.println(hterm.msg('RECONNECT_MESSAGE'));
+  this.io.onVTKeystroke = function (string) {
+    if (string.charCodeAt(0) == 13)
+      this.reconnect(document.location.hash.substr(1));
+
+    if (string.charCodeAt(0) == 27) {
+      if (this.exited_)
+        return;
+
+      this.exited_ = true;
+      this.io.pop();
+      if (this.argv_.onExit)
+        this.argv_.onExit(code);
+    }
+  }.bind(this);
 };
 
 nassh.CommandInstance.prototype.onBeforeUnload_ = function(e) {
