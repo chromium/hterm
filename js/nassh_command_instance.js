@@ -337,8 +337,9 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
     var ary = params.argstr.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
     if (ary) {
       console.log(ary);
-      argv.arguments = argv.arguments.concat(ary[1].split(/\s+/));
-      commandArgs = ary[2] ? ary[2].split(/\s+/) : [];
+      if (ary[1])
+        argv.arguments = argv.arguments.concat(ary[1].split(/\s+/));
+      commandArgs = ary[2];
     }
   }
 
@@ -349,7 +350,7 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
 
   argv.arguments.push(params.username + '@' + params.hostname);
   if (commandArgs)
-    argv.arguments = argv.arguments.concat(commandArgs);
+    argv.arguments.push(commandArgs);
 
   var self = this;
   this.initPlugin_(function() {
