@@ -8,6 +8,7 @@ Unreleased trunk changes:
 * Remove unused dialogs.js,css code.
 * Implement character set selection (SCS)
 * Pass Alt-*-Tab to the browser.
+* Fix bug which may abort connections with "Unknown error 4294967292".
 
 0.8.2.0 - Localization and Accessibility for the connect dialog
 
