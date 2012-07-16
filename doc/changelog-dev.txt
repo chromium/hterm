@@ -9,6 +9,7 @@ Unreleased trunk changes:
   on exit.  Defaults to on.
 * Properly handle overflow lines during clipboard copy.
 * Offer to reconnect on disconnect.
+* Session id parsing in connection arguments.
 
 BUG=chromium-os:27020, newlines added during clipboard copy
 BUG=chromium-os:29217, offer to reconnect after disconnect

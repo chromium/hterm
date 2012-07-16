@@ -53,6 +53,9 @@ nassh.CommandInstance = function(argv) {
 
   // Prevent us from reporting an exit twice.
   this.exited_ = false;
+
+  // A unique id for this connection.
+  this.sessionId = 0;
 };
 
 /**
@@ -241,10 +244,10 @@ nassh.CommandInstance.prototype.promptForDestination_ = function(opt_default) {
 };
 
 nassh.CommandInstance.prototype.connectToArgString = function(argstr) {
-  var ary = argstr.match(/^profile-id:([a-z0-9]+)/i);
+  var ary = argstr.match(/^profile-id:([a-z0-9]+)(\?.*)?/i);
   var rv;
   if (ary) {
-    rv = this.connectToProfile(ary[1]);
+    rv = this.connectToProfile(ary[1], ary[2]);
   } else {
     rv = this.connectToDestination(argstr);
   }
@@ -255,12 +258,22 @@ nassh.CommandInstance.prototype.connectToArgString = function(argstr) {
 /**
  * Initiate a connection to a remote host given a profile id.
  */
-nassh.CommandInstance.prototype.connectToProfile = function(profileID) {
+nassh.CommandInstance.prototype.connectToProfile = function(profileID,
+                                                            querystr) {
   var prefs = this.prefs_.getProfile(profileID);
 
+  this.sessionId = Math.floor(Math.random() * 0xffff + 1).toString(16);
+  this.sessionId = lib.f.zpad(this.sessionId, 4);
+
+  if (querystr) {
+    var args = lib.f.parseQuery(querystr);
+    if (args["sessionId"] && args["sessionId"].match(/^[a-f0-9]{4}$/))
+      this.sessionId = args["sessionId"];
+  }
   // We have to set the url here rather than in connectToArgString, because
   // some callers will come directly to connectToProfile.
-  document.location.hash = 'profile-id:' + profileID;
+  document.location.hash = 'profile-id:' + profileID +
+                           '?sessionId=' + this.sessionId;
 
   return this.connectTo({
       username: prefs.get('username'),
@@ -357,7 +370,8 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
   var commandArgs;
 
   if (params.argstr) {
-    var ary = params.argstr.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
+    var parsedArg = lib.f.replaceVars(params.argstr, {session: this.sessionId});
+    var ary = parsedArg.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
     if (ary) {
       console.log(ary);
       if (ary[1])
