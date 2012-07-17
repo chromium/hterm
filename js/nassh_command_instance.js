@@ -50,6 +50,9 @@ nassh.CommandInstance = function(argv) {
   // Counters used to acknowledge writes from the plugin.
   this.stdoutAcknowledgeCount_ = 0;
   this.stderrAcknowledgeCount_ = 0;
+
+  // Prevent us from reporting an exit twice.
+  this.exited_ = false;
 };
 
 /**
@@ -393,6 +396,10 @@ nassh.CommandInstance.prototype.initPlugin_ = function(onComplete) {
   this.plugin_.setAttribute('type', 'application/x-nacl');
   this.plugin_.addEventListener('load', onPluginLoaded);
   this.plugin_.addEventListener('message', this.onPluginMessage_.bind(this));
+  this.plugin_.addEventListener('crash', function (ev) {
+    console.log('plugin crashed');
+    self.exit(-1);
+  });
 
   document.body.insertBefore(this.plugin_, document.body.firstChild);
 };
@@ -432,6 +439,10 @@ nassh.CommandInstance.prototype.onTerminalResize_ = function(width, height) {
  * Exit the nassh command.
  */
 nassh.CommandInstance.prototype.exit = function(code) {
+  if (this.exited_)
+    return;
+
+  this.exited_ = true;
   this.io.pop();
   window.onbeforeunload = null;
 
@@ -491,6 +502,7 @@ nassh.CommandInstance.prototype.onPlugin_.printLog = function(str) {
  */
 nassh.CommandInstance.prototype.onPlugin_.exit = function(code) {
   console.log('plugin exit: ' + code);
+  this.sendToPlugin_('onExitAcknowledge', []);
   this.exit(code);
 };
 
