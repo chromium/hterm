@@ -98,6 +98,58 @@ hterm.VT.Tests.addTest('sanity', function(result, cx) {
   });
 
 /**
+ * Test that we parse UTF-8 properly. Parser state should persist
+ * across writes and invalid sequences should result in replacement
+ * characters.
+ */
+hterm.VT.Tests.addTest('utf8', function(result, cx) {
+    // 11100010 10000000 10011001 split over two writes.
+    this.terminal.interpret('\xe2\x80');
+    this.terminal.interpret('\x99\r\n');
+
+    // Interpret some invalid UTF-8. xterm and gnome-terminal are
+    // inconsistent about the number of replacement characters. We
+    // match xterm.
+    this.terminal.interpret('a\xf1\x80\x80\xe1\x80\xc2b\x80c\x80\xbfd\r\n')
+
+    // Surrogate pairs turn into replacements.
+    this.terminal.interpret('\xed\xa0\x80' +  // D800
+                            '\xed\xad\xbf' +  // D87F
+                            '\xed\xae\x80' +  // DC00
+                            '\xed\xbf\xbf');  // DFFF
+
+    var text = this.terminal.getRowsText(0, 3);
+    result.assertEQ(text,
+                    '\u2019\n' +
+                    'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
+                    '\ufffd\ufffd\ufffd\ufffd');
+
+
+    // Check the upper and lower bounds of each sequence type. The
+    // last few will turn into single replacement characters. Some may
+    // require surrogate pairs in UTF-16. Run these through the
+    // decoder directly because the terminal ignores 00 and 7F.
+    result.assertEQ(
+      new lib.UTF8Decoder().decode('\x00' +
+                                   '\xc2\x80' +
+                                   '\xe0\xa0\x80' +
+                                   '\xf0\x90\x80\x80' +
+                                   '\xf8\x88\x80\x80\x80' +
+                                   '\xfc\x84\x80\x80\x80\x80'),
+      '\u0000\u0080\u0800\ud800\udc00\ufffd\ufffd');
+    result.assertEQ(
+      new lib.UTF8Decoder().decode('\x7f' +
+                                   '\xdf\xbf' +
+                                   '\xef\xbf\xbf' +
+                                   '\xf7\xbf\xbf\xbf' +
+                                   '\xfb\xbf\xbf\xbf\xbf' +
+                                   '\xfd\xbf\xbf\xbf\xbf\xbf'),
+      '\u007f\u07ff\uffff\ufffd\ufffd\ufffd');
+
+    result.pass();
+  });
+
+/**
  * Basic cursor positioning tests.
  *
  * TODO(rginda): Test the VT52 variants too.
@@ -192,8 +244,10 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
 
     result.assertEQ(this.terminal.vt.enable8BitControl, false);
 
-    // Send a "set window title" command using a disabled 8-bit control.
-    this.terminal.interpret('\x9d0;test title\x07!!');
+    // Send a "set window title" command using a disabled 8-bit
+    // control. It's a C1 control, so we interpret it after UTF-8
+    // decoding.
+    this.terminal.interpret('\xc2\x9d0;test title\x07!!');
 
     result.assertEQ(title, null);
     result.assertEQ(this.terminal.getRowsText(0, 1), '0;test title!!');
@@ -209,7 +263,7 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
     title = null;
     this.terminal.reset();
     this.terminal.vt.enable8BitControl = true;
-    this.terminal.interpret('\x9d0;test title\x07!!');
+    this.terminal.interpret('\xc2\x9d0;test title\x07!!');
     result.assertEQ(title, 'test title');
     result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
 

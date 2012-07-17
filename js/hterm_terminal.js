@@ -2156,7 +2156,7 @@ hterm.Terminal.prototype.onScroll_ = function() {
  * React when text is pasted into the scrollPort.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  this.io.onVTKeystroke(e.text);
+  this.io.onVTKeystroke(this.vt.encodeUTF8(e.text));
 };
 
 /**

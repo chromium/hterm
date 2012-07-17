@@ -9,6 +9,14 @@ Unreleased trunk changes:
 * Implement character set selection (SCS)
 * Pass Alt-*-Tab to the browser.
 * Fix bug which may abort connections with "Unknown error 4294967292".
+* Encode pasted text as UTF-8.
+* Properly encode and decode UTF-8, handling surrogate pairs and
+  retaining state between terminal writes.
+
+BUG=chromium-os:30296, UTF-8 decoder is not a function of input stream; will
+    break when UTF-8 sequence split across reads
+BUG=chromium-os:30297, UTF-8 decoder does not conform to Unicode standard
+    re: invalid sequences
 
 0.8.2.0 - Localization and Accessibility for the connect dialog
 

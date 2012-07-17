@@ -65,20 +65,8 @@ hterm.VT = function(terminal) {
       }).join('');
   this.cc1Pattern_ = new RegExp('[' + cc1 + ']');
 
-  // Regular expression used in UTF-8 decoding.
-  this.utf8Pattern_ = new RegExp(
-      [// 110x-xxxx 10xx-xxxx
-       '([\\xc0-\\xdf][\\x80-\\xbf])',
-       // 1110-xxxx 10xx-xxxx 10xx-xxxx
-       '([\\xe0-\\xef][\\x80-\\xbf]{2})',
-       // 1111-0xxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
-       '([\\xf0-\\xf7][\\x80-\\xbf]{3})',
-       // 1111-10xx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
-       '([\\xf8-\\xfb][\\x80-\\xbf]{4})',
-       // 1111-110x 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
-       '([\\xfc-\\xfd][\\x80-\\xbf]{5})'
-       ].join('|'),
-      'g');
+  // Decoder to maintain UTF-8 decode state.
+  this.utf8Decoder_ = new lib.UTF8Decoder();
 
   /**
    * Whether to accept the 8-bit control characters.
@@ -326,94 +314,17 @@ hterm.VT.prototype.interpret = function(buf) {
 /**
  * Encode a UTF-16 string as UTF-8.
  *
- * This fails above 0xffff because it doesn't grok 4 byte UTF-16 characters.
- * TODO(rginda): Generalize for higher codepoints.
- *
  * See also: http://en.wikipedia.org/wiki/UTF-16
  */
 hterm.VT.prototype.encodeUTF8 = function(str) {
-  return str.replace(/([\u0080-\ud7ff\ue000-\uffff])/g, function(m, ch) {
-      var code = ch.charCodeAt(0);
-      if (code <= 0x07ff) {
-        // 110x-xxxx 10xx-xxxx
-        // 11 bits encoded in 2 bytes.
-        return String.fromCharCode(0xc0 | (code >> 6)) +
-            String.fromCharCode (0x80 | (code & 0x3f));
-      }
-
-      if (code <= 0xffff) {
-        // 1110-xxxx 10xx-xxxx 10xx-xxxx
-        // 16 bits of 2 bytes encoded in 3 bytes.
-        return String.fromCharCode(0xe0 | (code >> 12)) +
-            String.fromCharCode (0x80 | (code >> 6 & 0x3f)) +
-            String.fromCharCode (0x80 | (code & 0x3f));
-      }
-    });
+  return lib.encodeUTF8(str);
 };
 
 /**
  * Decode a UTF-8 string into UTF-16.
  */
 hterm.VT.prototype.decodeUTF8 = function(str) {
-  function fromBigCharCode(codePoint) {
-    // String.fromCharCode can't handle codepoints > 2 bytes without
-    // this magic.  See <http://goo.gl/jpcx0>.
-    if (codePoint > 0xffff) {
-      codePoint -= 0x1000;
-      return String.fromCharCode(0xd800 + (codePoint >> 10),
-                                 0xdc00 + (codePoint & 0x3ff));
-    }
-
-    return String.fromCharCode(codePoint);
-  }
-
-  return str.replace(this.utf8Pattern_, function(bytes) {
-      var ary = bytes.split('').map(function (e) { return e.charCodeAt(0) });
-      var ch = ary[0];
-      if (ch <= 0xdf) {
-        // 110x-xxxx 10xx-xxxx
-        // 11 bits of 2 bytes encoded in 2 bytes.
-        return String.fromCharCode(((ch & 0x1f) << 6) |
-                                   (ary[1] & 0x3f));
-      }
-
-      if (ch <= 0xef) {
-        // 1110-xxxx 10xx-xxxx 10xx-xxxx
-        // 16 bits of 2 bytes encoded in 3 bytes.
-        var rv = String.fromCharCode(((ch & 0x0f) << 12) |
-                                     (ary[1] & 0x3f) << 6 |
-                                     (ary[2] & 0x3f));
-        return rv;
-      }
-
-      if (ch <= 0xf7) {
-        // 1111-0xxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
-        // 21 bits of 3 bytes encoded in 4 bytes.
-        return fromBigCharCode(((ch & 0x1f) << 18) |
-                               (ary[1] & 0x3f) << 12 |
-                               (ary[2] & 0x3f) << 6 |
-                               (ary[3] & 0x3f));
-      }
-
-      if (ch <= 0xfb) {
-        // 1111-10xx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
-        // 26 bits of 4 bytes encoded in 5 bytes.
-        return fromBigCharCode(((ch & 0x1f) << 24) |
-                               (ary[1] & 0x3f) << 18 |
-                               (ary[2] & 0x3f) << 12 |
-                               (ary[3] & 0x3f) << 6 |
-                               (ary[4] & 0x3f));
-      }
-
-      // 1111-110x 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx 10xx-xxxx
-      // 31 bits of 4 bytes encoded in 6 bytes.
-      return fromBigCharCode(((ch & 0x1f) << 30) |
-                             (ary[1] & 0x3f) << 24 |
-                             (ary[2] & 0x3f) << 18 |
-                             (ary[3] & 0x3f) << 12 |
-                             (ary[4] & 0x3f) << 6 |
-                             (ary[5] & 0x3f));
-    });
+  return this.utf8Decoder_.decode(str);
 };
 
 /**
