@@ -247,6 +247,7 @@ nassh.CommandInstance.prototype.connectToProfile = function(profileID) {
       hostname: prefs.get('hostname'),
       port: prefs.get('port'),
       relayHost: prefs.get('relay-host'),
+      relayOptions: prefs.get('relay-options'),
       identity: prefs.get('identity'),
       argstr: prefs.get('argstr'),
       terminalProfile: prefs.get('terminal-profile')
@@ -296,7 +297,9 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
     return false;
 
   if (params.relayHost) {
-    this.relay_ = new nassh.GoogleRelay(this.io, params.relayHost);
+    this.relay_ = new nassh.GoogleRelay(this.io,
+                                        params.relayHost,
+                                        params.relayOptions);
     this.io.println(hterm.msg('INITIALIZING_RELAY', [params.relayHost]));
     if (!this.relay_.init()) {
       // A false return value means we have to redirect to complete

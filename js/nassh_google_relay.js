@@ -68,25 +68,35 @@ lib.rtdep('lib.f');
  * 6. Writes are queued up and sent to /write.
  */
 
-nassh.GoogleRelay = function(io, proxy) {
+nassh.GoogleRelay = function(io, proxy, options) {
   this.io = io;
   this.proxy = proxy;
+  this.useSecure = options.search('--use-ssl') != -1;
+  this.useWebsocket = !(options.search('--use-xhr') != -1);
+  this.relayServer = null;
+  this.relayServerSocket = null;
 };
 
 /**
  * The pattern for the cookie server's url.
  */
 nassh.GoogleRelay.prototype.cookieServerPattern =
-    'http://%(host):8022/cookie?ext=%encodeURIComponent(return_to)' +
+    '%(protocol)://%(host):8022/cookie?ext=%encodeURIComponent(return_to)' +
     '&path=html/nassh_google_relay.html';
 
 /**
- * The pattern for the relay server's url.
+ * The pattern for XHR relay server's url.
  *
  * We'll be appending 'proxy', 'read' and 'write' to this as necessary.
  */
 nassh.GoogleRelay.prototype.relayServerPattern =
-    'http://%(host):8023/';
+    '%(protocol)://%(host):8023/';
+
+/**
+ * The pattern for WebSocket relay server's url.
+ */
+nassh.GoogleRelay.prototype.relayServerSocketPattern =
+    '%(protocol)://%(host):8022/';
 
 nassh.GoogleRelay.prototype.redirect = function(opt_resumePath) {
   var resumePath = opt_resumePath ||
@@ -99,6 +109,7 @@ nassh.GoogleRelay.prototype.redirect = function(opt_resumePath) {
   document.location = lib.f.replaceVars(
       this.cookieServerPattern,
       { host: this.proxy,
+        protocol: this.useSecure ? 'https' : 'http',
         // This returns us to nassh_google_relay.html so we can pick the relay
         // host out of the reply.  From there we continue on to the resumePath.
         return_to:  document.location.host
@@ -124,8 +135,16 @@ nassh.GoogleRelay.prototype.init = function(opt_resumePath) {
     var expectedResumePath =
         sessionStorage.getItem('googleRelay.resumePath');
     if (expectedResumePath == resumePath) {
-      this.relayServer = lib.f.replaceVars(this.relayServerPattern,
-                                           {host: relayHost});
+      var protocol = this.useSecure ? 'https' : 'http';
+      var pattern = this.useWebsocket ? this.relayServerSocketPattern :
+                                        this.relayServerPattern;
+      this.relayServer = lib.f.replaceVars(pattern,
+          {host: relayHost, protocol: protocol});
+      if (this.useWebsocket) {
+        protocol = this.useSecure ? 'wss' : 'ws';
+        this.relayServerSocket = lib.f.replaceVars(pattern,
+            {host: relayHost, protocol: protocol});
+      }
     } else {
       // If everything is ok, this should be the second time we've been asked
       // to do the same init.  (The first time would have redirected.)  If this
@@ -150,8 +169,9 @@ nassh.GoogleRelay.prototype.init = function(opt_resumePath) {
  * Return an nassh.Stream object that will handle the socket stream
  * for this relay.
  */
-nassh.GoogleRelay.prototype.openSocket = function(
-    fd, host, port, onOpen) {
-  return nassh.Stream.openStream(nassh.Stream.GoogleRelay,
-            fd, {relay: this, host: host, port: port}, onOpen);
+nassh.GoogleRelay.prototype.openSocket = function(fd, host, port, onOpen) {
+  var streamClass = this.useWebsocket ? nassh.Stream.GoogleRelayWS :
+                                        nassh.Stream.GoogleRelayXHR;
+  return nassh.Stream.openStream(streamClass,
+      fd, {relay: this, host: host, port: port}, onOpen);
 };

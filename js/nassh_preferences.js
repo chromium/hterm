@@ -123,6 +123,12 @@ nassh.ProfilePreferences = function(id) {
     ['relay-host', ''],
 
     /**
+     * Options string for relay.
+     * Supported values: --use-xhr and --use-ssl.
+     */
+    ['relay-options', ''],
+
+    /**
      * The private key file to use as the identity for this extension.
      *
      * Must be relative to the /.ssh/ directory.
