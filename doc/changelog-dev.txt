@@ -23,6 +23,7 @@ Unreleased trunk changes:
 * Add ability to let Shift-Insert cause a clipboard paste.  Preference
   'shift-insert-paste' defaults to on.
 * Add partial OSC 52 support to allow the host to write to the system clipboard.
+* Fix extra-long line wrapping.
 
 BUG=chromium-os:30296, UTF-8 decoder is not a function of input stream; will
     break when UTF-8 sequence split across reads

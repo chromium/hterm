@@ -376,78 +376,49 @@ hterm.Screen.prototype.splitNode_ = function(node, offset) {
 };
 
 /**
- * Remove and return all content past the end of the current cursor position.
- *
- * If necessary, the cursor's current node will be split.  Everything past
- * the end of the cursor will be returned in an array.  Any empty nodes
- * will be omitted from the result array.  If the resulting array is empty,
- * this function will return null.
- *
- * @return {Array} An array of DOM nodes that used to appear after the cursor,
- *     or null if the cursor was already at the end of the line.
+ * Ensure that text is clipped and the cursor is clamped to the column count.
  */
-hterm.Screen.prototype.clipAtCursor_ = function() {
-  if (this.cursorOffset_ < this.cursorNode_.textContent.length - 1)
-    this.splitNode_(this.cursorNode_, this.cursorOffset_ + 1);
+hterm.Screen.prototype.maybeClipCurrentRow = function() {
+  if (this.cursorRowNode_.textContent.length <= this.columnCount_) {
+    // Current row does not need clipping, but may need clamping.
+    if (this.cursorPosition.column >= this.columnCount_) {
+      this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
+      this.cursorPosition.overflow = true;
+    }
 
-  var rv = null;
+    return;
+  }
+
+  // Save off the current column so we can maybe restore it later.
+  var currentColumn = this.cursorPosition.column;
+
+  // Move the cursor to the final column.
+  this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
+
+  // Remove any text that partially overflows.
+  var cursorNodeText = this.cursorNode_.textContent;
+  if (this.cursorOffset_ < cursorNodeText.length - 1) {
+    this.cursorNode_.textContent = cursorNodeText.substr(
+        0, this.cursorOffset_ + 1);
+  }
+
+  // Remove all nodes after the cursor.
   var rowNode = this.cursorRowNode_;
   var node = this.cursorNode_.nextSibling;
 
   while (node) {
-    var length = node.textContent.length;
-    if (length) {
-      if (rv) {
-        rv.push(node);
-        rv.characterLength += length;
-      } else {
-        rv = [node];
-        rv.characterLength = length;
-      }
-    }
-
     rowNode.removeChild(node);
     node = this.cursorNode_.nextSibling;
   }
 
-  return rv;
-};
-
-/**
- * Ensure that the current row does not overflow the current column count.
- *
- * If the current row is too long, it will be clipped.  Text before the cursor
- * will be returned as an array of DOM nodes to overflow.  If there is nothing
- * to overflow, this function returns null.
- *
- * Note that text after the cursor is simply clipped and never overflowed.
- * Text that overflows the margin because it is offset during insert mode is
- * NOT wrapped.  However, new text printed as part of the insert IS wrapped.
- *
- * @return {Array} An array of DOM nodes that overflowed in the current row,
- *     or null if there is nothing to overflow.
- */
-hterm.Screen.prototype.maybeClipCurrentRow = function() {
-  var currentColumn = this.cursorPosition.column;
-
-  if (currentColumn >= this.columnCount_) {
-    // Text to the right of the cursor does not wrap.
-    this.deleteChars(this.cursorRowNode_.textContent.length);
-    // Now clip the parts we want to wrap.
-    this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
-    this.cursorPosition.overflow = true;
-    return this.clipAtCursor_();
-  }
-
-  if (this.cursorRowNode_.textContent.length > this.columnCount_) {
-    // Text to the right of the cursor does not wrap.
-    this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
-    this.clipAtCursor_();
+  if (currentColumn < this.columnCount_ - 1) {
+    // If the cursor was within the screen before we started then restore its
+    // position.
     this.setCursorPosition(this.cursorPosition.row, currentColumn);
-    return null;
+  } else {
+    // Otherwise leave it at the the last column in the overflow state.
+    this.cursorPosition.overflow = true;
   }
-
-  return null;
 };
 
 /**
@@ -570,34 +541,6 @@ hterm.Screen.prototype.insertString = function(str) {
   this.cursorRowNode_.insertBefore(newNode, cursorNode.nextSibling);
   this.cursorNode_ = newNode;
   this.cursorOffset_ = strLength;
-};
-
-/**
- * Insert an array of DOM nodes at the beginning of the cursor row.
- *
- * This does not pay attention to the cursor column, it only prepends to the
- * beginning of the current row.
- *
- * This method does not attempt to coalesce rows of the same style.  It assumes
- * that the rows being inserted have already been coalesced, and that there
- * would be no gain in coalescing only the final node.
- *
- * The cursor will be reset to the zero'th column.
- */
-hterm.Screen.prototype.prependNodes = function(ary) {
-  var parentNode = this.cursorRowNode_;
-
-  for (var i = ary.length - 1; i >= 0; i--) {
-    parentNode.insertBefore(ary[i], parentNode.firstChild);
-  }
-
-  // We have to leave the cursor in a sensible state so we don't confuse
-  // setCursorPosition.  It's fastest to just leave it at the start of
-  // the row.  If the caller wants it somewhere else, they can move it
-  // on their own.
-  this.cursorPosition.column = 0;
-  this.cursorNode_ = parentNode.firstChild;
-  this.cursorOffset_ = 0;
 };
 
 /**

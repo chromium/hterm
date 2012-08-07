@@ -1278,33 +1278,40 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end) {
  * @param{string} str The string to print.
  */
 hterm.Terminal.prototype.print = function(str) {
-  if (this.options_.wraparound && this.screen_.cursorPosition.overflow)
-    this.newLine();
+  var startOffset = 0;
 
-  if (this.options_.insertMode) {
-    this.screen_.insertString(str);
-  } else {
-    this.screen_.overwriteString(str);
-  }
-
-  var overflow = this.screen_.maybeClipCurrentRow();
-
-  if (this.options_.wraparound && overflow) {
-    var lastColumn;
-
-    do {
+  while (startOffset < str.length) {
+    if (this.options_.wraparound && this.screen_.cursorPosition.overflow)
       this.newLine();
-      lastColumn = overflow.characterLength;
 
-      if (!this.options_.insertMode)
-        this.screen_.deleteChars(overflow.characterLength);
+    var count = str.length - startOffset;
+    var didOverflow = false;
+    var substr;
 
-      this.screen_.prependNodes(overflow);
+    if (this.screen_.cursorPosition.column + count >= this.screenSize.width) {
+      didOverflow = true;
+      count = this.screenSize.width - this.screen_.cursorPosition.column;
+    }
 
-      overflow = this.screen_.maybeClipCurrentRow();
-    } while (overflow);
+    if (didOverflow && !this.options_.wraparound) {
+      // If the string overflowed the line but wraparound is off, then the
+      // last printed character should be the last of the string.
+      // TODO: This will add to our problems with multibyte UTF-16 characters.
+      substr = str.substr(startOffset, count - 1) +
+          str.substr(str.length - 1);
+      count = str.length;
+    } else {
+      substr = str.substr(startOffset, count);
+    }
 
-    this.setCursorColumn(lastColumn);
+    if (this.options_.insertMode) {
+      this.screen_.insertString(substr);
+    } else {
+      this.screen_.overwriteString(substr);
+    }
+
+    this.screen_.maybeClipCurrentRow();
+    startOffset += count;
   }
 
   this.scheduleSyncCursorPosition_();

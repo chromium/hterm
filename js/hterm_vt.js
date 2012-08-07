@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.colors', 'lib.f',
+lib.rtdep('lib.colors', 'lib.f', 'lib.UTF8Decoder',
           'hterm.VT.CharacterMap');
 
 /**

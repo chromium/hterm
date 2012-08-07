@@ -251,17 +251,14 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     // Fetch enough whitespace to ensure that the row is full.
     var ws = lib.f.getWhitespace(this.screen.getWidth());
 
-    // Check overflow. Two spaces overflow to the next line; only
-    // newly-inserted text overflows.
+    // Check text clipping and cursor clamping.
     this.screen.clearCursorRow();
     this.screen.insertString('XXXX');
     this.screen.setCursorPosition(0, 2);
     this.screen.insertString(ws);
-    var overflow = this.screen.maybeClipCurrentRow();
-    result.assertEQ(overflow.length, 1);
-    result.assertEQ(overflow[0].nodeType, 3);
-    result.assertEQ(overflow[0].textContent, '  ');
+    this.screen.maybeClipCurrentRow();
     result.assertEQ(ary[0].innerHTML, 'XX' + ws.substr(2));
+    result.assertEQ(this.screen.cursorPosition.column, 79);
 
     // Insert into a more complicated row.
     this.screen.setCursorPosition(1, 3);
