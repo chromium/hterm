@@ -1,4 +1,4 @@
-Unreleased trunk changes:
+0.8.2.1, 2012-08-10, VT mouse, copy/paste work, and bug fixes.
 
 * Moved common libraries under the "lib" object.
 * Add "hterm_" prefix to the hterm source files.
@@ -13,9 +13,6 @@ Unreleased trunk changes:
 * Properly encode and decode UTF-8, handling surrogate pairs and
   retaining state between terminal writes.
 * Add mouse support via DECSET modes 1000, 1002, 1003.
-* Change clientHeight/Width calls to use
-  getBoundingClientRect(), since the latter is able to work
-  with fractional sizes.
 * Add mouse button paste.  Preference 'mouse-paste-button' defaults to off
   on typical X11, on everywhere else (including Aura on X11).
 * Add ability to automatically copy the mouse selection to the keyboard.
@@ -24,6 +21,11 @@ Unreleased trunk changes:
   'shift-insert-paste' defaults to on.
 * Add partial OSC 52 support to allow the host to write to the system clipboard.
 * Fix extra-long line wrapping.
+* Add basic line editing for local ssh prompts (password, fingerprint prompt,
+  and the "~C" command line).
+* Add websockets to the google proxy and make it the default connection type.
+* Fix ssh "target command" parsing.
+* Make the JavaScript side of things more robust against a NaCl plugin crash.
 
 BUG=chromium-os:30296, UTF-8 decoder is not a function of input stream; will
     break when UTF-8 sequence split across reads
@@ -32,14 +34,14 @@ BUG=chromium-os:30297, UTF-8 decoder does not conform to Unicode standard
 BUG=chromium-os:29490, Middle click should paste in the terminal
 BUG=chromium-os:26288, hterm: Add mouse support via DECSET 1000, 1002, 1003
 
-0.8.2.0 - Localization and Accessibility for the connect dialog
+0.8.2.0, 2012-06-14, Localization and Accessibility for the connect dialog
 
 * Add message_manager.js to manage string bundles.
 * Add a bunch of new strings for the dialog.
 * Make nassh_connect_dialog.html/js use the new strings.
 * Fix minor issue with argument parsing.
 
-0.8.1.0 - New connection dialog, flow control
+0.8.1.0, 2012-06-12, New connection dialog, flow control
 
 * New nassh binary:
   - Support for flow control (try aafire!)
