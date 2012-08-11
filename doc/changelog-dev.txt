@@ -1,3 +1,8 @@
+Unreleased trunk changes:
+
+* Various termios fixes for input and output transformation. Fixes
+  drawing issue with some ncurses applications.
+
 0.8.2.1, 2012-08-10, VT mouse, copy/paste work, and bug fixes.
 
 * Moved common libraries under the "lib" object.
