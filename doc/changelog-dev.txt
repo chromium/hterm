@@ -1,3 +1,12 @@
+0.8.2.4, 2012-08-13, Add missing dep to crosh.html.
+
+* Fix missing lib_utf8.js in crosh.html.
+
+0.8.2.3, 2012-08-13, NaCl plugin fixes.
+
+* Various termios fixes for input and output transformation. Fixes
+  drawing issue with some ncurses applications.
+
 0.8.2.2, 2012-08-10, Add Ctrl-Shift-N to open new instance.
 
 * Make Ctrl-Shift-N/Meta-Shift-N keyboard combinations open a new window.
