@@ -91,6 +91,11 @@ hterm.VT = function(terminal) {
   this.enable8BitControl = false;
 
   /**
+   * Whether to allow the OSC 52 sequence to write to the system clipboard.
+   */
+  this.enableClipboardWrite = true;
+
+  /**
    * Max length of an unterminated DCS, OSC, PM or APC sequence before we give
    * up and ignore the code.
    *

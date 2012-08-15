@@ -1054,6 +1054,8 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
  * prefer to the bottom row to stay at the bottom.
  */
 hterm.ScrollPort.prototype.onResize_ = function(e) {
+  // Re-measure, since onResize also happens for browser zoom changes.
+  this.syncCharacterSize();
   this.resize();
 };
 

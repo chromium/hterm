@@ -166,8 +166,8 @@
   },
 
   "FIELD_TERMINAL_PROFILE_PLACEHOLDER": {
-    "message": "hostname",
-    "description": "Text use as the placeholder for the 'hostname' field."
+    "message": "default",
+    "description": "Text use as the placeholder for the 'terminal profile' field."
   },
 
   "FIELD_TERMINAL_PROFILE_ARIA_LABEL": {

@@ -220,7 +220,7 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
   // Listen for DEL on the identity select box.
   this.$f('identity').addEventListener('keyup', function(e) {
       if (e.keyCode == 46 && e.target.selectedIndex != 0) {
-        this.onDeleteClick_();
+        this.deleteIdentity_(e.target.value);
       }
     }.bind(this));
 
@@ -555,6 +555,24 @@ nassh.ConnectDialog.prototype.deleteIdentity_ = function(identityName) {
                     onRemove);
 };
 
+nassh.ConnectDialog.prototype.deleteProfile_ = function(deadID) {
+  if (this.currentProfileRecord_.id == deadID) {
+    // The actual profile removal and list-updating will happen async.
+    // Rather than come up with a fancy hack to update the selection when
+    // it's done, we just move it before the delete.
+    var currentIndex = this.shortcutList_.activeIndex;
+    if (currentIndex == this.profileList_.length - 1) {
+      // User is deleting the last (non-new) profile, select the one before
+      // it.
+      this.shortcutList_.setActiveIndex(this.profileList_.length - 2);
+    } else {
+      this.shortcutList_.setActiveIndex(currentIndex + 1);
+    }
+  }
+
+  this.prefs_.removeProfile(deadID);
+};
+
 /**
  * Sync the ColumnList with the known profiles.
  */
@@ -654,23 +672,7 @@ nassh.ConnectDialog.prototype.onShortcutListKeyDown_ = function(e) {
   if (e.keyCode == 46) {
     // DEL delete the profile.
     if (!isNewConnection) {
-      // The user is deleting a real profile (not the [New Connection]
-      // placeholder)...
-      var deadID = this.currentProfileRecord_.id;
-
-      // The actual profile removal and list-updating will happen async.
-      // Rather than come up with a fancy hack to update the selection when
-      // it's done, we just move it before the delete.
-      var currentIndex = this.shortcutList_.activeIndex;
-      if (currentIndex == this.profileList_.length - 1) {
-        // User is deleting the last (non-new) profile, select the one before
-        // it.
-        this.shortcutList_.setActiveIndex(this.profileList_.length - 2);
-      } else {
-        this.shortcutList_.setActiveIndex(currentIndex + 1);
-      }
-
-      this.prefs_.removeProfile(deadID);
+      this.deleteProfile_(this.currentProfileRecord_.id);
     } else {
       // Otherwise the user is deleting the placeholder profile.  All we
       // do here is reset the form.

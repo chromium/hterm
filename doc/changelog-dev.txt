@@ -1,3 +1,16 @@
+0.8.2.5, 2012-08-15, Misc cleanup.
+
+* Add 'enable-clipboard-write' preference to enable/disable the OSC 52
+  (host write to system clipboard) sequence, on by default.
+* Change default Windows font to "Terminal".
+* Fix the delete profile/delete identity behavior in the connect dialog.
+* Fix the placeholder text of the "Terminal Profile" field in the connect
+  dialog.
+* Remeasure the character size on resize, to catch browser zoom changes.
+* Don't show the size overlay for alt/primary screen swaps.
+
+BUG=30604, font face 'Lucida Console' Bold characters disabled
+
 0.8.2.4, 2012-08-13, Add missing dep to crosh.html.
 
 * Fix missing lib_utf8.js in crosh.html.

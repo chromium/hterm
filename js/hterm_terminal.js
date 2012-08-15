@@ -103,6 +103,7 @@ hterm.Terminal = function(opt_profileName) {
   this.vt = new hterm.VT(this);
   this.vt.enable8BitControl = this.prefs_.get('enable-8-bit-control');
   this.vt.maxStringSequence = this.prefs_.get('max-string-sequence');
+  this.vt.enableClipboardWrite = this.prefs_.get('enable-clipboard-write');
 
   // The keyboard hander.
   this.keyboard = new hterm.Keyboard(this);
@@ -278,10 +279,18 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * Allow the host to write directly to the system clipboard.
+     */
+    ['enable-clipboard-write', true, function(v) {
+        self.vt.enableClipboardWrite = !!v;
+      }
+    ],
+
+    /**
      * Default font family for the terminal text.
      */
     ['font-family', ('"DejaVu Sans Mono", "Everson Mono", ' +
-                     'FreeMono, "Menlo", "Lucida Console", ' +
+                     'FreeMono, "Menlo", "Terminal", ' +
                      'monospace'),
      function(v) { self.syncFontFamily() }
     ],
@@ -2418,10 +2427,18 @@ hterm.Terminal.prototype.onResize_ = function() {
     return;
   }
 
+  var isNewSize = (columnCount != this.screenSize.width ||
+                   rowCount != this.screenSize.height);
+
+  // We do this even if the size didn't change, just to be sure everything is
+  // in sync.
   this.realizeSize_(columnCount, rowCount);
-  this.scheduleSyncCursorPosition_();
   this.showZoomWarning_(this.scrollPort_.characterSize.zoomFactor != 1);
-  this.overlaySize();
+
+  if (isNewSize)
+    this.overlaySize();
+
+  this.scheduleSyncCursorPosition_();
 };
 
 /**
