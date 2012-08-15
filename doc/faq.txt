@@ -19,7 +19,8 @@
                             hterm and  Secure Shell
                           Frequently  Asked Questions
 
-                                April 25,  2012
+                                 Version 0.8.2
+                                August 27, 2012
 
 
 Hello World.  This is the hterm/Secure Shell FAQ.  If you have a question that
@@ -137,15 +138,19 @@ at <http://goo.gl/RYHiK>.
 
 > Can I connect using a public key pair or certificate?
 
-  [ NOTE: This answer only applies to development versions starting with ]
-  [ the 0.8.0.x series.  The stable 0.7.9 version does not support key   ]
-  [ based authentication at all.                                         ]
+  You can import identity files from the connection dialog.  Select the
+  "Import..." link to bring up a file picker.
 
-  Yes, it's a little rough around the edges though.
+  You must import two files for each identity.  One should be the private key
+  and should not have a file extension.  The other should be the public key,
+  and must end in ".pub".  For example, "id_rsa" and "id_rsa.pub".
 
-  The way it works is that you import your public/private key files into the
-  HTML5 filesystem associated with Secure Shell.  There should be no way
-  for another extension, app, or web page to access this sandboxed filesystem.
+  If you have a key stored in a single ".pem" file, you must split it into two
+  files before importing.
+
+  This will import your public/private key files into the HTML5 filesystem
+  associated with Secure Shell.  There should be no way for another extension,
+  app, or web page to access this sandboxed filesystem.
 
   +-------------------------------------------------------------------------+
   | Keep in mind that HTML5 filesystems are relatively new.  As always,     |
@@ -159,33 +164,28 @@ at <http://goo.gl/RYHiK>.
   | passphrase.                                                             |
   +-------------------------------------------------------------------------+
 
-  Open the JavaScript console and type...
-
-    term_.command.showFileImporter();
-
-  This will display a file picker widget in the lower left corner of the
-  terminal.  Click on the "Choose Files" button and select one or more files
-  to import into Secure Shell.  These files will be copied to the equivalent
-  of ~/.ssh/ on a Unix-like system.
-
-  You can import public/private key pairs, certificates, and even a traditional
-  ssh 'config' file.  Nearly anything that ssh might care about from your
-  ~/.ssh directory can go here.
+  You can also import a traditional ssh 'config' file using this dialog.
+  Nearly anything that ssh might care about from your ~/.ssh directory can go
+  here.
 
   See <http://www.openbsd.org/cgi-bin/man.cgi?query=ssh_config> for more
   information about the ssh configuration syntax.  Keep in mind that any
   directives that would require access outside of the NaCl sandbox will not
-  function properly.  This includes (but is not limited to) X11 forwarding
-  and syslog functionality.
+  function properly.  This includes (but is not limited to) X11 forwarding,
+  syslog functionality, and anything that requires a domain socket.
+
+
+> Can Secure Shell use my ~/.ssh/config file?
+
+  Probably.  It depends on what it does.  See the answer to the previous
+  question for more details.
 
 
 > How do I remove a key?
 
-  Open the JavaScript console and type...
-
-    term_.command.removeFile('/.ssh/FILE_NAME')
-
-  Replace FILE_NAME with the name of the key (or any other file) to remove.
+  From the connection dialog, select an identity from the dropdown and press
+  the DELETE key.  This will remove both the private and public key files from
+  the HTML5 filesystem.
 
 
 > How do I remove ALL keys?
@@ -198,12 +198,6 @@ at <http://goo.gl/RYHiK>.
   *not* affect your preferences.
 
 
-> Can Secure Shell use my ~/.ssh/config file?
-
-  Probably.  It depends on what it does.  See the answer to the previous
-  question for more details.
-
-
 > Does Secure Shell support a keychain of some sort?
 
   Sorry, not yet.  This is a bit of a technical challenge given the nature
@@ -214,16 +208,27 @@ at <http://goo.gl/RYHiK>.
   certificate store.)
 
 
-> Why does the destination IP address always show 0.0.0.0?
-
-  This is a limitation in Native Client, you can follow the bug for more
-  details as they're available: <http://crosbug.com/25788>.
-
-
 > Can I use Secure Shell for port forwarding?
 
-  Not yet.  We have support in the Native Client side, but haven't built the
-  User Interface for it.  See <http://crosbug.cm/30103>.
+  Yes.  Enter your port forwarding options in the "SSH Arguments" field of
+  the connect dialog.  The port forward will be active for the duration of
+  the Secure Shell session.
+
+
+> What is the "Terminal Profile" field for?
+
+  This is the last field in the connect dialog.  It allows you to select
+  which set of terminal preferences to use for the connection.
+
+  If you name a terminal profile that doesn't yet exist, it will be created
+  and all preferences will be set to their default value.  Any preference
+  changes will affect the active terminal profile only.
+
+  For example, enter "light" as the name of a terminal profile for a new
+  connection.  Once you've connected, change the color scheme to
+  black-on-white (as described in the FAQ entried below).  That change will
+  be associated with the "light" profile, and you'll be able to re-use it for
+  other saved connections.
 
 
 > How do I set terminal preferences?
@@ -408,12 +413,6 @@ at <http://goo.gl/RYHiK>.
 
      term_.prefs_.set('alt-sends-what', '8-bit')
 
-  +-------------------------------------------------------------------------+
-  |  Note that due to <http://crosbug.com/30105>, you'll see an error in    |
-  |  the JavaScript console and your setting won't take effect until the    |
-  |  next restart.  Check the bug for more details.                         |
-  +-------------------------------------------------------------------------+
-
   However, if you are on Mac OS X and you prefer that Alt sends a character
   based on your keyboard locale, try this instead...
 
@@ -461,6 +460,7 @@ at <http://goo.gl/RYHiK>.
 
      term_.command.removeAllKnownHosts()
 
+
 > How do I send Ctrl-W, Ctrl-N or Ctrl-T to the terminal?
 
   Chrome blocks tab contents from getting access to these (and a few other)
@@ -468,47 +468,55 @@ at <http://goo.gl/RYHiK>.
   this limitation.  Just right-click on the Secure Shell icon and enable
   "Open as Window".
 
-  Note that this workaround requires Chrome 19 or higher.
-
   After that, any time you launch Secure Shell it will open in a new window
   and respond properly to these accelerator keys.
 
-  If you're running in Chrome OS you may notice that Ctrl-N, Ctrl-Space
-  and a few other keys are reserved by the new window manager.  This is
-  a known issue tracked by <http://crbug.com/123856>.
+  Note that the "Open as Window" option is not available on the Mac.  However,
+  Mac keyboards typically have distinct Control, Alt, and Command keys, so it's
+  less of an issue on that platform.  Secure Shell cannot treat Command as
+  Control or Meta, but there are some third party keyboard utilities that may
+  provide a solution.
 
 
 > How do I copy text from the terminal?
 
-  Under Mac OS X the normal Command-C sequence can be used to copy the current
-  selection to the clipboard.
+  By default, Secure Shell automatically copies your active selection to the
+  clipboard.
 
-  On other platforms Ctrl-C will perform a Copy only when text is selected.
-  When there is no current selection Ctrl-C will send a "^C" to the host.
+  You can disable this by setting the 'copy-on-select' preference to false.
+  If you disable it you'll need to use one of the following key sequences
+  to copy to the clipboard...
 
-  Note that after copying text to the clipboard the active selection will be
-  cleared.  If you happen to have text selected but want to send "^C",
-  just hit Ctrl-C twice.
+  * Under Mac OS X the normal Command-C sequence works.
 
-  Under X11, highlighted text is automatically added to the X clipboard.
-  However, due to an hterm limitation, text that is scrolled off screen is
-  not included.
+  * On other platforms Ctrl-C will perform a Copy only when text is selected.
+    When there is no current selection Ctrl-C will send a "^C" to the host.
 
-  Under all platforms (except Chrome OS, due to http://crosbug.com/29343) you
-  can also use the "Copy" command from the Wrench menu.
+    Note that after copying text to the clipboard the active selection will be
+    cleared.  If you happen to have text selected but want to send "^C",
+    just hit Ctrl-C twice.
+
+  * Under all platforms you can also use the "Copy" command from the Wrench
+    menu, when running Secure Shell in a browser tab.
 
 
 > How do I paste text to the terminal?
 
-  Under Mac OS X the normal Command-V sequence can be used to paste from
-  the clipboard.
+  By default, Shift-Insert pastes the clipboard on all platforms.  If you'd
+  prefer to be able to send Shift-Insert to the host, set the
+  'shift-insert-paste' preference to false.
 
-  On other platforms use Ctrl-Shift-V to paste from the clipboard.
+  Also...
 
-  Under X11, you can use middle-mouse-click to paste from the X clipboard.
+  * Under Mac OS X the normal Command-V sequence can be used to paste from
+    the clipboard.
 
-  Under all platforms (except Chrome OS, due to http://crosbug.com/29343) you
-  can also use the "Paste" command from the Wrench menu.
+  * On other platforms use Ctrl-Shift-V to paste from the clipboard.
+
+  * Under X11, you can use middle-mouse-click to paste from the X clipboard.
+
+  * Under all platforms you can also use the "Paste" command from the Wrench
+    menu.
 
 
 > Why does the cursor blink in emacs?
@@ -539,6 +547,73 @@ at <http://goo.gl/RYHiK>.
      term_.prefs_.set('environment', {TERM: 'xterm'})
 
   Then restart Secure Shell.
+
+
+> Can I use my mouse with Secure Shell?
+
+  Sort of.  Both emacs and vi have mouse modes that are compatible with Secure
+  Shell.
+
+  In emacs, use `M-x xterm-mouse-mode` and `M-x mouse-wheel-mode`.  This will
+  allow you to position the cursor with a mouse click, and use the wheel
+  (or two-finger scroll) to scroll the buffer.
+
+  In vi, use ":set mouse=a" to enable mouse mode.  Vi's mouse mode is slightly
+  different from emacs in that it manages your text selection.  Some people
+  prefer this, others may go crazy.
+
+  A quick way to get your native selection back is to set the
+  'mouse-cell-motion-trick' to true.  This will make vi's mouse support
+  essentially the same as emacs.
+
+  With the cell motion trick enabled, you lose the ability to select more
+  than one screenful of text with the mouse.  Instead of using this trick,
+  you may want to script vi so that it sends the current selection to
+  Secure Shell to be copied to the system clipboard.  See the next question
+  for some more information on this.
+
+
+> Does hterm support the "OSC 52", aka "clipboard operations" sequence?
+
+  Clipboard writing is allowed by default, but you can disable it if you're
+  paranoid.  Set the 'enable-clipboard-write' preference to false to disable
+  the control sequence.
+
+  Clipboard read is not implemented.  Reading is a security hole you probably
+  didn't want anyway.
+
+  Clipboard writes are triggered by an escape sequence from the host.  Here's
+  an example...
+
+    $ echo -e "\x1b]52;c;Y29weXBhc3RhIQ==\x07"
+
+  The sequence "\x1b]52;" identifies this as a clipboard operation.  The "c;"
+  option selects the system clipboard.  "Y29weXBhc3RhIQ==" is the base64 encoded
+  value to place on the clipboard, in this case it's the string "copypasta!".
+  Finally, "\x07" terminates the sequence.
+
+  If you execute this command when 'enable-clipboard-write' on you should see
+  the "Selection Copied" message appear in the terminal, and your system
+  clipboard should contain the text, "copypasta!".
+
+  Of course, this echo command isn't terribly useful on its own.  It's much
+  more useful if you configure your editor to send a similar sequence when
+  you run its built-in copy command.  This is left as an excercise for the
+  reader.
+
+  Note that the specification for OSC 52 mentions destinations other than
+  the "c;" system clipboard.  Hterm treats them all as the system clipboard.
+
+
+> Is there a way to try early releases of Secure Shell?
+
+  Yes.  First, you need to subscribe to the mailing list mentioned above.
+  Subscribers have access to the "Dev" version in the Chrome Web Store, which
+  is located here: <http://goo.gl/cFZlv>.
+
+  Please keep in mind that the Dev version has gone through significantly less
+  testing than the Beta.  Fortunately, you can install both and switch back
+  to Beta if you have trouble with Dev.
 
 
 > Where is the source code?

@@ -17,8 +17,8 @@
   "permissions": [
     "clipboardRead",
     "clipboardWrite",
-    "terminalPrivate",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "terminalPrivate"
   ],
   "web_accessible_resources": [
     "html/nassh_google_relay.html",

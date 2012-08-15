@@ -1,3 +1,57 @@
+0.8.2, 2012-08-27, Stable release of 0.8.2.10
+
+This is a list of the more notable changes.  For the full list, consult the
+changelog-dev.txt file for releases from 0.8.0.1 through 0.8.2.10.
+
+* FAQ updates.
+* Fix another bug that would cause missing bottom row(s).
+* Make Ctrl-Shift-N/Meta-Shift-N keyboard combinations open a new window.
+* Moved common libraries under the "lib" object.
+* Add "hterm_" prefix to the hterm source files.
+* Add 'use strict' everywhere, fix some fallout.
+* Add mouse support via DECSET modes 1000, 1002, 1003.
+* Add mouse button paste.  Preference 'mouse-paste-button' defaults to off
+  on typical X11, on everywhere else (including Aura on X11).
+* Add ability to automatically copy the mouse selection to the keyboard.
+  Preference 'copy-on-select' defaults to on.
+* Add partial OSC 52 support to allow the host to write to the system clipboard.
+  This is off by default, and can be enabled via the 'enable-clipboard-write'
+  preference.
+* Add basic line editing for local ssh prompts (password, fingerprint prompt,
+  and the "~C" command line).
+* NaCl plugin changes to prevent the UI from being overwhelmed by a flood of
+  data from the host.
+* Many terminal correctness fixes.
+* Added new connect dialog which can save previous connections and presents
+  a UI to import identities.
+* Add focus/unfocused cursor styles.
+* Be more robust against unterminated sequences (it's now much less likely that
+  we'll hang if you cat /dev/random).
+
+Internal bug:
+6375936 hterm hangs when \x90, \x9D, or \x9E is printed
+
+External bugs:
+BUG=chromium-os:25417, Split screen scrolling in hterm about 5x slower than in
+    konsole
+BUG=chromium-os:25563, Support specifying imported keys files in hterm
+BUG=chromium-os:26288, hterm: Add mouse support via DECSET 1000, 1002, 1003
+BUG=chromium-os:29490, Middle click should paste in the terminal
+BUG=chromium-os:29955, Destination window pop up twice when user use @cache.corp
+BUG=chromium-os:30103, Add a UI for port forwarding.
+BUG=chromium-os:30105, alt-sends-what/alt-is-meta throw exceptions when set.
+BUG=chromium-os:30142, Missing/extra rows at bottom of console
+BUG=chromium-os:30296, UTF-8 decoder is not a function of input stream; will
+    break when UTF-8 sequence split across reads
+BUG=chromium-os:30297, UTF-8 decoder does not conform to Unicode standard
+    re: invalid sequences
+BUG=chromium-os:30302, CSI K (erase in line) does not clear wrap-around flag
+BUG=chromium-os:30303, Incorrect handling of off-screen tab stops on resize
+BUG=chromium-os:30305, ECH (erase character, CSI X) erases from wrong place and
+    wrong amount
+BUG=chromium-os:30345, hterm gets insert+wraparound mode wrong
+BUG=chromium-os:30604, font face 'Lucida Console' Bold characters disabled
+
 0.7.9, 2012-04-23, rginda@chromium.org
 
 * Stable release of SecureShell-dev-0.7.9.3.
