@@ -270,10 +270,27 @@ hterm.Screen.prototype.clearCursorRow = function() {
   this.cursorRowNode_.innerHTML = '';
   var text = this.cursorRowNode_.ownerDocument.createTextNode('');
   this.cursorRowNode_.appendChild(text);
+  this.cursorRowNode_.removeAttribute('line-overflow');
   this.cursorOffset_ = 0;
   this.cursorNode_ = text;
   this.cursorPosition.column = 0;
   this.cursorPosition.overflow = false;
+};
+
+/**
+ * Mark the current row as having overflowed to the next line.
+ *
+ * The line overflow state is used when converting a range of rows into text.
+ * It makes it possible to recombine two or more overflow terminal rows into
+ * a single line.
+ *
+ * This is distinct from the cursor being in the overflow state.  Cursor
+ * overflow indicates that printing at the cursor position will commit a
+ * line overflow, unless it is preceded by a repositioning of the cursor
+ * to a non-overflow state.
+ */
+hterm.Screen.prototype.commitLineOverflow = function() {
+  this.cursorRowNode_.setAttribute('line-overflow', true);
 };
 
 /**
@@ -425,7 +442,11 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
  * Insert a string at the current character position using the current
  * text attributes.
  *
- * You must call maybeClipCurrentRow() after in order to check overflow.
+ * You must call maybeClipCurrentRow() after in order to clip overflowed
+ * text and clamp the cursor.
+ *
+ * It is also up to the caller to properly maintain the line overflow state
+ * using hterm.Screen..commitLineOverflow().
  */
 hterm.Screen.prototype.insertString = function(str) {
   var cursorNode = this.cursorNode_;
@@ -546,7 +567,12 @@ hterm.Screen.prototype.insertString = function(str) {
 /**
  * Overwrite the text at the current cursor position.
  *
- * You must call maybeClipCurrentRow() after in order to check overflow.
+ *
+ * You must call maybeClipCurrentRow() after in order to clip overflowed
+ * text and clamp the cursor.
+ *
+ * It is also up to the caller to properly maintain the line overflow state
+ * using hterm.Screen..commitLineOverflow().
  */
 hterm.Screen.prototype.overwriteString = function(str) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;

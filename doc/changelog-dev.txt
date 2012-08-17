@@ -1,3 +1,11 @@
+Unreleased trunk changes:
+
+* Properly handle overflow lines during clipboard copy.
+* Offer to reconnect on disconnect.
+
+BUG=chromium-os:27020, newlines added during clipboard copy
+BUG=chromium-os:29217, offer to reconnect after disconnect
+
 0.8.2.5, 2012-08-15, Misc cleanup.
 
 * Add 'enable-clipboard-write' preference to enable/disable the OSC 52

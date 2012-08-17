@@ -41,7 +41,7 @@ hterm.ScrollPort = function(rowProvider) {
   // DOM node used for character measurement.
   this.ruler_ = null;
 
-  this.selection_ = new hterm.ScrollPort.Selection(this);
+  this.selection = new hterm.ScrollPort.Selection(this);
 
   // A map of rowIndex => rowNode for each row that is drawn as part of a
   // pending redraw_() call.  Null if there is no pending redraw_ call.
@@ -77,7 +77,6 @@ hterm.ScrollPort = function(rowProvider) {
  */
 hterm.ScrollPort.Selection = function(scrollPort) {
   this.scrollPort_ = scrollPort;
-  this.selection_ = null;
 
   /**
    * The row containing the start of the selection.
@@ -121,6 +120,31 @@ hterm.ScrollPort.Selection = function(scrollPort) {
  * object, not the other way around.
  */
 hterm.ScrollPort.Selection.prototype.sync = function() {
+  var self = this;
+
+  // The dom selection object has no way to tell which nodes come first in
+  // the document, so we have to figure that out.
+  //
+  // This function is used when we detect that the "anchor" node is first.
+  function anchorFirst() {
+    self.startRow = anchorRow;
+    self.startNode = selection.anchorNode;
+    self.startOffset = selection.anchorOffset;
+    self.endRow = focusRow;
+    self.endNode = selection.focusNode;
+    self.endOffset = selection.focusOffset;
+  }
+
+  // This function is used when we detect that the "focus" node is first.
+  function focusFirst() {
+    self.startRow = focusRow;
+    self.startNode = selection.focusNode;
+    self.startOffset = selection.focusOffset;
+    self.endRow = anchorRow;
+    self.endNode = selection.anchorNode;
+    self.endOffset = selection.anchorOffset;
+  }
+
   var selection = this.scrollPort_.getDocument().getSelection();
 
   this.startRow = null;
@@ -153,12 +177,35 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     return;
   }
 
-  if (anchorRow.rowIndex <= focusRow.rowIndex) {
-    this.startRow = anchorRow;
-    this.endRow = focusRow;
+  if (anchorRow.rowIndex < focusRow.rowIndex) {
+    anchorFirst();
+
+  } else if (anchorRow.rowIndex > focusRow.rowIndex) {
+    focusFirst();
+
+  } else if (selection.focusNode == selection.anchorNode) {
+    if (selection.anchorOffset < selection.focusOffset) {
+      anchorFirst();
+    } else {
+      focusFirst();
+    }
+
   } else {
-    this.startRow = focusRow;
-    this.endRow = anchorRow;
+    // The selection starts and ends in the same row, but isn't contained all
+    // in a single node.
+    // TODO(rginda): If we ever allow multiple levels of containers in
+    // an x-row, we'll have to teach this to find the common ancestor.
+    var node = selection.focusNode.previousSibling;
+    while (node) {
+      if (node == selection.anchorNode) {
+        anchorFirst();
+        break;
+      }
+
+      node = node.previousSibling;
+    }
+
+    focusFirst();
   }
 
   this.isMultiline = anchorRow.rowIndex != focusRow.rowIndex;
@@ -573,7 +620,7 @@ hterm.ScrollPort.prototype.scheduleRedraw = function() {
  */
 hterm.ScrollPort.prototype.redraw_ = function() {
   this.resetSelectBags_();
-  this.selection_.sync();
+  this.selection.sync();
 
   this.syncScrollHeight();
 
@@ -606,8 +653,8 @@ hterm.ScrollPort.prototype.redraw_ = function() {
  * adjusted around them.
  */
 hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
-  if (!this.selection_.startRow ||
-      this.selection_.startRow.rowIndex >= topRowIndex) {
+  if (!this.selection.startRow ||
+      this.selection.startRow.rowIndex >= topRowIndex) {
     // Selection is entirely below the top fold, just make sure the fold is
     // the first child.
     if (this.rowNodes_.firstChild != this.topFold_)
@@ -616,27 +663,27 @@ hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
     return;
   }
 
-  if (!this.selection_.isMultiline ||
-      this.selection_.endRow.rowIndex >= topRowIndex) {
+  if (!this.selection.isMultiline ||
+      this.selection.endRow.rowIndex >= topRowIndex) {
     // Only the startRow is above the fold.
-    if (this.selection_.startRow.nextSibling != this.topFold_)
+    if (this.selection.startRow.nextSibling != this.topFold_)
       this.rowNodes_.insertBefore(this.topFold_,
-                                  this.selection_.startRow.nextSibling);
+                                  this.selection.startRow.nextSibling);
   } else {
     // Both rows are above the fold.
-    if (this.selection_.endRow.nextSibling != this.topFold_) {
+    if (this.selection.endRow.nextSibling != this.topFold_) {
       this.rowNodes_.insertBefore(this.topFold_,
-                                  this.selection_.endRow.nextSibling);
+                                  this.selection.endRow.nextSibling);
     }
 
     // Trim any intermediate lines.
-    while (this.selection_.startRow.nextSibling !=
-           this.selection_.endRow) {
-      this.rowNodes_.removeChild(this.selection_.startRow.nextSibling);
+    while (this.selection.startRow.nextSibling !=
+           this.selection.endRow) {
+      this.rowNodes_.removeChild(this.selection.startRow.nextSibling);
     }
   }
 
-  while(this.rowNodes_.firstChild != this.selection_.startRow) {
+  while(this.rowNodes_.firstChild != this.selection.startRow) {
     this.rowNodes_.removeChild(this.rowNodes_.firstChild);
   }
 };
@@ -655,8 +702,8 @@ hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
  * adjusted around them.
  */
 hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
-  if (!this.selection_.endRow ||
-      this.selection_.endRow.rowIndex <= bottomRowIndex) {
+  if (!this.selection.endRow ||
+      this.selection.endRow.rowIndex <= bottomRowIndex) {
     // Selection is entirely above the bottom fold, just make sure the fold is
     // the last child.
     if (this.rowNodes_.lastChild != this.bottomFold_)
@@ -665,27 +712,27 @@ hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
     return;
   }
 
-  if (!this.selection_.isMultiline ||
-      this.selection_.startRow.rowIndex <= bottomRowIndex) {
+  if (!this.selection.isMultiline ||
+      this.selection.startRow.rowIndex <= bottomRowIndex) {
     // Only the endRow is below the fold.
-    if (this.bottomFold_.nextSibling != this.selection_.endRow)
+    if (this.bottomFold_.nextSibling != this.selection.endRow)
       this.rowNodes_.insertBefore(this.bottomFold_,
-                                  this.selection_.endRow);
+                                  this.selection.endRow);
   } else {
     // Both rows are below the fold.
-    if (this.bottomFold_.nextSibling != this.selection_.startRow) {
+    if (this.bottomFold_.nextSibling != this.selection.startRow) {
       this.rowNodes_.insertBefore(this.bottomFold_,
-                                  this.selection_.startRow);
+                                  this.selection.startRow);
     }
 
     // Trim any intermediate lines.
-    while (this.selection_.startRow.nextSibling !=
-           this.selection_.endRow) {
-      this.rowNodes_.removeChild(this.selection_.startRow.nextSibling);
+    while (this.selection.startRow.nextSibling !=
+           this.selection.endRow) {
+      this.rowNodes_.removeChild(this.selection.startRow.nextSibling);
     }
   }
 
-  while(this.rowNodes_.lastChild != this.selection_.endRow) {
+  while(this.rowNodes_.lastChild != this.selection.endRow) {
     this.rowNodes_.removeChild(this.rowNodes_.lastChild);
   }
 };
@@ -725,8 +772,8 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
   }
 
   // Shorthand for things we're going to use a lot.
-  var selectionStartRow = this.selection_.startRow;
-  var selectionEndRow = this.selection_.endRow;
+  var selectionStartRow = this.selection.startRow;
+  var selectionEndRow = this.selection.endRow;
   var bottomFold = this.bottomFold_;
 
   // The node we're examining during the current iteration.
@@ -915,7 +962,7 @@ hterm.ScrollPort.prototype.selectAll = function() {
   selection.collapse(firstRow, 0);
   selection.extend(lastRow, lastRow.childNodes.length);
 
-  this.selection_.sync();
+  this.selection.sync();
 };
 
 /**
@@ -1060,6 +1107,14 @@ hterm.ScrollPort.prototype.onResize_ = function(e) {
 };
 
 /**
+ * Clients can override this if they want to hear copy events.
+ *
+ * Clients may call event.preventDefault() if they want to keep the scrollport
+ * from also handling the events.
+ */
+hterm.ScrollPort.prototype.onCopy = function(e) { };
+
+/**
  * Handler for copy-to-clipboard events.
  *
  * If some or all of the selected rows are off screen we may need to fill in
@@ -1068,51 +1123,56 @@ hterm.ScrollPort.prototype.onResize_ = function(e) {
  * of the "select bags" with the missing text.
  */
 hterm.ScrollPort.prototype.onCopy_ = function(e) {
-  this.resetSelectBags_();
-  this.selection_.sync();
+  this.onCopy(e);
 
-  if (!this.selection_.startRow ||
-      this.selection_.endRow.rowIndex - this.selection_.startRow.rowIndex < 2) {
+  if (e.defaultPrevented)
+    return;
+
+  this.resetSelectBags_();
+  this.selection.sync();
+
+  if (!this.selection.startRow ||
+      this.selection.endRow.rowIndex - this.selection.startRow.rowIndex < 2) {
     return;
   }
 
   var topRowIndex = this.getTopRowIndex();
   var bottomRowIndex = this.getBottomRowIndex(topRowIndex);
 
-  if (this.selection_.startRow.rowIndex < topRowIndex) {
+  if (this.selection.startRow.rowIndex < topRowIndex) {
     // Start of selection is above the top fold.
     var endBackfillIndex;
 
-    if (this.selection_.endRow.rowIndex < topRowIndex) {
+    if (this.selection.endRow.rowIndex < topRowIndex) {
       // Entire selection is above the top fold.
-      endBackfillIndex = this.selection_.endRow.rowIndex;
+      endBackfillIndex = this.selection.endRow.rowIndex;
     } else {
       // Selection extends below the top fold.
       endBackfillIndex = this.topFold_.nextSibling.rowIndex;
     }
 
     this.topSelectBag_.textContent = this.rowProvider_.getRowsText(
-        this.selection_.startRow.rowIndex + 1, endBackfillIndex);
+        this.selection.startRow.rowIndex + 1, endBackfillIndex);
     this.rowNodes_.insertBefore(this.topSelectBag_,
-                                this.selection_.startRow.nextSibling);
+                                this.selection.startRow.nextSibling);
     this.syncRowNodesTop_();
   }
 
-  if (this.selection_.endRow.rowIndex > bottomRowIndex) {
+  if (this.selection.endRow.rowIndex > bottomRowIndex) {
     // Selection ends below the bottom fold.
     var startBackfillIndex;
 
-    if (this.selection_.startRow.rowIndex > bottomRowIndex) {
+    if (this.selection.startRow.rowIndex > bottomRowIndex) {
       // Entire selection is below the bottom fold.
-      startBackfillIndex = this.selection_.startRow.rowIndex + 1;
+      startBackfillIndex = this.selection.startRow.rowIndex + 1;
     } else {
       // Selection starts above the bottom fold.
       startBackfillIndex = this.bottomFold_.previousSibling.rowIndex + 1;
     }
 
     this.bottomSelectBag_.textContent = this.rowProvider_.getRowsText(
-        startBackfillIndex, this.selection_.endRow.rowIndex);
-    this.rowNodes_.insertBefore(this.bottomSelectBag_, this.selection_.endRow);
+        startBackfillIndex, this.selection.endRow.rowIndex);
+    this.rowNodes_.insertBefore(this.bottomSelectBag_, this.selection.endRow);
   }
 };
 

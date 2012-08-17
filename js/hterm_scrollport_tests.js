@@ -140,9 +140,9 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
  */
 hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {
     this.scrollPort.selectAll();
-    result.assertEQ(0, this.scrollPort.selection_.startRow.rowIndex);
+    result.assertEQ(0, this.scrollPort.selection.startRow.rowIndex);
     result.assertEQ(this.totalRowCount - 1,
-                    this.scrollPort.selection_.endRow.rowIndex);
+                    this.scrollPort.selection.endRow.rowIndex);
     result.pass();
   });
 

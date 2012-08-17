@@ -990,11 +990,11 @@ hterm.VT.Tests.addTest('wraparound-mode-on', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
-                    '-----  1  ----a\n' +
-                    '-----  2  ----b\n' +
-                    '-----  3  ----c\n' +
-                    '-----  4  ----d\n' +
-                    '-----  5  ----e\n' +
+                    '-----  1  ----a' +
+                    '-----  2  ----b' +
+                    '-----  3  ----c' +
+                    '-----  4  ----d' +
+                    '-----  5  ----e' +
                     '-----  6  ----f');
 
     result.assertEQ(this.terminal.getCursorRow(), 5);
@@ -1045,14 +1045,13 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
                             '[4l[?7l' +  // Insert off, wrap off.
                             '[15GAAAA[1GXX');
 
-    var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    '              A\n' +
-                    'XXA\n' +
-                    'XX             \n' +
-                    '              A\n' +
-                    'XXAAA\n' +
-                    'XX            A');
+    result.assertEQ(this.terminal.getRowText(0), '              A');
+    result.assertEQ(this.terminal.getRowText(1), 'XXA');
+    result.assertEQ(this.terminal.getRowText(2), 'XX             ');
+    result.assertEQ(this.terminal.getRowText(3), '              A');
+    result.assertEQ(this.terminal.getRowText(4), 'XXAAA');
+    result.assertEQ(this.terminal.getRowText(5), 'XX            A');
+
     result.pass();
   });
 
@@ -1065,11 +1064,11 @@ hterm.VT.Tests.addTest('long-wrap', function(result, cx) {
       str += 'X';
 
     this.terminal.interpret(str);
-    var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'XXXXXXXXXXXXXXX\n' +
-                    'XXXXXXXXXXXXXXX\n' +
-                    'XXXXXXXXXXXXXXX');
+
+    result.assertEQ(this.terminal.getRowText(0), 'XXXXXXXXXXXXXXX');
+    result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
+    result.assertEQ(this.terminal.getRowText(2), 'XXXXXXXXXXXXXXX');
+
     result.pass();
   });
 
@@ -1107,11 +1106,11 @@ hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
-                    '-----  1  -----\n' +
-                    '-----  2  -----\n' +
-                    '-----  3  -----\n' +
-                    '-----  4  -----\n' +
-                    '-----  5  -----\n' +
+                    '-----  1  -----' +
+                    '-----  2  -----' +
+                    '-----  3  -----' +
+                    '-----  4  -----' +
+                    '-----  5  -----' +
                     '              -');
 
     result.assertEQ(this.terminal.getCursorRow(), 5);

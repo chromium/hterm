@@ -51,6 +51,7 @@ hterm.Terminal = function(opt_profileName) {
   this.scrollPort_.subscribe('resize', this.onResize_.bind(this));
   this.scrollPort_.subscribe('scroll', this.onScroll_.bind(this));
   this.scrollPort_.subscribe('paste', this.onPaste_.bind(this));
+  this.scrollPort_.onCopy = this.onCopy_.bind(this);
 
   // The div that contains this terminal.
   this.div_ = null;
@@ -1159,9 +1160,11 @@ hterm.Terminal.prototype.getRowsText = function(start, end) {
   for (var i = start; i < end; i++) {
     var node = this.getRowNode(i);
     ary.push(node.textContent);
+    if (i < end - 1 && !node.getAttribute('line-overflow'))
+      ary.push('\n');
   }
 
-  return ary.join('\n');
+  return ary.join('');
 };
 
 /**
@@ -1290,8 +1293,10 @@ hterm.Terminal.prototype.print = function(str) {
   var startOffset = 0;
 
   while (startOffset < str.length) {
-    if (this.options_.wraparound && this.screen_.cursorPosition.overflow)
+    if (this.options_.wraparound && this.screen_.cursorPosition.overflow) {
+      this.screen_.commitLineOverflow();
       this.newLine();
+    }
 
     var count = str.length - startOffset;
     var didOverflow = false;
@@ -2269,7 +2274,9 @@ hterm.Terminal.prototype.paste = function() {
  * Note: If there is a selected range in the terminal, it'll be cleared.
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
-  var copySource = this.document_.createElement('div');
+  this.showOverlay(hterm.msg('NOTIFY_COPY'), 500);
+
+  var copySource = this.document_.createElement('pre');
   copySource.textContent = str;
   copySource.style.cssText = (
       '-webkit-user-select: text;' +
@@ -2280,9 +2287,38 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   var selection = this.document_.getSelection();
   selection.selectAllChildren(copySource);
 
-  this.copySelectionToClipboard();
+  hterm.copySelectionToClipboard(this.document_);
 
   copySource.parentNode.removeChild(copySource);
+};
+
+hterm.Terminal.prototype.getSelectionText = function() {
+  var selection = this.scrollPort_.selection;
+  selection.sync();
+
+  if (selection.isCollapsed)
+    return null;
+
+
+  // Start offset measures from the beginning of the line.
+  var startOffset = selection.startOffset;
+  var node = selection.startNode;
+  while (node.previousSibling) {
+    node = node.previousSibling;
+    startOffset += node.textContent.length;
+  }
+
+  // End offset measures from the end of the line.
+  var endOffset = selection.endNode.textContent.length - selection.endOffset;
+  var node = selection.endNode;
+  while (node.nextSibling) {
+    node = node.nextSibling;
+    endOffset += node.textContent.length;
+  }
+
+  var rv = this.getRowsText(selection.startRow.rowIndex,
+                            selection.endRow.rowIndex + 1);
+  return rv.substring(startOffset, rv.length - endOffset);
 };
 
 /**
@@ -2290,18 +2326,9 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
  * short delay.
  */
 hterm.Terminal.prototype.copySelectionToClipboard = function() {
-  hterm.copySelectionToClipboard(this.document_);
-  this.showOverlay(hterm.msg('NOTIFY_COPY'), 500);
-
-  if (this.copyTimeout_)
-    clearTimeout(this.copyTimeout_);
-
-  this.copyTimeout_ = setTimeout(function() {
-      var selection = this.document_.getSelection();
-      if (!selection.isCollapsed)
-        selection.collapseToEnd();
-      this.copyTimeout_ = null;
-    }.bind(this), 500);
+  var text = this.getSelectionText();
+  if (text != null)
+    this.copyStringToClipboard(text);
 };
 
 hterm.Terminal.prototype.overlaySize = function() {
@@ -2405,6 +2432,14 @@ hterm.Terminal.prototype.onScroll_ = function() {
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
   this.io.onVTKeystroke(this.vt.encodeUTF8(e.text));
+};
+
+/**
+ * React when the user tries to copy from the scrollPort.
+ */
+hterm.Terminal.prototype.onCopy_ = function(e) {
+  e.preventDefault();
+  setTimeout(this.copySelectionToClipboard.bind(this), 200);
 };
 
 /**

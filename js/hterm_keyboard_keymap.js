@@ -409,7 +409,6 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
   }
 
   // Otherwise let the browser handle it as a copy command.
-  setTimeout(function() { document.getSelection().collapseToEnd() }, 50);
   return hterm.Keyboard.KeyActions.PASS;
 };
 
