@@ -1,5 +1,6 @@
 Unreleased trunk changes:
 
+* Fix display of utf-8 data from translated messages.
 * connect dialog: Select the previous connection by default.
 * connect dialog: Fix dis/enable issues with the buttons.
 * connect dialog: Double click to connect.

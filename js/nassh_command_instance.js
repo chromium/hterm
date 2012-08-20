@@ -607,12 +607,9 @@ nassh.CommandInstance.prototype.onPlugin_.write = function(fd, data) {
     var ackCount = (fd == 1 ?
                     this.stdoutAcknowledgeCount_ += string.length :
                     this.stderrAcknowledgeCount_ += string.length);
-    //console.log('write start: ' + ackCount);
-    this.io.print(string);
-    //console.log('write done.');
+    this.io.writeUTF8(string);
 
     setTimeout(function() {
-        //console.log('ack: ' + ackCount);
         self.sendToPlugin_('onWriteAcknowledge', [fd, ackCount]);
       }, 0);
     return;
