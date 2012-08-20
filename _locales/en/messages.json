@@ -228,7 +228,7 @@
   },
 
   "COMMAND_COMPLETE": {
-    "message": "The command $NAME$ completed with exit code $CODE$.  Please close this window at your leisure.",
+    "message": "The command $NAME$ exited with status code $CODE$.",
     "description": "Message displayed when the current command has completed.",
     "placeholders": {
       "name": {
@@ -322,8 +322,19 @@
     "description": "Long form help text for this command.  Do not translate the parameter names in |pipes|."
   },
 
+  "DISCONNECT_MESSAGE": {
+    "message": "NaCl plugin exited with status code $CODE$.",
+    "description": "Message displayed after the plugin exits, but before the reconnect message.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "0"
+      }
+    }
+  },
+
   "RECONNECT_MESSAGE": {
-    "message": "Press [Enter] to reconnect or [ESC] to exit.",
+    "message": "(R)econnect, (C)hoose another connection, or E(x)it?",
     "description": "Message displayed after a connection closes"
   }
 }

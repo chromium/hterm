@@ -142,14 +142,20 @@ nassh.CommandInstance.prototype.run = function() {
  *
  * @param {string} argstr The connection ArgString
  */
-nassh.CommandInstance.prototype.reconnect = function (argstr) {
-  this.io=this.argv_.io.push();
+nassh.CommandInstance.prototype.reconnect = function(argstr) {
+  // Terminal reset.
+  this.io.print('\x1b[!p');
+
+  this.io = this.argv_.io.push();
+
   this.plugin_.parentNode.removeChild(this.plugin_);
+  this.plugin_ = null;
+
   this.stdoutAcknowledgeCount_ = 0;
   this.stderrAcknowledgeCount_ = 0;
 
   this.connectToArgString(argstr);
-}
+};
 
 /**
  * Removes a file from the HTML5 filesystem.
@@ -459,12 +465,19 @@ nassh.CommandInstance.prototype.onTerminalResize_ = function(width, height) {
 nassh.CommandInstance.prototype.exit = function(code) {
   window.onbeforeunload = null;
 
+  this.io.println(hterm.msg('DISCONNECT_MESSAGE', [code]));
   this.io.println(hterm.msg('RECONNECT_MESSAGE'));
   this.io.onVTKeystroke = function (string) {
-    if (string.charCodeAt(0) == 13)
+    var ch = string.toLowerCase();
+    if (ch == 'r' || ch == ' ' || ch == '\x0d' /* enter */)
       this.reconnect(document.location.hash.substr(1));
 
-    if (string.charCodeAt(0) == 27) {
+    if (ch == 'c' || ch == '\x12' /* ctrl-r */) {
+      document.location.reload();
+      return;
+    }
+
+    if (ch == 'e' || ch == 'x' || ch == '\x1b' /* ESC */) {
       if (this.exited_)
         return;
 

@@ -1,5 +1,7 @@
 Unreleased trunk changes:
 
+* Add 'close-on-exit' preference to control whether or not the window closes
+  on exit.  Defaults to on.
 * Properly handle overflow lines during clipboard copy.
 * Offer to reconnect on disconnect.
 

@@ -236,6 +236,11 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     ],
 
     /**
+     * Whether or not to close the window when the command exits.
+     */
+    ['close-on-exit', true, null],
+
+    /**
      * Whether or not to blink the cursor by default.
      */
     ['cursor-blink', false, function(v) {
@@ -516,6 +521,8 @@ hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
           self.io.println(hterm.msg('COMMAND_COMPLETE',
                                     [self.command.commandName, code]));
           self.uninstallKeyboard();
+          if (self.prefs_.get('close-on-exit'))
+              window.close();
         }
       });
 
