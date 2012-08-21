@@ -2281,7 +2281,7 @@ hterm.Terminal.prototype.paste = function() {
  * Note: If there is a selected range in the terminal, it'll be cleared.
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
-  this.showOverlay(hterm.msg('NOTIFY_COPY'), 500);
+  setTimeout(this.showOverlay.bind(this, hterm.msg('NOTIFY_COPY'), 500), 200);
 
   var copySource = this.document_.createElement('pre');
   copySource.textContent = str;
@@ -2291,10 +2291,19 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
       'top: -99px');
 
   this.document_.body.appendChild(copySource);
+
   var selection = this.document_.getSelection();
+  var anchorNode = selection.anchorNode;
+  var anchorOffset = selection.anchorOffset;
+  var focusNode = selection.focusNode;
+  var focusOffset = selection.focusOffset;
+
   selection.selectAllChildren(copySource);
 
   hterm.copySelectionToClipboard(this.document_);
+
+  selection.collapse(anchorNode, anchorOffset);
+  selection.extend(focusNode, focusOffset);
 
   copySource.parentNode.removeChild(copySource);
 };
@@ -2362,6 +2371,19 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
  * coordinates for the mouse event.
  */
 hterm.Terminal.prototype.onMouse_ = function(e) {
+  if (e.processedByTerminalHandler_) {
+    // We register our event handlers on the document, as well as the cursor
+    // and the scroll blocker.  Mouse events that occur on the cursor or
+    // scroll blocker will also appear on the document, but we don't want to
+    // process them twice.
+    //
+    // We can't just prevent bubbling because that has other side effects, so
+    // we decorate the event object with this property instead.
+    return;
+  }
+
+  e.processedByTerminalHandler_ = true;
+
   if (e.type == 'mousedown' && e.which == this.mousePasteButton) {
     this.paste();
     return;
@@ -2369,7 +2391,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
   if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
       !this.document_.getSelection().isCollapsed) {
-    this.copySelectionToClipboard();
+    hterm.copySelectionToClipboard(this.document_);
     return;
   }
 
@@ -2398,18 +2420,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     this.scrollBlockerNode_.style.top = '-99px';
   }
 
-  if (!e.processedByTerminalHandler_) {
-    // We register our event handlers on the document, as well as the cursor
-    // and the scroll blocker.  Mouse events that occur on the cursor or
-    // scroll blocker will also appear on the document, but we don't want to
-    // process them twice.
-    //
-    // We can't just prevent bubbling because that has other side effects, so
-    // we decorate the event object with this property instead.
-    e.processedByTerminalHandler_ = true;
-
-    this.onMouse(e);
-  }
+  this.onMouse(e);
 };
 
 /**
@@ -2446,7 +2457,7 @@ hterm.Terminal.prototype.onPaste_ = function(e) {
  */
 hterm.Terminal.prototype.onCopy_ = function(e) {
   e.preventDefault();
-  setTimeout(this.copySelectionToClipboard.bind(this), 200);
+  this.copySelectionToClipboard();
 };
 
 /**

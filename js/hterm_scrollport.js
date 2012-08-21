@@ -161,8 +161,8 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   }
 
   if (!anchorRow) {
-    console.log('Selection anchor is not rooted in a row node: ' +
-                selection.anchorNode.nodeName);
+    console.error('Selection anchor is not rooted in a row node: ' +
+                  selection.anchorNode.nodeName);
     return;
   }
 
@@ -172,8 +172,8 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   }
 
   if (!focusRow) {
-    console.log('Selection focus is not rooted in a row node: ' +
-                selection.focusNode.nodeName);
+    console.error('Selection focus is not rooted in a row node: ' +
+                  selection.focusNode.nodeName);
     return;
   }
 

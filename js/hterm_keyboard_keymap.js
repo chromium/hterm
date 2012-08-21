@@ -401,14 +401,16 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
  * the key again.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
-  var document = this.keyboard.terminal.getDocument();
-  if (e.shiftKey || document.getSelection().isCollapsed) {
-    // If the shift key is being held, or there is no document selection, send
-    // a ^C.
+  var selection = this.keyboard.terminal.getDocument().getSelection();
+  if (e.shiftKey || selection.isCollapsed) {
+    // If the shift key is being held or there is no document selection, then
+    // send a ^C.
     return '\x03';
   }
 
-  // Otherwise let the browser handle it as a copy command.
+  // Otherwise let the browser handle it as a copy command.  Clear the selection
+  // soon after a Ctrl-C copy, so that it frees up Ctrl-C to send ^C.
+  setTimeout(selection.collapseToEnd.bind(selection), 750);
   return hterm.Keyboard.KeyActions.PASS;
 };
 

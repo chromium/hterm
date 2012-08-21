@@ -1,5 +1,6 @@
 Unreleased trunk changes:
 
+* Re-add copy-on-select delay.
 * Add 'close-on-exit' preference to control whether or not the window closes
   on exit.  Defaults to on.
 * Properly handle overflow lines during clipboard copy.
