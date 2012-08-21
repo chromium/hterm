@@ -76,18 +76,27 @@ nassh.ConnectDialog = function() {
   // Install various (DOM and non-DOM) event handlers.
   this.installHandlers_();
 
-  if (this.profileList_.length > 1) {
-    // Multiple profile records, focus the shortcut list.
-    this.shortcutList_.focus();
-  } else {
+  var profileIndex = 0;
+
+  if (this.profileList_.length == 1) {
     // Just one profile record?  It's the "New..." profile, focus the form.
     this.$f('description').focus();
+
+  } else {
+    this.shortcutList_.focus();
+
+    var lastProfileId = window.localStorage.getItem(
+        '/nassh/connectDialog/lastProfileId');
+
+    if (lastProfileId)
+      profileIndex = Math.max(0, this.getProfileIndex_(lastProfileId));
   }
 
-  nassh.getFileSystem(this.onFileSystemFound_.bind(this));
+  this.shortcutList_.setActiveIndex(profileIndex);
+  // The shortcut list will eventually do this async, but we want it now...
+  this.setCurrentProfileRecord(this.profileList_[profileIndex]);
 
-  this.setCurrentProfileRecord(
-      this.profileList_[this.shortcutList_.activeIndex]);
+  nassh.getFileSystem(this.onFileSystemFound_.bind(this));
 };
 
 /**
@@ -174,6 +183,9 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
   this.shortcutList_.addEventListener('keydown',
                                       this.onShortcutListKeyDown_.bind(this));
 
+  this.shortcutList_.addEventListener('dblclick',
+                                      this.onShortcutListDblClick_.bind(this));
+
   this.form_.addEventListener('keyup', this.onFormKeyUp_.bind(this));
 
   this.connectButton_.addEventListener('click',
@@ -182,7 +194,6 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
                                       this.onDeleteClick_.bind(this));
 
   this.$f('identity').addEventListener('select', function(e) {
-      console.log('change', e.target);
       if (e.target.value == '')
         e.target.selectedIndex = 0;
     });
@@ -311,13 +322,10 @@ nassh.ConnectDialog.prototype.save = function() {
      }.bind(this));
 
   if (dirtyForm) {
-    console.log('save');
-
     if (!prefs) {
       var prefs = this.prefs_.createProfile();
       var rec = new nassh.ConnectDialog.ProfileRecord(
           prefs.id, prefs, changedFields['description']);
-      console.log(rec.textContent);
       this.currentProfileRecord_ = rec;
 
       prefs.observePreferences(null, {
@@ -342,6 +350,10 @@ nassh.ConnectDialog.prototype.save = function() {
 nassh.ConnectDialog.prototype.connect = function(name, argv) {
   this.maybeCopyPlaceholders_();
   this.save();
+
+  window.localStorage.setItem('/nassh/connectDialog/lastProfileId',
+                              this.currentProfileRecord_.id);
+
   if (this.form_.checkValidity())
     this.postMessage('connectToProfile', [this.currentProfileRecord_.id]);
 };
@@ -376,6 +388,7 @@ nassh.ConnectDialog.prototype.maybeDirty_ = function(fieldName) {
 nassh.ConnectDialog.prototype.maybeCopyPlaceholders_ = function() {
   ['description', 'username', 'hostname', 'port', 'relay-host'
   ].forEach(this.maybeCopyPlaceholder_.bind(this));
+  this.syncButtons_();
 };
 
 /**
@@ -482,6 +495,18 @@ nassh.ConnectDialog.prototype.syncForm_ = function() {
 };
 
 /**
+ * Sync the enable state of the buttons.
+ */
+nassh.ConnectDialog.prototype.syncButtons_ = function() {
+  this.enableButton_(
+      this.deleteButton_,
+      document.activeElement.getAttribute('id') == 'shortcut-list');
+
+  this.enableButton_(this.connectButton_, this.form_.checkValidity());
+
+};
+
+/**
  * Sync the identity dropdown box with the filesystem.
  */
 nassh.ConnectDialog.prototype.syncIdentityDropdown_ = function(opt_onSuccess) {
@@ -490,7 +515,7 @@ nassh.ConnectDialog.prototype.syncIdentityDropdown_ = function(opt_onSuccess) {
 
   var selectedName;
   if (this.currentProfileRecord_.prefs) {
-    selectedName = this.currentProfile_.prefs.get('identity');
+    selectedName = this.currentProfileRecord_.prefs.get('identity');
   } else {
     selectedName = identitySelect.value;
   }
@@ -571,6 +596,20 @@ nassh.ConnectDialog.prototype.deleteProfile_ = function(deadID) {
   }
 
   this.prefs_.removeProfile(deadID);
+};
+
+/**
+ * Return the index into this.profileList_ for a given profile id.
+ *
+ * Returns -1 if the id is not found.
+ */
+nassh.ConnectDialog.prototype.getProfileIndex_ = function(id) {
+  for (var i = 0; i < this.profileList_.length; i++) {
+    if (this.profileList_[i].id == id)
+      return i;
+  }
+
+  return -1;
 };
 
 /**
@@ -689,14 +728,16 @@ nassh.ConnectDialog.prototype.onShortcutListKeyDown_ = function(e) {
   }
 };
 
+nassh.ConnectDialog.prototype.onShortcutListDblClick_ = function(e) {
+  this.onConnectClick_();
+};
+
 /**
  * Called when the ColumnList says the active profile changed.
  */
 nassh.ConnectDialog.prototype.onProfileIndexChanged = function(e) {
   this.setCurrentProfileRecord(this.profileList_[e.now]);
-
-  this.enableButton_(this.deleteButton_, e.now > 0);
-  this.enableButton_(this.connectButton_, this.form_.checkValidity());
+  this.syncButtons_();
 };
 
 /**
@@ -726,7 +767,6 @@ nassh.ConnectDialog.prototype.onFormKeyUp_ = function(e) {
   if (e.keyCode == 13) {  // ENTER
     this.connect();
   } else if (e.keyCode == 27) {  // ESC
-    console.log('ESC');
     this.syncForm_();
     this.shortcutList_.focus();
   }
@@ -740,8 +780,7 @@ nassh.ConnectDialog.prototype.onFormKeyUp_ = function(e) {
  * this twice.
  */
 nassh.ConnectDialog.prototype.onFormFocusChange_ = function(e) {
-  this.enableButton_(this.deleteButton_, false);
-  this.enableButton_(this.connectButton_, this.form_.checkValidity());
+  this.syncButtons_();
   this.save();
 };
 
@@ -749,7 +788,6 @@ nassh.ConnectDialog.prototype.onFormFocusChange_ = function(e) {
  * Pref callback invoked when the global 'profile-ids' changed.
  */
 nassh.ConnectDialog.prototype.onProfileListChanged_ = function() {
-  console.log('list changed');
   this.syncProfiles_();
   this.shortcutList_.scheduleRedraw();
 };
@@ -760,7 +798,6 @@ nassh.ConnectDialog.prototype.onProfileListChanged_ = function() {
 nassh.ConnectDialog.prototype.onDescriptionChanged_ = function(
     value, name, prefs) {
   this.profileMap_[prefs.id].textContent = value;
-  console.log('description: ' + value);
   this.shortcutList_.scheduleRedraw();
 };
 

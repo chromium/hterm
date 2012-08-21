@@ -112,6 +112,7 @@ nassh.ColumnList.prototype.redraw = function() {
     var item = this.document_.createElement('span');
     item.textContent = this.items_[i].textContent || 'no-name';
     item.addEventListener('click', this.onItemClick_.bind(this, box));
+    item.addEventListener('dblclick', this.onItemClick_.bind(this, box));
     box.appendChild(item);
 
     this.div_.childNodes[i % this.columnCount].appendChild(box);

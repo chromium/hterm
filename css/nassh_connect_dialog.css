@@ -129,6 +129,13 @@ a:hover {
   padding: 0.5em;
   border: 1px var(foreground-color-75) dotted;
   background-color: rgba(255, 255, 255, 0.1);
+  min-height: 5em;
+  -webkit-user-select: none;
+}
+
+.dialog-buttons {
+  margin: 1em;
+  margin-top: 0;
 }
 
 #field-username,

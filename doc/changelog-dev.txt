@@ -1,5 +1,8 @@
 Unreleased trunk changes:
 
+* connect dialog: Select the previous connection by default.
+* connect dialog: Fix dis/enable issues with the buttons.
+* connect dialog: Double click to connect.
 * Re-add copy-on-select delay.
 * Add 'close-on-exit' preference to control whether or not the window closes
   on exit.  Defaults to on.
