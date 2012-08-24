@@ -545,13 +545,27 @@ hterm.ScrollPort.prototype.syncCharacterSize = function() {
  * dimensions of the 'x-screen'.
  */
 hterm.ScrollPort.prototype.resize = function() {
+  this.syncScrollHeight();
+  this.syncRowNodesDimensions_();
+
+  var self = this;
+  this.publish(
+      'resize', { scrollPort: this },
+      function() {
+        self.scrollRowToBottom(self.rowProvider_.getRowCount());
+        self.scheduleRedraw();
+      });
+};
+
+/**
+ * Set the position and size of the row nodes element.
+ */
+hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   var screenWidth = this.screen_.clientWidth;
   var screenHeight = this.screen_.clientHeight;
 
   this.lastScreenWidth_ = screenWidth;
   this.lastScreenHeight_ = screenHeight;
-
-  this.syncScrollHeight();
 
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
@@ -568,18 +582,19 @@ hterm.ScrollPort.prototype.resize = function() {
 
   this.topFold_.style.marginBottom = this.visibleRowTopMargin + 'px';
 
+
+  var topFoldOffset = 0;
+  var node = this.topFold_.previousSibling;
+  while (node) {
+    topFoldOffset += node.clientHeight;
+    node = node.previousSibling;
+  }
+
   // Set the dimensions of the visible rows container.
   this.rowNodes_.style.width = screenWidth + 'px';
-  this.rowNodes_.style.height = visibleRowsHeight + 'px';
+  this.rowNodes_.style.height = visibleRowsHeight + topFoldOffset + 'px';
   this.rowNodes_.style.left = this.screen_.offsetLeft + 'px';
-
-  var self = this;
-  this.publish
-    ('resize', { scrollPort: this },
-     function() {
-       self.scrollRowToBottom(self.rowProvider_.getRowCount());
-       self.scheduleRedraw();
-     });
+  this.rowNodes_.style.top = this.screen_.offsetTop - topFoldOffset + 'px';
 };
 
 hterm.ScrollPort.prototype.syncScrollHeight = function() {
@@ -633,7 +648,7 @@ hterm.ScrollPort.prototype.redraw_ = function() {
   this.drawBottomFold_(bottomRowIndex);
   this.drawVisibleRows_(topRowIndex, bottomRowIndex);
 
-  this.syncRowNodesTop_();
+  this.syncRowNodesDimensions_();
 
   this.previousRowNodeCache_ = this.currentRowNodeCache_;
   this.currentRowNodeCache_ = null;
@@ -876,25 +891,6 @@ hterm.ScrollPort.prototype.resetSelectBags_ = function() {
 };
 
 /**
- * Set the top coordinate of the row nodes.
- *
- * The rowNodes_ are a fixed position DOM element.  When nodes are stashed
- * above the top fold, we need to adjust the top position of rowNodes_
- * so that the first node *after* the top fold is always the first visible
- * DOM node.
- */
-hterm.ScrollPort.prototype.syncRowNodesTop_ = function() {
-  var topMargin = 0;
-  var node = this.topFold_.previousSibling;
-  while (node) {
-    topMargin += this.characterSize.height;
-    node = node.previousSibling;
-  }
-
-  this.rowNodes_.style.top = this.screen_.offsetTop - topMargin + 'px';
-};
-
-/**
  * Place a row node in the cache of visible nodes.
  *
  * This method may only be used during a redraw_.
@@ -939,7 +935,7 @@ hterm.ScrollPort.prototype.selectAll = function() {
 
     firstRow = this.fetchRowNode_(0);
     this.rowNodes_.insertBefore(firstRow, this.topFold_);
-    this.syncRowNodesTop_();
+    this.syncRowNodesDimensions_();
   } else {
     firstRow = this.topFold_.nextSibling;
   }
@@ -1155,7 +1151,7 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
         this.selection.startRow.rowIndex + 1, endBackfillIndex);
     this.rowNodes_.insertBefore(this.topSelectBag_,
                                 this.selection.startRow.nextSibling);
-    this.syncRowNodesTop_();
+    this.syncRowNodesDimensions_();
   }
 
   if (this.selection.endRow.rowIndex > bottomRowIndex) {

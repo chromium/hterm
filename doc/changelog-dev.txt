@@ -1,4 +1,25 @@
-Unreleased trunk changes:
+0.8.2.10, 2012-08-24, Fix another missing-rows bug.
+
+* Fix a bug where we'd shift the rowNodes element up to offset hidden nodes
+  before the top fold, but never compensated by making the rowNodes element
+  taller.
+
+0.8.2.9, 2012-08-22, Don't clear selection for copy-on-select.
+
+* Remove the delay and selection clearing from copy-on-select.  The copy now
+  happens immediately, and the selection is not cleared.
+
+BUG=chromium-os:33786, hterm: double paste on right-click
+
+0.8.2.8, 2012-08-21, backout dialog resize CL.
+
+* Remove the dialog size CL, since it requires M21.
+
+0.8.2.7, 2012-08-21, writelnUTF16 fix.
+
+* Actually append '\r\n' in hterm.Terminal.io.writelnUTF16.
+
+0.8.2.6, 2012-08-21, UTF8 fix, copy fix, dialog cleanup
 
 * Fix display of utf-8 data from translated messages.
 * connect dialog: Select the previous connection by default.
@@ -11,6 +32,7 @@ Unreleased trunk changes:
 * Offer to reconnect on disconnect.
 * Session id parsing in connection arguments.
 
+BUG=chromium-os:27974, Exit command does not close the hterm window
 BUG=chromium-os:27020, newlines added during clipboard copy
 BUG=chromium-os:29217, offer to reconnect after disconnect
 
