@@ -1,3 +1,8 @@
+0.8.2.11, 2012-08-28, Fix OSC-4 regression.
+
+* Fixes a regression that broke OSC-4, color palette read/write, and adds a
+  testcase to catch future regressions.
+
 0.8.2.10, 2012-08-24, Fix another missing-rows bug.
 
 * Fix a bug where we'd shift the rowNodes element up to offset hidden nodes

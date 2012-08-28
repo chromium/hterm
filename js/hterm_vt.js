@@ -1547,7 +1547,7 @@ hterm.VT.OSC['4'] = function(parseState) {
   // We split on the semicolon and iterate through the pairs.
   var args = parseState.args[0].split(';');
 
-  var pairCount = parseInt(parseState.args.length / 2);
+  var pairCount = parseInt(args.length / 2);
   var colorPalette = this.terminal.getTextAttributes().colorPalette;
   var responseArray = [];
 
@@ -1560,14 +1560,14 @@ hterm.VT.OSC['4'] = function(parseState) {
 
     if (colorValue == '?') {
       // '?' means we should report back the current color value.
-      colorValue = hterm.colors.rgbToX11(colorPalette[colorIndex]);
+      colorValue = lib.colors.rgbToX11(colorPalette[colorIndex]);
       if (colorValue)
         responseArray.push(colorIndex + ';' + colorValue);
 
       continue;
     }
 
-    colorValue = hterm.colors.x11ToCSS(colorValue);
+    colorValue = lib.colors.x11ToCSS(colorValue);
     if (colorValue)
       colorPalette[colorIndex] = colorValue;
   }

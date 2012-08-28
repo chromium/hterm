@@ -1171,6 +1171,27 @@ hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
     result.requestTime(200);
   });
 
+hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
+    var resultString;
+
+    this.terminal.io.sendString = function(str) { resultString = str };
+    // Change the terminal palette, then read it back.
+    this.terminal.interpret('\x1b]4;1;rgb:1/1/1;2;rgb:2/2/2\x07');
+    this.terminal.interpret('\x1b]4;1;?;2;?\x07');
+    // The values go through some normalization, so what we read isn't
+    // *exactly* what went in.
+    result.assertEQ(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
+                    '2;rgb:0202/0202/0202\x07');
+
+    // Round trip the normalized values, to check that the normalization is
+    // idempotent.
+    this.terminal.interpret('\x1b]4;1;rgb:0101/0101/0101;2;' +
+                            'rgb:0202/0202/0202\x07');
+    result.assertEQ(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
+                    '2;rgb:0202/0202/0202\x07');
+    result.pass();
+  });
+
 hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';
