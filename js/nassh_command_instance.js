@@ -367,8 +367,12 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
   argv.writeWindow = 8 * 1024;
 
   argv.arguments = ['-C'];  // enable compression
-  var commandArgs;
 
+  // Disable IP address check for connection through proxy.
+  if (argv.useJsSocket)
+    argv.arguments.push("-o CheckHostIP=no");
+
+  var commandArgs;
   if (params.argstr) {
     var parsedArg = lib.f.replaceVars(params.argstr, {session: this.sessionId});
     var ary = parsedArg.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
