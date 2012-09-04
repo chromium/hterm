@@ -1,3 +1,11 @@
+0.8.3, 2012-09-05, Stable release of 0.8.3.0
+
+* Reject attempts to resize or realize a row or column count <= 0.  This fixed
+  a bug where new windows opened with ctrl-shift-n would usually hang if
+  performed from an active connection.
+
+BUG=chromium-os:34123
+
 0.8.2, 2012-08-27, Stable release of 0.8.2.10
 
 This is a list of the more notable changes.  For the full list, consult the
