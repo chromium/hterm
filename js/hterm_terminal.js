@@ -748,6 +748,9 @@ hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
  * in the correct state yet when the next escape sequence hits.
  */
 hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
+  if (columnCount <= 0)
+    throw new Error('Attempt to realize bad width: ' + columnCount);
+
   var deltaColumns = columnCount - this.screen_.getWidth();
 
   this.screenSize.width = columnCount;
@@ -780,6 +783,9 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
  * in the correct state yet when the next escape sequence hits.
  */
 hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
+  if (rowCount <= 0)
+    throw new Error('Attempt to realize bad height: ' + rowCount);
+
   var deltaRows = rowCount - this.screen_.getHeight();
 
   this.screenSize.height = rowCount;
@@ -2474,9 +2480,10 @@ hterm.Terminal.prototype.onResize_ = function() {
   var rowCount = Math.floor(this.scrollPort_.getScreenHeight() /
                             this.scrollPort_.characterSize.height);
 
-  if (!(columnCount || rowCount)) {
+  if (columnCount <= 0 || rowCount <= 0) {
     // We avoid these situations since they happen sometimes when the terminal
-    // gets removed from the document, and we can't deal with that.
+    // gets removed from the document or during the initial load, and we can't
+    // deal with that.
     return;
   }
 

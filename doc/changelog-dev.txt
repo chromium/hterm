@@ -1,3 +1,11 @@
+0.8.3.0, 2012-09-04, Reject invalid resizes.
+
+* Reject attempts to resize or realize a row or column count <= 0.  This fixed
+  a bug where new windows opened with ctrl-shift-n would usually hang if
+  performed from an active connection.
+
+BUG=chromium-os:34123
+
 0.8.2.11, 2012-08-28, Fix OSC-4 regression.
 
 * Fixes a regression that broke OSC-4, color palette read/write, and adds a
