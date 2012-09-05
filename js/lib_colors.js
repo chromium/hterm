@@ -140,7 +140,7 @@ lib.colors.x11ToCSS = function(v) {
     return lib.colors.nameToRGB(v);
 
   ary.splice(0, 1);
-  return lib.colors.arrayToRGBA(ary);
+  return lib.colors.arrayToRGBA(ary.map(scale));
 };
 
 /**

@@ -1,3 +1,8 @@
+0.8.4.0, 2012-09-05, Fix another OSC 4 regression.
+
+* We were mishandling hex X11 rgb values.  They weren't being translated into
+  decimal, and would result in invalid CSS rgba(...) values.
+
 0.8.3.0, 2012-09-04, Reject invalid resizes.
 
 * Reject attempts to resize or realize a row or column count <= 0.  This fixed

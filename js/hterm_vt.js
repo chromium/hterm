@@ -935,9 +935,9 @@ hterm.VT.VT52 = {};
 /**
  * Null (NUL).
  *
- * Ignored.
+ * Silently ignored.
  */
-hterm.VT.CC1['\x00'] = hterm.VT.ignore;
+hterm.VT.CC1['\x00'] = function () {};
 
 /**
  * Enquiry (ENQ).
