@@ -96,6 +96,10 @@ nassh.CommandInstance.prototype.run = function() {
   var onManifestLoaded = function(manifest) {
     this.manifest_ = manifest;
 
+    // Set default window title.
+    this.io.print('\x1b]0;' + this.manifest_.name + ' ' +
+                    this.manifest_.version + '\x07');
+
     this.io.println(
         hterm.msg('WELCOME_VERSION',
                   ['\x1b[1m' + this.manifest_.name + '\x1b[m',
@@ -485,17 +489,19 @@ nassh.CommandInstance.prototype.exit = function(code) {
 
   this.io.println(hterm.msg('DISCONNECT_MESSAGE', [code]));
   this.io.println(hterm.msg('RECONNECT_MESSAGE'));
-  this.io.onVTKeystroke = function (string) {
+  this.io.onVTKeystroke = function(string) {
     var ch = string.toLowerCase();
     if (ch == 'r' || ch == ' ' || ch == '\x0d' /* enter */)
       this.reconnect(document.location.hash.substr(1));
 
     if (ch == 'c' || ch == '\x12' /* ctrl-r */) {
+      document.location.hash = '';
       document.location.reload();
       return;
     }
 
-    if (ch == 'e' || ch == 'x' || ch == '\x1b' /* ESC */) {
+    if (ch == 'e' || ch == 'x' || ch == '\x1b' /* ESC */ ||
+        ch == '\x17' /* C-w */) {
       if (this.exited_)
         return;
 

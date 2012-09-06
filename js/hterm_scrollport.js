@@ -114,6 +114,32 @@ hterm.ScrollPort.Selection = function(scrollPort) {
 };
 
 /**
+ * Given a list of DOM nodes and a container, return the DOM node that
+ * is first according to a depth-first search.
+ *
+ * Returns null if none of the children are found.
+ */
+hterm.ScrollPort.Selection.prototype.findFirstChild = function(
+    parent, childAry) {
+  var node = parent.firstChild;
+
+  while (node) {
+    if (childAry.indexOf(node) != -1)
+      return node;
+
+    if (node.childNodes.length) {
+      var rv = this.findFirstChild(node, childAry);
+      if (rv)
+        return rv;
+    }
+
+    node = node.nextSibling;
+  }
+
+  return null;
+};
+
+/**
  * Synchronize this object with the current DOM selection.
  *
  * This is a one-way synchronization, the DOM selection is copied to this
@@ -193,19 +219,17 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   } else {
     // The selection starts and ends in the same row, but isn't contained all
     // in a single node.
-    // TODO(rginda): If we ever allow multiple levels of containers in
-    // an x-row, we'll have to teach this to find the common ancestor.
-    var node = selection.focusNode.previousSibling;
-    while (node) {
-      if (node == selection.anchorNode) {
-        anchorFirst();
-        break;
-      }
+    var firstNode = this.findFirstChild(
+        anchorRow, [selection.anchorNode, selection.focusNode]);
 
-      node = node.previousSibling;
+    if (!firstNode)
+      throw new Error('Unexpected error syncing selection.');
+
+    if (firstNode == selection.anchorNode) {
+      anchorFirst();
+    } else {
+      focusFirst();
     }
-
-    focusFirst();
   }
 
   this.isMultiline = anchorRow.rowIndex != focusRow.rowIndex;

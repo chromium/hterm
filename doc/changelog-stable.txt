@@ -10,6 +10,7 @@
   performed from an active connection.
 
 BUG=chromium-os:34123
+BUG=chromium-os:34149
 
 0.8.2, 2012-08-27, Stable release of 0.8.2.10
 
