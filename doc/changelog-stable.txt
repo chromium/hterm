@@ -1,3 +1,21 @@
+0.8.5, 2012-09-07, Selection fixes, etc.
+
+* Stable release of 0.8.5.1.
+* The code that tried to determine which node came first in a single-line
+  selection was busted.  It didn't work if the selection involved styled
+  text.
+* Another selection bug.  Triple clicks result in the selection of exactly one
+  full row.  This means that the selection ends at the 0 offset of the following
+  x-row.  hterm.Terminal.getSelectionText assumed that an x-row couldn't be
+  selected, only elements within the row could be.  You could also get into
+  this state if you manually selected exactly to the end of a row.
+* Clear location.hash when "(C)hoose another connection" is selected.
+* Allow Ctrl-W to close window at the reconnect prompt.
+* Show product name and version in the title by default.
+
+BUG=chromium-os:34003
+BUG=chromium-os:34149
+
 0.8.4, 2012-09-05, Fix another OSC 4 regression.
 
 * We were mishandling hex X11 rgb values.  They weren't being translated into
