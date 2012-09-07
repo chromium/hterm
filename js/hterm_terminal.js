@@ -2325,17 +2325,27 @@ hterm.Terminal.prototype.getSelectionText = function() {
   // Start offset measures from the beginning of the line.
   var startOffset = selection.startOffset;
   var node = selection.startNode;
-  while (node.previousSibling) {
-    node = node.previousSibling;
-    startOffset += node.textContent.length;
+  if (node.nodeName != 'X-ROW') {
+    // If the selection doesn't start on an x-row node, then it must be
+    // somewhere inside the x-row.  Add any characters from previous siblings
+    // into the start offset.
+    while (node.previousSibling) {
+      node = node.previousSibling;
+      startOffset += node.textContent.length;
+    }
   }
 
   // End offset measures from the end of the line.
   var endOffset = selection.endNode.textContent.length - selection.endOffset;
   var node = selection.endNode;
-  while (node.nextSibling) {
-    node = node.nextSibling;
-    endOffset += node.textContent.length;
+  if (node.nodeName != 'X-ROW') {
+    // If the selection doesn't end on an x-row node, then it must be
+    // somewhere inside the x-row.  Add any characters from following siblings
+    // into the end offset.
+    while (node.nextSibling) {
+      node = node.nextSibling;
+      endOffset += node.textContent.length;
+    }
   }
 
   var rv = this.getRowsText(selection.startRow.rowIndex,

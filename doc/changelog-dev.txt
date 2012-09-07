@@ -1,3 +1,11 @@
+0.8.5.1, 2012-09-07, Fix triple-click selection.
+
+* Another selection bug.  Triple clicks result in the selection of exactly one
+  full row.  This means that the selection ends at the 0 offset of the following
+  x-row.  hterm.Terminal.getSelectionText assumed that an x-row couldn't be
+  selected, only elements within the row could be.  You could also get into
+  this state if you manually selected exactly to the end of a row.
+
 0.8.5.0, 2012-09-06, Fix selection bug.
 
 * The code that tried to determine which node came first in a single-line
