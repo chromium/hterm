@@ -1171,6 +1171,38 @@ hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
     result.requestTime(200);
   });
 
+/**
+ * Test that OSC 52 works when large strings are split across multiple interpret
+ * calls.
+ */
+hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
+    // Mock this out since we can't document.execCommand from the
+    // test harness.
+    hterm.copySelectionToClipboard = function(document) {
+      var s = document.getSelection();
+      result.assertEQ(s.anchorNode.textContent, expect);
+      result.pass();
+    };
+
+    var expect = '';
+    for (var i = 0; i < 996; i++) {
+      expect += 'x';
+    }
+
+    var encode = '';
+    for (var i = 0; i < expect.length / 6; i++) {
+      encode += 'eHh4';
+    }
+
+    this.terminal.vt.maxStringSequence = expect.length * 3;
+
+    this.terminal.interpret('\x1b]52;c;');
+    this.terminal.interpret(encode);
+    this.terminal.interpret(encode);
+    this.terminal.interpret('\x07');
+    result.requestTime(200);
+  });
+
 hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
     var resultString;
 

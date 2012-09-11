@@ -596,13 +596,14 @@ at <http://goo.gl/RYHiK>.
   the "Selection Copied" message appear in the terminal, and your system
   clipboard should contain the text, "copypasta!".
 
-  Of course, this echo command isn't terribly useful on its own.  It's much
-  more useful if you configure your editor to send a similar sequence when
-  you run its built-in copy command.  This is left as an excercise for the
-  reader.
-
   Note that the specification for OSC 52 mentions destinations other than
   the "c;" system clipboard.  Hterm treats them all as the system clipboard.
+
+
+> Can I synchronize my emacs selection with the system clipboard?
+
+  Yes, as long as you're not using tmux.  See ../etc/osc52.el (also,
+  <http://goo.gl/5vWiS>) for the details.
 
 
 > Is there a way to try early releases of Secure Shell?

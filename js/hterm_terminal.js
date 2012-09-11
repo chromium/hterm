@@ -287,6 +287,11 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
     /**
      * Allow the host to write directly to the system clipboard.
      */
+    ['enable-clipboard-notice', true, null],
+
+    /**
+     * Allow the host to write directly to the system clipboard.
+     */
     ['enable-clipboard-write', true, function(v) {
         self.vt.enableClipboardWrite = !!v;
       }
@@ -338,7 +343,7 @@ hterm.Terminal.prototype.setProfile = function(profileName) {
      * Max length of a DCS, OSC, PM, or APS sequence before we give up and
      * ignore the code.
      */
-    ['max-string-sequence', 1024, function(v) {
+    ['max-string-sequence', 100000, function(v) {
         self.vt.maxStringSequence = v;
       }
     ],
@@ -2287,7 +2292,8 @@ hterm.Terminal.prototype.paste = function() {
  * Note: If there is a selected range in the terminal, it'll be cleared.
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
-  setTimeout(this.showOverlay.bind(this, hterm.msg('NOTIFY_COPY'), 500), 200);
+  if (this.prefs_.get('enable-clipboard-notice'))
+    setTimeout(this.showOverlay.bind(this, hterm.msg('NOTIFY_COPY'), 500), 200);
 
   var copySource = this.document_.createElement('pre');
   copySource.textContent = str;
