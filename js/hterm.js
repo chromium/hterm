@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.fs');
+lib.rtdep('lib.fs', 'lib.Storage');
 
 /**
  * @fileoverview Declares the hterm.* namespace and some basic shared utilities
@@ -20,6 +20,12 @@ var hterm = {};
  *     initialization is complete.
  */
 hterm.init = function(opt_onInit) {
+  if (chrome.storage && chrome.storage.sync) {
+    hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
+  } else {
+    hterm.defaultStorage = new lib.Storage.Local();
+  }
+
   // Eventually this init may need to be async, hence the callback.
   if (opt_onInit)
     opt_onInit();

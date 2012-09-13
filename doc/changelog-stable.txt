@@ -1,4 +1,4 @@
-0.8.7, 2012-09-28, Correctness fixes
+0.8.7, 2012-10-08, Correctness fixes
 
 * Stable release of 0.8.7.5.
 * Fix mouse-based text selection when the selection involves styled text.

@@ -42,7 +42,10 @@ nassh.ConnectDialog = function() {
   this.mm_ = null;
 
   // The nassh global pref manager.
-  this.prefs_ = new nassh.GlobalPreferences();
+  this.prefs_ = new nassh.PreferenceManager();
+  this.prefs_.readStorage(function() {
+      this.syncProfiles_(this.onPreferencesReady_.bind(this));
+    }.bind(this));
 
   // The profile we're currently displaying.
   this.currentProfileRecord_ = null;
@@ -58,13 +61,6 @@ nassh.ConnectDialog = function() {
   // Array of nassh.ConnectDialog.ProfileRecord instances in display order.
   this.profileList_ = [];
 
-  // Read profiles from the prefs and populate the profile map/list.
-  this.syncProfiles_();
-
-  // Create and draw the shortcut list.
-  this.shortcutList_ = new nassh.ColumnList(
-      document.querySelector('#shortcut-list'), this.profileList_);
-
   // We need this hack until CSS variables are supported on the stable channel.
   this.cssVariables_ = new nassh.CSSVariables(document.styleSheets[1]);
 
@@ -72,6 +68,16 @@ nassh.ConnectDialog = function() {
   this.form_ = document.querySelector('form');
   this.connectButton_ = document.querySelector('#connect');
   this.deleteButton_ = document.querySelector('#delete');
+};
+
+/**
+ * Called by the preference manager when we've retrieved the current preference
+ * values from storage.
+ */
+nassh.ConnectDialog.prototype.onPreferencesReady_ = function() {
+  // Create and draw the shortcut list.
+  this.shortcutList_ = new nassh.ColumnList(
+      document.querySelector('#shortcut-list'), this.profileList_);
 
   // Install various (DOM and non-DOM) event handlers.
   this.installHandlers_();
@@ -159,7 +165,7 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
   }
 
   // Observe global 'profile-ids' list so we can keep the ColumnList updated.
-  this.prefs_.observePreferences(null, {
+  this.prefs_.addObservers(null, {
       'profile-ids': this.onProfileListChanged_.bind(this)
     });
 
@@ -167,7 +173,7 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
   for (var i = 0; i < this.profileList_.length; i++) {
     var rec = this.profileList_[i];
     if (rec.prefs) {
-      rec.prefs.observePreferences(null, {
+      rec.prefs.addObservers(null, {
        description: this.onDescriptionChanged_.bind(this)
       });
     }
@@ -177,7 +183,6 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
   // 'billboard' updated.
   this.shortcutList_.onActiveIndexChanged =
       this.onProfileIndexChanged.bind(this);
-
 
   // Register for keyboard shortcuts on the column list.
   this.shortcutList_.addEventListener('keydown',
@@ -269,9 +274,8 @@ nassh.ConnectDialog.prototype.$f = function(
  */
 nassh.ConnectDialog.prototype.setCurrentProfileRecord = function(
     profileRecord) {
-
   if (!profileRecord)
-    throw 'Null profileRecord.';
+    throw 'null profileRecord.';
 
   this.currentProfileRecord_ = profileRecord;
   this.syncForm_();
@@ -314,6 +318,10 @@ nassh.ConnectDialog.prototype.save = function() {
          return;
 
        var value = this.$f(name).value;
+
+       if (name == 'port')
+         value = value ? parseInt(value) : null;
+
        if ((!prefs && !value) || (prefs && value == prefs.get(name)))
          return;
 
@@ -328,7 +336,7 @@ nassh.ConnectDialog.prototype.save = function() {
           prefs.id, prefs, changedFields['description']);
       this.currentProfileRecord_ = rec;
 
-      prefs.observePreferences(null, {
+      prefs.addObservers(null, {
        description: this.onDescriptionChanged_.bind(this)
       });
 
@@ -615,10 +623,11 @@ nassh.ConnectDialog.prototype.getProfileIndex_ = function(id) {
 /**
  * Sync the ColumnList with the known profiles.
  */
-nassh.ConnectDialog.prototype.syncProfiles_ = function() {
+nassh.ConnectDialog.prototype.syncProfiles_ = function(opt_callback) {
   var ids = this.prefs_.get('profile-ids');
 
   this.profileList_.length = 0;
+  var currentProfileExists = false;
   var emptyProfileExists = false;
 
   var deadProfiles = Object.keys(this.profileMap_);
@@ -626,6 +635,9 @@ nassh.ConnectDialog.prototype.syncProfiles_ = function() {
   for (var i = 0; i < ids.length; i++) {
     var id = ids[i];
     var p;
+
+    if (this.currentProfileRecord_ && id == this.currentProfileRecord_.id)
+      currentProfileExists = true;
 
     if (id == this.emptyProfileRecord_.id) {
       emptyProfileExists = true;
@@ -650,10 +662,34 @@ nassh.ConnectDialog.prototype.syncProfiles_ = function() {
     delete this.profileMap_[deadProfiles[i]];
   }
 
+  if (!currentProfileExists) {
+    this.setCurrentProfileRecord(this.emptyProfileRecord_);
+  }
+
   if (!emptyProfileExists) {
     this.profileList_.unshift(this.emptyProfileRecord_);
     this.profileMap_[this.emptyProfileRecord_.id] = this.emptyProfileRecord_;
   }
+
+  if (this.profileList_.length == 1) {
+    if (opt_callback)
+      opt_callback();
+  }
+
+  // Start at 1 for the "[New Connection]" profile.
+  var initialized = 1;
+
+  var onRead = function(profile) {
+    profile.textContent = profile.prefs.get('description');
+
+    if ((++initialized == this.profileList_.length) && opt_callback)
+        opt_callback();
+  };
+
+  this.profileList_.forEach(function(profile) {
+      if (profile.prefs)
+        profile.prefs.readStorage(onRead.bind(this, profile));
+    }.bind(this));
 };
 
 /**
@@ -788,8 +824,7 @@ nassh.ConnectDialog.prototype.onFormFocusChange_ = function(e) {
  * Pref callback invoked when the global 'profile-ids' changed.
  */
 nassh.ConnectDialog.prototype.onProfileListChanged_ = function() {
-  this.syncProfiles_();
-  this.shortcutList_.scheduleRedraw();
+  this.syncProfiles_(function() { this.shortcutList_.redraw() }.bind(this));
 };
 
 /**
@@ -797,8 +832,10 @@ nassh.ConnectDialog.prototype.onProfileListChanged_ = function() {
  */
 nassh.ConnectDialog.prototype.onDescriptionChanged_ = function(
     value, name, prefs) {
-  this.profileMap_[prefs.id].textContent = value;
-  this.shortcutList_.scheduleRedraw();
+  if (this.profileMap_[prefs.id]) {
+    this.profileMap_[prefs.id].textContent = value;
+    this.shortcutList_.scheduleRedraw();
+  }
 };
 
 /**

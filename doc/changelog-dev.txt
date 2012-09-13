@@ -1,3 +1,11 @@
+0.8.8.0, 2012-10-08, Synchronized preferences.
+
+* Add lib.Storage.Local and lib.Storage.Chrome classes to normalize the API
+  between window.localStorage and chrome.storage.
+* Generalize nassh.PreferenceManager profile management code into
+  lib.PreferenceManager so that other code can easily define child preferences.
+* Add preference to override the default color palette.
+
 0.8.7.5, 2012-10-2, Text selection fix.
 
 * Fix mouse-based text selection when the selection involves styled text.

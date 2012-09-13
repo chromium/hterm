@@ -40,19 +40,19 @@ hterm.Keyboard = function(terminal) {
    * If true, Shift-Insert will fall through to the browser as a paste.
    * If false, the keystroke will be sent to the host.
    */
-  this.shiftInsertPaste = terminal.prefs_.get('shift-insert-paste');
+  this.shiftInsertPaste = true;
 
   /**
    * If true, home/end will control the terminal scrollbar and shift home/end
    * will send the VT keycodes.  If false then home/end sends VT codes and
    * shift home/end scrolls.
    */
-  this.homeKeysScroll = terminal.prefs_.get('home-keys-scroll');
+  this.homeKeysScroll = false;
 
   /**
    * Same as above, except for page up/page down.
    */
-  this.pageKeysScroll = terminal.prefs_.get('page-keys-scroll');
+  this.pageKeysScroll = false;
 
   /**
    * Enable/disable application keypad.
@@ -72,13 +72,12 @@ hterm.Keyboard = function(terminal) {
    * If true, the backspace should send BS ('\x08', aka ^H).  Otherwise
    * the backspace key should send '\x7f'.
    */
-  this.backspaceSendsBackspace = terminal.prefs_.get(
-      'backspace-sends-backspace');
+  this.backspaceSendsBackspace = false;
 
   /**
    * Set whether the meta key sends a leading escape or not.
    */
-  this.metaSendsEscape = terminal.prefs_.get('meta-sends-escape');
+  this.metaSendsEscape = true;
 
   /**
    * Controls how the alt key is handled.
@@ -92,7 +91,7 @@ hterm.Keyboard = function(terminal) {
    * This setting only matters when alt is distinct from meta (altIsMeta is
    * false.)
    */
-  this.altSendsWhat = terminal.prefs_.get('alt-sends-what');
+  this.altSendsWhat = 'escape';
 
   /**
    * Set whether the alt key acts as a meta key, instead of producing 8-bit
@@ -100,7 +99,7 @@ hterm.Keyboard = function(terminal) {
    *
    * True to enable, false to disable, null to autodetect based on platform.
    */
-  this.altIsMeta = terminal.prefs_.get('alt-is-meta');
+  this.altIsMeta = false;
 };
 
 /**

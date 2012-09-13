@@ -7,7 +7,9 @@
 lib.rtdep('lib.f', 'lib.fs',
           // TODO(rginda): Nassh should not depend directly on hterm.  These
           // dependencies need to be refactored.
-          'hterm.msg');
+          'hterm.msg',
+          'nassh.CommandInstance', 'nassh.GoogleRelay',
+          'nassh.PreferenceManager');
 
 /**
  * The NaCl-ssh-powered terminal command.
@@ -45,7 +47,7 @@ nassh.CommandInstance = function(argv) {
   this.sshDirectoryEntry_ = null;
 
   // Root preference manager.
-  this.prefs_ = new nassh.GlobalPreferences();
+  this.prefs_ = new nassh.PreferenceManager();
 
   // Counters used to acknowledge writes from the plugin.
   this.stdoutAcknowledgeCount_ = 0;
@@ -53,9 +55,6 @@ nassh.CommandInstance = function(argv) {
 
   // Prevent us from reporting an exit twice.
   this.exited_ = false;
-
-  // A unique id for this connection.
-  this.sessionId = 0;
 };
 
 /**
@@ -92,6 +91,9 @@ nassh.CommandInstance.prototype.run = function() {
     }.bind(this);
   }.bind(this);
 
+  this.prefs_.readStorage(function() {
+    nassh.loadManifest(onManifestLoaded, ferr('Manifest load failed'));
+  });
 
   var onManifestLoaded = function(manifest) {
     this.manifest_ = manifest;
@@ -140,8 +142,6 @@ nassh.CommandInstance.prototype.run = function() {
       }
     }
   }.bind(this);
-
-  nassh.loadManifest(onManifestLoaded, ferr('Manifest load failed'));
 };
 
 /**
@@ -262,33 +262,33 @@ nassh.CommandInstance.prototype.connectToArgString = function(argstr) {
 /**
  * Initiate a connection to a remote host given a profile id.
  */
-nassh.CommandInstance.prototype.connectToProfile = function(profileID,
-                                                            querystr) {
+nassh.CommandInstance.prototype.connectToProfile = function(
+    profileID, querystr) {
   var prefs = this.prefs_.getProfile(profileID);
 
-  this.sessionId = Math.floor(Math.random() * 0xffff + 1).toString(16);
-  this.sessionId = lib.f.zpad(this.sessionId, 4);
+  if (!prefs)
+    return false;
 
-  if (querystr) {
-    var args = lib.f.parseQuery(querystr);
-    if (args["sessionId"] && args["sessionId"].match(/^[a-f0-9]{4}$/))
-      this.sessionId = args["sessionId"];
-  }
   // We have to set the url here rather than in connectToArgString, because
   // some callers will come directly to connectToProfile.
-  document.location.hash = 'profile-id:' + profileID +
-                           '?sessionId=' + this.sessionId;
+  document.location.hash = 'profile-id:' + profileID;
 
-  return this.connectTo({
-      username: prefs.get('username'),
-      hostname: prefs.get('hostname'),
-      port: prefs.get('port'),
-      relayHost: prefs.get('relay-host'),
-      relayOptions: prefs.get('relay-options'),
-      identity: prefs.get('identity'),
-      argstr: prefs.get('argstr'),
-      terminalProfile: prefs.get('terminal-profile')
-  });
+  // Re-read prefs from storage in case they were just changed in the connect
+  // dialog.
+  prefs.readStorage(function() {
+      this.connectTo({
+          username: prefs.get('username'),
+          hostname: prefs.get('hostname'),
+          port: prefs.get('port'),
+          relayHost: prefs.get('relay-host'),
+          relayOptions: prefs.get('relay-options'),
+          identity: prefs.get('identity'),
+          argstr: prefs.get('argstr'),
+          terminalProfile: prefs.get('terminal-profile')
+      });
+    }.bind(this));
+
+  return true;
 };
 
 /**
@@ -378,8 +378,7 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
 
   var commandArgs;
   if (params.argstr) {
-    var parsedArg = lib.f.replaceVars(params.argstr, {session: this.sessionId});
-    var ary = parsedArg.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
+    var ary = params.argstr.match(/^(.*?)(?:(?:^|\s+)(?:--\s+(.*)))?$/);
     if (ary) {
       console.log(ary);
       if (ary[1])
@@ -399,9 +398,6 @@ nassh.CommandInstance.prototype.connectTo = function(params) {
 
   var self = this;
   this.initPlugin_(function() {
-      if (!self.argv_.argString)
-        self.io.println(hterm.msg('WELCOME_TIP'));
-
       window.onbeforeunload = self.onBeforeUnload_.bind(self);
       self.sendToPlugin_('startSession', [argv]);
     });

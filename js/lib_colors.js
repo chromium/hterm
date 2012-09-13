@@ -180,6 +180,8 @@ lib.colors.hexToRGB = function(arg) {
 
 /**
  * Take any valid css color definition and turn it into an rgb or rgba value.
+ *
+ * Returns null if the value could not be normalized.
  */
 lib.colors.normalizeCSS = function(def) {
   if (def.substr(0, 1) == '#')
@@ -277,9 +279,9 @@ lib.colors.nameToRGB = function(name) {
 };
 
 /**
- * The default color palette.
+ * The stock color palette.
  */
-lib.colors.defaultColorPalette = lib.colors.hexToRGB
+lib.colors.stockColorPalette = lib.colors.hexToRGB
   ([// The "ANSI 16"...
     '#000000', '#CC0000', '#4E9A06', '#C4A000',
     '#3465A4', '#75507B', '#06989A', '#D3D7CF',
@@ -336,6 +338,10 @@ lib.colors.defaultColorPalette = lib.colors.hexToRGB
     '#BCBCBC', '#C6C6C6', '#D0D0D0', '#DADADA', '#E4E4E4', '#EEEEEE'
    ]);
 
+/**
+ * The current color palette, possibly with user changes.
+ */
+lib.colors.colorPalette = lib.colors.stockColorPalette;
 
 /**
  * Named colors according to the stock X11 rgb.txt file.
