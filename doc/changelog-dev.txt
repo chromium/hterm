@@ -1,3 +1,13 @@
+0.8.7.0, 2012-09-13, Handle synthetic keystrokes on OS X.
+
+* Added a "textInput" event handler to hterm_keyboard.js.  We're not actually
+  supposed to get these, but we do on the Mac in the case where a third party
+  app sends synthetic keystrokes to Chrome.
+
+Internal bugs:
+6111077 Bluetooth OTP not working with hterm
+6838548 Bluetooth OTP is not able to make past SSHinaTab
+
 0.8.6.0, 2012-09-11, Increase max-string-sequence, add enable-clipboard-notice
 
 * Increased the size of the max-string-sequence pref from 1,024 to 100,000, in

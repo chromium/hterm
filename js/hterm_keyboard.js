@@ -27,7 +27,8 @@ hterm.Keyboard = function(terminal) {
   // so they can be uninstalled with removeEventListener, when required.
   this.handlers_ = [
       ['keypress', this.onKeyPress_.bind(this)],
-      ['keydown', this.onKeyDown_.bind(this)]
+      ['keydown', this.onKeyDown_.bind(this)],
+      ['textInput', this.onTextInput_.bind(this)]
   ];
 
   /**
@@ -192,6 +193,19 @@ hterm.Keyboard.prototype.installKeyboard = function(element) {
  */
 hterm.Keyboard.prototype.uninstallKeyboard = function() {
   this.installKeyboard(null);
+};
+
+/**
+ * Handle onTextInput events.
+ *
+ * We're not actually supposed to get these, but we do on the Mac in the case
+ * where a third party app sends synthetic keystrokes to Chrome.
+ */
+hterm.Keyboard.prototype.onTextInput_ = function(e) {
+  if (!e.data)
+    return;
+
+  e.data.split('').forEach(this.terminal.onVTKeystroke.bind(this.terminal));
 };
 
 /**
