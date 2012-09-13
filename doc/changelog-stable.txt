@@ -1,3 +1,14 @@
+0.8.6, 2012-09-13, Increase max-string-sequence, add enable-clipboard-notice
+
+* Stable release of 0.8.6.0.
+* Increased the size of the max-string-sequence pref from 1,024 to 100,000, in
+  order to support larger clipboard transfers via OSC 52.
+* Add an enable-clipboard-notice preference, defaulted to true.  Change this
+  to false to turn off the "Selection Copied" message.
+* Added etc/osc52.el, a reference implementation of emacs-to-hterm clipboard
+  sync.  The script should also work for xterm and other OSC 52 compliant
+  terminals.
+
 0.8.5, 2012-09-07, Selection fixes, etc.
 
 * Stable release of 0.8.5.1.
