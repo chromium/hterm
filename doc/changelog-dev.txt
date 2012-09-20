@@ -1,3 +1,17 @@
+0.8.7.1, 2012-09-20, Some keyboard fixes and pnacl
+
+* Recompile nacl plugin with --pnacl enabled.
+  (See https://gerrit.chromium.org/gerrit/#/c/33519/.)
+* Changed hterm_keyboard.js to only add modifier munging to strings that
+  came from the "default" action.  Other actions are assumed to already
+  be appropriate for the in use modifier.
+* Make Alt-F1...F12 send F11-F22.  This similar to xterm with the "VT220
+  Keyboard" option is enabled, except xterm uses Ctrl as the modifier.  We use
+  Alt because Ctrl-F1...F12 are not capturable on Chrome OS devices.
+
+BUG=chromium-os:30857, Shift+F6 doesn't work
+BUG=chromium-os:32608, Add extended function key (F13-24) support.
+
 0.8.7.0, 2012-09-13, Handle synthetic keystrokes on OS X.
 
 * Added a "textInput" event handler to hterm_keyboard.js.  We're not actually
