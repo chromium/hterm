@@ -338,11 +338,20 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     return;
   }
 
-  if (resolvedActionType == 'normal' && action.substr(0, 2) == '\x1b[' &&
-      (alt || control || shift)) {
-    // The action is an escape sequence that came from the "normal" definition,
-    // and it was triggered in the presence of a keyboard modifier, we may
-    // need to alter the action to include the modifier before sending it.
+  // Strip the modifier that is associated with the action, since we assume that
+  // modifier has already been accounted for in the action.
+  if (resolvedActionType == 'control') {
+    control = false;
+  } else if (resolvedActionType == 'alt') {
+    alt = false;
+  } else if (resolvedActionType == 'meta') {
+    meta = false;
+  }
+
+  if (action.substr(0, 2) == '\x1b[' && (alt || control || shift)) {
+    // The action is an escape sequence that and it was triggered in the
+    // presence of a keyboard modifier, we may need to alter the action to
+    // include the modifier before sending it.
 
     var mod;
 
@@ -393,9 +402,8 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     // We respect alt/metaSendsEscape even if the keymap action was a literal
     // string.  Otherwise, every overridden alt/meta action would have to
     // check alt/metaSendsEscape.
-    if (resolvedActionType == 'normal' &&
-        ((alt && this.altSendsWhat == 'escape') ||
-         (meta && this.metaSendsEscape))) {
+    if ((alt && this.altSendsWhat == 'escape') ||
+        (meta && this.metaSendsEscape)) {
       action = '\x1b' + action;
     }
   }

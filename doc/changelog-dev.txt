@@ -1,3 +1,13 @@
+0.8.7.2, 2012-09-24, Fix regressions, disable pnacl
+
+* Recompile nacl plugin without pnacl to avoid crashes on Mac and extreme
+  slowness elsewhere.
+* Fix keyboard regression that prevented multi-accelerator sequences (ctrl-alt-foo,
+  etc) from working.
+* Stop bolding colors >= 16.
+
+BUG=chromium-os:34306, hterm shows wrong colors for bold colors 16 through 249
+
 0.8.7.1, 2012-09-20, Some keyboard fixes and pnacl
 
 * Recompile nacl plugin with --pnacl enabled.

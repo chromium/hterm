@@ -205,11 +205,8 @@ hterm.TextAttributes.prototype.updateColors = function(terminalForeground,
       return i + 8;
     }
 
-    if (i >= 16 && i <= 250) {
-      // If it's from the extended palette, add 6.
-      return i + 6;
-    }
-
+    // If it's not from the 16 color palette, ignore bold requests.  This
+    // matches the behavior of gnome-terminal.
     return i;
   }
 
