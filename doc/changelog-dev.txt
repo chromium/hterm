@@ -1,3 +1,13 @@
+0.8.7.3, 2012-09-25, Styled holes
+
+* Backfill holes created by Erase Characters (ECH) and Delete Characters (DCH)
+  with spaces in the current text style.
+* Fix minor issue with Character Attributes (SGR) with colors 100-107.  These
+  were setting the foreground color instead of the background.
+
+BUG=chromium-os:30258, Text attributes not rendered for whitespace at the end
+    of a line
+
 0.8.7.2, 2012-09-24, Fix regressions, disable pnacl
 
 * Recompile nacl plugin without pnacl to avoid crashes on Mac and extreme

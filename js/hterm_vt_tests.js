@@ -468,7 +468,7 @@ hterm.VT.Tests.addTest('erase-right', function(result, cx) {
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ(text,
                     'line one\n' +
-                    'line two\n' +
+                    'line two       \n' +
                     'line three');
     result.pass();
   });
@@ -532,7 +532,7 @@ hterm.VT.Tests.addTest('erase-below', function(result, cx) {
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ(text,
                     'line one\n' +
-                    'line two\n' +
+                    'line two       \n' +
                     '');
     result.pass();
   });

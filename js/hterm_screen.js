@@ -242,39 +242,25 @@ hterm.Screen.prototype.invalidateCursorPosition = function() {
 };
 
 /**
- * Clear the contents of a selected row.
- *
- * TODO: Make this clear in the current style... somehow.  We can't just
- * fill the row with spaces, since they would have potential to mess up the
- * terminal (for example, in insert mode, they might wrap around to the next
- * line.
- *
- * @param {integer} index The zero-based index to clear.
- */
-hterm.Screen.prototype.clearRow = function(index) {
-  if (index == this.cursorPosition.row) {
-    this.clearCursorRow();
-  } else {
-    var row = this.rowsArray[index];
-    row.innerHTML = '';
-    row.appendChild(row.ownerDocument.createTextNode(''));
-  }
-};
-
-/**
  * Clear the contents of the cursor row.
- *
- * TODO: Same comment as clearRow().
  */
 hterm.Screen.prototype.clearCursorRow = function() {
   this.cursorRowNode_.innerHTML = '';
-  var text = this.cursorRowNode_.ownerDocument.createTextNode('');
-  this.cursorRowNode_.appendChild(text);
   this.cursorRowNode_.removeAttribute('line-overflow');
   this.cursorOffset_ = 0;
-  this.cursorNode_ = text;
   this.cursorPosition.column = 0;
   this.cursorPosition.overflow = false;
+
+  var text;
+  if (this.textAttributes.isDefault()) {
+    text = '';
+  } else {
+    text = lib.f.getWhitespace(this.columnCount_);
+  }
+
+  var node = this.textAttributes.createContainer(text);
+  this.cursorRowNode_.appendChild(node);
+  this.cursorNode_ = node;
 };
 
 /**
@@ -428,7 +414,7 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
     node = this.cursorNode_.nextSibling;
   }
 
-  if (currentColumn < this.columnCount_ - 1) {
+  if (currentColumn < this.columnCount_) {
     // If the cursor was within the screen before we started then restore its
     // position.
     this.setCursorPosition(this.cursorPosition.row, currentColumn);
@@ -599,16 +585,19 @@ hterm.Screen.prototype.overwriteString = function(str) {
  *
  * @param {integer} count The number of characters to delete.  This is clamped
  *     to the column width minus the cursor column.
+ * @return {integer} The number of characters actually deleted.
  */
 hterm.Screen.prototype.deleteChars = function(count) {
   var node = this.cursorNode_;
   var offset = this.cursorOffset_;
   var textContent = node.textContent;
 
-  if (textContent.length <= offset && !node.nextSibling) {
-    // There's nothing after this node/offset to delete, buh bye.
-    return;
-  }
+  var currentCursorColumn = this.cursorPosition.column;
+  count = Math.min(count, this.columnCount_ - currentCursorColumn);
+  if (!count)
+    return 0;
+
+  var rv = count;
 
   while (node && count) {
     var startLength = textContent.length;
@@ -617,21 +606,22 @@ hterm.Screen.prototype.deleteChars = function(count) {
         textContent.substr(offset + count);
 
     var endLength = textContent.length;
-
     count -= startLength - endLength;
-
-    node.textContent = textContent;
 
     if (endLength == 0 && node != this.cursorNode_) {
       var nextNode = node.nextSibling;
       node.parentNode.removeChild(node);
       node = nextNode;
     } else {
+      node.textContent = textContent;
       node = node.nextSibling;
     }
 
     if (node)
       textContent = node.textContent;
+
     offset = 0;
   }
+
+  return rv;
 };

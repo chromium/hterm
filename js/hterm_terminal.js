@@ -1480,25 +1480,14 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  *
  * The cursor position is unchanged.
  *
- * TODO(rginda): Test that this works even when the cursor is positioned beyond
- * the end of the text.
- *
- * TODO(rginda): This likely has text-attribute related troubles similar to the
- * todo on hterm.Screen.prototype.clearCursorRow.
- *
- * TODO(davidben): Probably better to not add the whitespace to the clipboard
- * if erasing to the end of the drawn portion of the line. That said, xterm
- * behaves the same here.
+ * TODO(davidben): Probably better to not add the whitespace to the clipboard.
+ * That said, xterm behaves the same here.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
+  var maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
+  var count = opt_count ? Math.min(opt_count, maxCount) : maxCount;
   var cursor = this.saveCursor();
-
-  var maxCount = this.screenSize.width - cursor.column;
-  if (opt_count === undefined || opt_count >= maxCount) {
-    this.screen_.deleteChars(maxCount);
-  } else {
-    this.screen_.overwriteString(lib.f.getWhitespace(opt_count));
-  }
+  this.screen_.overwriteString(lib.f.getWhitespace(count));
   this.restoreCursor(cursor);
   this.clearCursorOverflow();
 };
@@ -1507,9 +1496,6 @@ hterm.Terminal.prototype.eraseToRight = function(opt_count) {
  * Erase the current line.
  *
  * The cursor position is unchanged.
- *
- * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
- * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.eraseLine = function() {
   var cursor = this.saveCursor();
@@ -1523,9 +1509,6 @@ hterm.Terminal.prototype.eraseLine = function() {
  * position, regardless of scroll region.
  *
  * The cursor position is unchanged.
- *
- * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
- * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.eraseAbove = function() {
   var cursor = this.saveCursor();
@@ -1546,9 +1529,6 @@ hterm.Terminal.prototype.eraseAbove = function() {
  * screen, regardless of scroll region.
  *
  * The cursor position is unchanged.
- *
- * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
- * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.eraseBelow = function() {
   var cursor = this.saveCursor();
@@ -1593,9 +1573,6 @@ hterm.Terminal.prototype.fill = function(ch) {
  *
  * @param {hterm.Screen} opt_screen Optional screen to operate on.  Defaults
  *     to the current screen.
- *
- * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
- * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.clearHome = function(opt_screen) {
   var screen = opt_screen || this.screen_;
@@ -1622,9 +1599,6 @@ hterm.Terminal.prototype.clearHome = function(opt_screen) {
  *
  * @param {hterm.Screen} opt_screen Optional screen to operate on.  Defaults
  *     to the current screen.
- *
- * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
- * has a text-attribute related TODO.
  */
 hterm.Terminal.prototype.clear = function(opt_screen) {
   var screen = opt_screen || this.screen_;
@@ -1638,9 +1612,6 @@ hterm.Terminal.prototype.clear = function(opt_screen) {
  *
  * This respects the current scroll region.  Rows pushed off the bottom are
  * lost (they won't show up in the scrollback buffer).
- *
- * TODO(rginda): This relies on hterm.Screen.prototype.clearCursorRow, which
- * has a text-attribute related TODO.
  *
  * @param {integer} count The number of lines to insert.
  */
@@ -1714,7 +1685,14 @@ hterm.Terminal.prototype.insertSpace = function(count) {
  * @param {integer} count The number of characters to delete.
  */
 hterm.Terminal.prototype.deleteChars = function(count) {
-  this.screen_.deleteChars(count);
+  var deleted = this.screen_.deleteChars(count);
+  if (deleted && !this.screen_.textAttributes.isDefault()) {
+    var cursor = this.saveCursor();
+    this.setCursorColumn(this.screenSize.width - deleted);
+    this.screen_.insertString(lib.f.getWhitespace(deleted));
+    this.restoreCursor(cursor);
+  }
+
   this.clearCursorOverflow();
 };
 

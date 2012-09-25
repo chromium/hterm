@@ -326,7 +326,7 @@ blink negative                         bold blink negative
 
 
 
-Dark background. Push <RETURN>
+Dark background. Push <RETURN>                                                  
 @@ OFFSET:18614 LINES:23 CURSOR:22,31
                    Graphic rendition test pattern:
 
@@ -350,7 +350,7 @@ blink negative                         bold blink negative
 
 
 
-Light background. Push <RETURN>
+Light background. Push <RETURN>                                                 
 @@ OFFSET:19956 LINES:24 CURSOR:23,13
 AAAAA
 AAAAA

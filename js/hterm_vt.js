@@ -2055,7 +2055,7 @@ hterm.VT.CSI['m'] = function(parseState) {
       attrs.foregroundIndex = arg - 90 + 8;
 
     } else if (arg >= 100 && arg <= 107) {
-      attrs.foregroundIndex = arg - 100 + 8;
+      attrs.backgroundIndex = arg - 100 + 8;
 
     }
   }
