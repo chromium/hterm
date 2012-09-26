@@ -1616,22 +1616,21 @@ hterm.Terminal.prototype.clear = function(opt_screen) {
  * @param {integer} count The number of lines to insert.
  */
 hterm.Terminal.prototype.insertLines = function(count) {
-  var cursor = this.saveCursor();
+  var cursorRow = this.screen_.cursorPosition.row;
 
   var bottom = this.getVTScrollBottom();
-  count = Math.min(count, bottom - cursor.row);
+  count = Math.min(count, bottom - cursorRow);
 
-  var start = bottom - count + 1;
-  if (start != cursor.row)
-    this.moveRows_(start, count, cursor.row);
+  // The moveCount is the number of rows we need to relocate to make room for
+  // the new row(s).  The count is the distance to move them.
+  var moveCount = bottom - cursorRow - count + 1;
+  if (moveCount)
+    this.moveRows_(cursorRow, moveCount, cursorRow + count);
 
-  for (var i = 0; i < count; i++) {
-    this.setAbsoluteCursorPosition(cursor.row + i, 0);
+  for (var i = count - 1; i >= 0; i--) {
+    this.setAbsoluteCursorPosition(cursorRow + i, 0);
     this.screen_.clearCursorRow();
   }
-
-  cursor.column = 0;
-  this.restoreCursor(cursor);
 };
 
 /**

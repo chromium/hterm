@@ -1,3 +1,8 @@
+0.8.7.4, 2012-09-26, Insert lines fix.
+
+* Fix hterm.Terminal.insertLines to move the correct rows.  This fixes the
+  Reverse Index (RI) sequence (and probably others) that depended on it.
+
 0.8.7.3, 2012-09-25, Styled holes
 
 * Backfill holes created by Erase Characters (ECH) and Delete Characters (DCH)
