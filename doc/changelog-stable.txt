@@ -1,3 +1,35 @@
+0.8.7, 2012-09-28, Correctness fixes
+
+* Stable release of 0.8.7.5.
+* Fix mouse-based text selection when the selection involves styled text.
+* Fix hterm.Terminal.insertLines to move the correct rows.  This fixes the
+  Reverse Index (RI) sequence (and probably others) that depended on it.
+* Backfill holes created by Erase Characters (ECH) and Delete Characters (DCH)
+  with spaces in the current text style.
+* Fix minor issue with Character Attributes (SGR) with colors 100-107.  These
+  were setting the foreground color instead of the background.
+* Fix keyboard regression that prevented multi-accelerator sequences
+  (ctrl-alt-foo, etc) from working.
+* Stop bolding colors >= 16.
+* Changed hterm_keyboard.js to only add modifier munging to strings that
+  came from the "default" action.  Other actions are assumed to already
+  be appropriate for the in use modifier.
+* Make Alt-F1...F12 send F11-F22.  This similar to xterm with the "VT220
+  Keyboard" option is enabled, except xterm uses Ctrl as the modifier.  We use
+  Alt because Ctrl-F1...F12 are not capturable on Chrome OS devices.
+* Added a "textInput" event handler to hterm_keyboard.js.  We're not actually
+  supposed to get these, but we do on the Mac in the case where a third party
+  app sends synthetic keystrokes to Chrome.
+
+Internal bugs:
+6111077 Bluetooth OTP not working with hterm
+6838548 Bluetooth OTP is not able to make past SSHinaTab
+
+BUG=chromium-os:30857, Shift+F6 doesn't work
+BUG=chromium-os:32608, Add extended function key (F13-24) support.
+BUG=chromium-os:30258, Text attributes not rendered for whitespace at the end
+    of a line
+
 0.8.6, 2012-09-13, Increase max-string-sequence, add enable-clipboard-notice
 
 * Stable release of 0.8.6.0.

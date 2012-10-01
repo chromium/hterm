@@ -21,8 +21,8 @@ BUG=chromium-os:30258, Text attributes not rendered for whitespace at the end
 
 * Recompile nacl plugin without pnacl to avoid crashes on Mac and extreme
   slowness elsewhere.
-* Fix keyboard regression that prevented multi-accelerator sequences (ctrl-alt-foo,
-  etc) from working.
+* Fix keyboard regression that prevented multi-accelerator sequences
+  (ctrl-alt-foo, etc) from working.
 * Stop bolding colors >= 16.
 
 BUG=chromium-os:34306, hterm shows wrong colors for bold colors 16 through 249
