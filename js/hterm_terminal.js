@@ -2308,10 +2308,17 @@ hterm.Terminal.prototype.getSelectionText = function() {
   // Start offset measures from the beginning of the line.
   var startOffset = selection.startOffset;
   var node = selection.startNode;
+
   if (node.nodeName != 'X-ROW') {
     // If the selection doesn't start on an x-row node, then it must be
     // somewhere inside the x-row.  Add any characters from previous siblings
     // into the start offset.
+
+    if (node.nodeName == '#text' && node.parentNode.nodeName == 'SPAN') {
+      // If node is the text node in a styled span, move up to the span node.
+      node = node.parentNode;
+    }
+
     while (node.previousSibling) {
       node = node.previousSibling;
       startOffset += node.textContent.length;
@@ -2321,10 +2328,17 @@ hterm.Terminal.prototype.getSelectionText = function() {
   // End offset measures from the end of the line.
   var endOffset = selection.endNode.textContent.length - selection.endOffset;
   var node = selection.endNode;
+
   if (node.nodeName != 'X-ROW') {
     // If the selection doesn't end on an x-row node, then it must be
     // somewhere inside the x-row.  Add any characters from following siblings
     // into the end offset.
+
+    if (node.nodeName == '#text' && node.parentNode.nodeName == 'SPAN') {
+      // If node is the text node in a styled span, move up to the span node.
+      node = node.parentNode;
+    }
+
     while (node.nextSibling) {
       node = node.nextSibling;
       endOffset += node.textContent.length;

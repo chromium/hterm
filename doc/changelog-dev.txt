@@ -1,3 +1,7 @@
+0.8.7.5, 2012-10-2, Text selection fix.
+
+* Fix mouse-based text selection when the selection involves styled text.
+
 0.8.7.4, 2012-09-26, Insert lines fix.
 
 * Fix hterm.Terminal.insertLines to move the correct rows.  This fixes the
