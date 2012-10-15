@@ -1,3 +1,18 @@
+0.8.8.3, 2012-10-15, Include pnacl binary.
+
+* Actually include the pnacl binary in the package.
+
+0.8.8.2, 2012-10-14, Use pnacl on Chrome >= 23.
+
+* Add a pnacl version of the plugin which we load only in Chrome >= 23.
+
+0.8.8.1, 2012-10-14, Chrome stable vs storage.sync fix.
+
+* Fix nassh.PreferenceManager to degrade to window.localStorage if
+  chrome.storage.sync is not available.
+* Add lib.f.alarm.
+* Fix scroll-on-output preference.
+
 0.8.8.0, 2012-10-08, Synchronized preferences.
 
 * Add lib.Storage.Local and lib.Storage.Chrome classes to normalize the API

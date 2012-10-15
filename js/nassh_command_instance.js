@@ -434,7 +434,15 @@ nassh.CommandInstance.prototype.initPlugin_ = function(onComplete) {
        'top: -99px' +
        'width: 0;' +
        'height: 0;');
-  this.plugin_.setAttribute('src', '../plugin/ssh_client.nmf');
+
+  var pluginURL;
+  if (/Chrome\/23/.test(navigator.userAgent)) {
+    pluginURL = '../pnacl_plugin/ssh_client.nmf';
+  } else {
+    pluginURL = '../plugin/ssh_client.nmf';
+  }
+
+  this.plugin_.setAttribute('src', pluginURL);
   this.plugin_.setAttribute('type', 'application/x-nacl');
   this.plugin_.addEventListener('load', onPluginLoaded);
   this.plugin_.addEventListener('message', this.onPluginMessage_.bind(this));

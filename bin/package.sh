@@ -41,7 +41,9 @@ EXTENSION_FILES="    \
   js/*.js            \
   _locales/**/*.json \
   plugin/*           \
-  plugin/**/*"
+  plugin/**/*        \
+  pnacl_plugin/*     \
+  pnacl_plugin/**/*"
 
 #
 # Echo all arguments to stderr.
