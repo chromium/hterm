@@ -12,7 +12,7 @@ lib.rtdep('lib.f');
  * This is currently just an ordered list of known connection profiles.
  */
 nassh.PreferenceManager = function(opt_storage) {
-  var storage = opt_storage || new lib.Storage.Chrome(chrome.storage.sync);
+  var storage = opt_storage || nassh.defaultStorage;
   lib.PreferenceManager.call(this, storage, '/nassh/');
 
   this.defineChildren('profile-ids', nassh.ProfilePreferenceManager);

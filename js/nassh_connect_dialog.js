@@ -11,6 +11,8 @@ lib.rtdep('lib.colors', 'lib.f', 'lib.fs', 'lib.MessageManager');
  */
 window.onload = function() {
   lib.ensureRuntimeDependencies();
+
+  nassh.init();
   window.dialog_ = new nassh.ConnectDialog();
 };
 

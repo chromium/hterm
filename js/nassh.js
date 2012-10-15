@@ -9,6 +9,18 @@ lib.rtdep('lib.fs');
 var nassh = {};
 
 /**
+ * Static initialization for nassh.*, call this once before using anything
+ * else in the nassh namespace.
+ */
+nassh.init = function() {
+  if (chrome.storage && chrome.storage.sync) {
+    nassh.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
+  } else {
+    nassh.defaultStorage = new lib.Storage.Local();
+  }
+};
+
+/**
  * Load and parse the manifest file for this extension.
  */
 nassh.loadManifest = function(onSuccess, opt_onError) {
