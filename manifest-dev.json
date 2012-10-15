@@ -14,6 +14,7 @@
   },
   "description": "Terminal emulator and SSH client.",
   "offline_enabled": true,
+  "options_page": "html/hterm_preferences_editor.html",
   "permissions": [
     "clipboardRead",
     "clipboardWrite",

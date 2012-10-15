@@ -331,5 +331,20 @@
   "RECONNECT_MESSAGE": {
     "message": "(R)econnect, (C)hoose another connection, or E(x)it?",
     "description": "Message displayed after a connection closes"
+  },
+
+  "PREFERENCES_HEADER": {
+    "message": "Preferences Page",
+    "description": "Friendly message shown on options page"
+  },
+
+  "PREFERENCES_RESET": {
+    "message": "All preferences reset!",
+    "description": "Message displayed after options are reset"
+  },
+
+  "JSON_PARSE_ERROR": {
+    "message": "Could not parse JSON in '$1'",
+    "description": "Error message shown when parsing JSON input failed"
   }
 }

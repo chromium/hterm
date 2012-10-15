@@ -179,6 +179,37 @@ lib.colors.hexToRGB = function(arg) {
 };
 
 /**
+ * Converts one or more CSS rgb(...) forms into their '#RRGGBB' color values.
+ *
+ * If given an rgba(...) form, the alpha field is thrown away.
+ *
+ * Arrays are converted in place. If a value cannot be converted, it is
+ * replaced with null.
+ *
+ * @param {string|Array.<string>} A single rgb(...) value or array of rgb(...)
+ *     values to convert.
+ * @return {string|Array.<string>} The converted value or values.
+ */
+lib.colors.rgbToHex = function(arg) {
+  function convert(rgb) {
+    var ary = lib.colors.crackRGB(rgb);
+    return '#' + ((parseInt(ary[0]) << 16) |
+                  (parseInt(ary[1]) <<  8) |
+                  (parseInt(ary[2]) <<  0)).toString(16);
+  }
+
+  if (arg instanceof Array) {
+    for (var i = 0; i < arg.length; i++) {
+      arg[i] = convert(arg[i]);
+    }
+  } else {
+    arg = convert(arg);
+  }
+
+  return arg;
+};
+
+/**
  * Take any valid css color definition and turn it into an rgb or rgba value.
  *
  * Returns null if the value could not be normalized.
