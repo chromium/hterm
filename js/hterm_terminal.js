@@ -1131,7 +1131,8 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
   if (extraRows > 0) {
     var ary = this.screen_.shiftRows(extraRows);
     Array.prototype.push.apply(this.scrollbackRows_, ary);
-    this.scheduleScrollDown_();
+    if (this.scrollPort_.isScrolledEnd)
+      this.scheduleScrollDown_();
   }
 
   if (cursorRow >= this.screen_.rowsArray.length)

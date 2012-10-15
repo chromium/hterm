@@ -55,6 +55,15 @@ hterm.ScrollPort = function(rowProvider) {
   this.lastScreenWidth_ = null;
   this.lastScreenHeight_ = null;
 
+  // The last row count returned by the row provider, re-populated during
+  // syncScrollHeight().
+  this.lastRowCount_ = 0;
+
+  /**
+   * True if the last scroll caused the scrollport to show the final row.
+   */
+  this.isScrolledEnd = true;
+
   // The css rule that we use to control the height of a row.
   this.xrowCssRule_ = null;
 
@@ -623,8 +632,9 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
 
 hterm.ScrollPort.prototype.syncScrollHeight = function() {
   // Resize the scroll area to appear as though it contains every row.
+  this.lastRowCount_ = this.rowProvider_.getRowCount();
   this.scrollArea_.style.height = (this.characterSize.height *
-                                   this.rowProvider_.getRowCount() +
+                                   this.lastRowCount_ +
                                    this.visibleRowTopMargin +
                                    this.visibleRowBottomMargin +
                                    'px');
@@ -1002,6 +1012,9 @@ hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
 hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
   this.syncScrollHeight();
 
+  this.isScrolledEnd = (
+    rowIndex + this.visibleRowCount >= this.lastRowCount_);
+
   var scrollTop = rowIndex * this.characterSize.height +
       this.visibleRowTopMargin;
 
@@ -1023,6 +1036,9 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
  */
 hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
   this.syncScrollHeight();
+
+  this.isScrolledEnd = (
+    rowIndex + this.visibleRowCount >= this.lastRowCount_);
 
   var scrollTop = rowIndex * this.characterSize.height +
       this.visibleRowTopMargin + this.visibleRowBottomMargin;
