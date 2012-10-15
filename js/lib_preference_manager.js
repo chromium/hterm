@@ -23,22 +23,39 @@
  *     should start with a '/'.  If not provided, it defaults to '/'.
  */
 lib.PreferenceManager = function(storage, opt_prefix) {
-  this.storage_ = storage;
+  this.storage = storage;
   this.storageObserver_ = this.onStorageChange_.bind(this);
 
   this.isActive_ = false;
   this.activate();
 
+  this.trace = false;
+
   var prefix = opt_prefix || '/';
   if (prefix.substr(prefix.length - 1) != '/')
     prefix += '/';
 
-  this.prefix_ = prefix;
+  this.prefix = prefix;
 
   this.prefRecords_ = {};
   this.globalObservers_ = [];
 
-  this.childClasses_ = {};
+  this.childFactories_ = {};
+
+  // Map of list-name to {map of child pref managers}
+  // As in...
+  //
+  //  this.childLists_ = {
+  //    'profile-ids': {
+  //      'one': PreferenceManager,
+  //      'two': PreferenceManager,
+  //      ...
+  //    },
+  //
+  //    'frob-ids': {
+  //      ...
+  //    }
+  //  }
   this.childLists_ = {};
 };
 
@@ -122,7 +139,7 @@ lib.PreferenceManager.prototype.deactivate = function() {
     throw new Error('Not activated');
 
   this.isActive_ = false;
-  this.storage_.removeObserver(this.storageObserver_);
+  this.storage.removeObserver(this.storageObserver_);
 };
 
 /**
@@ -137,7 +154,7 @@ lib.PreferenceManager.prototype.activate = function() {
     throw new Error('Already activated');
 
   this.isActive_ = true;
-  this.storage_.addObserver(this.storageObserver_);
+  this.storage.addObserver(this.storageObserver_);
 };
 
 /**
@@ -165,15 +182,17 @@ lib.PreferenceManager.prototype.readStorage = function(opt_callback) {
   }
 
   var keys = Object.keys(this.prefRecords_).map(
-      function(el) { return this.prefix_ + el }.bind(this));
+      function(el) { return this.prefix + el }.bind(this));
 
-  this.storage_.getItems(keys, function(items) {
-      var prefixLength = this.prefix_.length;
+  if (this.trace)
+    console.log('Preferences read: ' + this.prefix);
+
+  this.storage.getItems(keys, function(items) {
+      var prefixLength = this.prefix.length;
 
       for (var key in items) {
         var value = items[key];
         var name = key.substr(prefixLength);
-
         var needSync = (name in this.childLists_ &&
                         (JSON.stringify(value) !=
                          JSON.stringify(this.prefRecords_[name].currentValue)));
@@ -208,13 +227,17 @@ lib.PreferenceManager.prototype.readStorage = function(opt_callback) {
  */
 lib.PreferenceManager.prototype.definePreference = function(
     name, value, opt_onChange) {
-  if (name in this.prefRecords_)
-    throw new Error('Duplicate preference: ' + name);
 
-  this.prefRecords_[name] = new lib.PreferenceManager.Record(name, value);
+  var record = this.prefRecords_[name];
+  if (record) {
+    this.changeDefault(name, value);
+  } else {
+    record = this.prefRecords_[name] =
+        new lib.PreferenceManager.Record(name, value);
+  }
 
   if (opt_onChange)
-    this.prefRecords_[name].addObserver(opt_onChange);
+    record.addObserver(opt_onChange);
 };
 
 /**
@@ -243,19 +266,18 @@ lib.PreferenceManager.prototype.definePreferences = function(defaults) {
  *     preference on this PreferenceManager used to store the ordered list of
  *     child ids.  It is also used in get/add/remove operations to identify the
  *     list of children to operate on.
- * @param {lib.PreferenceManager} childClass A subclass of lib.PreferenceManager
- *     defining the child preferences you wish to store.  The constructor
- *     function will receive a lib.Storage object, and a unique id for the
- *     child preferences.  It is the subclasses responsibility to prefix the
- *     id with an appropriate string.
+ * @param {function} childFactory A function that will be used to generate
+ *     instances of these childred.  The factory function will receive the
+ *     parent lib.PreferenceManager object and a unique id for the new child
+ *     preferences.
  */
 lib.PreferenceManager.prototype.defineChildren = function(
-    listName, childClass) {
+    listName, childFactory) {
 
   // Define a preference to hold the ordered list of child ids.
   this.definePreference(listName, [],
                         this.onChildListChange_.bind(this, listName));
-  this.childClasses_[listName] = childClass;
+  this.childFactories_[listName] = childFactory;
   this.childLists_[listName] = {};
 };
 
@@ -268,6 +290,9 @@ lib.PreferenceManager.prototype.defineChildren = function(
  *     you don't need any.
  */
 lib.PreferenceManager.prototype.addObservers = function(global, map) {
+  if (global && typeof global != 'function')
+    throw new Error('Invalid param: globals');
+
   if (global)
     this.globalObservers_.push(global);
 
@@ -305,7 +330,7 @@ lib.PreferenceManager.prototype.notifyAll = function() {
 lib.PreferenceManager.prototype.notifyChange_ = function(name) {
   var record = this.prefRecords_[name];
   if (!record)
-    throw new Error('Unknown pref: ' + name);
+    throw new Error('Unknown preference: ' + name);
 
   var currentValue = record.get();
 
@@ -320,19 +345,36 @@ lib.PreferenceManager.prototype.notifyChange_ = function(name) {
 /**
  * Create a new child PreferenceManager for the given child list.
  *
+ * The optional hint parameter is an opaque prefix added to the auto-generated
+ * unique id for this child.  Your child factory can parse out the prefix
+ * and use it.
+ *
  * @param {string} listName The child list to create the new instance from.
+ * @param {string} opt_hint Optional hint to include in the child id.
+ * @param {string} opt_id Optional id to override the generated id.
  */
-lib.PreferenceManager.prototype.createChild = function(listName) {
+lib.PreferenceManager.prototype.createChild = function(listName, opt_hint,
+                                                       opt_id) {
   var ids = this.get(listName);
   var id;
 
-  // Pick a random, unique 4-digit hex identifier for the new profile.
-  while (!id || ids.indexOf(id) != -1) {
-    id = Math.floor(Math.random() * 0xffff + 1).toString(16);
-    id = lib.f.zpad(id, 4);
+  if (opt_id) {
+    id = opt_id;
+    if (ids.indexOf(id) != -1)
+      throw new Error('Duplicate child: ' + listName + ': ' + id);
+
+  } else {
+    // Pick a random, unique 4-digit hex identifier for the new profile.
+    while (!id || ids.indexOf(id) != -1) {
+      id = Math.floor(Math.random() * 0xffff + 1).toString(16);
+      id = lib.f.zpad(id, 4);
+      if (opt_hint)
+        id = opt_hint + ':' + id;
+    }
   }
 
-  var childManager = new this.childClasses_[listName](this.storage_, id);
+  var childManager = this.childFactories_[listName](this, id);
+  childManager.trace = this.trace;
   childManager.resetAll();
 
   this.childLists_[listName][id] = childManager;
@@ -369,20 +411,71 @@ lib.PreferenceManager.prototype.removeChild = function(listName, id) {
 /**
  * Return a child PreferenceManager instance for a given id.
  *
- * If the child list or child id is not known this will throw an exception.
+ * If the child list or child id is not known this will return the specified
+ * default value or throw an exception if no default value is provided.
  *
  * @param {string} listName The child list to look in.
  * @param {string} id The child ID.
+ * @param {*} opt_default The optional default value to return if the child
+ *     is not found.
  */
-lib.PreferenceManager.prototype.getChild = function(listName, id) {
+lib.PreferenceManager.prototype.getChild = function(listName, id, opt_default) {
   if (!(listName in this.childLists_))
-      throw new Error('Unknown child list: ' + listName);
+    throw new Error('Unknown child list: ' + listName);
 
   var childList = this.childLists_[listName];
-  if (!(id in childList))
-      throw new Error('Unknown child id: ' + listName + ': ' + id);
+  if (!(id in childList)) {
+    if (typeof opt_default == 'undefined')
+      throw new Error('Unknown "' + listName + '" child: ' + id);
+
+    return opt_default;
+  }
 
   return childList[id];
+};
+
+/**
+ * Calculate the difference between two lists of child ids.
+ *
+ * Given two arrays of child ids, this function will return an object
+ * with "added", "removed", and "common" properties.  Each property is
+ * a map of child-id to `true`.  For example, given...
+ *
+ *    a = ['child-x', 'child-y']
+ *    b = ['child-y']
+ *
+ *    diffChildLists(a, b) =>
+ *      { added: { 'child-x': true }, removed: {}, common: { 'child-y': true } }
+ *
+ * The added/removed properties assume that `a` is the current list.
+ *
+ * @param {Array[string]} a The most recent list of child ids.
+ * @param {Array[string]} b An older list of child ids.
+ * @return {Object} An object with added/removed/common properties.
+ */
+lib.PreferenceManager.diffChildLists = function(a, b) {
+  var rv = {
+    added: {},
+    removed: {},
+    common: {},
+  };
+
+  for (var i = 0; i < a.length; i++) {
+    if (b.indexOf(a[i]) != -1) {
+      rv.common[a[i]] = true;
+    } else {
+      rv.added[a[i]] = true;
+    }
+  }
+
+  for (var i = 0; i < b.length; i++) {
+    if ((b[i] in rv.added) || (b[i] in rv.common))
+      continue;
+
+    rv.removed[b[i]] = true;
+  }
+
+  return rv;
 };
 
 /**
@@ -411,25 +504,33 @@ lib.PreferenceManager.prototype.syncChildList = function(
 
   // The known managers at the start of the sync.  Any manager still in this
   // list at the end should be discarded.
-  var oldManagers = Object.keys(this.childLists_[listName]);
+  var oldIds = Object.keys(this.childLists_[listName]);
+
+  var rv = lib.PreferenceManager.diffChildLists(currentIds, oldIds);
 
   for (var i = 0; i < currentIds.length; i++) {
     var id = currentIds[i];
 
-    var managerIndex = oldManagers.indexOf(id);
+    var managerIndex = oldIds.indexOf(id);
     if (managerIndex >= 0)
-      oldManagers.splice(managerIndex, 1);
+      oldIds.splice(managerIndex, 1);
 
     if (!this.childLists_[listName][id]) {
-      var childManager = new this.childClasses_[listName](this.storage_, id);
+      var childManager = this.childFactories_[listName](this, id);
+      if (!childManager) {
+        console.warn('Unable to restore child: ' + listName + ': ' + id);
+        continue;
+      }
+
+      childManager.trace = this.trace;
       this.childLists_[listName][id] = childManager;
       pendingChildren++;
       childManager.readStorage(onChildStorage);
     }
   }
 
-  for (var i = 0; i < oldManagers.length; i++) {
-    delete this.childLists_[listName][oldManagers[i]];
+  for (var i = 0; i < oldIds.length; i++) {
+    delete this.childLists_[listName][oldIds[i]];
   }
 
   if (!pendingChildren && opt_callback)
@@ -449,7 +550,7 @@ lib.PreferenceManager.prototype.reset = function(name) {
   if (!record)
     throw new Error('Unknown preference: ' + name);
 
-  this.storage_.removeItem(this.prefix_ + name);
+  this.storage.removeItem(this.prefix + name);
 
   if (record.currentValue !== this.DEFAULT_VALUE) {
     record.currentValue = this.DEFAULT_VALUE;
@@ -463,6 +564,13 @@ lib.PreferenceManager.prototype.reset = function(name) {
 lib.PreferenceManager.prototype.resetAll = function() {
   var changed = [];
 
+  for (var listName in this.childLists_) {
+    var childList = this.childLists_[listName];
+    for (var id in childList) {
+      childList[id].resetAll();
+    }
+  }
+
   for (var name in this.prefRecords_) {
     if (this.prefRecords_[name].currentValue !== this.DEFAULT_VALUE) {
       this.prefRecords_[name].currentValue = this.DEFAULT_VALUE;
@@ -471,10 +579,10 @@ lib.PreferenceManager.prototype.resetAll = function() {
   }
 
   var keys = Object.keys(this.prefRecords_).map(function(el) {
-      return this.prefix_ + el;
+      return this.prefix + el;
   }.bind(this));
 
-  this.storage_.removeItems(keys);
+  this.storage.removeItems(keys);
 
   changed.forEach(this.notifyChange_.bind(this));
 };
@@ -493,10 +601,56 @@ lib.PreferenceManager.prototype.resetAll = function() {
  * @param {*} b A value to compare.
  */
 lib.PreferenceManager.prototype.diff = function(a, b) {
+  // If the types are different, or the type doesn't match this regexp.
   if ((typeof a) != (typeof b) || !(/^(number|string)$/.test(typeof a)))
     return true;
 
   return !(/^(number|string)$/.test(typeof a) && a == b);
+};
+
+/**
+ * Change the default value of a preference.
+ *
+ * This is useful when subclassing preference managers.
+ *
+ * The function does not alter the current value of the preference, unless
+ * it has the old default value.  When that happens, the change observers
+ * will be notified.
+ *
+ * @param {string} name The name of the parameter to change.
+ * @param {*} newValue The new default value for the preference.
+ */
+lib.PreferenceManager.prototype.changeDefault = function(name, newValue) {
+  var record = this.prefRecords_[name];
+  if (!record)
+    throw new Error('Unknown preference: ' + name);
+
+  if (!this.diff(record.defaultValue, newValue)) {
+    // Default value hasn't changed.
+    return;
+  }
+
+  if (record.currentValue !== this.DEFAULT_VALUE) {
+    // This pref has a specific value, just change the default and we're done.
+    record.defaultValue = newValue;
+    return;
+  }
+
+  record.defaultValue = newValue;
+
+  this.notifyChange_(name);
+};
+
+/**
+ * Change the default value of multiple preferences.
+ *
+ * @param {Object} map A map of name -> value pairs specifying the new default
+ *     values.
+ */
+lib.PreferenceManager.prototype.changeDefaults = function(map) {
+  for (var key in map) {
+    this.changeDefault(key, map[key]);
+  }
 };
 
 /**
@@ -512,7 +666,7 @@ lib.PreferenceManager.prototype.diff = function(a, b) {
 lib.PreferenceManager.prototype.set = function(name, newValue) {
   var record = this.prefRecords_[name];
   if (!record)
-    throw new Error('Unknown pref: ' + name);
+    throw new Error('Unknown preference: ' + name);
 
   var oldValue = record.get();
 
@@ -521,13 +675,11 @@ lib.PreferenceManager.prototype.set = function(name, newValue) {
 
   if (this.diff(record.defaultValue, newValue)) {
     record.currentValue = newValue;
-    this.storage_.setItem(this.prefix_ + name, newValue);
+    this.storage.setItem(this.prefix + name, newValue);
   } else {
     record.currentValue = this.DEFAULT_VALUE;
-    this.storage_.removeItem(this.prefix_ + name);
+    this.storage.removeItem(this.prefix + name);
   }
-
-  this.notifyChange_(name);
 };
 
 /**
@@ -538,7 +690,7 @@ lib.PreferenceManager.prototype.set = function(name, newValue) {
 lib.PreferenceManager.prototype.get = function(name) {
   var record = this.prefRecords_[name];
   if (!record)
-    throw new Error('Unknown pref: ' + name);
+    throw new Error('Unknown preference: ' + name);
 
   return record.get();
 };
@@ -555,12 +707,12 @@ lib.PreferenceManager.prototype.onChildListChange_ = function(listName) {
  */
 lib.PreferenceManager.prototype.onStorageChange_ = function(map) {
   for (var key in map) {
-    if (this.prefix_) {
-      if (key.substr(0, this.prefix_.length) != this.prefix_)
+    if (this.prefix) {
+      if (key.lastIndexOf(this.prefix.length, 0) != 0)
         continue;
     }
 
-    var name = key.substr(this.prefix_.length);
+    var name = key.substr(this.prefix.length);
 
     if (!(name in this.prefRecords_)) {
       // Sometimes we'll get notified about prefs that are no longer defined.

@@ -1,4 +1,36 @@
-0.8.9.2, 2013-1-3, Fix OSC 52 with UTF-8 text.
+HEAD
+
+* Add ability to register new init functions via lib.registerInit.  These
+  will be called in order during lib.init().
+* Make ensureRuntimeDependencies private and call it during lib.init().
+* Move lib.getStack to lib.f.getStack.
+* Add "escapeHTML" flag to lib.f.replaceVars.
+* Add lib.f.alarm to wrap callbacks with a timer that logs a warning
+  message if the callback isn't invoked before time expires.
+* Update existing preference record when a dupe is passed to
+  lib.PreferenceManager..definePreference, rather than throw an exception.
+* Change lib.PreferenceManager..defineChildren to take a factory function
+  instead of a constructor, so that children can be of different classes.
+* Add opt_hint to lib.PreferenceManager..createChild, to allow callers to
+  include an opaque string in a generated id.
+* Add opt_id to lib.PreferenceManager..createChild, to allow callers to
+  specify a child id.
+* Add opt_default to getChild.  If passed, getChild will return
+  it, rather than throw an exception.
+* Pass the preference manager instance, rather than the storage object,
+  to the child factory when creating a new child.  This gives the
+  child instance much more context to work with.
+* Add lib.PreferenceManager.diffChildLists utility function to make it
+  easy to find out what's changed in a list of children since you last
+  saw it.
+* Add nassh.test() to launch the tests from a chrome-extension: url,
+  since file: urls don't appear to allow XHR anymore.
+* Fix stack trace logging in lib.TestManager.Test..run.
+* Make lib.TestManager.Result..completeTest_ throw a TestComplete
+  exception even for re-completes, so that the test case is forced
+  to stop.
+
+0.8.9.2, 2013-01-03, Fix OSC 52 with UTF-8 text.
 
 * Convert UTF-8 strings to UTF-16 before copying to clipboard for OSC 52.
 

@@ -15,7 +15,9 @@ nassh.PreferenceManager = function(opt_storage) {
   var storage = opt_storage || nassh.defaultStorage;
   lib.PreferenceManager.call(this, storage, '/nassh/');
 
-  this.defineChildren('profile-ids', nassh.ProfilePreferenceManager);
+  this.defineChildren('profile-ids', function(parent, id) {
+    return new nassh.ProfilePreferenceManager(parent, id);
+  });
 };
 
 nassh.PreferenceManager.prototype = {
@@ -37,8 +39,8 @@ nassh.PreferenceManager.prototype.getProfile = function(id) {
 /**
  * lib.PreferenceManager subclass managing per-connection preferences.
  */
-nassh.ProfilePreferenceManager = function(storage, id) {
-  lib.PreferenceManager.call(this, storage,
+nassh.ProfilePreferenceManager = function(parent, id) {
+  lib.PreferenceManager.call(this, parent.storage,
                              '/nassh/profiles/' + id);
 
   this.id = id;

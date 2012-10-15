@@ -404,7 +404,16 @@ lib.TestManager.Test.prototype.run = function(result) {
     if (ex instanceof lib.TestManager.Result.TestComplete)
       return;
 
-    result.println(ex.stack ? ex.stack : 'Test raised an exception: ' + ex);
+    result.println('Test raised an exception: ' + ex);
+
+    if (ex.stack) {
+      if (ex.stack instanceof Array) {
+        result.println(ex.stack.join('\n'));
+      } else {
+        result.println(ex.stack);
+      }
+    }
+
     result.completeTest_(result.FAILED, false);
   }
 };
@@ -946,15 +955,14 @@ lib.TestManager.Result.prototype.requestTime = function(ms) {
  *     to throw the TestComplete exception.
  */
 lib.TestManager.Result.prototype.completeTest_ = function(status, opt_throw) {
-  if (this.status != this.PENDING) {
+  if (this.status == this.PENDING) {
+    this.duration = (new Date()) - this.startDate;
+    this.status = status;
+
+    this.testRun.onResultComplete(this);
+  } else {
     this.testRun.onResultReComplete(this, status);
-    return;
   }
-
-  this.duration = (new Date()) - this.startDate;
-  this.status = status;
-
-  this.testRun.onResultComplete(this);
 
   if (arguments.length < 2 || opt_throw)
     throw new lib.TestManager.Result.TestComplete(this);

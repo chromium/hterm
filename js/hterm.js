@@ -21,18 +21,27 @@ var hterm = {};
 hterm.windowType = null;
 
 /**
- * Static initialization for hterm.*, call this once before using anything
- * else in the hterm namespace.
+ * List of known hterm test suites.
  *
- * @param {function} opt_onInit Optional function to invoke once the
+ * A test harness should ensure that they all exist before running.
+ */
+hterm.testDeps = ['hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
+                  'hterm.Terminal.Tests', 'hterm.VT.Tests',
+                  'hterm.VT.CannedTests'];
+
+/**
+ * The hterm init function, registered with lib.registerInit().
+ *
+ * This is called during lib.init().
+ *
+ * @param {function} onInit The function lib.init() wants us to invoke when
  *     initialization is complete.
  */
-hterm.init = function(opt_onInit) {
+lib.registerInit('hterm', function(onInit) {
   function onWindow(window) {
     hterm.windowType = window.type;
 
-    if (opt_onInit)
-      opt_onInit();
+    onInit();
   }
 
   function onTab(tab) {
@@ -56,7 +65,7 @@ hterm.init = function(opt_onInit) {
   } else {
     setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
   }
-};
+});
 
 /**
  * Return a formatted message in the current locale.

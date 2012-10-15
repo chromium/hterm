@@ -10,8 +10,7 @@ lib.rtdep('lib.f',
 // CSP means that we can't kick off the initialization from the html file,
 // so we do it like this instead.
 window.onload = function() {
-  lib.ensureRuntimeDependencies();
-  hterm.init(Crosh.init);
+  lib.init(Crosh.init);
 };
 
 /**

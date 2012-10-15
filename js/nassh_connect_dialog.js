@@ -10,10 +10,9 @@ lib.rtdep('lib.colors', 'lib.f', 'lib.fs', 'lib.MessageManager');
  * Window onLoad handler for nassh_connect_dialog.html.
  */
 window.onload = function() {
-  lib.ensureRuntimeDependencies();
-
-  nassh.init();
-  window.dialog_ = new nassh.ConnectDialog();
+  lib.init(function() {
+    window.dialog_ = new nassh.ConnectDialog();
+  });
 };
 
 /**

@@ -10,8 +10,6 @@ lib.rtdep('lib.f');
 // so we do it like this instead.
 window.onload = function() {
   function execNaSSH() {
-    nassh.init();
-
     var profileName = lib.f.parseQuery(document.location.search)['profile'];
 
     var terminal = new hterm.Terminal(profileName);
@@ -27,6 +25,5 @@ window.onload = function() {
     window.term_ = terminal;
   }
 
-  lib.ensureRuntimeDependencies();
-  hterm.init(execNaSSH);
+  lib.init(execNaSSH, console.log.bind(console));
 };

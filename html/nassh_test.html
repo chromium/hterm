@@ -40,33 +40,7 @@
     <script src='../js/hterm_vt_tests.js'></script>
     <script src='../js/hterm_vt_canned_tests.js'></script>
 
-    <script>
-      var testManager;
-      var testRun;
-
-      // If you add a new test suite, also add it to the runtime deps.  This
-      // ensures that a parse error in a suite won't result in the entire
-      // set of tests being silently ignored.
-      lib.rtdep('hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
-                'hterm.Terminal.Tests', 'hterm.VT.Tests',
-                'hterm.VT.CannedTests');
-
-      hterm.defaultStorage = new lib.Storage.Memory();
-
-      function init() {
-        lib.ensureRuntimeDependencies();
-
-        testManager = new lib.TestManager();
-        testRun = testManager.createTestRun({window: window});
-
-        // Stop after the first failure to make it easier to debug in the
-        // JS console.
-        testRun.maxFailures = 1;
-
-        testRun.selectPattern(testRun.ALL_TESTS);
-        testRun.run();
-      }
-    </script>
+    <script src='../js/nassh_test.js'></script>
 
     <style>
       body {
@@ -79,5 +53,5 @@
     </style>
   </head>
 
-  <body onload='hterm.init(init)'></body>
+  <body></body>
 </html>

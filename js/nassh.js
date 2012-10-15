@@ -9,10 +9,12 @@ lib.rtdep('lib.fs');
 var nassh = {};
 
 /**
- * Static initialization for nassh.*, call this once before using anything
- * else in the nassh namespace.
+ * Register a static initializer for nassh.*.
+ *
+ * @param {function} onInit The function lib.init() wants us to invoke when
+ *     initialization is complete.
  */
-nassh.init = function() {
+lib.registerInit('nassh', function(onInit) {
   if (!nassh.defaultStorage) {
     var ary = navigator.userAgent.match(/\sChrome\/(\d\d)/);
     var version = parseInt(ary[1]);
@@ -22,6 +24,12 @@ nassh.init = function() {
       nassh.defaultStorage = new lib.Storage.Local();
     }
   }
+
+  onInit();
+});
+
+nassh.test = function() {
+  window.open(chrome.extension.getURL('html/nassh_test.html'));
 };
 
 /**

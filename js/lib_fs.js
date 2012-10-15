@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.getStack');
+lib.rtdep('lib.f.getStack');
 
 /**
  * HTML5 FileSystem related utility functions.
@@ -52,7 +52,7 @@ lib.fs.log = function(msg, opt_callback) {
 lib.fs.err = function(msg, opt_callback) {
   return function() {
     var ary = Array.apply(null, arguments);
-    console.error(msg + ': ' + ary.join(', '), lib.getStack());
+    console.error(msg + ': ' + ary.join(', '), lib.f.getStack());
     if (opt_callback)
       opt_callback.call(null, arguments);
   };

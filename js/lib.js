@@ -18,6 +18,15 @@ var lib = {};
 lib.runtimeDependencies_ = {};
 
 /**
+ * List of functions that need to be invoked during library initialization.
+ *
+ * Each element in the initCallbacks_ array is itself a two-element array.
+ * Element 0 is a short string describing the owner of the init routine, useful
+ * for debugging.  Element 1 is the callback function.
+ */
+lib.initCallbacks_ = [];
+
+/**
  * Records a runtime dependency.
  *
  * This can be useful when you want to express a run-time dependency at
@@ -38,14 +47,25 @@ lib.runtimeDependencies_ = {};
  * @param {string} var_args One or more objects specified as strings.
  */
 lib.rtdep = function(var_args) {
-  var source = lib.getStack()[1];
+  var source;
+
+  try {
+    throw new Error();
+  } catch (ex) {
+    var stackArray = ex.stack.split('\n');
+    source = stackArray[2].replace(/^\s*at\s+/, '');
+  }
 
   for (var i = 0; i < arguments.length; i++) {
     var path = arguments[i];
-    var ary = this.runtimeDependencies_[path];
-    if (!ary)
-      ary = this.runtimeDependencies_[path] = [];
-    ary.push(source);
+    if (path instanceof Array) {
+      lib.rtdep.apply(lib, path);
+    } else {
+      var ary = this.runtimeDependencies_[path];
+      if (!ary)
+        ary = this.runtimeDependencies_[path] = [];
+      ary.push(source);
+    }
   }
 };
 
@@ -55,7 +75,7 @@ lib.rtdep = function(var_args) {
  * Every unmet runtime dependency will be logged to the JS console.  If at
  * least one dependency is unmet this will raise an exception.
  */
-lib.ensureRuntimeDependencies = function() {
+lib.ensureRuntimeDependencies_ = function() {
   var passed = true;
 
   for (var path in lib.runtimeDependencies_) {
@@ -81,38 +101,54 @@ lib.ensureRuntimeDependencies = function() {
 };
 
 /**
- * Return the current call stack after skipping a given number of frames.
+ * Register an initialization function.
  *
- * This method is intended to be used for debugging only.  It returns an
- * Object instead of an Array, because the console stringifies arrays by
- * default and that's not what we want.
+ * The initialization functions are invoked in registration order when
+ * lib.init() is invoked.  Each function will receive a single parameter, which
+ * is a function to be invoked when it completes its part of the initialization.
  *
- * A typical call might look like...
- *
- *    console.log('Something wicked this way came', lib.getStack());
- *    //                         Notice the comma ^
- *
- * This would print the message to the js console, followed by an object
- * which can be clicked to reveal the stack.
- *
- * @param {number} opt_ignoreFrames The optional number of stack frames to
- *     ignore.  The actual 'getStack' call is always ignored.
+ * @param {string} name A short descriptive name of the init routine useful for
+ *     debugging.
+ * @param {function(function)} callback The initialization function to register.
+ * @return {function} The callback parameter.
  */
-lib.getStack = function(opt_ignoreFrames) {
-  var ignoreFrames = opt_ignoreFrames ? opt_ignoreFrames + 2 : 2;
+lib.registerInit = function(name, callback) {
+  lib.initCallbacks_.push([name, callback]);
+  return callback;
+};
 
-  var stackArray;
+/**
+ * Initialize the library.
+ *
+ * This will ensure that all registered runtime dependencies are met, and
+ * invoke any registered initialization functions.
+ *
+ * Initialization is asynchronous.  The library is not ready for use until
+ * the onInit function is invoked.
+ *
+ * @param {function()} onInit The function to invoke when initialization is
+ *     complete.
+ * @param {function(*)} opt_logFunction An optional function to send
+ *     initialization related log messages to.
+ */
+lib.init = function(onInit, opt_logFunction) {
+  var ary = lib.initCallbacks_;
 
-  try {
-    throw new Error();
-  } catch (ex) {
-    stackArray = ex.stack.split('\n');
-  }
+  var initNext = function() {
+    if (ary.length) {
+      var rec = ary.shift();
+      if (opt_logFunction)
+        opt_logFunction('init: ' + rec[0]);
+      rec[1](lib.f.alarm(initNext));
+    } else {
+      onInit();
+    }
+  };
 
-  var stackObject = {};
-  for (var i = ignoreFrames; i < stackArray.length; i++) {
-    stackObject[i - ignoreFrames] = stackArray[i].replace(/^\s*at\s+/, '');
-  }
+  if (typeof onInit != 'function')
+    throw new Error('Missing or invalid argument: onInit');
 
-  return stackObject;
+  lib.ensureRuntimeDependencies_();
+
+  setTimeout(initNext, 0);
 };
