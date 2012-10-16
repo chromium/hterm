@@ -28,7 +28,7 @@ hterm.init = function(opt_onInit) {
 
   // Eventually this init may need to be async, hence the callback.
   if (opt_onInit)
-    opt_onInit();
+    setTimeout(opt_onInit);
 };
 
 /**

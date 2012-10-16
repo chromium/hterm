@@ -1,3 +1,12 @@
+0.8.8.4, 2012-10-15, Reland 0.8.8.1 changes
+
+* Broke 0.8.8.1 changes into smaller CLs for easier review.  This commit marks
+  the re-integration of the changes.
+* Re-order includes in nassh_connect_dialog.html
+* Make hterm.init call back on a timeout.
+* Removed lib.f.alarm for now.  This function was released as part of 0.8.8.1
+  but I'm holding off on landing it until later.
+
 0.8.8.3, 2012-10-15, Include pnacl binary.
 
 * Actually include the pnacl binary in the package.
