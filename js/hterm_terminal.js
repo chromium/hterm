@@ -1353,8 +1353,7 @@ hterm.Terminal.prototype.reverseLineFeed = function() {
  *
  * TODO(rginda): This should probably *remove* the characters (not just replace
  * with a space) if there are no characters at or beyond the current cursor
- * position.  Once it does that, it'll have the same text-attribute related
- * issues as hterm.Screen.prototype.clearCursorRow :/
+ * position.
  */
 hterm.Terminal.prototype.eraseToLeft = function() {
   var cursor = this.saveCursor();
@@ -1368,12 +1367,27 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  *
  * The cursor position is unchanged.
  *
- * TODO(davidben): Probably better to not add the whitespace to the clipboard.
- * That said, xterm behaves the same here.
+ * If the current background color is not the default background color this
+ * will insert spaces rather than delete.  This is unfortunate because the
+ * trailing space will affect text selection, but it's difficult to come up
+ * with a way to style empty space that wouldn't trip up the hterm.Screen
+ * code.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
   var maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
   var count = opt_count ? Math.min(opt_count, maxCount) : maxCount;
+
+  if (this.screen_.textAttributes.background ===
+      this.screen_.textAttributes.DEFAULT_COLOR) {
+    var cursorRow = this.screen_.rowsArray[this.screen_.cursorPosition.row];
+    if (cursorRow.textContent.length <=
+        this.screen_.cursorPosition.column + count) {
+      this.screen_.deleteChars(count);
+      this.clearCursorOverflow();
+      return;
+    }
+  }
+
   var cursor = this.saveCursor();
   this.screen_.overwriteString(lib.f.getWhitespace(count));
   this.restoreCursor(cursor);
@@ -2350,7 +2364,9 @@ hterm.Terminal.prototype.onScroll_ = function() {
  * React when text is pasted into the scrollPort.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  this.io.onVTKeystroke(this.vt.encodeUTF8(e.text));
+  var text = this.vt.encodeUTF8(e.text);
+  text = text.replace(/\n/mg, '\r');
+  this.io.onVTKeystroke(text);
 };
 
 /**

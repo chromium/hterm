@@ -1,3 +1,20 @@
+0.8.8.5, 2012-10-25, Options page, baud rate, c/p cleanup
+
+* Initial add of an options page, thanks to Mike Frysinger.
+* Tweak the nacl plugin to set a default baud rate for the tty.
+* It turns out webkit stops sending "paste" events if you have a child with
+  -webkit-user-select: none.  This patch works around the issue by calling
+  preventDefault() from the mousedown event, instead of using
+  -webkit-user-select.
+* eraseToRight: If the current background color is default, then delete instead
+  of inserting spaces.  This trims the trailing whitespace in the most common
+  case.
+* Replace new-lines with carriage-returns on paste, since it's the right thing
+  to do.
+* Add osc52.vim and osc52.sh scripts to help users with clipboard integration.
+
+BUG=chromium-os:35643, Incorrect tty baud rate
+
 0.8.8.4, 2012-10-15, Reland 0.8.8.1 changes
 
 * Broke 0.8.8.1 changes into smaller CLs for easier review.  This commit marks

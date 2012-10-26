@@ -55,6 +55,11 @@ hterm.ScrollPort = function(rowProvider) {
   this.lastScreenWidth_ = null;
   this.lastScreenHeight_ = null;
 
+  // True if the user should be allowed to select text in the terminal.
+  // This is disabled when the host requests mouse drag events so that we don't
+  // end up with two notions of selection.
+  this.selectionEnabled_ = true;
+
   // The last row count returned by the row provider, re-populated during
   // syncScrollHeight().
   this.lastRowCount_ = 0;
@@ -300,6 +305,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.addEventListener('mousewheel', this.onScrollWheel_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
+  this.screen_.addEventListener('mousedown', this.onMouseDown_.bind(this));
 
   // We send focus to this element just before a paste happens, so we can
   // capture the pasted text and forward it on to someone who cares.
@@ -316,7 +322,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.rowNodes_.style.cssText = (
       'display: block;' +
       'position: fixed;' +
-      'overflow: hidden;');
+      'overflow: hidden;' +
+      '-webkit-user-select: text;');
   this.screen_.appendChild(this.rowNodes_);
 
   // Two nodes to hold offscreen text during the copy event.
@@ -359,7 +366,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
  * Enable or disable mouse based text selection in the scrollport.
  */
 hterm.ScrollPort.prototype.setSelectionEnabled = function(state) {
-  this.rowNodes_.style.webkitUserSelect = state ? 'text' : 'none';
+  this.selectionEnabled_ = state;
 };
 
 /**
@@ -1224,6 +1231,15 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
       self.pasteTarget_.value = '';
       self.screen_.focus();
     }, 0);
+};
+
+/**
+ * Handle mouse down events on the ScrollPort's screen element.
+ */
+hterm.ScrollPort.prototype.onMouseDown_ = function(e) {
+  if (e.which == 1 && !this.selectionEnabled_) {
+    e.preventDefault();
+  }
 };
 
 /**
