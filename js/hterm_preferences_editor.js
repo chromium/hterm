@@ -269,7 +269,7 @@ hterm.PreferencesEditor.prototype.syncPage = function() {
     var input = document.createElement('input');
     var pref = this.prefs_.get(key);
 
-    var onchange = function() {
+    var onchangeCursorReset = function() {
         hterm.PreferencesEditor.debounce(this, function(input) {
             // Chrome has a bug where it resets cursor position on us when
             // we debounce the input.  So manually save & restore cursor.
@@ -277,6 +277,11 @@ hterm.PreferencesEditor.prototype.syncPage = function() {
             prefsEditor.onInputChange(input);
             if (document.activeElement === input)
               input.setSelectionRange(i, i);
+          });
+      };
+    var onchange = function() {
+        hterm.PreferencesEditor.debounce(this, function(input) {
+            prefsEditor.onInputChange(input);
           });
       };
     var oninput = null;
@@ -287,7 +292,7 @@ hterm.PreferencesEditor.prototype.syncPage = function() {
       input.indeterminate = true;
       input.type = 'checkbox';
       input.data = 1;
-      input.onchange = function() {
+      onchange = function() {
           prefsEditor.onInputChangeTristate(this);
         };
     } else if (keyParts[keyParts.length - 1] == 'color') {
@@ -299,10 +304,11 @@ hterm.PreferencesEditor.prototype.syncPage = function() {
           // We'll use JSON to go between object/user text.
           input = document.createElement('textarea');
           input.data = 'JSON';
+          onchange = onchangeCursorReset;
           break;
         case 'string':
           // Save simple strings immediately.
-          oninput = onchange;
+          oninput = onchangeCursorReset;
           onchange = null;
           break;
       }
