@@ -170,7 +170,7 @@ lib.PreferenceManager.prototype.readStorage = function(opt_callback) {
   this.storage_.getItems(keys, function(items) {
       var prefixLength = this.prefix_.length;
 
-      for (key in items) {
+      for (var key in items) {
         var value = items[key];
         var name = key.substr(prefixLength);
 

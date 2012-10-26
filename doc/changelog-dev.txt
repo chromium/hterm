@@ -1,3 +1,7 @@
+0.8.8.7, 2012-10-31, Fix missing 'var' in preference manager.
+
+* Add a missing 'var' keyword in lib_preference_manager.js.
+
 0.8.8.6, 2012-10-31, Fixes for options page and Chrome 21 storage
 
 * Fix 'enable-bold' pref.
