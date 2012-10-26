@@ -173,8 +173,8 @@ lib.Storage.Local.prototype.removeItem = function(key, opt_callback) {
  *     order to read the value, since the local cache is updated synchronously.
  */
 lib.Storage.Local.prototype.removeItems = function(ary, opt_callback) {
-  for (var key in obj) {
-    this.storage_.removeItem(key);
+  for (var i = 0; i < ary.length; i++) {
+    this.storage_.removeItem(ary[i]);
   }
 
   if (opt_callback)

@@ -511,7 +511,8 @@ hterm.Terminal.prototype.syncMousePasteButton = function() {
 hterm.Terminal.prototype.syncBoldSafeState = function() {
   var enableBold = this.prefs_.get('enable-bold');
   if (enableBold !== null) {
-    this.screen_.textAttributes.enableBold = enableBold;
+    this.primaryScreen_.textAttributes.enableBold = enableBold;
+    this.alternateScreen_.textAttributes.enableBold = enableBold;
     return;
   }
 
@@ -525,7 +526,8 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
                  this.scrollPort_.getFontFamily());
   }
 
-  this.screen_.textAttributes.enableBold = isBoldSafe;
+  this.primaryScreen_.textAttributes.enableBold = isBoldSafe;
+  this.alternateScreen_.textAttributes.enableBold = isBoldSafe;
 };
 
 /**
