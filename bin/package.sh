@@ -40,10 +40,9 @@ EXTENSION_FILES="    \
   images/*.png       \
   js/*.js            \
   _locales/**/*.json \
-  plugin/*           \
-  plugin/**/*        \
-  pnacl_plugin/*     \
-  pnacl_plugin/**/*"
+  plugin/nacl/**/*   \
+  plugin/arm_23/*    \
+  plugin/pnacl/*"
 
 #
 # Echo all arguments to stderr.

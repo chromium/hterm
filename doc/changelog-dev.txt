@@ -1,3 +1,12 @@
+0.8.8.9, 2012-11-28, Rebuild Pepper 25 binaries
+
+* Tweak build scripts and rebuild Pepper 25 based nacl binaries.
+
+0.8.8.8, 2012-11-27, Pepper 25 changes
+
+* Build pnacl binaries with Pepper 25.
+* Add Chrome >=24 plugin selection.
+
 0.8.8.7, 2012-10-31, Fix missing 'var' in preference manager.
 
 * Add a missing 'var' keyword in lib_preference_manager.js.

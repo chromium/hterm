@@ -435,11 +435,20 @@ nassh.CommandInstance.prototype.initPlugin_ = function(onComplete) {
        'width: 0;' +
        'height: 0;');
 
+  var ary = navigator.userAgent.match(/Chrome\/(\d\d)\./);
+  var chromeVersion = parseInt(ary[1]);
+  var isARM = (/arm/i).test(navigator.platform);
+
   var pluginURL;
-  if (/Chrome\/23/.test(navigator.userAgent)) {
-    pluginURL = '../pnacl_plugin/ssh_client.nmf';
+  if (chromeVersion < 23) {
+    // TODO(rginda): Remove the old school intel-only nacl plugin once we drain
+    // the Chrome OS M21 users.
+    pluginURL = '../plugin/nacl/ssh_client.nmf';
+  } else if (isARM && chromeVersion == 23) {
+    // TODO(rginda): Remove (ARM && Chrome 23) plugin once Chrome 23 is history.
+    pluginURL = '../plugin/arm_23/ssh_client.nmf';
   } else {
-    pluginURL = '../plugin/ssh_client.nmf';
+    pluginURL = '../plugin/pnacl/ssh_client.nmf';
   }
 
   this.plugin_.setAttribute('src', pluginURL);
