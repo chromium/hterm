@@ -264,29 +264,30 @@ nassh.CommandInstance.prototype.connectToArgString = function(argstr) {
  */
 nassh.CommandInstance.prototype.connectToProfile = function(
     profileID, querystr) {
-  var prefs = this.prefs_.getProfile(profileID);
 
-  if (!prefs)
-    return false;
+  var onReadStorage = function() {
+    // TODO(rginda): Soft fail on unknown profileID.
+    var prefs = this.prefs_.getProfile(profileID);
 
-  // We have to set the url here rather than in connectToArgString, because
-  // some callers will come directly to connectToProfile.
-  document.location.hash = 'profile-id:' + profileID;
+    // We have to set the url here rather than in connectToArgString, because
+    // some callers will come directly to connectToProfile.
+    document.location.hash = 'profile-id:' + profileID;
+
+    this.connectTo({
+      username: prefs.get('username'),
+      hostname: prefs.get('hostname'),
+      port: prefs.get('port'),
+      relayHost: prefs.get('relay-host'),
+      relayOptions: prefs.get('relay-options'),
+      identity: prefs.get('identity'),
+      argstr: prefs.get('argstr'),
+      terminalProfile: prefs.get('terminal-profile')
+    });
+  }.bind(this);
 
   // Re-read prefs from storage in case they were just changed in the connect
   // dialog.
-  prefs.readStorage(function() {
-      this.connectTo({
-          username: prefs.get('username'),
-          hostname: prefs.get('hostname'),
-          port: prefs.get('port'),
-          relayHost: prefs.get('relay-host'),
-          relayOptions: prefs.get('relay-options'),
-          identity: prefs.get('identity'),
-          argstr: prefs.get('argstr'),
-          terminalProfile: prefs.get('terminal-profile')
-      });
-    }.bind(this));
+  this.prefs_.readStorage(onReadStorage);
 
   return true;
 };

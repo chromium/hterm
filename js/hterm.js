@@ -20,10 +20,14 @@ var hterm = {};
  *     initialization is complete.
  */
 hterm.init = function(opt_onInit) {
-  if (chrome.storage && chrome.storage.sync) {
-    hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
-  } else {
-    hterm.defaultStorage = new lib.Storage.Local();
+  if (!hterm.defaultStorage) {
+    var ary = navigator.userAgent.match(/\sChrome\/(\d\d)/);
+    var version = parseInt(ary[1]);
+    if (chrome.storage && chrome.storage.sync && version > 21) {
+      hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
+    } else {
+      hterm.defaultStorage = new lib.Storage.Local();
+    }
   }
 
   // Eventually this init may need to be async, hence the callback.

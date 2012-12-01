@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "name": "Secure Shell (dev)",
-  "version": "0.8.8.9",
+  "version": "0.8.8.10",
   "default_locale": "en",
   "icons": {
     "128": "images/vt-128.png",

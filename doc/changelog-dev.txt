@@ -1,3 +1,10 @@
+0.8.8.10, 2012-11-30, Chrome 21 fixes.
+
+* Fix to properly select lib.Storage.Local on Chrome 21.
+* Re-read from storage *before* trying to resolve selected the profile in
+  connectToProfile().
+* Add lib.Storage.Memory for the test harness.
+
 0.8.8.9, 2012-11-28, Rebuild Pepper 25 binaries
 
 * Tweak build scripts and rebuild Pepper 25 based nacl binaries.

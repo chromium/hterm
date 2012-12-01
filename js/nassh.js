@@ -13,10 +13,14 @@ var nassh = {};
  * else in the nassh namespace.
  */
 nassh.init = function() {
-  if (chrome.storage && chrome.storage.sync) {
-    nassh.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
-  } else {
-    nassh.defaultStorage = new lib.Storage.Local();
+  if (!nassh.defaultStorage) {
+    var ary = navigator.userAgent.match(/\sChrome\/(\d\d)/);
+    var version = parseInt(ary[1]);
+    if (chrome.storage && chrome.storage.sync && version > 21) {
+      nassh.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
+    } else {
+      nassh.defaultStorage = new lib.Storage.Local();
+    }
   }
 };
 

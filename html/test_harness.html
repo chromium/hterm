@@ -9,6 +9,7 @@
     <script src='../js/lib_storage.js'></script>
     <script src='../js/lib_storage_chrome.js'></script>
     <script src='../js/lib_storage_local.js'></script>
+    <script src='../js/lib_storage_memory.js'></script>
     <script src='../js/lib_utf8.js'></script>
 
     <script src='../js/hterm.js'></script>
@@ -49,6 +50,8 @@
       lib.rtdep('hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
                 'hterm.Terminal.Tests', 'hterm.VT.Tests',
                 'hterm.VT.CannedTests');
+
+      hterm.defaultStorage = new lib.Storage.Memory();
 
       function init() {
         lib.ensureRuntimeDependencies();
