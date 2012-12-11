@@ -109,6 +109,17 @@ nassh.CommandInstance.prototype.run = function() {
     this.io.println(
         hterm.msg('WELCOME_FAQ', ['\x1b[1mhttp://goo.gl/m6Nj8\x1b[m']));
 
+    if (hterm.windowType != 'popup') {
+      var osx = window.navigator.userAgent.match(/Mac OS X/);
+      if (!osx) {
+        this.io.println('');
+        this.io.println(
+            hterm.msg('OPEN_AS_WINDOW_TIP',
+                      ['\x1b[1mhttp://goo.gl/OeH3i\x1b[m']));
+        this.io.println('');
+      }
+    }
+
     nassh.getFileSystem(onFileSystemFound, ferr('FileSystem init failed'));
   }.bind(this);
 

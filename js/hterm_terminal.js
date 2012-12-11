@@ -285,6 +285,42 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.syncMousePasteButton();
     },
 
+    'pass-alt-number': function(v) {
+      if (v == null) {
+        var osx = window.navigator.userAgent.match(/Mac OS X/);
+
+        // Let Alt-1..9 pass to the browser (to control tab switching) on
+        // non-OS X systems, or if hterm is not opened in an app window.
+        v = (!osx && hterm.windowType != 'popup');
+      }
+
+      terminal.passAltNumber = v;
+    },
+
+    'pass-ctrl-number': function(v) {
+      if (v == null) {
+        var osx = window.navigator.userAgent.match(/Mac OS X/);
+
+        // Let Ctrl-1..9 pass to the browser (to control tab switching) on
+        // non-OS X systems, or if hterm is not opened in an app window.
+        v = (!osx && hterm.windowType != 'popup');
+      }
+
+      terminal.passCtrlNumber = v;
+    },
+
+    'pass-meta-number': function(v) {
+      if (v == null) {
+        var osx = window.navigator.userAgent.match(/Mac OS X/);
+
+        // Let Meta-1..9 pass to the browser (to control tab switching) on
+        // OS X systems, or if hterm is not opened in an app window.
+        v = (osx && hterm.windowType != 'popup');
+      }
+
+      terminal.passMetaNumber = v;
+    },
+
     'scroll-on-keystroke': function(v) {
       terminal.scrollOnKeystroke_ = v;
     },
@@ -760,6 +796,24 @@ hterm.Terminal.prototype.scrollPageDown = function() {
 };
 
 /**
+ * Clear primary screen, secondary screen, and the scrollback buffer.
+ */
+hterm.Terminal.prototype.wipeContents = function() {
+  this.scrollbackRows_.length = 0;
+  this.scrollPort_.resetCache();
+
+  [this.primaryScreen_, this.alternateScreen_].forEach(function(screen) {
+    var bottom = screen.getHeight();
+    if (bottom > 0) {
+      this.renumberRows_(0, bottom);
+      this.clearHome(screen);
+    }
+  }.bind(this));
+
+  this.syncCursorPosition_();
+};
+
+/**
  * Full terminal reset.
  */
 hterm.Terminal.prototype.reset = function() {
@@ -1178,10 +1232,12 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
  * addressable (you can't delete them, scroll them, etc), you should have
  * no need to renumber scrollback rows.
  */
-hterm.Terminal.prototype.renumberRows_ = function(start, end) {
+hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
+  var screen = opt_screen || this.screen_;
+
   var offset = this.scrollbackRows_.length;
   for (var i = start; i < end; i++) {
-    this.screen_.rowsArray[i].rowIndex = offset + i;
+    screen.rowsArray[i].rowIndex = offset + i;
   }
 };
 

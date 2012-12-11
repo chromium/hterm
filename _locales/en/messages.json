@@ -25,6 +25,17 @@
     }
   },
 
+  "OPEN_AS_WINDOW_TIP": {
+    "message": "[Pro Tip] Use 'Open as Window' to keep Control-W from closing your terminal!\r\n[Pro Tip] See $URL$ for more information.",
+    "description": "Message displayed to users who are running Secure Shell in a tab.",
+    "placeholders": {
+      "url": {
+        "content": "$1",
+        "example": "http://goo.gl/OeH3i"
+      }
+    }
+  },
+
   "NOTIFY_COPY": {
     "message": "Selection Copied",
     "description": "Short status message displayed in a terminal overlay when text is automatically copied to the clipboard."

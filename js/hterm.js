@@ -13,6 +13,14 @@ lib.rtdep('lib.fs', 'lib.Storage');
 var hterm = {};
 
 /**
+ * The type of window hosting hterm.
+ *
+ * This is set as part of hterm.init().  The value is invalid until
+ * initialization completes.
+ */
+hterm.windowType = null;
+
+/**
  * Static initialization for hterm.*, call this once before using anything
  * else in the hterm namespace.
  *
@@ -20,6 +28,17 @@ var hterm = {};
  *     initialization is complete.
  */
 hterm.init = function(opt_onInit) {
+  function onWindow(window) {
+    hterm.windowType = window.type;
+
+    if (opt_onInit)
+      opt_onInit();
+  }
+
+  function onTab(tab) {
+    chrome.windows.get(tab.windowId, null, onWindow);
+  }
+
   if (!hterm.defaultStorage) {
     var ary = navigator.userAgent.match(/\sChrome\/(\d\d)/);
     var version = parseInt(ary[1]);
@@ -30,9 +49,13 @@ hterm.init = function(opt_onInit) {
     }
   }
 
-  // Eventually this init may need to be async, hence the callback.
-  if (opt_onInit)
-    setTimeout(opt_onInit);
+  if (chrome.tabs) {
+    // The getCurrent method gets the tab that is "currently running", not the
+    // topmost or focused tab.
+    chrome.tabs.getCurrent(onTab);
+  } else {
+    setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
+  }
 };
 
 /**

@@ -170,7 +170,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64) }
 
   // Call a method on the keymap instance.
-  function call(m) { return function (e, k) { return this[m](e, k) } }
+  function c(m) { return function (e, k) { return this[m](e, k) } }
 
   var ESC = '\x1b';
   var CSI = '\x1b[';
@@ -180,12 +180,6 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   var DEFAULT = hterm.Keyboard.KeyActions.DEFAULT;
   var PASS = hterm.Keyboard.KeyActions.PASS;
   var STRIP = hterm.Keyboard.KeyActions.STRIP;
-
-  // On OS X, we want to PASS on Meta+KEY and DEFAULT on Meta+Shift+KEY for
-  // certain browser accelerators.  Other platforms use Alt instead of Meta.
-  var osx = window.navigator.userAgent.match(/Mac OS X/);
-  var altAccel = osx ? DEFAULT : sh(PASS, DEFAULT);
-  var metaAccel = osx ? sh(PASS, DEFAULT) : DEFAULT;
 
   this.addKeyDefs(
     // These fields are: [keycode, keycap, normal, control, alt, meta]
@@ -210,19 +204,19 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [123, '[F12]', CSI + '24~',               DEFAULT, CSI + "43~", DEFAULT],
 
     // Second row.
-    [192, '`~', DEFAULT, sh(ctl('@'), ctl('^')),        DEFAULT,        PASS],
-    [49,  '1!', DEFAULT, sh(PASS, STRIP),               altAccel,  metaAccel],
-    [50,  '2@', DEFAULT, sh(PASS, ctl('@')),            altAccel,  metaAccel],
-    [51,  '3#', DEFAULT, sh(PASS, ctl('[')),            altAccel,  metaAccel],
-    [52,  '4$', DEFAULT, sh(PASS, ctl('\\')),           altAccel,  metaAccel],
-    [53,  '5%', DEFAULT, sh(PASS, ctl(']')),            altAccel,  metaAccel],
-    [54,  '6^', DEFAULT, sh(PASS, ctl('^')),            altAccel,  metaAccel],
-    [55,  '7&', DEFAULT, sh(PASS, ctl('_')),            altAccel,  metaAccel],
-    [56,  '8*', DEFAULT, sh(PASS, '*'),                 altAccel,  metaAccel],
-    [57,  '9(', DEFAULT, sh(PASS, STRIP),               altAccel,  metaAccel],
-    [48,  '0)', DEFAULT, call('onZoom_'),               DEFAULT,     DEFAULT],
-    [189, '-_', DEFAULT, sh(call('onZoom_'), ctl('_')), DEFAULT,     DEFAULT],
-    [187, '=+', DEFAULT, call('onZoom_'),               DEFAULT,     DEFAULT],
+    [192, '`~', DEFAULT, sh(ctl('@'), ctl('^')),     DEFAULT,           PASS],
+    [49,  '1!', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [50,  '2@', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [51,  '3#', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [52,  '4$', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [53,  '5%', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [54,  '6^', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [55,  '7&', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [56,  '8*', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [57,  '9(', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
+    [48,  '0)', DEFAULT, c('onZoom_'),       c('onAltNum_'), c('onMetaNum_')],
+    [189, '-_', DEFAULT, sh(c('onZoom_'), ctl('_')),    DEFAULT,     DEFAULT],
+    [187, '=+', DEFAULT, c('onZoom_'),                  DEFAULT,     DEFAULT],
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
@@ -242,19 +236,19 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [220, '\\|',   DEFAULT, ctl('\\'), DEFAULT, DEFAULT],
 
     // Fourth row. (We let Ctrl-Shift-J pass for Chrome DevTools.)
-    [20,  '[CAPS]',  PASS,    PASS,               PASS,    DEFAULT],
-    [65,  'aA',      DEFAULT, ctl('A'),           DEFAULT, DEFAULT],
-    [83,  'sS',      DEFAULT, ctl('S'),           DEFAULT, DEFAULT],
-    [68,  'dD',      DEFAULT, ctl('D'),           DEFAULT, DEFAULT],
-    [70,  'fF',      DEFAULT, ctl('F'),           DEFAULT, DEFAULT],
-    [71,  'gG',      DEFAULT, ctl('G'),           DEFAULT, DEFAULT],
-    [72,  'hH',      DEFAULT, ctl('H'),           DEFAULT, DEFAULT],
-    [74,  'jJ',      DEFAULT, sh(ctl('J'), PASS), DEFAULT, DEFAULT],
-    [75,  'kK',      DEFAULT, ctl('K'),           DEFAULT, DEFAULT],
-    [76,  'lL',      DEFAULT, ctl('L'),           DEFAULT, DEFAULT],
-    [186, ';:',      DEFAULT, STRIP,              DEFAULT, DEFAULT],
-    [222, '\'"',     DEFAULT, STRIP,              DEFAULT, DEFAULT],
-    [13,  '[ENTER]', '\r',    CANCEL,             CANCEL,  DEFAULT],
+    [20,  '[CAPS]',  PASS,    PASS,                           PASS,    DEFAULT],
+    [65,  'aA',      DEFAULT, ctl('A'),                       DEFAULT, DEFAULT],
+    [83,  'sS',      DEFAULT, ctl('S'),                       DEFAULT, DEFAULT],
+    [68,  'dD',      DEFAULT, ctl('D'),                       DEFAULT, DEFAULT],
+    [70,  'fF',      DEFAULT, ctl('F'),                       DEFAULT, DEFAULT],
+    [71,  'gG',      DEFAULT, ctl('G'),                       DEFAULT, DEFAULT],
+    [72,  'hH',      DEFAULT, ctl('H'),                       DEFAULT, DEFAULT],
+    [74,  'jJ',      DEFAULT, sh(ctl('J'), PASS),             DEFAULT, DEFAULT],
+    [75,  'kK',      DEFAULT, sh(ctl('K'), c('onClear_')),    DEFAULT, DEFAULT],
+    [76,  'lL',      DEFAULT, ctl('L'),                       DEFAULT, DEFAULT],
+    [186, ';:',      DEFAULT, STRIP,                          DEFAULT, DEFAULT],
+    [222, '\'"',     DEFAULT, STRIP,                          DEFAULT, DEFAULT],
+    [13,  '[ENTER]', '\r',    CANCEL,                         CANCEL,  DEFAULT],
 
     // Fifth row.  This includes the copy/paste shortcuts.  On some
     // platforms it's Ctrl-C/V, on others it's Meta-C/V.  We assume either
@@ -264,10 +258,10 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [16,  '[SHIFT]', PASS, PASS,                   PASS,    DEFAULT],
     [90,  'zZ',   DEFAULT, ctl('Z'),               DEFAULT, DEFAULT],
     [88,  'xX',   DEFAULT, ctl('X'),               DEFAULT, DEFAULT],
-    [67,  'cC',   DEFAULT, call('onCtrlC_'),       DEFAULT, call('onMetaC_')],
+    [67,  'cC',   DEFAULT, c('onCtrlC_'),          DEFAULT, c('onMetaC_')],
     [86,  'vV',   DEFAULT, sh(ctl('V'), PASS),     DEFAULT, PASS],
     [66,  'bB',   DEFAULT, sh(ctl('B'), PASS),     DEFAULT, sh(DEFAULT, PASS)],
-    [78,  'nN',   DEFAULT, call('onCtrlN_'),       DEFAULT, call('onMetaN_')],
+    [78,  'nN',   DEFAULT, c('onCtrlN_'),          DEFAULT, c('onMetaN_')],
     [77,  'mM',   DEFAULT, ctl('M'),               DEFAULT, DEFAULT],
     [188, ',<',   DEFAULT, STRIP,                  DEFAULT, DEFAULT],
     [190, '.>',   DEFAULT, STRIP,                  DEFAULT, DEFAULT],
@@ -286,12 +280,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [19,  '[BREAK]',  PASS, PASS, PASS, PASS],
 
     // The block of six keys above the arrows.
-    [45,  '[INSERT]', call('onKeyInsert_'),   DEFAULT, DEFAULT, DEFAULT],
-    [36,  '[HOME]',   call('onKeyHome_'),     DEFAULT, DEFAULT, DEFAULT],
-    [33,  '[PGUP]',   call('onKeyPageUp_'),   DEFAULT, DEFAULT, DEFAULT],
-    [46,  '[DEL]',    CSI + '3~',             DEFAULT, DEFAULT, DEFAULT],
-    [35,  '[END]',    call('onKeyEnd_'),      DEFAULT, DEFAULT, DEFAULT],
-    [34,  '[PGDOWN]', call('onKeyPageDown_'), DEFAULT, DEFAULT, DEFAULT],
+    [45,  '[INSERT]', c('onKeyInsert_'),   DEFAULT, DEFAULT, DEFAULT],
+    [36,  '[HOME]',   c('onKeyHome_'),     DEFAULT, DEFAULT, DEFAULT],
+    [33,  '[PGUP]',   c('onKeyPageUp_'),   DEFAULT, DEFAULT, DEFAULT],
+    [46,  '[DEL]',    CSI + '3~',          DEFAULT, DEFAULT, DEFAULT],
+    [35,  '[END]',    c('onKeyEnd_'),      DEFAULT, DEFAULT, DEFAULT],
+    [34,  '[PGDOWN]', c('onKeyPageDown_'), DEFAULT, DEFAULT, DEFAULT],
 
     // Arrow keys.  When unmodified they respect the application cursor state,
     // otherwise they always send the CSI codes.
@@ -388,6 +382,61 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
 
   this.keyboard.terminal.scrollPageDown();
   return hterm.Keyboard.KeyActions.CANCEL;
+};
+
+/**
+ * Clear the primary/alternate screens and the scrollback buffer.
+ */
+hterm.Keyboard.KeyMap.prototype.onClear_ = function(e, keyDef) {
+  this.keyboard.terminal.wipeContents();
+  return hterm.Keyboard.KeyActions.CANCEL;
+};
+
+/**
+ * Either pass Ctrl-1..9 to the browser or send them to the host.
+ *
+ * Note that Ctrl-1 and Ctrl-9 don't actually have special sequences mapped
+ * to them in xterm or gnome-terminal.  The range is really Ctrl-2..8, but
+ * we handle 1..9 since Chrome treats the whole range special.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
+  // Compute a control character for a given character.
+  function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64) }
+
+  if (this.keyboard.terminal.passCtrlNumber && !e.shiftKey)
+    return hterm.Keyboard.KeyActions.PASS;
+
+  switch (keyDef.keyCap.substr(0, 1)) {
+    case '1': return '1';
+    case '2': return ctl('@');
+    case '3': return ctl('[');
+    case '4': return ctl('\\');
+    case '5': return ctl(']');
+    case '6': return ctl('^');
+    case '7': return ctl('_');
+    case '8': return '\x7f';
+    case '9': return '9';
+  }
+};
+
+/**
+ * Either pass Alt-1..9 to the browser or send them to the host.
+ */
+hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e, keyDef) {
+  if (this.keyboard.terminal.passAltNumber && !e.shiftKey)
+    return hterm.Keyboard.KeyActions.PASS;
+
+  return hterm.Keyboard.KeyActions.DEFAULT;
+};
+
+/**
+ * Either pass Meta-1..9 to the browser or send them to the host.
+ */
+hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e, keyDef) {
+  if (this.keyboard.terminal.passMetaNumber && !e.shiftKey)
+    return hterm.Keyboard.KeyActions.PASS;
+
+  return hterm.Keyboard.KeyActions.DEFAULT;
 };
 
 /**

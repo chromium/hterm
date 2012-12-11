@@ -1,3 +1,23 @@
+0.8.9.1, 2012-12-12, Add Alt/Meta-0..9 handlers.
+
+* Add prefs to send Alt/Meta-1..9 to the host.  Preferences default to
+  autodetect based on OS platform and window type.
+
+0.8.9.0, 2012-12-12, Add Ctrl-Shift-K and Ctrl-1..9 handlers.
+
+* Add Terminal.prototype.wipe() method to clear primary screen, alternate
+  screen, and scrollback buffer.
+* Map Ctrl-Shift-K to term_.wipe().
+* Detect the window type during hterm.init() so we can branch based on the
+  open-as-window state.
+* Add prefs to send Ctrl-1..9 to the host.  Preferences default to
+  autodetect based on OS platform and window type.
+* Add "Pro Tip" about open-as-window for non-OS X users who are not opened
+  in a dedicated app window.
+
+BUG=chromium-os:35507, Pass alt/ctrl 0..9
+BUG=chromium-os:32111, Add ability to clear scrollback buffer
+
 0.8.8.10, 2012-11-30, Chrome 21 fixes.
 
 * Fix to properly select lib.Storage.Local on Chrome 21.

@@ -189,6 +189,48 @@ hterm.PreferenceManager = function(profileId) {
     ['mouse-paste-button', null],
 
     /**
+     * Set whether we should pass Alt-1..9 to the browser.
+     *
+     * This is handy when running hterm in a browser tab, so that you don't lose
+     * Chrome's "switch to tab" keyboard accelerators.  When not running in a
+     * tab it's better to send these keys to the host so they can be used in
+     * vim or emacs.
+     *
+     * If true, Alt-1..9 will be handled by the browser.  If false, Alt-1..9
+     * will be sent to the host.  If null, autodetect based on browser platform
+     * and window type.
+     */
+    ['pass-alt-number', null],
+
+    /**
+     * Set whether we should pass Ctrl-1..9 to the browser.
+     *
+     * This is handy when running hterm in a browser tab, so that you don't lose
+     * Chrome's "switch to tab" keyboard accelerators.  When not running in a
+     * tab it's better to send these keys to the host so they can be used in
+     * vim or emacs.
+     *
+     * If true, Ctrl-1..9 will be handled by the browser.  If false, Ctrl-1..9
+     * will be sent to the host.  If null, autodetect based on browser platform
+     * and window type.
+     */
+    ['pass-ctrl-number', null],
+
+    /**
+     * Set whether we should pass Meta-1..9 to the browser.
+     *
+     * This is handy when running hterm in a browser tab, so that you don't lose
+     * Chrome's "switch to tab" keyboard accelerators.  When not running in a
+     * tab it's better to send these keys to the host so they can be used in
+     * vim or emacs.
+     *
+     * If true, Meta-1..9 will be handled by the browser.  If false, Meta-1..9
+     * will be sent to the host.  If null, autodetect based on browser platform
+     * and window type.
+     */
+    ['pass-meta-number', null],
+
+    /**
      * If true, scroll to the bottom on any keystroke.
      */
     ['scroll-on-keystroke', true],
