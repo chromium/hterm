@@ -1,3 +1,7 @@
+0.8.9.2, 2013-1-3, Fix OSC 52 with UTF-8 text.
+
+* Convert UTF-8 strings to UTF-16 before copying to clipboard for OSC 52.
+
 0.8.9.1, 2012-12-12, Add Alt/Meta-0..9 handlers.
 
 * Add prefs to send Alt/Meta-1..9 to the host.  Preferences default to

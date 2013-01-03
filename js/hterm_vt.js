@@ -1593,7 +1593,7 @@ hterm.VT.OSC['52'] = function(parseState) {
 
   var data = atob(args[1]);
   if (data)
-    this.terminal.copyStringToClipboard(data);
+    this.terminal.copyStringToClipboard(this.decodeUTF8(data));
 };
 
 /**
