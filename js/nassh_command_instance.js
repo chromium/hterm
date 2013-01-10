@@ -220,6 +220,14 @@ nassh.CommandInstance.prototype.removeAllKnownHosts = function() {
   this.fileSystem_.root.getFile(
       '/.ssh/known_hosts', {create: false},
       function(fileEntry) { fileEntry.remove(function() {}) });
+  /*
+   * This isn't necessary, but it makes the user interface a little nicer as
+   * most people don't realize that "undefined" is what you get from a void
+   * javascript function.  Example console output:
+   * > term_.command.removeAllKnownHosts()
+   * true
+   */
+  return true;
 };
 
 /**
