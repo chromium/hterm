@@ -95,6 +95,23 @@ hterm.PreferencesEditor.prototype.selectProfile = function(profileId) {
 };
 
 /**
+ * Save the HTML color state to the preferences.
+ *
+ * Since the HTML5 color picker does not support alpha, we have to split
+ * the rgb and alpha information across two input objects.
+ *
+ * @param {string} key The HTML input.id to use to locate the color input
+ *     object.  By appending ':alpha' to the key name, we can also locate
+ *     the range input object.
+ */
+hterm.PreferencesEditor.prototype.colorSave = function(key) {
+  var cinput = document.getElementById(key);
+  var ainput = document.getElementById(key + ':alpha');
+  var rgb = lib.colors.hexToRGB(cinput.value);
+  this.prefs_.set(key, lib.colors.setAlpha(rgb, ainput.value / 100));
+};
+
+/**
  * Save the HTML state to the preferences.
  *
  * @param {object} input An HTML input element to update the corresponding
@@ -105,7 +122,8 @@ hterm.PreferencesEditor.prototype.save = function(input) {
   if (input.disabled)
     return;
 
-  var key = input.id;
+  var keys = input.id.split(':');
+  var key = keys[0];
   var prefs = this.prefs_;
   switch (input.type) {
     case 'checkbox':
@@ -118,9 +136,9 @@ hterm.PreferencesEditor.prototype.save = function(input) {
     case 'number':
       prefs.set(key, Number(input.value));
       break;
+    case 'range':
     case 'color':
-      var rgb = lib.colors.hexToRGB(input.value);
-      prefs.set(key, lib.colors.setAlpha(rgb, input.data));
+      this.colorSave(key);
       break;
     case 'text':
     case 'textarea':
@@ -139,25 +157,43 @@ hterm.PreferencesEditor.prototype.save = function(input) {
 };
 
 /**
+ * Sync the preferences state to the HTML color objects.
+ *
+ * @param {string} key The HTML input.id to use to locate the color input
+ *     object.  By appending ':alpha' to the key name, we can also locate
+ *     the range input object.
+ * @param {object} pref The preference object to get the current state from.
+ * @return {string} The rgba color information.
+ */
+hterm.PreferencesEditor.prototype.colorSync = function(key, pref) {
+  var cinput = document.getElementById(key);
+  var ainput = document.getElementById(key + ':alpha');
+
+  var rgba = lib.colors.normalizeCSS(pref);
+
+  cinput.value = lib.colors.rgbToHex(rgba);
+  if (rgba) {
+    ainput.value = lib.colors.crackRGB(rgba)[3] * 100;
+  } else {
+    ainput.value = ainput.max;
+  }
+
+  return rgba;
+};
+
+/**
  * Sync the preferences state to the HTML object.
  *
  * @param {Object} input An HTML input element to update the corresponding
  *     preferences key.  Uses input.id to locate relevant preference.
  */
 hterm.PreferencesEditor.prototype.sync = function(input) {
-  var key = input.id;
+  var keys = input.id.split(':');
+  var key = keys[0];
   var pref = this.prefs_.get(key);
 
-  if (input.type == 'color') {
-    // Keep the alpha value in input.data since the HTML5
-    // color picker does not support alpha channels.
-    var rgba = lib.colors.normalizeCSS(pref);
-    if (rgba) {
-      input.data = lib.colors.crackRGB(rgba)[3];
-    } else {
-      input.data = 1;
-    }
-    input.value = lib.colors.rgbToHex(rgba);
+  if (input.type == 'color' || input.type == 'range') {
+    var rgba = this.colorSync(key, pref);
   } else if (input.data == 'JSON') {
     input.value = JSON.stringify(pref);
   } else {
@@ -174,7 +210,7 @@ hterm.PreferencesEditor.prototype.sync = function(input) {
   var style = window.document.body.style;
   switch (key) {
     case 'background-color':
-      style.backgroundColor = input.value;
+      style.backgroundColor = rgba;
       break;
     case 'background-image':
       style.backgroundImage = input.value;
@@ -198,7 +234,7 @@ hterm.PreferencesEditor.prototype.sync = function(input) {
       style.webkitFontSmoothing = input.value;
       break;
     case 'foreground-color':
-      style.color = input.value;
+      style.color = rgba;
       break;
     case 'scrollbar-visible':
       style.overflowY = input.checked ? 'scroll' : 'auto';
@@ -322,7 +358,23 @@ hterm.PreferencesEditor.prototype.syncPage = function() {
 
     var row = tbl.insertRow(-1);
     row.insertCell(0).innerText = key;
-    row.insertCell(1).appendChild(input);
+    var cell = row.insertCell(1);
+    cell.appendChild(input);
+
+    if (input.type == 'color') {
+      // Since the HTML5 color picker does not support alpha,
+      // we have to create a dedicated slider for it.
+      var ainput = document.createElement('input');
+      ainput.type = 'range';
+      ainput.id = key + ':alpha';
+      ainput.min = '0';
+      ainput.max = '100';
+      ainput.name = 'settings';
+      ainput.onchange = onchange;
+      ainput.oninput = oninput;
+      cell.appendChild(ainput);
+    }
+
     this.sync(input);
   }
 };
@@ -345,7 +397,9 @@ hterm.PreferencesEditor.prototype.resetAll = function() {
  * @param {object} input An HTML input element to reset.
  */
 hterm.PreferencesEditor.prototype.reset = function(input) {
-  this.prefs_.reset(input.id);
+  var keys = input.id.split(':');
+  var key = keys[0];
+  this.prefs_.reset(key);
   this.sync(input);
 };
 
