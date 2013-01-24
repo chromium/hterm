@@ -1,18 +1,15 @@
 {
-
-
-
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDixnK8f4AuZrV+QZx7iiONG/SAiU5VrjlXD2KxRGvI6tDJrLvUin+GpcuMH1d/Qrc0+PmCzJ1duAiD/9F2q8kiYwQ1C3gZmztYneAiVX+3/OvXHr/idyueNQ5XFvBnMCpKD0KqPEksP80utV417fuaHAY4NFjofLZyWUvu23XHRwIDAQAB",
   "minimum_chrome_version": "18",
   "manifest_version": 2,
   "content_security_policy": "script-src 'self'; object-src 'self'",
-  "name": "Secure Shell",
-  "version": "0.8.8",
+  "name": "Secure Shell (dev)",
+  "version": "0.8.11.0",
   "default_locale": "en",
   "icons": {
-    "512": "images/shell-512.png",
-    "128": "images/shell-128.png",
-    "32": "images/shell-32.png",
-    "16": "images/shell-16.png"
+    "128": "images/dev/icon-128.png",
+    "32": "images/dev/icon-32.png",
+    "16": "images/dev/icon-16.png"
   },
   "description": "Terminal emulator and SSH client.",
   "offline_enabled": true,
