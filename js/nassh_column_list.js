@@ -30,7 +30,8 @@ nassh.ColumnList.prototype.decorate = function(div) {
   this.div_ = div;
   this.document_ = div.ownerDocument;
 
-  this.div_.style.overflow = 'auto';
+  this.div_.style.overflowY = 'auto';
+  this.div_.style.overflowX = 'hidden';
   this.div_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
   this.redraw();
@@ -94,11 +95,14 @@ nassh.ColumnList.prototype.redraw = function() {
   if (!this.items_.length)
     return;
 
+  var columnWidth = (1 / this.columnCount * 100) + '%';
+
   for (var i = 0; i < this.columnCount; i++) {
     var column = this.document_.createElement('div');
     column.className = 'column-list-column';
     column.setAttribute('x-vbox', 'x-vbox');
-    column.setAttribute('x-flex', '1');
+    column.style.width = columnWidth;
+    column.style.overflow = 'hidden';
     div.appendChild(column);
   }
 
@@ -108,8 +112,9 @@ nassh.ColumnList.prototype.redraw = function() {
     box.setAttribute('role', 'option');
     box.setAttribute('id', baseID + '-item-' + i);
     box.className = 'column-list-item';
+    box.style.overflow = 'hidden';
 
-    var item = this.document_.createElement('span');
+    var item = this.document_.createElement('div');
     item.textContent = this.items_[i].textContent || 'no-name';
     item.addEventListener('click', this.onItemClick_.bind(this, box));
     item.addEventListener('dblclick', this.onItemClick_.bind(this, box));

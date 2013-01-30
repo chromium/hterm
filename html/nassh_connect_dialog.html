@@ -12,7 +12,7 @@
     <link rel='stylesheet' href='../css/nassh_box.css'></link>
     <link rel='stylesheet' href='../css/nassh_connect_dialog.css'></link>
   </head>
-  <body class='dialog-body'>
+  <body x-vbox class='dialog-body'>
     <x-hbox class='dialog-road column-list' id='shortcut-list' x-flex='1'
             i18n='{"aria-label": "$id"}'> </x-hbox>
 
@@ -65,15 +65,17 @@
       </x-vbox>
     </form> <!-- .dialog-billboard -->
 
+    <x-hbox x-flex='1'></x-hbox>
+
     <x-hbox class='dialog-buttons' x-pack='end'>
       <div x-box id='delete'
            role='button' tabindex='0'
-           ><span class='key' i18n='{"_": "DEL_KEYCAP"}'>[DEL]</span>
+           ><span class='key' i18n='{"_": "DEL_KEYCAP"}'>[DEL]</span>&nbsp;
         <span class='label' i18n='{"_": "DELETE_BUTTON_LABEL"}'
               >DELETE</span></div>
       <div x-box x-flex='1'></div>
       <div x-box id='connect' role='button' tabindex='0'
-           ><span class='key' i18n='{"_": "ENTER_KEYCAP"}'>[ENTER]</span>
+           ><span class='key' i18n='{"_": "ENTER_KEYCAP"}'>[ENTER]</span>&nbsp;
         <span class='label' i18n='{"_": "CONNECT_BUTTON_LABEL"}'
               >CONNECT</span></div>
     </x-hbox> <!-- .dialog-buttons -->

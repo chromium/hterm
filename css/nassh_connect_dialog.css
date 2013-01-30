@@ -20,12 +20,9 @@ body {
 }
 
 .dialog-body {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
   position: absolute;
   width: 100%;
   height: 100%;
-  padding: 1em;
   box-sizing: border-box;
 }
 
@@ -86,21 +83,35 @@ a:hover {
   text-decoration: underline;
 }
 
-.column-list-item.active span {
+.column-list-item.active div {
   background-color: var(foreground-color-75);
   color: var(background-color);
   font-weight: bold;
 }
 
-.column-list-item span {
+.column-list-item div {
   cursor: pointer;
+  height: 1.2em;
+  overflow: hidden;
+
+  /* TODO(rginda): This text-overflow line doesn't work.  I can't figure out
+   * how to build a two-column list in flexbox that trims the cells to fit.
+   * Could be a bug in Chrome, a flexbox spec issue, or just me missing out
+   * on something.
+   *
+   * For now I allow the text to wrap, but force the height of the cell to be
+   * 1.2em.  This trims the text to fit, but doesn't trigger the ellipsis.
+   *
+   * It's probably time to reduce it to a simple case and use a lifeline.
+   */
+  text-overflow: ellipsis;
 }
 
 .column-list:focus {
   outline: none;
 }
 
-.column-list:focus .column-list-item.active span {
+.column-list:focus .column-list-item.active div {
   background-color: var(cursor-color-75);
   outline: none;
 }
@@ -109,14 +120,15 @@ a:hover {
  * The billboard is the large area with the contrasting background.
  */
 .dialog-billboard {
+  -webkit-flex: 0 1 auto;
   padding: 1em;
   background-color: var(foreground-color-20);
   color: var(foreground-color);
-  margin: 6px;
-  margin-bottom: 2em;
+  margin: 1em;
   box-shadow:
     0 0 0 2px var(background-color),
     0 0 0 4px var(foreground-color-75);
+  overflow: auto;
 }
 
 /**
@@ -124,8 +136,8 @@ a:hover {
  */
 .dialog-road {
   margin: 0.25em;
-  margin-top: 0;
-  margin-bottom: 0.5em;
+  margin: 1em;
+  margin-bottom: 0;
   padding: 0.5em;
   border: 1px var(foreground-color-75) dotted;
   background-color: rgba(255, 255, 255, 0.1);

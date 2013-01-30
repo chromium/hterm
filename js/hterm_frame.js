@@ -158,23 +158,24 @@ hterm.Frame.prototype.show = function() {
   var container = this.container_ = document.createElement('div');
   container.style.cssText = (
       'position: absolute;' +
-      'top: ' + top + 'px;' +
-      'left: ' + left + 'px;' +
-      'width: ' + width + 'px;' +
-      'height: ' + height + 'px;' +
+      'display: -webkit-flex;' +
+      '-webkit-flex-direction: column;' +
+      'top: 10%;' +
+      'left: 4%;' +
+      'width: 90%;' +
+      'height: 80%;' +
       'box-shadow: 0 0 2px ' + this.terminal_.getForegroundColor() + ';' +
       'border: 2px ' + this.terminal_.getForegroundColor() + ' solid;');
 
   var header = document.createElement('div');
   header.style.cssText = (
+      'display: -webkit-flex;' +
+      '-webkit-justify-content: flex-end;' +
       'height: ' + headerHeight + ';' +
-      'width: 100%;' +
       'background-color: ' + this.terminal_.getForegroundColor() + ';' +
       'color: ' + this.terminal_.getBackgroundColor() + ';' +
       'font-size: 16px;' +
-      'font-family: ' + this.terminal_.getFontFamily() + ';' +
-      // TODO(rginda): rtl
-      'text-align: right;');
+      'font-family: ' + this.terminal_.getFontFamily());
   container.appendChild(header);
 
   var button = document.createElement('div');
@@ -182,7 +183,6 @@ hterm.Frame.prototype.show = function() {
   button.style.cssText = (
       'margin-top: -3px;' +
       'margin-right: 3px;' +
-      'float: right;' +
       'cursor: pointer;');
   button.textContent = '\u2a2f';
   button.addEventListener('click', this.onCloseClicked_.bind(this));
@@ -191,12 +191,11 @@ hterm.Frame.prototype.show = function() {
   var iframe = this.iframe_ = document.createElement('iframe');
   iframe.onload = this.onLoad_.bind(this);
   iframe.style.cssText = (
-      'position: absolute;' +
-      'top: ' + headerHeight + ';' +
-      'border-width: 0px;' +
-      'height: ' + (height - 16) + 'px;' +
-      'width: ' + width + 'px;');
+      'display: -webkit-flex;' +
+      '-webkit-flex: 1;' +
+      'width: 100%');
   iframe.setAttribute('src', this.url);
+  iframe.setAttribute('seamless', true);
   container.appendChild(iframe);
 
   this.div_.appendChild(container);

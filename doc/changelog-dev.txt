@@ -1,5 +1,7 @@
 HEAD
 
+* Make connection dialog size a function of window size.
+
 * Add ability to register new init functions via lib.registerInit.  These
   will be called in order during lib.init().
 * Make ensureRuntimeDependencies private and call it during lib.init().

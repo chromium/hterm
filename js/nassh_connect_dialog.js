@@ -7,31 +7,20 @@
 lib.rtdep('lib.colors', 'lib.f', 'lib.fs', 'lib.MessageManager');
 
 /**
- * Window onLoad handler for nassh_connect_dialog.html.
- */
-window.onload = function() {
-  lib.init(function() {
-    window.dialog_ = new nassh.ConnectDialog();
-  });
-};
-
-/**
  * Constructor a new ConnectDialog instance.
  *
  * There should only be one of these, and it assumes the connect dialog is
  * the only thing in the current window.
  *
- * NOTE: This class uses the function() {...}.bind() pattern in place of the
- * 'var self = this;' pattern used elsewhere in the codebase.  Just trying it
- * out, may convert the rest of the codebase later.
+ * @param {MessagePort} messagePort The HTML5 message port we should use to
+ *     communicate with the nassh instance.
  */
-nassh.ConnectDialog = function() {
-  // Prepare to listen to the terminal handshake.
-  this.windowMessageHandler_ = this.onWindowMessage_.bind(this);
-  window.addEventListener('message', this.windowMessageHandler_);
+nassh.ConnectDialog = function(messagePort) {
 
   // Message port back to the terminal.
-  this.messagePort_ = null;
+  this.messagePort_ = messagePort;
+  this.messagePort_.onmessage = this.onMessage_.bind(this);
+  this.messagePort_.start();
 
   // Turn off spellcheck everywhere.
   var ary = document.querySelectorAll('input[type="text"]');
@@ -70,6 +59,25 @@ nassh.ConnectDialog = function() {
   this.connectButton_ = document.querySelector('#connect');
   this.deleteButton_ = document.querySelector('#delete');
 };
+
+/**
+ * Global window message handler, uninstalled after proper handshake.
+ */
+nassh.ConnectDialog.onWindowMessage = function(e) {
+  if (e.data.name != 'ipc-init') {
+    console.warn('Unknown message from terminal:', e.data);
+    return;
+  }
+
+  window.removeEventListener('message', nassh.ConnectDialog.onWindowMessage);
+
+  lib.init(function() {
+    window.dialog_ = new nassh.ConnectDialog(e.data.argv[0].messagePort);
+  });
+};
+
+// Register the message listener.
+window.addEventListener('message', nassh.ConnectDialog.onWindowMessage);
 
 /**
  * Called by the preference manager when we've retrieved the current preference
@@ -714,6 +722,9 @@ nassh.ConnectDialog.prototype.onFileSystemFound_ = function(
   this.fileSystem_ = fileSystem;
   this.sshDirectoryEntry_ = sshDirectoryEntry;
   this.syncIdentityDropdown_();
+
+  // Tell the parent we're ready to roll.
+  this.postMessage('ipc-init-ok');
 };
 
 /**
@@ -883,23 +894,4 @@ nassh.ConnectDialog.prototype.onMessageName_['terminal-info'] = function(info) {
   }
 
   this.cssVariables_.reset(vars);
-};
-
-/**
- * Global window message handler, uninstalled after proper handshake.
- */
-nassh.ConnectDialog.prototype.onWindowMessage_ = function(e) {
-  if (e.data.name != 'ipc-init') {
-    console.warn('Unknown message from terminal:', e.data);
-    return;
-  }
-
-  window.removeEventListener('message', this.windowMessageHandler_);
-  this.windowMessageHandler_ = null;
-
-  this.messagePort_ = e.data.argv[0].messagePort;
-  this.messagePort_.onmessage = this.onMessage_.bind(this);
-  this.messagePort_.start();
-
-  this.postMessage('ipc-init-ok');
 };
