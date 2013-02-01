@@ -292,6 +292,9 @@ nassh.CommandInstance.prototype.connectToProfile = function(
     // some callers will come directly to connectToProfile.
     document.location.hash = 'profile-id:' + profileID;
 
+    document.title = prefs.get('description') + ' - ' +
+      this.manifest_.name + ' ' + this.manifest_.version;
+
     this.connectTo({
       username: prefs.get('username'),
       hostname: prefs.get('hostname'),

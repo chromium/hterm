@@ -85,6 +85,27 @@ hterm.msg = function(name, opt_args) {
 };
 
 /**
+ * Return decimal { width, height } for a given dom node.
+ */
+hterm.getClientSize = function(dom) {
+  return dom.getBoundingClientRect();
+};
+
+/**
+ * Return decimal width for a given dom node.
+ */
+hterm.getClientWidth = function(dom) {
+  return dom.getBoundingClientRect().width;
+};
+
+/**
+ * Return decimal height for a given dom node.
+ */
+hterm.getClientHeight = function(dom) {
+  return dom.getBoundingClientRect().height;
+};
+
+/**
  * Copy the current selection to the system clipboard.
  *
  * @param {HTMLDocument} The document with the selection to copy.

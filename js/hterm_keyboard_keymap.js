@@ -470,7 +470,8 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
   if (e.shiftKey) {
     window.open(document.location.href, '',
                 'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
-                'minimizable=yes');
+                'minimizable=yes,width=' + window.innerWidth +
+                ',height=' + window.innerHeight);
     return hterm.Keyboard.KeyActions.CANCEL;
   }
 

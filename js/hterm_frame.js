@@ -148,10 +148,12 @@ hterm.Frame.prototype.show = function() {
 
   var headerHeight = '16px';
 
+  var divSize = hterm.getClientSize(this.div_);
+
   var width = opt('width', 640);
   var height = opt('height', 480);
-  var left = (this.div_.clientWidth - width) / 2;
-  var top = (this.div_.clientHeight - height) / 2;
+  var left = (divSize.width - width) / 2;
+  var top = (divSize.height - height) / 2;
 
   var document = this.terminal_.document_;
 
@@ -178,15 +180,18 @@ hterm.Frame.prototype.show = function() {
       'font-family: ' + this.terminal_.getFontFamily());
   container.appendChild(header);
 
-  var button = document.createElement('div');
-  button.setAttribute('role', 'button');
-  button.style.cssText = (
-      'margin-top: -3px;' +
-      'margin-right: 3px;' +
-      'cursor: pointer;');
-  button.textContent = '\u2a2f';
-  button.addEventListener('click', this.onCloseClicked_.bind(this));
-  header.appendChild(button);
+  if (false) {
+    // No use for the close button.
+    var button = document.createElement('div');
+    button.setAttribute('role', 'button');
+    button.style.cssText = (
+        'margin-top: -3px;' +
+        'margin-right: 3px;' +
+        'cursor: pointer;');
+    button.textContent = '\u2a2f';
+    button.addEventListener('click', this.onCloseClicked_.bind(this));
+    header.appendChild(button);
+  }
 
   var iframe = this.iframe_ = document.createElement('iframe');
   iframe.onload = this.onLoad_.bind(this);

@@ -172,9 +172,12 @@ hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
 
     cx.window.scrollPort = this.scrollPort;
 
-    result.assert(div.clientHeight > 0);
-    result.assert(div.clientWidth > 0);
-    result.assertEQ(div.clientHeight, this.scrollPort.iframe_.clientHeight);
+    var divSize = hterm.getClientSize(div);
+
+    result.assert(divSize.height > 0);
+    result.assert(divSize.width > 0);
+    result.assertEQ(divSize.height,
+                    hterm.getClientHeight(this.scrollPort.iframe_));
 
     result.pass();
   });

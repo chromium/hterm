@@ -136,11 +136,6 @@ hterm.Terminal.prototype.onTerminalReady = function() { };
 hterm.Terminal.prototype.tabWidth = 8;
 
 /**
- * The assumed width of a scrollbar.
- */
-hterm.Terminal.prototype.scrollbarWidthPx = 16;
-
-/**
  * Select a preference profile.
  *
  * This will load the terminal preferences for the given profile name and
@@ -631,7 +626,7 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
   }
 
   this.div_.style.width = this.scrollPort_.characterSize.width *
-      columnCount + this.scrollbarWidthPx + 'px';
+      columnCount + this.scrollPort_.currentScrollbarWidthPx + 'px';
   this.realizeSize_(columnCount, this.screenSize.height);
   this.scheduleSyncCursorPosition_();
 };
@@ -2191,11 +2186,12 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   if (!this.overlayNode_.parentNode)
     this.div_.appendChild(this.overlayNode_);
 
-  this.overlayNode_.style.top = (
-      this.div_.clientHeight - this.overlayNode_.clientHeight) / 2;
-  this.overlayNode_.style.left = (
-      this.div_.clientWidth - this.overlayNode_.clientWidth -
-      this.scrollbarWidthPx) / 2;
+  var divSize = hterm.getClientSize(this.div_);
+  var overlaySize = hterm.getClientSize(this.overlayNode_);
+
+  this.overlayNode_.style.top = (divSize.height - overlaySize.height) / 2;
+  this.overlayNode_.style.left = (divSize.width - overlaySize.width -
+      this.scrollPort_.currentScrollbarWidthPx) / 2;
 
   var self = this;
 

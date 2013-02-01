@@ -17,6 +17,9 @@ nassh.ColumnList = function(div, items, opt_columnCount) {
   this.columnCount = opt_columnCount || 2;
   this.activeIndex = null;
 
+  // List of callbacks to invoke after the next redraw().
+  this.afterRedraw_ = [];
+
   this.document_ = null;
 
   if (div)
@@ -124,6 +127,22 @@ nassh.ColumnList.prototype.redraw = function() {
   }
 
   this.setActiveIndex(Math.min(this.activeIndex, this.items_.length - 1));
+
+  while (this.afterRedraw_.length) {
+    var callback = this.afterRedraw_.pop();
+    callback();
+  }
+};
+
+/**
+ * Function to invoke after the next redraw() happens.
+ *
+ * Use this if you're doing something that will cause a redraw (like modifying a
+ * preference linked to the list), and you have something to finish after the
+ * redraw.
+ */
+nassh.ColumnList.prototype.afterNextRedraw = function(callback) {
+  this.afterRedraw_.push(callback);
 };
 
 /**

@@ -1,10 +1,10 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDixnK8f4AuZrV+QZx7iiONG/SAiU5VrjlXD2KxRGvI6tDJrLvUin+GpcuMH1d/Qrc0+PmCzJ1duAiD/9F2q8kiYwQ1C3gZmztYneAiVX+3/OvXHr/idyueNQ5XFvBnMCpKD0KqPEksP80utV417fuaHAY4NFjofLZyWUvu23XHRwIDAQAB",
-  "minimum_chrome_version": "18",
+  "minimum_chrome_version": "23",
   "manifest_version": 2,
   "content_security_policy": "script-src 'self'; object-src 'self'",
-  "name": "Secure Shell (dev)",
-  "version": "0.8.11.0",
+  "name": "Secure Shell (tot)",
+  "version": "0.8.11.5",
   "default_locale": "en",
   "icons": {
     "128": "images/dev/icon-128.png",

@@ -72,6 +72,11 @@ hterm.ScrollPort = function(rowProvider) {
   // The css rule that we use to control the height of a row.
   this.xrowCssRule_ = null;
 
+  /**
+   * A guess at the current scrollbar width, fixed in resize().
+   */
+  this.currentScrollbarWidthPx = 16
+
   this.div_ = null;
   this.document_ = null;
 
@@ -425,12 +430,33 @@ hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
   this.screen_.style.backgroundPosition = position;
 };
 
-hterm.ScrollPort.prototype.getScreenWidth = function() {
-  return this.screen_.clientWidth;
+/**
+ * Get the usable size of the scrollport screen.
+ *
+ * The width will not include the scrollbar width.
+ */
+hterm.ScrollPort.prototype.getScreenSize = function() {
+  var size = hterm.getClientSize(this.screen_);
+  return {
+    height: size.height,
+    width: size.width - this.currentScrollbarWidthPx
+  };
 };
 
+/**
+ * Get the usable width of the scrollport screen.
+ *
+ * This the widget width minus scrollbar width.
+ */
+hterm.ScrollPort.prototype.getScreenWidth = function() {
+  return this.getScreenSize().width ;
+};
+
+/**
+ * Get the usable height of the scrollport screen.
+ */
 hterm.ScrollPort.prototype.getScreenHeight = function() {
-  return this.screen_.clientHeight;
+  return this.getScreenSize().height;
 };
 
 /**
@@ -541,14 +567,16 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
 
   this.rowNodes_.appendChild(this.ruler_);
 
+  var rulerSize = hterm.getClientSize(this.ruler_);
+
   // In some fonts, underscores actually show up below the reported height.
   // We add one to the height here to compensate, and have to add a bottom
   // border to text with a background color over in text_attributes.js.
-  var size = new hterm.Size(this.ruler_.clientWidth,
-                            this.ruler_.clientHeight + 1);
+  var size = new hterm.Size(rulerSize.width,
+                            rulerSize.height + 1);
 
   this.ruler_.style.webkitTextSizeAdjust = 'none';
-  size.zoomFactor = size.width / this.ruler_.clientWidth;
+  size.zoomFactor = size.width / rulerSize.width;
   this.ruler_.style.webkitTextSizeAdjust = '';
 
   this.rowNodes_.removeChild(this.ruler_);
@@ -585,6 +613,9 @@ hterm.ScrollPort.prototype.syncCharacterSize = function() {
  * dimensions of the 'x-screen'.
  */
 hterm.ScrollPort.prototype.resize = function() {
+  this.currentScrollbarWidthPx = this.screen_.offsetWidth -
+    this.screen_.clientWidth;
+
   this.syncScrollHeight();
   this.syncRowNodesDimensions_();
 
@@ -601,15 +632,15 @@ hterm.ScrollPort.prototype.resize = function() {
  * Set the position and size of the row nodes element.
  */
 hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
-  var screenWidth = this.screen_.clientWidth;
-  var screenHeight = this.screen_.clientHeight;
+  var screenSize = this.getScreenSize();
 
-  this.lastScreenWidth_ = screenWidth;
-  this.lastScreenHeight_ = screenHeight;
+  this.lastScreenWidth_ = screenSize.width;
+  this.lastScreenHeight_ = screenSize.height;
 
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
-  this.visibleRowCount = Math.floor(screenHeight / this.characterSize.height);
+  this.visibleRowCount = Math.floor(
+      screenSize.height / this.characterSize.height);
 
   // Then compute the height of our integral number of rows.
   var visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
@@ -618,7 +649,7 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   // be made up for as top margin.  We need to record this value so it
   // can be used later to determine the topRowIndex.
   this.visibleRowTopMargin = 0;
-  this.visibleRowBottomMargin = screenHeight - visibleRowsHeight;
+  this.visibleRowBottomMargin = screenSize.height - visibleRowsHeight;
 
   this.topFold_.style.marginBottom = this.visibleRowTopMargin + 'px';
 
@@ -626,12 +657,12 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   var topFoldOffset = 0;
   var node = this.topFold_.previousSibling;
   while (node) {
-    topFoldOffset += node.clientHeight;
+    topFoldOffset += hterm.getClientHeight(node);
     node = node.previousSibling;
   }
 
   // Set the dimensions of the visible rows container.
-  this.rowNodes_.style.width = screenWidth + 'px';
+  this.rowNodes_.style.width = screenSize.width + 'px';
   this.rowNodes_.style.height = visibleRowsHeight + topFoldOffset + 'px';
   this.rowNodes_.style.left = this.screen_.offsetLeft + 'px';
   this.rowNodes_.style.top = this.screen_.offsetTop - topFoldOffset + 'px';
@@ -1006,9 +1037,9 @@ hterm.ScrollPort.prototype.selectAll = function() {
  * Return the maximum scroll position in pixels.
  */
 hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
-  return (this.scrollArea_.clientHeight +
+  return (hterm.getClientHeight(this.scrollArea_) +
           this.visibleRowTopMargin + this.visibleRowBottomMargin -
-          this.screen_.clientHeight);
+          hterm.getClientHeight(this.screen_));
 };
 
 /**
@@ -1087,9 +1118,9 @@ hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
  * may be due to the user manually move the scrollbar, or a programmatic change.
  */
 hterm.ScrollPort.prototype.onScroll_ = function(e) {
-  var rect = this.screen_.getBoundingClientRect();
-  if (this.screen_.clientWidth != this.lastScreenWidth_ ||
-      this.screen_.clientHeight != this.lastScreenHeight_) {
+  var screenSize = this.getScreenSize();
+  if (screenSize.width != this.lastScreenWidth_ ||
+      screenSize.height != this.lastScreenHeight_) {
     // This event may also fire during a resize (but before the resize event!).
     // This happens when the browser moves the scrollbar as part of the resize.
     // In these cases, we want to ignore the scroll event and let onResize

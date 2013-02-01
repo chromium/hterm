@@ -226,6 +226,9 @@ nassh.ConnectDialog.prototype.installHandlers_ = function() {
                    this.maybeCopyPlaceholder_.bind(this, name));
     }.bind(this));
 
+  this.$f('description').addEventListener(
+      'blur', this.maybeCopyPlaceholders_.bind(this));
+
   // These fields are plain text with no fancy properties.
   ['argstr', 'terminal-profile'
   ].forEach(function(name) {
@@ -349,10 +352,9 @@ nassh.ConnectDialog.prototype.save = function() {
        description: this.onDescriptionChanged_.bind(this)
       });
 
-      this.shortcutList_.redraw();
-      setTimeout(function() {
+      this.shortcutList_.afterNextRedraw(function () {
           this.shortcutList_.setActiveIndex(this.profileList_.length - 1);
-        }.bind(this), 0);
+        }.bind(this));
     }
 
     for (var name in changedFields) {

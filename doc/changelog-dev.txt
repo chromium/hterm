@@ -1,6 +1,34 @@
-HEAD
+0.8.11.5, 2013-01-06, Dialog cleanup, scrollbar fixes
 
+* Fix size of rowNodes element in hterm.ScrollPort so that it doesn't cover
+  the scrollbar.
+* Fix bug where we'd focus the wrong connection profile after creating
+  a new one.
+* Populate the username and hostname fields as soon as the description
+  loses focus.
+
+0.8.11.4, 2013-01-05, More getBoundingClientRect fixes
+
+* Fix remaining getBoundingClientRect issues so that all tests pass.
+
+0.8.11.3, 2013-01-05, Fix preferences page
+
+* Fix preferences page.
+
+0.8.11.2, 2013-01-05, Fix crosh
+
+* Fix crosh init.
+
+0.8.11.1, 2013-01-04, libs and fixin's
+
+* Removed "pattern" attribute on hostname input box.
+  BUG=chromium-os:36832 host field doesn't accept IPv6 addresses.
+* Use getBoundingClientRect() so we can handle sub-pixel positioning.
+  BUG=chromium-os:31840, Sub-pixel text positioning breaks cursor position
+  calculations
 * Make connection dialog size a function of window size.
+* Explicitly specify the size of new windows open with Ctrl-Shift-N.
+  BUG=chromium-os:38272 The second Secure Shell window is always very small
 
 * Add ability to register new init functions via lib.registerInit.  These
   will be called in order during lib.init().
@@ -9,6 +37,7 @@ HEAD
 * Add "escapeHTML" flag to lib.f.replaceVars.
 * Add lib.f.alarm to wrap callbacks with a timer that logs a warning
   message if the callback isn't invoked before time expires.
+
 * Update existing preference record when a dupe is passed to
   lib.PreferenceManager..definePreference, rather than throw an exception.
 * Change lib.PreferenceManager..defineChildren to take a factory function
@@ -25,12 +54,12 @@ HEAD
 * Add lib.PreferenceManager.diffChildLists utility function to make it
   easy to find out what's changed in a list of children since you last
   saw it.
+
 * Add nassh.test() to launch the tests from a chrome-extension: url,
   since file: urls don't appear to allow XHR anymore.
 * Fix stack trace logging in lib.TestManager.Test..run.
 * Make lib.TestManager.Result..completeTest_ throw a TestComplete
-  exception even for re-completes, so that the test case is forced
-  to stop.
+  exception even for re-completes.  This ensures the test case is interrupted.
 
 0.8.9.2, 2013-01-03, Fix OSC 52 with UTF-8 text.
 

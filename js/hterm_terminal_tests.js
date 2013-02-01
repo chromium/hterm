@@ -65,11 +65,28 @@ hterm.Terminal.Tests.addTest = function(name, callback) {
 };
 
 hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
-    result.assertEQ((this.div.clientWidth - this.terminal.scrollbarWidthPx) /
-                    this.terminal.scrollPort_.characterSize.width,
+    for (var i = 0; i < this.visibleColumnCount; i++) {
+      this.terminal.interpret(parseInt(i / 10));
+    }
+
+    this.terminal.interpret('\n');
+
+    for (var i = 0; i < this.visibleColumnCount; i++) {
+      this.terminal.interpret(i % 10);
+    }
+
+    this.terminal.interpret('\n');
+
+    var divSize = hterm.getClientSize(this.div);
+    var scrollPort = this.terminal.scrollPort_;
+    var innerWidth = divSize.width - scrollPort.currentScrollbarWidthPx;
+
+    result.assertEQ(innerWidth, scrollPort.getScreenWidth());
+    result.assertEQ(divSize.height, scrollPort.getScreenHeight());
+
+    result.assertEQ(innerWidth / scrollPort.characterSize.width,
                     this.visibleColumnCount);
-    result.assertEQ(this.div.clientHeight /
-                    this.terminal.scrollPort_.characterSize.height,
+    result.assertEQ(divSize.height / scrollPort.characterSize.height,
                     this.visibleRowCount);
 
     result.assertEQ(this.terminal.screen_.getWidth(), this.visibleColumnCount);

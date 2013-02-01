@@ -44,8 +44,7 @@ window.onload = function() {
       };
   }
 
-  lib.ensureRuntimeDependencies();
-  hterm.init(setupPreferences);
+  lib.init(setupPreferences);
 };
 
 /**
