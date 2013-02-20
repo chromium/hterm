@@ -1,3 +1,10 @@
+0.8.11.6, 2013-01-20, Address review comments, restrict to >=M23
+
+* Includes changes that were made during 0.8.11.5 code reviews.
+* Remove the nacl (not pnacl) plugin and the code to load it in Chrome 22 and
+  lower.
+* Restrict to Chrome 23 and higher in manifest.json.
+
 0.8.11.5, 2013-01-06, Dialog cleanup, scrollbar fixes
 
 * Fix size of rowNodes element in hterm.ScrollPort so that it doesn't cover
