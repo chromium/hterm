@@ -459,7 +459,7 @@ nassh.CommandInstance.prototype.initPlugin_ = function(onComplete) {
        'height: 0;');
 
   var ary = navigator.userAgent.match(/Chrom(e|ium)\/(\d\d)\./);
-  var chromeVersion = parseInt(ary[1]) || 24;
+  var chromeVersion = parseInt(ary[2]) || 24;
   var isARM = (/arm/i).test(navigator.platform);
 
   var pluginURL;

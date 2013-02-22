@@ -1,3 +1,26 @@
+0.8.14, 2013-02-22, Stable release of 0.8.13.1.
+
+* Stable release of 0.8.13.1.
+
+0.8.13.1, 2013-02-22, Fix version detection regression.
+
+* Fix version detection regression.
+
+0.8.13, 2013-02-22, Re-release of 0.8.13 with correct icon.
+
+* Re-release after fix to ../libdot/bin/mkzip.sh to use the correct app icon.
+
+0.8.12.1, 2013-02-22, Combine changelogs.
+
+* Combine doc/changelog-dev.txt and doc/changelog-stable.txt into
+  doc/changelog.txt.
+* Unreleased No-op dev version bump so we can re-package 0.8.12 as 0.8.13, but
+  with the correct icon.
+
+0.8.12, 2013-02-22, Stable release of 0.8.11.6
+
+* Stable release of 0.8.11.6
+
 0.8.11.6, 2013-01-20, Address review comments, restrict to >=M23
 
 * Includes changes that were made during 0.8.11.5 code reviews.
@@ -92,6 +115,10 @@
 BUG=chromium-os:35507, Pass alt/ctrl 0..9
 BUG=chromium-os:32111, Add ability to clear scrollback buffer
 
+0.8.8, 2012-12-10, Stable release of 0.8.8.10.
+
+* Stable release of 0.8.8.10.
+
 0.8.8.10, 2012-11-30, Chrome 21 fixes.
 
 * Fix to properly select lib.Storage.Local on Chrome 21.
@@ -170,6 +197,10 @@ BUG=chromium-os:35643, Incorrect tty baud rate
   lib.PreferenceManager so that other code can easily define child preferences.
 * Add preference to override the default color palette.
 
+0.8.7, 2012-10-08, Stable release of 0.8.7.5.
+
+* Stable release of 0.8.7.5.
+
 0.8.7.5, 2012-10-2, Text selection fix.
 
 * Fix mouse-based text selection when the selection involves styled text.
@@ -223,6 +254,10 @@ Internal bugs:
 6111077 Bluetooth OTP not working with hterm
 6838548 Bluetooth OTP is not able to make past SSHinaTab
 
+0.8.6, 2012-09-13, Stable release of 0.8.6.0.
+
+* Stable release of 0.8.6.0.
+
 0.8.6.0, 2012-09-11, Increase max-string-sequence, add enable-clipboard-notice
 
 * Increased the size of the max-string-sequence pref from 1,024 to 100,000, in
@@ -232,6 +267,10 @@ Internal bugs:
 * Added etc/osc52.el, a reference implementation of emacs-to-hterm clipboard
   sync.  The script should also work for xterm and other OSC 52 compliant
   terminals.
+
+0.8.5, 2012-09-07, Stable release of 0.8.5.1.
+
+* Stable release of 0.8.5.1.
 
 0.8.5.1, 2012-09-07, Fix triple-click selection.
 
@@ -253,10 +292,18 @@ Internal bugs:
 BUG=chromium-os:34003
 BUG=chromium-os:34149
 
+0.8.4, 2012-09-05, Stable release of 0.8.4.0
+
+* Stable release of 0.8.4.0
+
 0.8.4.0, 2012-09-05, Fix another OSC 4 regression.
 
 * We were mishandling hex X11 rgb values.  They weren't being translated into
   decimal, and would result in invalid CSS rgba(...) values.
+
+0.8.3, 2012-09-05, Stable release of 0.8.3.0
+
+*  Stable release of 0.8.3.0
 
 0.8.3.0, 2012-09-04, Reject invalid resizes.
 
@@ -265,6 +312,10 @@ BUG=chromium-os:34149
   performed from an active connection.
 
 BUG=chromium-os:34123
+
+0.8.2, 2012-08-27, Stable release of 0.8.2.11
+
+* Stable release of 0.8.2.11.
 
 0.8.2.11, 2012-08-28, Fix OSC-4 regression.
 
