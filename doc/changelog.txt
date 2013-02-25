@@ -1,3 +1,8 @@
+0.8.14.1, 2013-02-25, Fix column-list scrolling.
+
+* Swap out the flexbox based listbox for an old skool table.  The flexbox
+  version didn't scroll properly and didn't handle text-overflow: ellipsis.
+
 0.8.14, 2013-02-22, Stable release of 0.8.13.1.
 
 * Stable release of 0.8.13.1.

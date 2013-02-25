@@ -91,19 +91,9 @@ a:hover {
 
 .column-list-item div {
   cursor: pointer;
-  height: 1.2em;
+  width: 100%;
+  white-space: nowrap;
   overflow: hidden;
-
-  /* TODO(rginda): This text-overflow line doesn't work.  I can't figure out
-   * how to build a two-column list in flexbox that trims the cells to fit.
-   * Could be a bug in Chrome, a flexbox spec issue, or just me missing out
-   * on something.
-   *
-   * For now I allow the text to wrap, but force the height of the cell to be
-   * 1.2em.  This trims the text to fit, but doesn't trigger the ellipsis.
-   *
-   * It's probably time to reduce it to a simple case and use a lifeline.
-   */
   text-overflow: ellipsis;
 }
 

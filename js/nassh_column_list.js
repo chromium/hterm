@@ -37,6 +37,15 @@ nassh.ColumnList.prototype.decorate = function(div) {
   this.div_.style.overflowX = 'hidden';
   this.div_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
+  var baseId = this.div_.getAttribute('id');
+  if (!baseId) {
+    baseId = Math.floor(Math.random() * 0xffff + 1).toString(16);
+    baseId = lib.f.zpad(baseID, 4);
+    baseId = 'columnlist-' + baseID;
+  }
+
+  this.baseId_ = baseId;
+
   this.redraw();
 };
 
@@ -88,42 +97,45 @@ nassh.ColumnList.prototype.redraw = function() {
   div.setAttribute('tabindex', '0');
   div.setAttribute('role', 'listbox');
 
-  var baseID = div.getAttribute('id');
-  if (!baseID) {
-    baseID = Math.floor(Math.random() * 0xffff + 1).toString(16);
-    baseID = lib.f.zpad(baseID, 4);
-    baseID = 'columnlist-' + baseID;
-  }
-
   if (!this.items_.length)
     return;
 
   var columnWidth = (1 / this.columnCount * 100) + '%';
 
-  for (var i = 0; i < this.columnCount; i++) {
-    var column = this.document_.createElement('div');
-    column.className = 'column-list-column';
-    column.setAttribute('x-vbox', 'x-vbox');
-    column.style.width = columnWidth;
-    column.style.overflow = 'hidden';
-    div.appendChild(column);
-  }
+  var table = this.document_.createElement('table');
+  table.style.tableLayout = 'fixed';
+  table.style.width = '100%';
+  div.appendChild(table);
+
+  var tbody = this.document_.createElement('tbody');
+  table.appendChild(tbody);
+
+  var tr;
 
   for (var i = 0; i < this.items_.length; i++) {
-    var box = this.document_.createElement('div');
-    box.setAttribute('x-box', 'x-box');
-    box.setAttribute('role', 'option');
-    box.setAttribute('id', baseID + '-item-' + i);
-    box.className = 'column-list-item';
-    box.style.overflow = 'hidden';
+    var row = Math.floor(i / this.columnCount);
+    var column = i % this.columnCount;
+
+    var td = this.document_.createElement('td');
+    td.setAttribute('role', 'option');
+    td.setAttribute('id', this.baseId_ + '-item-' + i);
+    td.setAttribute('row', row);
+    td.setAttribute('column', column);
+    td.style.width = columnWidth;
+    td.className = 'column-list-item';
 
     var item = this.document_.createElement('div');
     item.textContent = this.items_[i].textContent || 'no-name';
-    item.addEventListener('click', this.onItemClick_.bind(this, box));
-    item.addEventListener('dblclick', this.onItemClick_.bind(this, box));
-    box.appendChild(item);
+    item.addEventListener('click', this.onItemClick_.bind(this, td));
+    item.addEventListener('dblclick', this.onItemClick_.bind(this, td));
+    td.appendChild(item);
 
-    this.div_.childNodes[i % this.columnCount].appendChild(box);
+    if (column == 0) {
+      tr = this.document_.createElement('tr');
+      tbody.appendChild(tr);
+    }
+
+    tr.appendChild(td);
   }
 
   this.setActiveIndex(Math.min(this.activeIndex, this.items_.length - 1));
@@ -207,33 +219,17 @@ nassh.ColumnList.prototype.getIndexByRowCol_ = function(
 /**
  * Given a (row, column) location, return a DOM node.
  */
-nassh.ColumnList.prototype.getNodeByRowCol_ = function(
-    row, column) {
-  if (this.div_.childNodes.length <= column)
-    return null;
-
-  return this.div_.childNodes[column].childNodes[row] || null;
+nassh.ColumnList.prototype.getNodeByRowCol_ = function(row, column) {
+  return this.div_.querySelector(
+      '[row="' + row + '"][column="' + column + '"]');
 };
 
 /**
  * Someone clicked on an item in the list.
  */
 nassh.ColumnList.prototype.onItemClick_ = function(srcNode, e) {
-  var node = srcNode.previousSibling;
-  var row = 0;
-  while (node) {
-    row++;
-    node = node.previousSibling;
-  }
-
-  node = srcNode.parentNode.previousSibling;
-  var column = 0;
-  while (node) {
-    column++;
-    node = node.previousSibling;
-  }
-
-  var i = this.getIndexByRowCol_(row, column);
+  var i = this.getIndexByRowCol_(parseInt(srcNode.getAttribute('row')),
+                                 parseInt(srcNode.getAttribute('column')));
   this.setActiveIndex(i);
 
   e.preventDefault();
@@ -241,10 +237,15 @@ nassh.ColumnList.prototype.onItemClick_ = function(srcNode, e) {
 };
 
 /**
- * Return the height (in items) of a given column.
+ * Return the height (in items) of a given, zero-based column.
  */
 nassh.ColumnList.prototype.getColumnHeight_ = function(column) {
-  return this.div_.childNodes[column].childNodes.length;
+  var tallestColumn = Math.ceil(this.items_.length / this.columnCount);
+
+  if (column <= (this.columnCount % column))
+    return tallestColumn;
+
+  return tallestColumn - 1;
 };
 
 /**

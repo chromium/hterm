@@ -613,7 +613,7 @@ hterm.ScrollPort.prototype.syncCharacterSize = function() {
  * dimensions of the 'x-screen'.
  */
 hterm.ScrollPort.prototype.resize = function() {
-  this.currentScrollbarWidthPx = this.screen_.offsetWidth -
+  this.currentScrollbarWidthPx = hterm.getClientWidth(this.screen_) -
     this.screen_.clientWidth;
 
   this.syncScrollHeight();
