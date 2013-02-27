@@ -560,24 +560,31 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
         'height: auto !important;' +
         'width: auto !important;');
 
-    this.ruler_.textContent = 'X';
+    this.ruler_.textContent = ('XXXXXXXXXXXXXXXXXXXX' +
+                               'XXXXXXXXXXXXXXXXXXXX' +
+                               'XXXXXXXXXXXXXXXXXXXX' +
+                               'XXXXXXXXXXXXXXXXXXXX' +
+                               'XXXXXXXXXXXXXXXXXXXX');
   }
 
   this.ruler_.style.fontWeight = opt_weight || '';
 
   this.rowNodes_.appendChild(this.ruler_);
+  var adjustedSize = hterm.getClientSize(this.ruler_);
 
-  var rulerSize = hterm.getClientSize(this.ruler_);
+  this.ruler_.style.webkitTextSizeAdjust = 'none';
+  var unadjustedSize = hterm.getClientSize(this.ruler_);
+
+  var zoomFactor = adjustedSize.width / unadjustedSize.width;
+
+  this.ruler_.style.webkitTextSizeAdjust = '';
 
   // In some fonts, underscores actually show up below the reported height.
   // We add one to the height here to compensate, and have to add a bottom
   // border to text with a background color over in text_attributes.js.
-  var size = new hterm.Size(rulerSize.width,
-                            rulerSize.height + 1);
-
-  this.ruler_.style.webkitTextSizeAdjust = 'none';
-  size.zoomFactor = size.width / rulerSize.width;
-  this.ruler_.style.webkitTextSizeAdjust = '';
+  var size = new hterm.Size(adjustedSize.width / this.ruler_.textContent.length,
+                            adjustedSize.height + 1);
+  size.zoomFactor = zoomFactor;
 
   this.rowNodes_.removeChild(this.ruler_);
   return size;

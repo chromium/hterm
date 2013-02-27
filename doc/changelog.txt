@@ -1,3 +1,11 @@
+0.8.15.1, 2013-02-26, Improve character size precision.
+
+* Change hterm.ScrollPort..measureCharacterSize to average out 100 characters
+  rather than measuring just one.  The improved precision is necessary on
+  high-dpi devices.
+* Fix a bug in measureCharacterSize that got the zoomFactor wrong (we never
+  re-measured after disabling zoom adjustments.)
+
 0.8.15, 2013-02-25, Stable release of 0.8.14.1.
 
 * Stable release of 0.8.14.1.
