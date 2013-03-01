@@ -21,6 +21,24 @@ var hterm = {};
 hterm.windowType = null;
 
 /**
+ * Warning message to display in the terminal when browser zoom is enabled.
+ *
+ * You can replace it with your own localized message.
+ */
+hterm.zoomWarningMessage = 'ZOOM != 100%';
+
+/**
+ * Brief overlay message displayed when text is copied to the clipboard.
+ *
+ * By default it is the unicode BLACK SCISSORS character, but you can
+ * replace it with your own localized message.
+ *
+ * This is only displayed when the 'enable-clipboard-notice' preference
+ * is enabled.
+ */
+hterm.notifyCopyMessage = '\u2702';
+
+/**
  * List of known hterm test suites.
  *
  * A test harness should ensure that they all exist before running.
@@ -40,7 +58,6 @@ hterm.testDeps = ['hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
 lib.registerInit('hterm', function(onInit) {
   function onWindow(window) {
     hterm.windowType = window.type;
-
     onInit();
   }
 
@@ -66,23 +83,6 @@ lib.registerInit('hterm', function(onInit) {
     setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
   }
 });
-
-/**
- * Return a formatted message in the current locale.
- *
- * @param {string} name The name of the message to return.
- * @param {Array} opt_args The message arguments, if required.
- */
-hterm.msg = function(name, opt_args) {
-  if (!chrome.i18n)
-    return name;
-
-  var rv = chrome.i18n.getMessage(name, opt_args);
-  if (!rv)
-    console.log('Missing message: ' + name);
-
-  return rv;
-};
 
 /**
  * Return decimal { width, height } for a given dom node.

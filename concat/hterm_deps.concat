@@ -1,0 +1,19 @@
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file lists the hterm dependencies on libdot.
+
+libdot/js/lib.js
+libdot/js/lib_colors.js
+libdot/js/lib_f.js
+libdot/js/lib_fs.js
+libdot/js/lib_message_manager.js
+libdot/js/lib_preference_manager.js
+libdot/js/lib_resource.js
+libdot/js/lib_storage.js
+libdot/js/lib_storage_chrome.js
+libdot/js/lib_storage_local.js
+libdot/js/lib_storage_memory.js
+libdot/js/lib_test_manager.js
+libdot/js/lib_utf8.js

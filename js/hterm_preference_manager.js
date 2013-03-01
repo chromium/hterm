@@ -35,7 +35,7 @@ hterm.PreferenceManager = function(profileId) {
     /**
      * Terminal bell sound.  Empty string for no audible bell.
      */
-    ['audible-bell-sound', '../audio/bell.ogg'],
+    ['audible-bell-sound', 'lib-resource:hterm/audio/bell'],
 
     /**
      * The background color for text with no other color attributes.

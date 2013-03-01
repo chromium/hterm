@@ -1,0 +1,11 @@
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file lists the resources needed by hterm.
+
+@resource hterm/audio/bell audio/ogg;base64 < hterm/audio/bell.ogg
+@resource hterm/changelog/version text/plain $ ../bin/echo_changelog.sh version
+@resource hterm/changelog/date text/plain $ ../bin/echo_changelog.sh date
+@resource hterm/git/HEAD text/plain $ git rev-parse HEAD
+@resource hterm/git/shortstat text/plain $ git diff --shortstat | sed -e 's/ //'

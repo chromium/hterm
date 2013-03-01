@@ -1,0 +1,26 @@
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file lists the hterm source files.
+# You need both hterm_deps.concat and hterm.concat in order to use hterm in
+# your project.
+
+# Keep this list in sync with ../html/hterm_test.html!
+
+hterm/js/hterm.js
+hterm/js/hterm_frame.js
+hterm/js/hterm_keyboard.js
+hterm/js/hterm_keyboard_keymap.js
+hterm/js/hterm_options.js
+hterm/js/hterm_preference_manager.js
+hterm/js/hterm_pubsub.js
+hterm/js/hterm_screen.js
+hterm/js/hterm_scrollport.js
+hterm/js/hterm_terminal.js
+hterm/js/hterm_terminal_io.js
+hterm/js/hterm_text_attributes.js
+hterm/js/hterm_vt.js
+hterm/js/hterm_vt_character_map.js
+
+@include hterm/concat/hterm_resources.concat
