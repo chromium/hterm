@@ -1,3 +1,15 @@
+1.1, 2013-03-13, Grab bag of fixes.
+
+* Fix base64 encoding of the bell audio.
+* Break out of a parseUntilStringTerminator_ if an embedded ESC is
+  found (other than the one that may appear as part of a 7-bit ST),
+  or if the sequence has been going on for too long (measured by the
+  wall clock).
+* BUG=chromium:191050, Map Chrome OS top-row keys to function keys.
+* BUG=chromum-os:30792, beeps accumulate - leads to non stop beeping
+* BUG=chromum-os:35288, scroll-on-output doesn't appear to work
+* BUG=chromum-os:39645, Application keypad doesn't work properly
+
 1.0, 2013-03-06, Initial split from Secure Shell codebase.
 
 * Move nassh related files out into ../nassh/.

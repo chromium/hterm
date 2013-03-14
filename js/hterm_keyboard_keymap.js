@@ -220,20 +220,20 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
-    [9,   '[TAB]', '\t',    STRIP,     PASS,    DEFAULT],
-    [81,  'qQ',    DEFAULT, ctl('Q'),  DEFAULT, DEFAULT],
-    [87,  'wW',    DEFAULT, ctl('W'),  DEFAULT, DEFAULT],
-    [69,  'eE',    DEFAULT, ctl('E'),  DEFAULT, DEFAULT],
-    [82,  'rR',    DEFAULT, ctl('R'),  DEFAULT, DEFAULT],
-    [84,  'tT',    DEFAULT, ctl('T'),  DEFAULT, DEFAULT],
-    [89,  'yY',    DEFAULT, ctl('Y'),  DEFAULT, DEFAULT],
-    [85,  'uU',    DEFAULT, ctl('U'),  DEFAULT, DEFAULT],
-    [73,  'iI',    DEFAULT, ctl('I'),  DEFAULT, DEFAULT],
-    [79,  'oO',    DEFAULT, ctl('O'),  DEFAULT, DEFAULT],
-    [80,  'pP',    DEFAULT, ctl('P'),  DEFAULT, DEFAULT],
-    [219, '[{',    DEFAULT, ctl('['),  DEFAULT, DEFAULT],
-    [221, ']}',    DEFAULT, ctl(']'),  DEFAULT, DEFAULT],
-    [220, '\\|',   DEFAULT, ctl('\\'), DEFAULT, DEFAULT],
+    [9,   '[TAB]', sh('\t', CSI + 'Z'), STRIP,     PASS,    DEFAULT],
+    [81,  'qQ',    DEFAULT,             ctl('Q'),  DEFAULT, DEFAULT],
+    [87,  'wW',    DEFAULT,             ctl('W'),  DEFAULT, DEFAULT],
+    [69,  'eE',    DEFAULT,             ctl('E'),  DEFAULT, DEFAULT],
+    [82,  'rR',    DEFAULT,             ctl('R'),  DEFAULT, DEFAULT],
+    [84,  'tT',    DEFAULT,             ctl('T'),  DEFAULT, DEFAULT],
+    [89,  'yY',    DEFAULT,             ctl('Y'),  DEFAULT, DEFAULT],
+    [85,  'uU',    DEFAULT,             ctl('U'),  DEFAULT, DEFAULT],
+    [73,  'iI',    DEFAULT,             ctl('I'),  DEFAULT, DEFAULT],
+    [79,  'oO',    DEFAULT,             ctl('O'),  DEFAULT, DEFAULT],
+    [80,  'pP',    DEFAULT,             ctl('P'),  DEFAULT, DEFAULT],
+    [219, '[{',    DEFAULT,             ctl('['),  DEFAULT, DEFAULT],
+    [221, ']}',    DEFAULT,             ctl(']'),  DEFAULT, DEFAULT],
+    [220, '\\|',   DEFAULT,             ctl('\\'), DEFAULT, DEFAULT],
 
     // Fourth row. (We let Ctrl-Shift-J pass for Chrome DevTools.)
     [20,  '[CAPS]',  PASS,    PASS,                           PASS,    DEFAULT],
@@ -300,21 +300,33 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     // and 'block of six' for some keys, and null key codes for the rest.
 
     // Keypad with numlock on generates unique key codes...
-    [96,  '[KP0]', ak(DEFAULT, CSI + '2~'), DEFAULT, DEFAULT, DEFAULT],
-    [97,  '[KP1]', ak(DEFAULT, SS3 + 'F'),  DEFAULT, DEFAULT, DEFAULT],
-    [98,  '[KP2]', ak(DEFAULT, CSI + 'B'),  DEFAULT, DEFAULT, DEFAULT],
-    [99,  '[KP3]', ak(DEFAULT, CSI + '6~'), DEFAULT, DEFAULT, DEFAULT],
-    [100, '[KP4]', ak(DEFAULT, CSI + 'D'),  DEFAULT, DEFAULT, DEFAULT],
-    [101, '[KP5]', ak(DEFAULT, CSI + 'E'),  DEFAULT, DEFAULT, DEFAULT],
-    [102, '[KP6]', ak(DEFAULT, CSI + 'C'),  DEFAULT, DEFAULT, DEFAULT],
-    [103, '[KP7]', ak(DEFAULT, SS3 + 'H'),  DEFAULT, DEFAULT, DEFAULT],
-    [104, '[KP8]', ak(DEFAULT, CSI + 'A'),  DEFAULT, DEFAULT, DEFAULT],
-    [105, '[KP9]', ak(DEFAULT, CSI + '5~'), DEFAULT, DEFAULT, DEFAULT],
-    [107, '[KP+]', ak(DEFAULT, SS3 + 'k'),  DEFAULT, DEFAULT, DEFAULT],
-    [109, '[KP-]', ak(DEFAULT, SS3 + 'm'),  DEFAULT, DEFAULT, DEFAULT],
-    [106, '[KP*]', ak(DEFAULT, SS3 + 'j'),  DEFAULT, DEFAULT, DEFAULT],
-    [111, '[KP/]', ak(DEFAULT, SS3 + 'o'),  DEFAULT, DEFAULT, DEFAULT],
-    [110, '[KP.]', ak(DEFAULT, CSI + '3~'), DEFAULT, DEFAULT, DEFAULT]
+    [96,  '[KP0]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [97,  '[KP1]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [98,  '[KP2]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [99,  '[KP3]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [100, '[KP4]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [101, '[KP5]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [102, '[KP6]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [103, '[KP7]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [104, '[KP8]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [105, '[KP9]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [107, '[KP+]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [109, '[KP-]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [106, '[KP*]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [111, '[KP/]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [110, '[KP.]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+
+    // Chrome OS keyboard top row.
+    [166, '[BACK]',   mod(SS3 + 'P', CSI + 'P'), DEFAULT, CSI + "23~", DEFAULT],
+    [167, '[FWD]',    mod(SS3 + 'Q', CSI + 'Q'), DEFAULT, CSI + "24~", DEFAULT],
+    [168, '[RELOAD]', mod(SS3 + 'R', CSI + 'R'), DEFAULT, CSI + "25~", DEFAULT],
+    [183, '[FSCR]',   mod(SS3 + 'S', CSI + 'S'), DEFAULT, CSI + "26~", DEFAULT],
+    [182, '[WINS]',   CSI + '15~',               DEFAULT, CSI + "28~", DEFAULT],
+    [216, '[BRIT-]',  CSI + '17~',               DEFAULT, CSI + "29~", DEFAULT],
+    [217, '[BRIT+]',  CSI + '18~',               DEFAULT, CSI + "31~", DEFAULT],
+    [173, '[MUTE]',   CSI + '19~',               DEFAULT, CSI + "32~", DEFAULT],
+    [174, '[VOL-]',   CSI + '20~',               DEFAULT, CSI + "33~", DEFAULT],
+    [175, '[VOL+]',   CSI + '21~',               DEFAULT, CSI + "34~", DEFAULT]
   );
 };
 

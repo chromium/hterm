@@ -65,6 +65,9 @@ hterm.VT = function(terminal) {
   // True if we should fake-out mouse "cell motion" reporting (DECSET 1002)
   this.mouseCellMotionTrick_ = false;
 
+  // The amount of time we're willing to wait for the end of an OSC sequence.
+  this.oscTimeLimit_ = 20000;
+
   // Construct a regular expression to match the known one-byte control chars.
   // This is used in parseUnknown_ to quickly scan a string for the next
   // control character.
@@ -616,24 +619,36 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
   var nextTerminator = buf.search(/(\x1b\\|\x07)/);
   var args = parseState.args;
 
-  if (!args.length)
+  if (!args.length) {
     args[0] = '';
+    args[1] = new Date();
+  }
 
   if (nextTerminator == -1) {
     // No terminator here, have to wait for the next string.
 
     args[0] += buf;
 
-    if (args[0].length <= this.maxStringSequence) {
-      // If we're at or under the limit for a runaway sequence, consume
-      // what we've seen and wait for more.
-      parseState.advance(buf.length);
-      return true;
+    var abortReason;
+
+    if (args[0].length > this.maxStringSequence)
+      abortReason = 'too long: ' + args[0].length;
+
+    if (args[0].indexOf('\x1b') != -1)
+      abortReason = 'embedded escape: ' + args[0].indexOf('\x1b');
+
+    if (new Date() - args[1] > this.oscTimeLimit_)
+      abortReason = 'timeout expired: ' + new Date() - args[1];
+
+    if (abortReason) {
+      console.log('parseUntilStringTerminator_: aborting: ' + abortReason,
+                  args[0]);
+      parseState.reset(args[0]);
+      return false;
     }
 
-    // Otherwise, re-parse using the default parser.
-    parseState.reset(args[0]);
-    return false;
+    parseState.advance(buf.length);
+    return true;
   }
 
   if (args[0].length + nextTerminator > this.maxStringSequence) {

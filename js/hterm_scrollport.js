@@ -731,6 +731,9 @@ hterm.ScrollPort.prototype.redraw_ = function() {
 
   this.previousRowNodeCache_ = this.currentRowNodeCache_;
   this.currentRowNodeCache_ = null;
+
+  this.isScrolledEnd = (
+    this.getTopRowIndex() + this.visibleRowCount >= this.lastRowCount_);
 };
 
 /**

@@ -4,8 +4,9 @@
 
 # This file lists the resources needed by hterm.
 
-@resource hterm/audio/bell audio/ogg;base64 < hterm/audio/bell.ogg
-@resource hterm/changelog/version text/plain $ ../bin/echo_changelog.sh version
-@resource hterm/changelog/date text/plain $ ../bin/echo_changelog.sh date
+@resource hterm/audio/bell audio/ogg;base64 $ base64 -w0 ../audio/bell.ogg
+@resource hterm/concat/date text/plain $ date -uR
+@resource hterm/changelog/version text/plain $ echo_changelog version
+@resource hterm/changelog/date text/plain $ echo_changelog date
 @resource hterm/git/HEAD text/plain $ git rev-parse HEAD
 @resource hterm/git/shortstat text/plain $ git diff --shortstat | sed -e 's/ //'

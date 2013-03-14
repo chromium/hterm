@@ -17,3 +17,8 @@ libdot/js/lib_storage_local.js
 libdot/js/lib_storage_memory.js
 libdot/js/lib_test_manager.js
 libdot/js/lib_utf8.js
+
+@resource libdot/changelog/version text/plain $ \
+  echo_changelog version "$(search_file libdot/doc/changelog.txt)"
+@resource libdot/changelog/version text/plain $ \
+  echo_changelog date "$(search_file libdot/doc/changelog.txt)"

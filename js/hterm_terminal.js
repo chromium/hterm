@@ -826,6 +826,8 @@ hterm.Terminal.prototype.reset = function() {
 
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
 
+  this.vt.reset();
+
   this.softReset();
 };
 
@@ -1872,11 +1874,10 @@ hterm.Terminal.prototype.setReverseVideo = function(state) {
 
 /**
  * Ring the terminal bell.
+ *
+ * This will not play the bell audio more than once per second.
  */
 hterm.Terminal.prototype.ringBell = function() {
-  if (this.bellAudio_.getAttribute('src'))
-    this.bellAudio_.play();
-
   this.cursorNode_.style.backgroundColor =
       this.scrollPort_.getForegroundColor();
 
@@ -1884,6 +1885,19 @@ hterm.Terminal.prototype.ringBell = function() {
   setTimeout(function() {
       self.cursorNode_.style.backgroundColor = self.prefs_.get('cursor-color');
     }, 200);
+
+  if (this.bellAudio_.getAttribute('src')) {
+    if (this.bellSquelchTimeout_ || term_.bellAudio_.currentTime != 0)
+      return;
+
+    this.bellAudio_.play();
+
+    this.bellSequelchTimeout_ = setTimeout(function() {
+        delete this.bellSquelchTimeout_;
+      }.bind(this), 1000);
+  } else {
+    delete this.bellSquelchTimeout_;
+  }
 };
 
 /**
