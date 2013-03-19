@@ -1887,14 +1887,14 @@ hterm.Terminal.prototype.ringBell = function() {
     }, 200);
 
   if (this.bellAudio_.getAttribute('src')) {
-    if (this.bellSquelchTimeout_ || term_.bellAudio_.currentTime != 0)
+    if (this.bellSquelchTimeout_)
       return;
 
     this.bellAudio_.play();
 
     this.bellSequelchTimeout_ = setTimeout(function() {
         delete this.bellSquelchTimeout_;
-      }.bind(this), 1000);
+      }.bind(this), 500);
   } else {
     delete this.bellSquelchTimeout_;
   }
