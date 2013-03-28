@@ -1,6 +1,8 @@
 
   +-------------------------------------------------------------------------+
   |                                                                         |
-  | This Secure Shell document has moved, please see ../nassh/doc/ instead. |
+  | This Secure Shell document has moved to http://goo.gl/vMqYv             |
+  |                                                                         |
+  | If you are reading this from a cloned repository, see ../nassh/doc/     |
   |                                                                         |
   +-------------------------------------------------------------------------+
