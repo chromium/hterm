@@ -817,6 +817,7 @@ hterm.Terminal.prototype.wipeContents = function() {
   }.bind(this));
 
   this.syncCursorPosition_();
+  this.scrollPort_.invalidate();
 };
 
 /**
