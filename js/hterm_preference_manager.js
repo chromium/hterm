@@ -170,6 +170,12 @@ hterm.PreferenceManager = function(profileId) {
     ['max-string-sequence', 100000],
 
     /**
+     * If true, convert media keys to their Fkey equivalent. If false, let
+     * Chrome handle the keys.
+     */
+    ['media-keys-are-fkeys', false],
+
+    /**
      * Set whether the meta key sends a leading escape or not.
      */
     ['meta-sends-escape', true],

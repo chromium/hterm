@@ -277,6 +277,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.vt.maxStringSequence = v;
     },
 
+    'media-keys-are-fkeys': function(v) {
+      terminal.keyboard.mediaKeysAreFKeys = v;
+    },
+
     'meta-sends-escape': function(v) {
       terminal.keyboard.metaSendsEscape = v;
     },

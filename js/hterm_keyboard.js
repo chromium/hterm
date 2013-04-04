@@ -121,6 +121,12 @@ hterm.Keyboard = function(terminal) {
    * the altBackspaceIsMetaBackspace preference above.
    */
   this.altIsPressed = false;
+
+  /**
+   * If true, Chrome OS media keys will be mapped to their F-key equivalent.
+   * E.g. "Back" will be mapped to F1. If false, Chrome will handle the keys.
+   */
+  this.mediaKeysAreFKeys = false;
 };
 
 /**

@@ -172,6 +172,16 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   // Call a method on the keymap instance.
   function c(m) { return function (e, k) { return this[m](e, k) } }
 
+  // Ignore if not trapping media keys
+  function med(fn) {
+    return function(e, k) {
+      if (!self.keyboard.mediaKeysAreFKeys) {
+        return hterm.Keyboard.KeyActions.PASS;
+      }
+      return resolve(fn, e, k);
+    };
+  }
+
   var ESC = '\x1b';
   var CSI = '\x1b[';
   var SS3 = '\x1bO';
@@ -317,16 +327,16 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [110, '[KP.]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
 
     // Chrome OS keyboard top row.
-    [166, '[BACK]',   mod(SS3 + 'P', CSI + 'P'), DEFAULT, CSI + "23~", DEFAULT],
-    [167, '[FWD]',    mod(SS3 + 'Q', CSI + 'Q'), DEFAULT, CSI + "24~", DEFAULT],
-    [168, '[RELOAD]', mod(SS3 + 'R', CSI + 'R'), DEFAULT, CSI + "25~", DEFAULT],
-    [183, '[FSCR]',   mod(SS3 + 'S', CSI + 'S'), DEFAULT, CSI + "26~", DEFAULT],
-    [182, '[WINS]',   CSI + '15~',               DEFAULT, CSI + "28~", DEFAULT],
-    [216, '[BRIT-]',  CSI + '17~',               DEFAULT, CSI + "29~", DEFAULT],
-    [217, '[BRIT+]',  CSI + '18~',               DEFAULT, CSI + "31~", DEFAULT],
-    [173, '[MUTE]',   CSI + '19~',               DEFAULT, CSI + "32~", DEFAULT],
-    [174, '[VOL-]',   CSI + '20~',               DEFAULT, CSI + "33~", DEFAULT],
-    [175, '[VOL+]',   CSI + '21~',               DEFAULT, CSI + "34~", DEFAULT]
+    [166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+"23~", DEFAULT],
+    [167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+"24~", DEFAULT],
+    [168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+"25~", DEFAULT],
+    [183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+"26~", DEFAULT],
+    [182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+"28~", DEFAULT],
+    [216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+"29~", DEFAULT],
+    [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+"31~", DEFAULT],
+    [173, '[MUTE]',   med(CSI + '19~'),           DEFAULT, CSI+"32~", DEFAULT],
+    [174, '[VOL-]',   med(CSI + '20~'),           DEFAULT, CSI+"33~", DEFAULT],
+    [175, '[VOL+]',   med(CSI + '21~'),           DEFAULT, CSI+"34~", DEFAULT]
   );
 };
 
