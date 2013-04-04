@@ -17,6 +17,12 @@ hterm.PreferenceManager = function(profileId) {
   this.definePreferences
   ([
     /**
+     * If set, undoes the Chrome OS Alt-Backspace->DEL remap, so that
+     * alt-backspace indeed is alt-backspace.
+     */
+    ['alt-backspace-is-meta-backspace', false],
+
+    /**
      * Set whether the alt key acts as a meta key or as a distinct alt key.
      */
     ['alt-is-meta', false],

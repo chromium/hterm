@@ -155,6 +155,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
   this.prefs_ = new hterm.PreferenceManager(this.profileId_);
   this.prefs_.addObservers(null, {
+    'alt-backspace-is-meta-backspace': function(v) {
+      terminal.keyboard.altBackspaceIsMetaBackspace = v;
+    },
+
     'alt-is-meta': function(v) {
       terminal.keyboard.altIsMeta = v;
     },

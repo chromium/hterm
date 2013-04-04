@@ -26,8 +26,10 @@ hterm.Keyboard = function(terminal) {
   // The event handlers we are interested in, and their bound callbacks, saved
   // so they can be uninstalled with removeEventListener, when required.
   this.handlers_ = [
-      ['keypress', this.onKeyPress_.bind(this)],
+      ['blur', this.onBlur_.bind(this)],
       ['keydown', this.onKeyDown_.bind(this)],
+      ['keypress', this.onKeyPress_.bind(this)],
+      ['keyup', this.onKeyUp_.bind(this)],
       ['textInput', this.onTextInput_.bind(this)]
   ];
 
@@ -100,6 +102,25 @@ hterm.Keyboard = function(terminal) {
    * True to enable, false to disable, null to autodetect based on platform.
    */
   this.altIsMeta = false;
+
+  /**
+   * If true, tries to detect DEL key events that are from alt-backspace on
+   * Chrome OS vs from a true DEL key press.
+   *
+   * Background: At the time of writing, on Chrome OS, alt-backspace is mapped
+   * to DEL. Some users may be happy with this, but others may be frustrated
+   * that it's impossible to do meta-backspace. If the user enables this pref,
+   * we use a trick to tell a true DEL keypress from alt-backspace: on
+   * alt-backspace, we will see the alt key go down, then get a DEL keystroke
+   * that indicates that alt is not pressed. See http://crbug.com/174410 .
+   */
+  this.altBackspaceIsMetaBackspace = false;
+
+  /**
+   * Used to keep track of the current alt-key state, which is necessary for
+   * the altBackspaceIsMetaBackspace preference above.
+   */
+  this.altIsPressed = false;
 };
 
 /**
@@ -239,10 +260,22 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
   e.stopPropagation();
 };
 
+hterm.Keyboard.prototype.onBlur_ = function(e) {
+  this.altIsPressed = false;
+};
+
+hterm.Keyboard.prototype.onKeyUp_ = function(e) {
+  if (e.keyCode == 18)
+    this.altIsPressed = false;
+};
+
 /**
  * Handle onKeyDown events.
  */
 hterm.Keyboard.prototype.onKeyDown_ = function(e) {
+  if (e.keyCode == 18)
+    this.altIsPressed = true;
+
   var keyDef = this.keyMap.keyDefs[e.keyCode];
   if (!keyDef) {
     console.warn('No definition for keyCode: ' + e.keyCode);

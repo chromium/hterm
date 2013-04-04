@@ -283,7 +283,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [45,  '[INSERT]', c('onKeyInsert_'),   DEFAULT, DEFAULT, DEFAULT],
     [36,  '[HOME]',   c('onKeyHome_'),     DEFAULT, DEFAULT, DEFAULT],
     [33,  '[PGUP]',   c('onKeyPageUp_'),   DEFAULT, DEFAULT, DEFAULT],
-    [46,  '[DEL]',    CSI + '3~',          DEFAULT, DEFAULT, DEFAULT],
+    [46,  '[DEL]',    c('onKeyDel_'),      DEFAULT, DEFAULT, DEFAULT],
     [35,  '[END]',    c('onKeyEnd_'),      DEFAULT, DEFAULT, DEFAULT],
     [34,  '[PGDOWN]', c('onKeyPageDown_'), DEFAULT, DEFAULT, DEFAULT],
 
@@ -383,6 +383,21 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
 
   this.keyboard.terminal.scrollPageUp();
   return hterm.Keyboard.KeyActions.CANCEL;
+};
+
+/**
+ * Either send a true DEL, or sub in meta-backspace.
+ *
+ * On Chrome OS, if we know the alt key is down, but we get a DEL event that
+ * claims that the alt key is not pressed, we know the DEL was a synthetic
+ * one from a user that hit alt-backspace. Based on a user pref, we can sub
+ * in meta-backspace in this case.
+ */
+hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
+  if (this.keyboard.altBackspaceIsMetaBackspace &&
+      this.keyboard.altIsPressed && !e.altKey)
+    return '\x1b\x7f';
+  return '\x1b[3~';
 };
 
 /**
