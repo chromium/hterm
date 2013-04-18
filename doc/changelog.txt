@@ -1,3 +1,7 @@
+1.5, 2013-04-18, Pass shift-ctrl-L
+
+* BUG=chromium:233008, PASS shift-ctrl-L (CrOS screen lock combo)
+
 1.4, 2013-04-05, wipeContents fix
 
 * BUG=chromium:226819, Handle clearing screen when not scrolled to bottom

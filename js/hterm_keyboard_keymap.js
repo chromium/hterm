@@ -255,7 +255,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [72,  'hH',      DEFAULT, ctl('H'),                       DEFAULT, DEFAULT],
     [74,  'jJ',      DEFAULT, sh(ctl('J'), PASS),             DEFAULT, DEFAULT],
     [75,  'kK',      DEFAULT, sh(ctl('K'), c('onClear_')),    DEFAULT, DEFAULT],
-    [76,  'lL',      DEFAULT, ctl('L'),                       DEFAULT, DEFAULT],
+    [76,  'lL',      DEFAULT, sh(ctl('L'), PASS),             DEFAULT, DEFAULT],
     [186, ';:',      DEFAULT, STRIP,                          DEFAULT, DEFAULT],
     [222, '\'"',     DEFAULT, STRIP,                          DEFAULT, DEFAULT],
     [13,  '[ENTER]', '\r',    CANCEL,                         CANCEL,  DEFAULT],
