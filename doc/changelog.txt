@@ -1,3 +1,10 @@
+1.6, 2013-05-24, Track terminal size on the io object.
+
+* This installs a default onTerminalResize handler on the hterm.Terminal.IO
+  object that records the most recent terminal size as io.columnCount and
+  io.rowCount.  This gives consumers synchronous access to these values without
+  having to wire up the event handler themselves.
+
 1.5, 2013-04-18, Pass shift-ctrl-L
 
 * BUG=chromium:233008, PASS shift-ctrl-L (CrOS screen lock combo)

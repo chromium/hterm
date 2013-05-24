@@ -85,6 +85,9 @@ hterm.Terminal.IO.prototype.push = function() {
   var io = new hterm.Terminal.IO(this.terminal_);
   io.keyboardCaptured_ = this.keyboardCaptured_;
 
+  io.columnCount = this.columnCount;
+  io.rowCount = this.rowCount;
+
   io.previousIO_ = this.terminal_.io;
   this.terminal_.io = io;
 
@@ -120,6 +123,17 @@ hterm.Terminal.IO.prototype.sendString = function(string) {
 hterm.Terminal.IO.prototype.onVTKeystroke = function(string) {
   // Override this.
   console.log('Unobserverd VT keystroke: ' + JSON.stringify(string));
+};
+
+hterm.Terminal.IO.prototype.onTerminalResize_ = function(width, height) {
+  var obj = this;
+  while (obj) {
+    obj.columnCount = width;
+    obj.rowCount = height;
+    obj = obj.previousIO_;
+  }
+
+  this.onTerminalResize();
 };
 
 /**

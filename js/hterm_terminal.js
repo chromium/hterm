@@ -669,7 +669,7 @@ hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
     this.realizeHeight_(rowCount);
 
   // Send new terminal size to plugin.
-  this.io.onTerminalResize(columnCount, rowCount);
+  this.io.onTerminalResize_(columnCount, rowCount);
 };
 
 /**
