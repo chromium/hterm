@@ -135,6 +135,12 @@ hterm.PreferenceManager = function(profileId) {
     ['enable-clipboard-write', true],
 
     /**
+     * Respect the host's attempt to change the cursor blink status using
+     * DEC Private Mode 12.
+     */
+    ['enable-dec12', false],
+
+    /**
      * Default font family for the terminal text.
      */
     ['font-family', ('"DejaVu Sans Mono", "Everson Mono", ' +

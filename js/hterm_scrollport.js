@@ -1174,8 +1174,15 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   if (top > scrollMax)
     top = scrollMax;
 
-  // Moving scrollTop causes a scroll event, which triggers the redraw.
-  this.screen_.scrollTop = top;
+  if (top != this.screen_.scrollTop) {
+    // Moving scrollTop causes a scroll event, which triggers the redraw.
+    this.screen_.scrollTop = top;
+
+    // Only preventDefault when we've actually scrolled.  If there's nothing
+    // to scroll we want to pass the event through so Chrome can detect the
+    // overscroll.
+    e.preventDefault();
+  }
 };
 
 /**

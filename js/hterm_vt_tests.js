@@ -884,15 +884,23 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?7l');
     result.assertEQ(this.terminal.options_.wraparound, false);
 
-    /*
-    this.terminal.interpret('\x1b[?12l');
-    result.assertEQ(this.terminal.options_.cursorBlink, false);
-    result.assert(!('cursorBlink' in this.terminal.timeouts_));
+    // DEC mode 12 is disabled by default.
+    this.terminal.vt.enableDec12 = true;
 
     this.terminal.interpret('\x1b[?12h');
     result.assertEQ(this.terminal.options_.cursorBlink, true);
     result.assert('cursorBlink' in this.terminal.timeouts_);
-    */
+
+    this.terminal.interpret('\x1b[?12l');
+    result.assertEQ(this.terminal.options_.cursorBlink, false);
+    result.assert(!('cursorBlink' in this.terminal.timeouts_));
+
+    // Make sure that enableDec12 is respected.
+    this.terminal.vt.enableDec12 = false;
+
+    this.terminal.interpret('\x1b[?12h');
+    result.assertEQ(this.terminal.options_.cursorBlink, false);
+    result.assert(!('cursorBlink' in this.terminal.timeouts_));
 
     this.terminal.interpret('\x1b[?25l');
     result.assertEQ(this.terminal.options_.cursorVisible, false);

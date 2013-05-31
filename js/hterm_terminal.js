@@ -253,6 +253,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.vt.enableClipboardWrite = !!v;
     },
 
+    'enable-dec12': function(v) {
+      terminal.vt.enableDec12 = !!v;
+    },
+
     'font-family': function(v) {
       terminal.syncFontFamily();
     },

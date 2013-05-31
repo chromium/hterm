@@ -99,6 +99,12 @@ hterm.VT = function(terminal) {
   this.enableClipboardWrite = true;
 
   /**
+   * Respect the host's attempt to change the cursor blink status using
+   * the DEC Private mode 12.
+   */
+  this.enableDec12 = false;
+
+  /**
    * Max length of an unterminated DCS, OSC, PM or APC sequence before we give
    * up and ignore the code.
    *
@@ -818,7 +824,8 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '12':  // att610
-      this.terminal.setCursorBlink(state);
+      if (this.enableDec12)
+        this.terminal.setCursorBlink(state);
       break;
 
     case '25':  // DECTCEM

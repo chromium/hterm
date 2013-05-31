@@ -1,3 +1,15 @@
+1.8, 2013-05-31, overscroll fix
+
+* BUG=chromium:245700: Call preventDefault on mousewheel events that we've
+  handled.
+
+1.7, 2013-05-31, Fix onTerminalResize, dec12 pref
+
+* Pass width and height in io.onTerminalResize again, which regressed in the
+  previous commit.
+* BUG=245120: Add 'enable-dec12' preference, off by default, which allows the
+  host to control the cursor blink state via DEC private mode 12.
+
 1.6, 2013-05-24, Track terminal size on the io object.
 
 * This installs a default onTerminalResize handler on the hterm.Terminal.IO

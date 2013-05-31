@@ -133,7 +133,7 @@ hterm.Terminal.IO.prototype.onTerminalResize_ = function(width, height) {
     obj = obj.previousIO_;
   }
 
-  this.onTerminalResize();
+  this.onTerminalResize(width, height);
 };
 
 /**
