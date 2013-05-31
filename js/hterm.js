@@ -58,11 +58,18 @@ hterm.testDeps = ['hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
 lib.registerInit('hterm', function(onInit) {
   function onWindow(window) {
     hterm.windowType = window.type;
-    onInit();
+    setTimeout(onInit, 0);
   }
 
   function onTab(tab) {
-    chrome.windows.get(tab.windowId, null, onWindow);
+    if (tab) {
+      chrome.windows.get(tab.windowId, null, onWindow);
+    } else {
+      // TODO(rginda): This is where we end up for a v1 app's background page.
+      // Maybe windowType = 'none' would be more appropriate, or something.
+      hterm.windowType = 'normal';
+      setTimeout(onInit, 0);
+    }
   }
 
   if (!hterm.defaultStorage) {
