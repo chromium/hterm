@@ -317,7 +317,6 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   var PASS = hterm.Keyboard.KeyActions.PASS;
   var STRIP = hterm.Keyboard.KeyActions.STRIP;
 
-  var shift = e.shiftKey;
   var control = e.ctrlKey;
   var alt = this.altIsMeta ? false : e.altKey;
   var meta = this.altIsMeta ? (e.altKey || e.metaKey) : e.metaKey;
@@ -333,6 +332,10 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   } else {
     action = getAction('normal');
   }
+
+  // The action may have cleared the e.shiftKey, so we wait until after
+  // getAction to read it.
+  var shift = e.shiftKey;
 
   if (alt && this.altSendsWhat == 'browser-key' && action == DEFAULT) {
     // When altSendsWhat is 'browser-key', we wait for the keypress event.

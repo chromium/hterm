@@ -154,6 +154,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   function sh(a, b) {
     return function(e, k) {
       var action = !e.shiftKey ? a : b
+
+      // Clear e.shiftKey so that the keyboard code doesn't try to apply
+      // additional modifiers to the sequence.
+      delete e.shiftKey;
+      e.shiftKey = false;
+
       return resolve(action, e, k);
     }
   }

@@ -1,3 +1,8 @@
+1.9, 2013-06-19, Fix issues with shift-key and CSI sequences.
+
+* Clear e.shiftKey in hterm_keyboard_keymap.js' sh() function so that
+  hterm_keyboard.js doesn't apply its own shift key munging.
+
 1.8, 2013-05-31, overscroll fix
 
 * BUG=chromium:245700: Call preventDefault on mousewheel events that we've
