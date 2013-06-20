@@ -249,6 +249,13 @@ hterm.PreferenceManager = function(profileId) {
     ['pass-meta-number', null],
 
     /**
+     * Set the expected encoding for data received from the host.
+     *
+     * Valid values are 'utf-8' and 'raw'.
+     */
+    ['receive-encoding', 'utf-8'],
+
+    /**
      * If true, scroll to the bottom on any keystroke.
      */
     ['scroll-on-keystroke', true],
@@ -262,6 +269,13 @@ hterm.PreferenceManager = function(profileId) {
      * The vertical scrollbar mode.
      */
     ['scrollbar-visible', true],
+
+    /**
+     * Set the encoding for data sent to host.
+     *
+     * Valid values are 'utf-8' and 'raw'.
+     */
+    ['send-encoding', 'utf-8'],
 
     /**
      * Shift + Insert pastes if true, sent to host if false.

@@ -105,6 +105,11 @@ hterm.VT = function(terminal) {
   this.enableDec12 = false;
 
   /**
+   * The expected encoding method for data received from the host.
+   */
+  this.characterEncoding = 'utf-8';
+
+  /**
    * Max length of an unterminated DCS, OSC, PM or APC sequence before we give
    * up and ignore the code.
    *
@@ -463,9 +468,11 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
 /**
  * Interpret a string of characters, displaying the results on the associated
  * terminal object.
+ *
+ * The buffer will be decoded according to the 'receive-encoding' preference.
  */
 hterm.VT.prototype.interpret = function(buf) {
-  this.parseState_.resetBuf(this.decodeUTF8(buf));
+  this.parseState_.resetBuf(this.decode(buf));
 
   while (!this.parseState_.isComplete()) {
     var func = this.parseState_.func;
@@ -479,6 +486,16 @@ hterm.VT.prototype.interpret = function(buf) {
       throw 'Parser did not alter the state!';
     }
   }
+};
+
+/**
+ * Decode a string according to the 'receive-encoding' preference.
+ */
+hterm.VT.prototype.decode = function(str) {
+  if (this.characterEncoding == 'utf-8')
+    return this.decodeUTF8(str);
+
+  return str;
 };
 
 /**
@@ -1604,6 +1621,9 @@ hterm.VT.OSC['4'] = function(parseState) {
  * Read is not implemented due to security considerations.  A remote app
  * that is able to both write and read to the clipboard could essentially
  * take over your session.
+ *
+ * The clipboard data will be decoded according to the 'receive-encoding'
+ * preference.
  */
 hterm.VT.OSC['52'] = function(parseState) {
   // Args come in as a single 'clipboard;b64-data' string.  The clipboard
@@ -1615,7 +1635,7 @@ hterm.VT.OSC['52'] = function(parseState) {
 
   var data = atob(args[1]);
   if (data)
-    this.terminal.copyStringToClipboard(this.decodeUTF8(data));
+    this.terminal.copyStringToClipboard(this.decode(data));
 };
 
 /**

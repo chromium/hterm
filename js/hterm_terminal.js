@@ -79,10 +79,10 @@ hterm.Terminal = function(opt_profileId) {
 
   // These prefs are cached so we don't have to read from local storage with
   // each output and keystroke.  They are initialized by the preference manager.
+  this.backgroundColor_ = null;
+  this.foregroundColor_ = null;
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
-  this.foregroundColor_ = null;
-  this.backgroundColor_ = null;
 
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
@@ -333,6 +333,15 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.passMetaNumber = v;
     },
 
+    'receive-encoding': function(v) {
+       if (!(/^(utf-8|raw)$/).test(v)) {
+         console.warn('Invalid value for "receive-encoding": ' + v);
+         v = 'utf-8';
+       }
+
+       terminal.vt.characterEncoding = v;
+    },
+
     'scroll-on-keystroke': function(v) {
       terminal.scrollOnKeystroke_ = v;
     },
@@ -343,6 +352,15 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'scrollbar-visible': function(v) {
       terminal.setScrollbarVisible(v);
+    },
+
+    'send-encoding': function(v) {
+       if (!(/^(utf-8|raw)$/).test(v)) {
+         console.warn('Invalid value for "send-encoding": ' + v);
+         v = 'utf-8';
+       }
+
+       terminal.keyboard.characterEncoding = v;
     },
 
     'shift-insert-paste': function(v) {
@@ -361,7 +379,6 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       opt_callback();
   }.bind(this));
 };
-
 
 /**
  * Set the color for the cursor.
@@ -2354,13 +2371,13 @@ hterm.Terminal.prototype.overlaySize = function() {
 /**
  * Invoked by hterm.Terminal.Keyboard when a VT keystroke is detected.
  *
- * @param {string} string The VT string representing the keystroke.
+ * @param {string} string The VT string representing the keystroke, in UTF-16.
  */
 hterm.Terminal.prototype.onVTKeystroke = function(string) {
   if (this.scrollOnKeystroke_)
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
 
-  this.io.onVTKeystroke(string);
+  this.io.onVTKeystroke(this.keyboard.encode(string));
 };
 
 /**
@@ -2449,9 +2466,7 @@ hterm.Terminal.prototype.onScroll_ = function() {
  * React when text is pasted into the scrollPort.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  var text = this.vt.encodeUTF8(e.text);
-  text = text.replace(/\n/mg, '\r');
-  this.io.onVTKeystroke(text);
+  this.onVTKeystroke(e.text.replace(/\n/mg, '\r'));
 };
 
 /**

@@ -1,3 +1,18 @@
+1.11, 2013-06-20, Add 'send-encoding'/'receive-encoding' preferences.
+
+* Splits 'character-encoding' into two preferences so send and receive
+  encodings can be set independently.
+* Refactor Terminal.keyboard.onKeyDown_ to allow Ctrl+Alt+(printable) key
+  combinations.
+* Fix regression in Terminal..onPaste_.
+
+1.10, 2013-06-20, Add 'character-encoding' preference.
+
+* Adds a 'character-encoding' preference which can be set to 'utf-8' (default)
+  or 'raw'.  When set to 'utf-8' hterm's behavior is unchanged from previous
+  versions.  When set to 'raw', hterm will not attempt to decode input or
+  encode output.
+
 1.9, 2013-06-19, Fix issues with shift-key and CSI sequences.
 
 * Clear e.shiftKey in hterm_keyboard_keymap.js' sh() function so that

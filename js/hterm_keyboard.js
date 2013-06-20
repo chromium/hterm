@@ -77,6 +77,11 @@ hterm.Keyboard = function(terminal) {
   this.backspaceSendsBackspace = false;
 
   /**
+   * The encoding method for data sent to the host.
+   */
+  this.characterEncoding = 'utf-8';
+
+  /**
    * Set whether the meta key sends a leading escape or not.
    */
   this.metaSendsEscape = true;
@@ -183,6 +188,16 @@ hterm.Keyboard.KeyActions = {
 };
 
 /**
+ * Encode a string according to the 'send-encoding' preference.
+ */
+hterm.Keyboard.prototype.encode = function(str) {
+  if (this.characterEncoding == 'utf-8')
+    return this.terminal.vt.encodeUTF8(str);
+
+  return str;
+};
+
+/**
  * Capture keyboard events sent to the associated element.
  *
  * This enables the keyboard.  Captured events are consumed by this class
@@ -257,10 +272,8 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
     ch = e.charCode;
   }
 
-  if (ch) {
-    var str = this.terminal.vt.encodeUTF8(String.fromCharCode(ch));
-    this.terminal.onVTKeystroke(str);
-  }
+  if (ch)
+    this.terminal.onVTKeystroke(String.fromCharCode(ch));
 
   e.preventDefault();
   e.stopPropagation();
@@ -422,22 +435,21 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     }
 
   } else {
-    // Just send it as-is.
-
     if (action === DEFAULT) {
+      action = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
+
       if (control) {
         var unshifted = keyDef.keyCap.substr(0, 1);
         var code = unshifted.charCodeAt(0);
         if (code >= 64 && code <= 95) {
-        action = String.fromCharCode(code - 64);
+          action = String.fromCharCode(code - 64);
         }
-      } else if (alt && this.altSendsWhat == '8-bit') {
-        var ch = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
-        var code = ch.charCodeAt(0) + 128;
-        action = this.terminal.vt.encodeUTF8(String.fromCharCode(code));
-      } else {
-        action = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
       }
+    }
+
+    if (alt && this.altSendsWhat == '8-bit' && action.length == 1) {
+      var code = action.charCodeAt(0) + 128;
+      action = String.fromCharCode(code);
     }
 
     // We respect alt/metaSendsEscape even if the keymap action was a literal

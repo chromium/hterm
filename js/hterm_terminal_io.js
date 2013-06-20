@@ -118,6 +118,9 @@ hterm.Terminal.IO.prototype.sendString = function(string) {
  *
  * Clients should override this to receive notification of keystrokes.
  *
+ * The keystroke data will be encoded according to the 'send-encoding'
+ * preference.
+ *
  * @param {string} string The VT key sequence.
  */
 hterm.Terminal.IO.prototype.onVTKeystroke = function(string) {
