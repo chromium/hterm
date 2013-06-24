@@ -1,3 +1,7 @@
+1.12, 2013-06-24, Fix zoom warning.
+
+* Fix the browser-zoom detection so we show the zoom warning again.
+
 1.11, 2013-06-20, Add 'send-encoding'/'receive-encoding' preferences.
 
 * Splits 'character-encoding' into two preferences so send and receive
