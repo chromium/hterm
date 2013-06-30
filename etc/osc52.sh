@@ -25,7 +25,7 @@ OSC_52_MAX_SEQUENCE="100000"
 #
 # This is appropriate when running on a raw terminal that supports OSC 52.
 function get_osc52() {
-  echo -ne "\e]52;c;$(base64 -w0)\x07"
+  echo -ne "\e]52;c;$(base64 | tr -d '\n')\x07"
 }
 
 # This function base64's the entire source, wraps it in a single OSC 52,
@@ -62,7 +62,7 @@ function main() {
     str="$(get_osc52_dsc)"
   fi
 
-  local len=$(expr length "$str")
+  local len=${#str}
   if (("$len" < "$OSC_52_MAX_SEQUENCE")); then
     echo -n "$str"
   else
