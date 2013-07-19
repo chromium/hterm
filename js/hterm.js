@@ -75,12 +75,25 @@ lib.registerInit('hterm', function(onInit) {
     }
   }
 
-  if (chrome.tabs) {
-    // The getCurrent method gets the tab that is "currently running", not the
-    // topmost or focused tab.
-    chrome.tabs.getCurrent(onTab);
+  // The chrome.tabs API is not supported in packaged apps, and detecting if
+  // you're a packaged app is a little awkward.
+  var isPackagedApp = false;
+  if (chrome && chrome.runtime) {
+    var manifest = chrome.runtime.getManifest();
+    var isPackagedApp = manifest.app && manifest.app.background;
+  }
+
+  if (isPackagedApp) {
+    // Packaged apps are never displayed in browser tabs.
+    setTimeout(onWindow.bind(null, {type: 'popup'}), 0);
   } else {
-    setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
+    if (chrome && chrome.tabs) {
+      // The getCurrent method gets the tab that is "currently running", not the
+      // topmost or focused tab.
+      chrome.tabs.getCurrent(onTab);
+    } else {
+      setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
+    }
   }
 });
 

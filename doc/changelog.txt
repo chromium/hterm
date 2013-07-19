@@ -1,3 +1,10 @@
+1.14, 2013-07-19, Fix newline in VT Scroll Region, packaged app fix.
+
+* BUG=chromium:223140, Terminal viewer doesn't handle horizontally split curses
+  application correctly.
+* Fix the hterm.windowType detection to not barf when hterm is used in a
+  Chrome packaged app.
+
 1.13, 2013-07-17, Disable zoom warning on newer Chrome builds.
 
 * New builds of Chrome removed document.width/height, so we're not able to use

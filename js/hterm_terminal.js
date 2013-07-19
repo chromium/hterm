@@ -1385,14 +1385,17 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
  * Otherwise, this moves the cursor to column zero of the next row.
  */
 hterm.Terminal.prototype.newLine = function() {
-  if (this.screen_.cursorPosition.row == this.screen_.rowsArray.length - 1) {
-    // If we're at the end of the screen we need to append a new line and
-    // scroll the top line into the scrollback buffer.
-    this.appendRows_(1);
-  } else if (this.screen_.cursorPosition.row == this.getVTScrollBottom()) {
-    // End of the scroll region does not affect the scrollback buffer.
+  if (this.screen_.cursorPosition.row == this.getVTScrollBottom()) {
+    // We're at the end of the VT Scroll Region.  (It's possible we're also at
+    // the end of the physical screen.)  Perform a VT Scroll rather than create
+    // a new terminal row
     this.vtScrollUp(1);
     this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row, 0);
+  } else if (
+      this.screen_.cursorPosition.row == this.screen_.rowsArray.length - 1) {
+    // We're at the end of the screen.  Append a new row to the terminal,
+    // shifting the top row into the scrollback.
+    this.appendRows_(1);
   } else {
     // Anywhere else in the screen just moves the cursor.
     this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row + 1, 0);
