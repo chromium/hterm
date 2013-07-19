@@ -572,14 +572,20 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   this.rowNodes_.appendChild(this.ruler_);
   var rulerSize = hterm.getClientSize(this.ruler_);
 
-  var zoomFactor = this.document_.width / this.document_.body.clientWidth;
-
   // In some fonts, underscores actually show up below the reported height.
   // We add one to the height here to compensate, and have to add a bottom
   // border to text with a background color over in text_attributes.js.
   var size = new hterm.Size(rulerSize.width / this.ruler_.textContent.length,
                             rulerSize.height + 1);
-  size.zoomFactor = zoomFactor;
+  if ('width' in this.document_) {
+    size.zoomFactor = this.document_.width / this.document_.body.clientWidth;
+  } else {
+    // Current versions of Chrome have removed document.width/height.  We can
+    // no longer depend on it to determine the zoom factor.
+    // TODO(rginda): Remove this code once document.width/height are a distant
+    // memory.
+    size.zoomFactor = 1;
+  }
 
   this.rowNodes_.removeChild(this.ruler_);
   return size;

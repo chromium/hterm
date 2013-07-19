@@ -1352,17 +1352,12 @@ hterm.VT.ESC['\x20'] = function(parseState) {
  *   ESC # 4 - DEC double-height line, bottom half (DECDHL).
  *   ESC # 5 - DEC single-width line (DECSWL).
  *   ESC # 6 - DEC double-width line (DECDWL).
- *
- * All other ESC # sequences are echoed to the terminal.
  */
 hterm.VT.ESC['#'] = function(parseState) {
   parseState.func = function(parseState) {
     var ch = parseState.consumeChar();
-    if (ch == '8') {
+    if (ch == '8')
       this.terminal.fill('E');
-    } else if ("3456".indexOf(ch) == -1) {
-      this.terminal.print('\x1b#' + ch);
-    }
 
     parseState.resetParseFunction();
   };
@@ -1633,7 +1628,7 @@ hterm.VT.OSC['52'] = function(parseState) {
   if (!args)
     return;
 
-  var data = atob(args[1]);
+  var data = window.atob(args[1]);
   if (data)
     this.terminal.copyStringToClipboard(this.decode(data));
 };
@@ -1738,8 +1733,6 @@ hterm.VT.CSI['?J'] = function(parseState, code) {
     // The xterm docs say this means "Erase saved lines", but we'll just clear
     // the display since killing the scrollback seems rude.
     this.terminal.clear();
-  } else {
-    this.terminal.print('\x1b[' + code + args[0])
   }
 };
 
@@ -1756,8 +1749,6 @@ hterm.VT.CSI['?K'] = function(parseState, code) {
     this.terminal.eraseToLeft();
   } else if (arg == '2') {
     this.terminal.eraseLine();
-  } else {
-    this.terminal.print('\x1b[' + arg + code)
   }
 };
 

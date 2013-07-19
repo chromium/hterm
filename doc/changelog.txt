@@ -1,3 +1,13 @@
+1.13, 2013-07-17, Disable zoom warning on newer Chrome builds.
+
+* New builds of Chrome removed document.width/height, so we're not able to use
+  them to detect the zoom factor.  Disabled zoom detection when these properties
+  are missing until we have a better solution.
+* Fix libdot/changelog/(version|date) resources.
+* Fix jscompiler errors.
+* Stop printing "CSI K", "CSI ? J", and "ESC #" sequences with bad params.
+* Shell script changes to pacify BSD.
+
 1.12, 2013-06-24, Fix zoom warning.
 
 * Fix the browser-zoom detection so we show the zoom warning again.
