@@ -625,3 +625,227 @@ hterm.Screen.prototype.deleteChars = function(count) {
 
   return rv;
 };
+
+/**
+ * Finds first X-ROW of a line containing specified X-ROW.
+ * Used to support line overflow.
+ *
+ * @param {Node} row X-ROW to begin search for first row of line.
+ * @return {Node} The X-ROW that is at the beginning of the line.
+ **/
+hterm.Screen.prototype.getLineStartRow_ = function(row) {
+  while (row.previousSibling &&
+         row.previousSibling.hasAttribute('line-overflow')) {
+    row = row.previousSibling;
+  }
+  return row;
+};
+
+/**
+ * Gets text of a line beginning with row.
+ * Supports line overflow.
+ *
+ * @param {Node} row First X-ROW of line.
+ * @return {string} Text content of line.
+ **/
+hterm.Screen.prototype.getLineText_ = function(row) {
+  var rowText = "";
+  while (row) {
+    rowText += row.textContent;
+    if (row.hasAttribute('line-overflow')) {
+      row = row.nextSibling;
+    } else {
+      break;
+    }
+  }
+  return rowText;
+};
+
+/**
+ * Returns X-ROW that is ancestor of the node.
+ *
+ * @param {Node} node Node to get X-ROW ancestor for.
+ * @return {Node} X-ROW ancestor of node, or null if not found.
+ **/
+hterm.Screen.prototype.getXRowAncestor_ = function(node) {
+  while (node) {
+    if (node.nodeName === 'X-ROW')
+      break;
+    node = node.parentNode;
+  }
+  return node;
+};
+
+/**
+ * Returns position within line of character at offset within node.
+ * Supports line overflow.
+ *
+ * @param {Node} row X-ROW at beginning of line.
+ * @param {Node} node Node to get position of.
+ * @param {integer} offset Offset into node.
+ *
+ * @return {integer} Position within line of character at offset within node.
+ **/
+hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
+  if (!node)
+    return -1;
+  var ancestorRow = this.getXRowAncestor_(node);
+  if (!ancestorRow)
+    return -1;
+  var position = 0;
+  while (ancestorRow != row) {
+    position += row.textContent.length;
+    if (row.hasAttribute('line-overflow') && row.nextSibling) {
+      row = row.nextSibling;
+    } else {
+      return -1;
+    }
+  }
+  return position + this.getPositionWithinRow_(row, node, offset);
+};
+
+/**
+ * Returns position within row of character at offset within node.
+ * Does not support line overflow.
+ *
+ * @param {Node} row X-ROW to get position within.
+ * @param {Node} node Node to get position for.
+ * @param {integer} offset Offset within node to get position for.
+ * @return {integer} Position within row of character at offset within node.
+ **/
+hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
+  if (node.parentNode != row) {
+    return this.getPositionWithinRow_(node.parentNode, node, offset) +
+           this.getPositionWithinRow_(row, node.parentNode, 0);
+  }
+  var position = 0;
+  for (var i = 0; i < row.childNodes.length; i++) {
+    var currentNode = row.childNodes[i];
+    if (currentNode == node)
+      return position + offset;
+    position += currentNode.textContent.length;
+  }
+  return -1;
+};
+
+/**
+ * Returns the node and offset corresponding to position within line.
+ * Supports line overflow.
+ *
+ * @param {Node} row X-ROW at beginning of line.
+ * @param {integer} position Position within line to retrieve node and offset.
+ * @return {Array} Two element array containing node and offset respectively.
+ **/
+hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
+  while (row && position > row.textContent.length) {
+    if (row.hasAttribute('line-overflow') && row.nextSibling) {
+      position -= row.textContent.length;
+      row = row.nextSibling;
+    } else {
+      return -1;
+    }
+  }
+  return this.getNodeAndOffsetWithinRow_(row, position);
+};
+
+/**
+ * Returns the node and offset corresponding to position within row.
+ * Does not support line overflow.
+ *
+ * @param {Node} row X-ROW to get position within.
+ * @param {integer} position Position within row to retrieve node and offset.
+ * @return {Array} Two element array containing node and offset respectively.
+ **/
+hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
+  for (var i = 0; i < row.childNodes.length; i++) {
+    var node = row.childNodes[i];
+    if (position <= node.textContent.length) {
+      if (node.nodeName === 'SPAN') {
+        /** Drill down to node contained by SPAN. **/
+        return this.getNodeAndOffsetWithinRow_(node, position);
+      } else {
+        return [node, position];
+      }
+    }
+    position -= node.textContent.length;
+  }
+  return null;
+};
+
+/**
+ * Returns the node and offset corresponding to position within line.
+ * Supports line overflow.
+ *
+ * @param {Node} row X-ROW at beginning of line.
+ * @param {integer} start Start position of range within line.
+ * @param {integer} end End position of range within line.
+ * @param {Range} range Range to modify.
+ **/
+hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
+  var startNodeAndOffset = this.getNodeAndOffsetWithOverflow_(row, start);
+  if (startNodeAndOffset == null)
+    return;
+  var endNodeAndOffset = this.getNodeAndOffsetWithOverflow_(row, end);
+  if (endNodeAndOffset == null)
+    return;
+  range.setStart(startNodeAndOffset[0], startNodeAndOffset[1]);
+  range.setEnd(endNodeAndOffset[0], endNodeAndOffset[1]);
+};
+
+/**
+ * Expands selection to surround URLs.
+ *
+ * Uses this regular expression to expand the selection:
+ * [^\s\[\](){}<>"'\^!@#$%&*,.;:~`]
+ * [^\s\[\](){}<>"'\^]*
+ * [^\s\[\](){}<>"'\^!@#$%&*,.;:~`]
+ *
+ * @param {Selection} selection Selection to expand.
+ **/
+hterm.Screen.prototype.expandSelection = function(selection) {
+  if (!selection)
+    return;
+
+  var range = selection.getRangeAt(0);
+  if (!range || range.toString().match(/\s/))
+    return;
+
+  var row = this.getLineStartRow_(this.getXRowAncestor_(range.startContainer));
+  if (!row)
+    return;
+
+  var startPosition = this.getPositionWithOverflow_(row,
+                                                    range.startContainer,
+                                                    range.startOffset);
+  if (startPosition == -1)
+    return;
+  var endPosition = this.getPositionWithOverflow_(row,
+                                                  range.endContainer,
+                                                  range.endOffset);
+  if (endPosition == -1)
+    return;
+
+  var outsideMatch = '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,.;:~`]';
+  var insideMatch = '[^\\s\\[\\](){}<>"\'\\^]*';
+
+  //Move start to the left.
+  var rowText = this.getLineText_(row);
+  var lineUpToRange = rowText.substring(0, endPosition);
+  var leftRegularExpression = new RegExp(outsideMatch + insideMatch + "$");
+  var expandedStart = lineUpToRange.search(leftRegularExpression);
+  if (expandedStart == -1 || expandedStart > startPosition)
+    return;
+
+  //Move end to the right.
+  var lineFromRange = rowText.substring(startPosition, rowText.length);
+  var rightRegularExpression = new RegExp("^" + insideMatch + outsideMatch);
+  var found = lineFromRange.match(rightRegularExpression);
+  if (!found)
+    return;
+  var expandedEnd = startPosition + found[0].length;
+  if (expandedEnd == -1 || expandedEnd < endPosition)
+    return;
+
+  this.setRange_(row, expandedStart, expandedEnd, range);
+  selection.addRange(range);
+};

@@ -2414,6 +2414,12 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
   e.processedByTerminalHandler_ = true;
 
+  if (e.type == 'dblclick') {
+    this.screen_.expandSelection(this.document_.getSelection());
+    hterm.copySelectionToClipboard(this.document_);
+    return;
+  }
+
   if (e.type == 'mousedown' && e.which == this.mousePasteButton) {
     this.paste();
     return;
