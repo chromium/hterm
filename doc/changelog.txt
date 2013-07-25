@@ -1,3 +1,8 @@
+1.15, 2013-07-25, Fix newline regression.
+
+* getVTScrollBottom returns the row count if there is no vt scroll region in
+  effect, need to read the vtScrollBottom_ property directly instead.
+
 1.14, 2013-07-19, Fix newline in VT Scroll Region, packaged app fix.
 
 * BUG=chromium:223140, Terminal viewer doesn't handle horizontally split curses

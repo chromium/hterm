@@ -1385,7 +1385,8 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
  * Otherwise, this moves the cursor to column zero of the next row.
  */
 hterm.Terminal.prototype.newLine = function() {
-  if (this.screen_.cursorPosition.row == this.getVTScrollBottom()) {
+  if (this.vtScrollBottom_ != null &&
+      this.screen_.cursorPosition.row == this.vtScrollBottom_) {
     // We're at the end of the VT Scroll Region.  (It's possible we're also at
     // the end of the physical screen.)  Perform a VT Scroll rather than create
     // a new terminal row
