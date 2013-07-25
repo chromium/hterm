@@ -1,3 +1,7 @@
+1.16, 2013-07-25, More fix newline regression.
+
+* 1.15 got the treatment of the areas above/below the scroll region wrong.
+
 1.15, 2013-07-25, Fix newline regression.
 
 * getVTScrollBottom returns the row count if there is no vt scroll region in
