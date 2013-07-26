@@ -1,3 +1,8 @@
+1.17, 2013-07-26, Double-click to select url-ish.
+
+* On double-click, expand the text selection to make it easy to select URLs
+  or other interesting substrings.
+
 1.16, 2013-07-25, More fix newline regression.
 
 * 1.15 got the treatment of the areas above/below the scroll region wrong.
