@@ -1611,6 +1611,42 @@ hterm.VT.OSC['4'] = function(parseState) {
 };
 
 /**
+ * Set the cursor shape.
+ *
+ * Parameter is expected to be in the form "CursorShape=number", where number is
+ * one of:
+ *
+ *   0 - Block
+ *   1 - I-Beam
+ *   2 - Underline
+ *
+ * This is a bit of a de-facto standard supported by iTerm 2 and Konsole.  See
+ * also: DECSCUSR.
+ *
+ * Invalid numbers will restore the cursor to the block shape.
+ */
+hterm.VT.OSC['50'] = function(parseState) {
+  var args = parseState.args[0].match(/CursorShape=(.)/i);
+  if (!args) {
+    console.warn('Could not parse OSC 50 args: ' + parseState.args[0]);
+    return;
+  }
+
+  switch (args[1]) {
+    case '1':
+      this.terminal.setCursorShape(hterm.Terminal.cursorShape.BEAM);
+      break;
+
+    case '2':
+      this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
+      break;
+
+    default:
+      this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
+  }
+};
+
+/**
  * Set/read system clipboard.
  *
  * Read is not implemented due to security considerations.  A remote app
@@ -2209,9 +2245,26 @@ hterm.VT.CSI['q'] = hterm.VT.ignore;
  *   2 - Steady block.
  *   3 - Blinking underline.
  *   4 - Steady underline.
- * Not currently implemented.
  */
-hterm.VT.CSI[' q'] = hterm.VT.ignore;
+hterm.VT.CSI[' q'] = function(parseState) {
+  var arg = parseState.args[0];
+
+  if (arg == '0' || arg == '1') {
+    this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
+    this.terminal.setCursorBlink(true);
+  } else if (arg == '2') {
+    this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
+    this.terminal.setCursorBlink(false);
+  } else if (arg == '3') {
+    this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
+    this.terminal.setCursorBlink(true);
+  } else if (arg == '4') {
+    this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
+    this.terminal.setCursorBlink(false);
+  } else {
+    console.warn('Unknown cursor style: ' + arg);
+  }
+};
 
 /**
  * Select character protection attribute (DECSCA).

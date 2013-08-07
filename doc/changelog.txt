@@ -1,3 +1,10 @@
+1.18, 2013-08-07, Implement Cursor shape change sequences.
+
+* Implement cursor shape changes via DECSCUSR.
+* Implement cursor shape changes via OSC 50 CursorShape (as described in
+  http://vim.wikia.com/wiki/Change_cursor_shape_in_different_modes.)
+* Don't blink the cursor when the terminal is unfocused.
+
 1.17, 2013-07-26, Double-click to select url-ish.
 
 * On double-click, expand the text selection to make it easy to select URLs

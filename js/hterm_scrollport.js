@@ -565,6 +565,11 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
                                'XXXXXXXXXXXXXXXXXXXX' +
                                'XXXXXXXXXXXXXXXXXXXX' +
                                'XXXXXXXXXXXXXXXXXXXX');
+
+    this.rulerBaseline_ = this.document_.createElement('span');
+    // We want to collapse it on the baseline
+    this.rulerBaseline_.style.fontSize = '0px';
+    this.rulerBaseline_.textContent = 'X';
   }
 
   this.ruler_.style.fontWeight = opt_weight || '';
@@ -577,6 +582,13 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   // border to text with a background color over in text_attributes.js.
   var size = new hterm.Size(rulerSize.width / this.ruler_.textContent.length,
                             rulerSize.height + 1);
+
+  this.ruler_.appendChild(this.rulerBaseline_);
+  size.baseline = this.rulerBaseline_.offsetTop;
+  this.ruler_.removeChild(this.rulerBaseline_);
+
+  this.rowNodes_.removeChild(this.ruler_);
+
   if ('width' in this.document_) {
     size.zoomFactor = this.document_.width / this.document_.body.clientWidth;
   } else {
@@ -587,7 +599,7 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
     size.zoomFactor = 1;
   }
 
-  this.rowNodes_.removeChild(this.ruler_);
+
   return size;
 };
 

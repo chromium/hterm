@@ -77,6 +77,12 @@ hterm.Terminal = function(opt_profileId) {
   // The DIV element for the visible cursor.
   this.cursorNode_ = null;
 
+  // The current cursor shape of the terminal.
+  this.cursorShape_ = hterm.Terminal.cursorShape.BLOCK;
+
+  // The current color of the cursor.
+  this.cursorColor_ = null;
+
   // These prefs are cached so we don't have to read from local storage with
   // each output and keystroke.  They are initialized by the preference manager.
   this.backgroundColor_ = null;
@@ -118,6 +124,15 @@ hterm.Terminal = function(opt_profileId) {
 
   this.setProfile(opt_profileId || 'default',
                   function() { this.onTerminalReady() }.bind(this));
+};
+
+/**
+ * Possible cursor shapes.
+ */
+hterm.Terminal.cursorShape = {
+  BLOCK: 'BLOCK',
+  BEAM: 'BEAM',
+  UNDERLINE: 'UNDERLINE'
 };
 
 /**
@@ -387,6 +402,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
  * with this method.
  */
 hterm.Terminal.prototype.setCursorColor = function(color) {
+  this.cursorColor_ = color;
   this.cursorNode_.style.backgroundColor = color;
   this.cursorNode_.style.borderColor = color;
 };
@@ -395,7 +411,7 @@ hterm.Terminal.prototype.setCursorColor = function(color) {
  * Return the current cursor color as a string.
  */
 hterm.Terminal.prototype.getCursorColor = function() {
-  return this.cursorNode_.style.backgroundColor;
+  return this.cursorColor_;
 };
 
 /**
@@ -647,6 +663,21 @@ hterm.Terminal.prototype.restoreCursor = function(cursor) {
 hterm.Terminal.prototype.clearCursorOverflow = function() {
   this.screen_.cursorPosition.overflow = false;
 };
+
+/**
+ * Sets the cursor shape
+ */
+hterm.Terminal.prototype.setCursorShape = function(shape) {
+  this.cursorShape_ = shape;
+  this.restyleCursor_(shape);
+}
+
+/**
+ * Get the cursor shape
+ */
+hterm.Terminal.prototype.getCursorShape = function() {
+  return this.cursorShape_;
+}
 
 /**
  * Set the width of the terminal, resizing the UI to match.
@@ -2149,6 +2180,41 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
     this.screen_.syncSelectionCaret(selection);
 };
 
+hterm.Terminal.prototype.restyleCursor_ = function() {
+  var shape = this.cursorShape_;
+
+  if (this.cursorNode_.getAttribute('focus') == 'false') {
+    // Always show a block cursor when unfocused.
+    shape = hterm.Terminal.cursorShape.BLOCK;
+  }
+
+  var style = this.cursorNode_.style;
+
+  switch (shape) {
+    case hterm.Terminal.cursorShape.BEAM:
+      style.height = this.scrollPort_.characterSize.height + 'px';
+      style.backgroundColor = 'transparent';
+      style.borderBottomStyle = null;
+      style.borderLeftStyle = 'solid';
+      break;
+
+    case hterm.Terminal.cursorShape.UNDERLINE:
+      style.height = this.scrollPort_.characterSize.baseline + 'px';
+      style.backgroundColor = 'transparent';
+      style.borderBottomStyle = 'solid';
+      // correct the size to put it exactly at the baseline
+      style.borderLeftStyle = null;
+      break;
+
+    default:
+      style.height = this.scrollPort_.characterSize.height + 'px';
+      style.backgroundColor = this.cursorColor_;
+      style.borderBottomStyle = null;
+      style.borderLeftStyle = null;
+      break;
+  }
+};
+
 /**
  * Synchronizes the visible cursor with the current cursor coordinates.
  *
@@ -2472,6 +2538,7 @@ hterm.Terminal.prototype.onMouse = function(e) { };
  */
 hterm.Terminal.prototype.onFocusChange_ = function(state) {
   this.cursorNode_.setAttribute('focus', state ? 'true' : 'false');
+  this.restyleCursor_();
 };
 
 /**
@@ -2535,7 +2602,8 @@ hterm.Terminal.prototype.onResize_ = function() {
  * Service the cursor blink timeout.
  */
 hterm.Terminal.prototype.onCursorBlink_ = function() {
-  if (this.cursorNode_.style.opacity == '0') {
+  if (this.cursorNode_.getAttribute('focus') == 'false' ||
+      this.cursorNode_.style.opacity == '0') {
     this.cursorNode_.style.opacity = '1';
   } else {
     this.cursorNode_.style.opacity = '0';

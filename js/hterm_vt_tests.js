@@ -1233,6 +1233,78 @@ hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
     result.pass();
   });
 
+/**
+ * Test the cursor shape changes using OSC 50.
+ */
+hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+
+    this.terminal.interpret('\x1b]50;CursorShape=1\x07');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BEAM);
+
+    this.terminal.interpret('\x1b]50;CursorShape=0\x07');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+
+    this.terminal.interpret('\x1b]50;CursorShape=2\x07');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.UNDERLINE);
+
+    // Invalid shape, should be set cursor to block
+    this.terminal.interpret('\x1b]50;CursorShape=a\x07');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+
+    result.pass();
+  });
+
+/**
+ * Test the cursor shape changes using DECSCUSR.
+ */
+hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+    result.assertEQ(this.terminal.options_.cursorBlink, false);
+
+    this.terminal.interpret('\x1b[ 3q');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.UNDERLINE);
+    result.assertEQ(this.terminal.options_.cursorBlink, true);
+
+    this.terminal.interpret('\x1b[ 0q');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+    result.assertEQ(this.terminal.options_.cursorBlink, true);
+
+    this.terminal.interpret('\x1b[ 1q');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+    result.assertEQ(this.terminal.options_.cursorBlink, true);
+
+    this.terminal.interpret('\x1b[ 4q');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.UNDERLINE);
+    result.assertEQ(this.terminal.options_.cursorBlink, false);
+
+    this.terminal.interpret('\x1b[ 2q');
+    this.terminal.syncCursorPosition_();
+    result.assertEQ(this.terminal.getCursorShape(),
+                    hterm.Terminal.cursorShape.BLOCK);
+    result.assertEQ(this.terminal.options_.cursorBlink, false);
+
+    result.pass();
+  });
+
 hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';
