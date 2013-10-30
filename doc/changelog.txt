@@ -1,3 +1,9 @@
+1.20, 2013-10-31, Ignore ECH/EL in the presence of a cursor overflow.
+
+* BUG=232390, Ignore erase-characters and erase-in-line escapes when the cursor
+  has overflowed the terminal width.  This deviates from xterm, but matches
+  gnome-terminal and other modern emulators.
+
 1.19, 2013-10-30, Ignore full-screen vt scroll regions.
 
 * BUG=266197, If the host attempts to set the VT scroll region to be the entire

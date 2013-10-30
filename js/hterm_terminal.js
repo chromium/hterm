@@ -1515,8 +1515,15 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  * trailing space will affect text selection, but it's difficult to come up
  * with a way to style empty space that wouldn't trip up the hterm.Screen
  * code.
+ *
+ * eraseToRight is ignored in the presence of a cursor overflow.  This deviates
+ * from xterm, but agrees with gnome-terminal and konsole, xfce4-terminal.  See
+ * crbug.com/232390 for details.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
+  if (this.screen_.cursorPosition.overflow)
+    return;
+
   var maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
   var count = opt_count ? Math.min(opt_count, maxCount) : maxCount;
 

@@ -1092,10 +1092,12 @@ hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
     // modifies the screen, then add a hyphen. The wrap bit should be
     // cleared, so the extra hyphen can fix the row.
 
+    // We expect the EL in the presence of cursor overflow to be ignored.
+    // See hterm.Terminal.prototype.eraseToRight.
     this.terminal.interpret('-----  1  ----X');
     this.terminal.interpret('\x1b[K-');  // EL
 
-    this.terminal.interpret('-----  2  ----X');
+    this.terminal.interpret('----  2  ----X');
     this.terminal.interpret('\x1b[J-');  // ED
 
     this.terminal.interpret('-----  3  ----X');
@@ -1104,21 +1106,22 @@ hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
     this.terminal.interpret('-----  4  ----X');
     this.terminal.interpret('\x1b[P-');  // DCH
 
+    // ECH is also ignored in the presence of cursor overflow.
     this.terminal.interpret('-----  5  ----X');
     this.terminal.interpret('\x1b[X-');  // ECH
 
     // DL will delete the entire line but clear the wrap bit, so we
     // expect a hyphen at the end and nothing else.
-    this.terminal.interpret('XXXXXXXXXXXXXXX');
+    this.terminal.interpret('XXXXXXXXXXXXXX');
     this.terminal.interpret('\x1b[M-');  // DL
 
     var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
-                    '-----  1  -----' +
+                    '-----  1  ----X' +
                     '-----  2  -----' +
                     '-----  3  -----' +
                     '-----  4  -----' +
-                    '-----  5  -----' +
+                    '-----  5  ----X' +
                     '              -');
 
     result.assertEQ(this.terminal.getCursorRow(), 5);
