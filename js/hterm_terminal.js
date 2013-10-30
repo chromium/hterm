@@ -1365,13 +1365,24 @@ hterm.Terminal.prototype.print = function(str) {
  * This also resets the cursor position to the absolute (0, 0) position, since
  * that's what xterm appears to do.
  *
+ * Setting the scroll region to the full height of the terminal will clear
+ * the scroll region.  This is *NOT* what most terminals do.  We're explicitly
+ * going "off-spec" here because it makes `screen` and `tmux` overflow into the
+ * local scrollback buffer, which means the scrollbars and shift-pgup/pgdn
+ * continue to work as most users would expect.
+ *
  * @param {integer} scrollTop The zero-based top of the scroll region.
  * @param {integer} scrollBottom The zero-based bottom of the scroll region,
  *     inclusive.
  */
 hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
-  this.vtScrollTop_ = scrollTop;
-  this.vtScrollBottom_ = scrollBottom;
+  if (scrollTop == 0 && scrollBottom == this.screenSize.height - 1) {
+    this.vtScrollTop = null;
+    this.vtScrollBottom = null;
+  } else {
+    this.vtScrollTop_ = scrollTop;
+    this.vtScrollBottom_ = scrollBottom;
+  }
 };
 
 /**

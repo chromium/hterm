@@ -1,4 +1,11 @@
-1.18, 2013-08-07, Implement Cursor shape change sequences.
+1.19, 2013-10-30, Ignore full-screen vt scroll regions.
+
+* BUG=266197, If the host attempts to set the VT scroll region to be the entire
+  terminal height, we remove the scroll region entirely.  This lets full-screen
+  apps overflow into the local scrollback buffer, which makes screen and tmux
+  much more pleasant to use.
+
+1.18, 2013-10-29, Implement Cursor shape change sequences.
 
 * Implement cursor shape changes via DECSCUSR.
 * Implement cursor shape changes via OSC 50 CursorShape (as described in
