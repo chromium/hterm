@@ -438,6 +438,8 @@ hterm.Screen.prototype.insertString = function(str) {
   var cursorNode = this.cursorNode_;
   var cursorNodeText = cursorNode.textContent;
 
+  this.cursorRowNode_.removeAttribute('line-overflow');
+
   // We may alter the length of the string by prepending some missing
   // whitespace, so we need to record the string length ahead of time.
   var strLength = str.length;
@@ -552,7 +554,6 @@ hterm.Screen.prototype.insertString = function(str) {
 
 /**
  * Overwrite the text at the current cursor position.
- *
  *
  * You must call maybeClipCurrentRow() after in order to clip overflowed
  * text and clamp the cursor.

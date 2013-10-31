@@ -1,3 +1,9 @@
+1.21, 2013-10-31, Clear line-overflow whenever we insert characters.
+
+* BUG=266128, Clear line-overflow state when inserting text.  This keeps
+  us from accidentally re-using the overflow state of text that was already
+  visible on the line.
+
 1.20, 2013-10-31, Ignore ECH/EL in the presence of a cursor overflow.
 
 * BUG=232390, Ignore erase-characters and erase-in-line escapes when the cursor
