@@ -15,8 +15,8 @@
 #
 #  dist/js/hterm_resource.js - Only the resources, used by hterm_test.html.
 #
-# Most apps will need to include "hterm_deps.js" and "hterm.js" (in that order)
-# to make use of hterm.
+#  dist/js/hterm_all.js - hterm_deps.js + hterm.js.  Most apps can just use
+#    this.
 #
 
 COMMAND_LINE="$(readlink -f $0) $@"
@@ -42,6 +42,9 @@ function concat() {
   insist $concat -i ./concat/hterm_resources.concat -o \
     "$outdir/hterm_resources.js"
   insist $concat -i ./concat/hterm.concat -o "$outdir/hterm.js"
+
+  cat "$outdir/hterm_deps.js" "$outdir/hterm_resources.js" > \
+    "$outdir/hterm_all.js"
 }
 
 function main() {
