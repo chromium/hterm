@@ -85,7 +85,7 @@ lib.registerInit('hterm', function(onInit) {
   // The chrome.tabs API is not supported in packaged apps, and detecting if
   // you're a packaged app is a little awkward.
   var isPackagedApp = false;
-  if (chrome && chrome.runtime) {
+  if (chrome && chrome.runtime && chrome.runtime.getManifest) {
     var manifest = chrome.runtime.getManifest();
     var isPackagedApp = manifest.app && manifest.app.background;
   }
