@@ -515,7 +515,7 @@ hterm.Terminal.prototype.isPrimaryScreen = function() {
  * terminal.
  */
 hterm.Terminal.prototype.installKeyboard = function() {
-  this.keyboard.installKeyboard(this.document_.body.firstChild);
+  this.keyboard.installKeyboard(this.scrollPort_.getScreenNode());
 }
 
 /**
@@ -1057,14 +1057,15 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.document_.body.oncontextmenu = function() { return false };
 
   var onMouse = this.onMouse_.bind(this);
-  this.document_.body.firstChild.addEventListener('mousedown', onMouse);
-  this.document_.body.firstChild.addEventListener('mouseup', onMouse);
-  this.document_.body.firstChild.addEventListener('mousemove', onMouse);
+  var screenNode = this.scrollPort_.getScreenNode();
+  screenNode.addEventListener('mousedown', onMouse);
+  screenNode.addEventListener('mouseup', onMouse);
+  screenNode.addEventListener('mousemove', onMouse);
   this.scrollPort_.onScrollWheel = onMouse;
 
-  this.document_.body.firstChild.addEventListener(
+  screenNode.addEventListener(
       'focus', this.onFocusChange_.bind(this, true));
-  this.document_.body.firstChild.addEventListener(
+  screenNode.addEventListener(
       'blur', this.onFocusChange_.bind(this, false));
 
   var style = this.document_.createElement('style');

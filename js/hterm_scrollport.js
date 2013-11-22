@@ -467,6 +467,13 @@ hterm.ScrollPort.prototype.getDocument = function() {
 };
 
 /**
+ * Returns the x-screen element that holds the rows of this hterm.ScrollPort.
+ */
+hterm.ScrollPort.prototype.getScreenNode = function() {
+  return this.screen_;
+};
+
+/**
  * Clear out any cached rowNodes.
  */
 hterm.ScrollPort.prototype.resetCache = function() {
