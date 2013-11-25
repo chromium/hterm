@@ -1377,8 +1377,8 @@ hterm.Terminal.prototype.print = function(str) {
  */
 hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
   if (scrollTop == 0 && scrollBottom == this.screenSize.height - 1) {
-    this.vtScrollTop = null;
-    this.vtScrollBottom = null;
+    this.vtScrollTop_ = null;
+    this.vtScrollBottom_ = null;
   } else {
     this.vtScrollTop_ = scrollTop;
     this.vtScrollBottom_ = scrollBottom;

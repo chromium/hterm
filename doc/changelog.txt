@@ -1,3 +1,8 @@
+1.22, 2013-11-25, Fix full-screen scroll region fix.
+
+* hterm 1.19 attempted to ignore full-screen scroll regions, but the patch
+  got the variable names wrong.  This fixes them.
+
 1.21, 2013-10-31, Clear line-overflow whenever we insert characters.
 
 * BUG=266128, Clear line-overflow state when inserting text.  This keeps
