@@ -2318,6 +2318,11 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
         'position: absolute;' +
         '-webkit-user-select: none;' +
         '-webkit-transition: opacity 180ms ease-in;');
+
+    this.overlayNode_.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
   }
 
   this.overlayNode_.style.color = this.prefs_.get('background-color');
@@ -2347,7 +2352,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
 
   this.overlayTimeout_ = setTimeout(function() {
       self.overlayNode_.style.opacity = '0';
-      setTimeout(function() {
+      self.overlayTimeout_ = setTimeout(function() {
           if (self.overlayNode_.parentNode)
             self.overlayNode_.parentNode.removeChild(self.overlayNode_);
           self.overlayTimeout_ = null;

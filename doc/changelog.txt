@@ -1,3 +1,10 @@
+1.23, 2013-11-25, Prevent overlay focus, fix timeout tracking.
+
+* Prevent the terminal overlay (hterm.Terminal.prototype.showOverlay) from
+  taking focus if it happens to get clicked.
+* Fix the overlay timeout tracking to fix cases where showOverlay is called
+  again before the previous overlay has timed out.
+
 1.22, 2013-11-25, Fix full-screen scroll region fix.
 
 * hterm 1.19 attempted to ignore full-screen scroll regions, but the patch
