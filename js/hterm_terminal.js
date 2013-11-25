@@ -2179,7 +2179,6 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
   }
 
   this.cursorNode_.style.width = this.scrollPort_.characterSize.width + 'px';
-  this.cursorNode_.style.height = this.scrollPort_.characterSize.height + 'px';
 
   this.cursorNode_.style.top = this.scrollPort_.visibleRowTopMargin +
       this.scrollPort_.characterSize.height * (cursorRowIndex - topRowIndex) +
