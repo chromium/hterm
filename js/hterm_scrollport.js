@@ -38,6 +38,9 @@ hterm.ScrollPort = function(rowProvider) {
   // SWAG the character size until we can measure it.
   this.characterSize = new hterm.Size(10, 10);
 
+  // Cached screen dimensions in (sub) pixels.
+  this.screenSize = null;
+
   // DOM node used for character measurement.
   this.ruler_ = null;
 
@@ -455,28 +458,12 @@ hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
  *
  * The width will not include the scrollbar width.
  */
-hterm.ScrollPort.prototype.getScreenSize = function() {
+hterm.ScrollPort.prototype.syncScreenSize = function() {
   var size = hterm.getClientSize(this.screen_);
-  return {
+  this.screenSize = {
     height: size.height,
     width: size.width - this.currentScrollbarWidthPx
   };
-};
-
-/**
- * Get the usable width of the scrollport screen.
- *
- * This the widget width minus scrollbar width.
- */
-hterm.ScrollPort.prototype.getScreenWidth = function() {
-  return this.getScreenSize().width ;
-};
-
-/**
- * Get the usable height of the scrollport screen.
- */
-hterm.ScrollPort.prototype.getScreenHeight = function() {
-  return this.getScreenSize().height;
 };
 
 /**
@@ -663,6 +650,7 @@ hterm.ScrollPort.prototype.resize = function() {
   this.currentScrollbarWidthPx = hterm.getClientWidth(this.screen_) -
     this.screen_.clientWidth;
 
+  this.syncScreenSize();
   this.syncScrollHeight();
   this.syncRowNodesDimensions_();
 
@@ -679,7 +667,7 @@ hterm.ScrollPort.prototype.resize = function() {
  * Set the position and size of the row nodes element.
  */
 hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
-  var screenSize = this.getScreenSize();
+  var screenSize = this.screenSize;
 
   this.lastScreenWidth_ = screenSize.width;
   this.lastScreenHeight_ = screenSize.height;
@@ -756,8 +744,6 @@ hterm.ScrollPort.prototype.redraw_ = function() {
   this.resetSelectBags_();
   this.selection.sync();
 
-  this.syncScrollHeight();
-
   this.currentRowNodeCache_ = {};
 
   var topRowIndex = this.getTopRowIndex();
@@ -766,8 +752,6 @@ hterm.ScrollPort.prototype.redraw_ = function() {
   this.drawTopFold_(topRowIndex);
   this.drawBottomFold_(bottomRowIndex);
   this.drawVisibleRows_(topRowIndex, bottomRowIndex);
-
-  this.syncRowNodesDimensions_();
 
   this.previousRowNodeCache_ = this.currentRowNodeCache_;
   this.currentRowNodeCache_ = null;
@@ -1168,7 +1152,8 @@ hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
  * may be due to the user manually move the scrollbar, or a programmatic change.
  */
 hterm.ScrollPort.prototype.onScroll_ = function(e) {
-  var screenSize = this.getScreenSize();
+  var screenSize = this.screenSize;
+
   if (screenSize.width != this.lastScreenWidth_ ||
       screenSize.height != this.lastScreenHeight_) {
     // This event may also fire during a resize (but before the resize event!).
@@ -1234,6 +1219,7 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
 hterm.ScrollPort.prototype.onResize_ = function(e) {
   // Re-measure, since onResize also happens for browser zoom changes.
   this.syncCharacterSize();
+  this.syncScreenSize();
   this.resize();
 };
 

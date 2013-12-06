@@ -1,3 +1,13 @@
+1.30, 2014-2-18, Scrolling speedups.
+
+* hterm_scrollport.js: Cache screen size.  The getBoundingClientRect call
+  dominated profiles of `cat /var/log/messages`.  Now we determine the screen
+  size after each resize event and cache the result for later.
+* hterm_scrollport.js: Remove calls to syncScrollHeight and
+  syncRowNodesDimensions from redraw_, since they're expensive and redraw_
+  is called a lot, and those things should only change during resize/font-size
+  changes.
+
 1.29, 2014-02-14, Better recursive "copy" fix.
 
 * BUG=chromium:340699: Auto copy doesn't work.
