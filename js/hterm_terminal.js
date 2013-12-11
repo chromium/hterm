@@ -669,7 +669,7 @@ hterm.Terminal.prototype.clearCursorOverflow = function() {
  */
 hterm.Terminal.prototype.setCursorShape = function(shape) {
   this.cursorShape_ = shape;
-  this.restyleCursor_(shape);
+  this.restyleCursor_();
 }
 
 /**
@@ -1087,7 +1087,10 @@ hterm.Terminal.prototype.decorate = function(div) {
        'width: ' + this.scrollPort_.characterSize.width + 'px;' +
        'height: ' + this.scrollPort_.characterSize.height + 'px;' +
        '-webkit-transition: opacity, background-color 100ms linear;');
+
   this.setCursorColor(this.prefs_.get('cursor-color'));
+  this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
+  this.restyleCursor_();
 
   this.document_.body.appendChild(this.cursorNode_);
 
@@ -1120,7 +1123,6 @@ hterm.Terminal.prototype.decorate = function(div) {
       setTimeout(this.focus.bind(this));
     }.bind(this));
 
-  this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
   this.setReverseVideo(false);
 
   this.scrollPort_.focus();
@@ -2179,8 +2181,6 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
     return;
   }
 
-  this.cursorNode_.style.width = this.scrollPort_.characterSize.width + 'px';
-
   this.cursorNode_.style.top = this.scrollPort_.visibleRowTopMargin +
       this.scrollPort_.characterSize.height * (cursorRowIndex - topRowIndex) +
       'px';
@@ -2198,6 +2198,10 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
     this.screen_.syncSelectionCaret(selection);
 };
 
+/**
+ * Adjusts the style of this.cursorNode_ according to the current cursor shape
+ * and character cell dimensions.
+ */
 hterm.Terminal.prototype.restyleCursor_ = function() {
   var shape = this.cursorShape_;
 
@@ -2207,6 +2211,8 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
   }
 
   var style = this.cursorNode_.style;
+
+  style.width = this.scrollPort_.characterSize.width + 'px';
 
   switch (shape) {
     case hterm.Terminal.cursorShape.BEAM:
@@ -2618,6 +2624,7 @@ hterm.Terminal.prototype.onResize_ = function() {
   if (isNewSize)
     this.overlaySize();
 
+  this.restyleCursor_();
   this.scheduleSyncCursorPosition_();
 };
 

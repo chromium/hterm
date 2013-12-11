@@ -1,3 +1,9 @@
+1.24, 2013-12-10, Fix cursor height regression.
+
+* Fix cursor sizing regression.  syncCursorPosition_ is now only about the
+  position of the cursor, restyleCursor_ now sets cursor width, in addition to
+  height and cursor shape related stuff.  Call restyleCursor_ from onResize_.
+
 1.23, 2013-11-25, Prevent overlay focus, fix timeout tracking.
 
 * Prevent the terminal overlay (hterm.Terminal.prototype.showOverlay) from
