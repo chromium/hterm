@@ -220,6 +220,34 @@ hterm.Screen.Tests.addTest('delete-chars', function(result, cx) {
     this.screen.deleteChars(5);
 
     result.assertEQ(row.innerHTML, 'hel<div id="2">rld</div>');
+
+    var createWidecharNode = function(c) {
+      var span = document.createElement('span');
+      span.textContent = c;
+      span.className = 'wc-node';
+      span.wcNode = true;
+      return span;
+    };
+
+    var wc_row = document.createElement('div');
+    wc_row.appendChild(createWidecharNode('\u4E2D'));
+    wc_row.appendChild(createWidecharNode('\u6587'));
+    wc_row.appendChild(createWidecharNode('\u5B57'));
+    wc_row.appendChild(createWidecharNode('\u4E32'));
+    this.screen.pushRow(wc_row);
+
+    this.screen.setCursorPosition(1, 2);
+    this.screen.deleteChars(2);
+
+    result.assertEQ(wc_row.innerHTML, '<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.setCursorPosition(1, 0);
+    this.screen.deleteChars(6);
+
+    result.assertEQ(wc_row.innerHTML, '');
+
     result.pass();
   });
 
@@ -229,7 +257,8 @@ hterm.Screen.Tests.addTest('delete-chars', function(result, cx) {
 hterm.Screen.Tests.addTest('insert', function(result, cx) {
     // Sample rows.  Row 0 is a simple, empty row.  Row 1 simulates rows with
     // mixed text attributes.
-    var ary = [document.createElement('div'), document.createElement('div')];
+    var ary = [document.createElement('div'), document.createElement('div'),
+               document.createElement('div')];
     ary[1].innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
     this.screen.pushRows(ary);
 
@@ -266,6 +295,51 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     result.assertEQ(ary[1].innerHTML, 'helXXXXXlo<div id="1"> </div>' +
                     '<div id="2">world</div>');
 
+    // Test inserting widechar string.
+    var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
+    this.screen.setCursorPosition(2, 0);
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.insertString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    result.assertEQ(ary[2].innerHTML, '<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.clearCursorRow();
+    this.screen.setCursorPosition(2, 3);
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.insertString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    result.assertEQ(ary[2].innerHTML, '   <span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.setCursorPosition(2, 7);
+    this.screen.insertString('XXXXX');
+    result.assertEQ(ary[2].innerHTML, '   <span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' + 'XXXXX' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.clearCursorRow();
+    this.screen.insertString('XXXXX');
+    this.screen.setCursorPosition(2, 3);
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.insertString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    result.assertEQ(ary[2].innerHTML, 'XXX<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>XX');
+
     result.pass();
   });
 
@@ -277,6 +351,7 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
     ary[0] = document.createElement('div');
     ary[0].innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
     ary[1] = document.createElement('div');
+    ary[2] = document.createElement('div');
     this.screen.pushRows(ary);
 
     this.screen.setCursorPosition(0, 3);
@@ -288,6 +363,69 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
     this.screen.overwriteString('XXXXX');
 
     result.assertEQ(ary[1].innerHTML, 'XXXXX');
+
+    // Test overwritting widechar string.
+    var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
+    this.screen.setCursorPosition(2, 0);
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.overwriteString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    result.assertEQ(ary[2].innerHTML, '<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.clearCursorRow();
+    this.screen.insertString('XXXXX');
+    this.screen.setCursorPosition(2, 3);
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.overwriteString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    result.assertEQ(ary[2].innerHTML, 'XXX<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.setCursorPosition(2, 7);
+    this.screen.overwriteString('OO');
+    result.assertEQ(ary[2].innerHTML, 'XXX<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' + 'OO' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.clearCursorRow();
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.insertString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    this.screen.setCursorPosition(2, 4);
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.overwriteString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    result.assertEQ(ary[2].innerHTML, '<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u4E2D</span>' +
+                    '<span class="wc-node">\u6587</span>' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
+
+    this.screen.clearCursorRow();
+    this.screen.textAttributes.wcNode = true;
+    for (var i = 0; i < wideCharString.length; i++) {
+      this.screen.insertString(wideCharString.charAt(i));
+    }
+    this.screen.textAttributes.wcNode = false;
+    this.screen.setCursorPosition(2, 0);
+    this.screen.overwriteString('    ');
+    result.assertEQ(ary[2].innerHTML, '    ' +
+                    '<span class="wc-node">\u5B57</span>' +
+                    '<span class="wc-node">\u4E32</span>');
 
     result.pass();
   });

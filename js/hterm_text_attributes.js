@@ -38,6 +38,7 @@ hterm.TextAttributes = function(document) {
   this.underline = false;
   this.inverse = false;
   this.invisible = false;
+  this.wcNode = false;
 
   this.colorPalette = null;
   this.resetColorPalette();
@@ -96,6 +97,7 @@ hterm.TextAttributes.prototype.reset = function() {
   this.underline = false;
   this.inverse = false;
   this.invisible = false;
+  this.wcNode = false;
 };
 
 /**
@@ -118,7 +120,8 @@ hterm.TextAttributes.prototype.isDefault = function() {
           !this.blink &&
           !this.underline &&
           !this.inverse &&
-          !this.invisible);
+          !this.invisible &&
+          !this.wcNode);
 };
 
 /**
@@ -126,10 +129,12 @@ hterm.TextAttributes.prototype.isDefault = function() {
  * current set of attributes.
  *
  * This method will create a plain text node if the text is unstyled, or
- * an HTML span if the text is styled.
+ * an HTML span if the text is styled.  Due to lack of monospace wide character
+ * fonts on certain systems (e.g. Chrome OS), we need to put each wide character
+ * in a span of CSS class '.wc-node' which has double column width.
  *
  * @param {string} opt_textContent Optional text content for the new container.
- * @return {HTMLNode} An HTML span or text node styled to match the current
+ * @return {HTMLNode} An HTML span or text nodes styled to match the current
  *     attributes.
  */
 hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
@@ -159,6 +164,11 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (this.underline)
     style.textDecoration = 'underline';
 
+  if (this.wcNode) {
+    span.className = 'wc-node';
+    span.wcNode = true;
+  }
+
   if (opt_textContent)
     span.textContent = opt_textContent;
 
@@ -184,7 +194,10 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
 
   var style = obj.style;
 
-  return (this.foreground == style.color &&
+  // We don't want to put multiple wide characters in a wcNode. See the comment
+  // in createContainer.
+  return (!(this.wcNode || obj.wcNode) &&
+          this.foreground == style.color &&
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
           this.blink == !!style.fontStyle &&
@@ -288,3 +301,88 @@ hterm.TextAttributes.containersMatch = function(obj1, obj2) {
 hterm.TextAttributes.containerIsDefault = function(obj) {
   return typeof obj == 'string'  || obj.nodeType == 3;
 };
+
+/**
+ * Static method to get the column width of a node's textContent.
+ *
+ * @param {HTMLElement} node The HTML element to get the width of textContent
+ *     from.
+ * @return {integer} The column width of the node's textContent.
+ */
+hterm.TextAttributes.nodeWidth = function(node) {
+  if (node.wcNode) {
+    return lib.wc.strWidth(node.textContent);
+  } else {
+    return node.textContent.length;
+  }
+}
+
+/**
+ * Static method to get the substr of a node's textContent.  The start index
+ * and substr width are computed in column width.
+ *
+ * @param {HTMLElement} node The HTML element to get the substr of textContent
+ *     from.
+ * @param {integer} start The starting offset in column width.
+ * @param {integer} width The width to capture in column width.
+ * @return {integer} The extracted substr of the node's textContent.
+ */
+hterm.TextAttributes.nodeSubstr = function(node, start, width) {
+  if (node.wcNode) {
+    return lib.wc.substr(node.textContent, start, width);
+  } else {
+    return node.textContent.substr(start, width);
+  }
+}
+
+/**
+ * Static method to get the substring based of a node's textContent.  The
+ * start index of end index are computed in column width.
+ *
+ * @param {HTMLElement} node The HTML element to get the substr of textContent
+ *     from.
+ * @param {integer} start The starting offset in column width.
+ * @param {integer} end The ending offset in column width.
+ * @return {integer} The extracted substring of the node's textContent.
+ */
+hterm.TextAttributes.nodeSubstring = function(node, start, end) {
+  if (node.wcNode) {
+    return lib.wc.substring(node.textContent, start, end);
+  } else {
+    return node.textContent.substring(start, end);
+  }
+}
+
+/**
+ * Static method to split a string into contiguous runs of single-width
+ * characters and runs of double-width characters.
+ *
+ * @param {string} str The string to split.
+ * @return {Array} An array of objects that contain substrings of str, where
+ *     each substring is either a contiguous runs of single-width characters
+ *     or a double-width character.  For object that contains a double-width
+ *     character, its wcNode property is set to true.
+ */
+hterm.TextAttributes.splitWidecharString = function(str) {
+  var rv = [];
+  var base = 0, length = 0;
+
+  for (var i = 0; i < str.length; i++) {
+    var c = str.charCodeAt(i);
+    if (c < 128 || lib.wc.charWidth(c) == 1) {
+      length++;
+    } else {
+      if (length) {
+        rv.push({str: str.substr(base, length)});
+      }
+      rv.push({str: str.substr(i, 1), wcNode: true});
+      base = i + 1;
+      length = 0;
+    }
+  }
+
+  if (length)
+    rv.push({str: str.substr(base, length)});
+
+  return rv;
+}

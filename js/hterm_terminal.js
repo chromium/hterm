@@ -6,7 +6,8 @@
 
 lib.rtdep('lib.colors', 'lib.PreferenceManager', 'lib.resource',
           'hterm.Keyboard', 'hterm.Options', 'hterm.PreferenceManager',
-          'hterm.Screen', 'hterm.ScrollPort', 'hterm.Size', 'hterm.VT');
+          'hterm.Screen', 'hterm.ScrollPort', 'hterm.Size',
+          'hterm.TextAttributes', 'hterm.VT');
 
 /**
  * Constructor for the Terminal class.
@@ -316,10 +317,6 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.syncMousePasteButton();
     },
 
-    'page-keys-scroll': function(v) {
-      terminal.keyboard.pageKeysScroll = v;
-    },
-
     'pass-alt-number': function(v) {
       if (v == null) {
         var osx = window.navigator.userAgent.match(/Mac OS X/);
@@ -390,8 +387,8 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.keyboard.shiftInsertPaste = v;
     },
 
-    'user-css': function(v) {
-      terminal.scrollPort_.setUserCss(v);
+    'page-keys-scroll': function(v) {
+      terminal.keyboard.pageKeysScroll = v;
     }
   });
 
@@ -547,6 +544,10 @@ hterm.Terminal.prototype.setFontSize = function(px) {
     px = this.prefs_.get('font-size');
 
   this.scrollPort_.setFontSize(px);
+  if (this.wcCssRule_) {
+    this.wcCssRule_.style.width = this.scrollPort_.characterSize.width * 2 +
+        'px';
+  }
 };
 
 /**
@@ -1052,7 +1053,6 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
   this.scrollPort_.setBackgroundPosition(
       this.prefs_.get('background-position'));
-  this.scrollPort_.setUserCss(this.prefs_.get('user-css'));
 
   this.div_.focus = this.focus.bind(this);
 
@@ -1084,8 +1084,17 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  background-color: transparent !important;' +
        '  border-width: 2px;' +
        '  border-style: solid;' +
+       '}' +
+       '.wc-node {' +
+       '  display: inline-block;' +
+       '  text-align: center;' +
+       '  width: ' + this.scrollPort_.characterSize.width * 2 + 'px;' +
        '}');
   this.document_.head.appendChild(style);
+
+  var styleSheets = this.document_.styleSheets;
+  var cssRules = styleSheets[styleSheets.length - 1].cssRules;
+  this.wcCssRule_ = cssRules[cssRules.length - 1];
 
   this.cursorNode_ = this.document_.createElement('div');
   this.cursorNode_.className = 'cursor-node';
@@ -1329,13 +1338,15 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
 hterm.Terminal.prototype.print = function(str) {
   var startOffset = 0;
 
-  while (startOffset < str.length) {
+  var strWidth = lib.wc.strWidth(str);
+
+  while (startOffset < strWidth) {
     if (this.options_.wraparound && this.screen_.cursorPosition.overflow) {
       this.screen_.commitLineOverflow();
       this.newLine();
     }
 
-    var count = str.length - startOffset;
+    var count = strWidth - startOffset;
     var didOverflow = false;
     var substr;
 
@@ -1348,17 +1359,24 @@ hterm.Terminal.prototype.print = function(str) {
       // If the string overflowed the line but wraparound is off, then the
       // last printed character should be the last of the string.
       // TODO: This will add to our problems with multibyte UTF-16 characters.
-      substr = str.substr(startOffset, count - 1) +
-          str.substr(str.length - 1);
-      count = str.length;
+      substr = lib.wc.substr(str, startOffset, count - 1) +
+          lib.wc.substr(str, strWidth - 1);
+      count = strWidth;
     } else {
-      substr = str.substr(startOffset, count);
+      substr = lib.wc.substr(str, startOffset, count);
     }
 
-    if (this.options_.insertMode) {
-      this.screen_.insertString(substr);
-    } else {
-      this.screen_.overwriteString(substr);
+    var tokens = hterm.TextAttributes.splitWidecharString(substr);
+    for (var i = 0; i < tokens.length; i++) {
+      if (tokens[i].wcNode)
+        this.screen_.textAttributes.wcNode = true;
+
+      if (this.options_.insertMode) {
+          this.screen_.insertString(tokens[i].str);
+      } else {
+        this.screen_.overwriteString(tokens[i].str);
+      }
+      this.screen_.textAttributes.wcNode = false;
     }
 
     this.screen_.maybeClipCurrentRow();
@@ -1542,7 +1560,7 @@ hterm.Terminal.prototype.eraseToRight = function(opt_count) {
   if (this.screen_.textAttributes.background ===
       this.screen_.textAttributes.DEFAULT_COLOR) {
     var cursorRow = this.screen_.rowsArray[this.screen_.cursorPosition.row];
-    if (cursorRow.textContent.length <=
+    if (hterm.TextAttributes.nodeWidth(cursorRow) <=
         this.screen_.cursorPosition.column + count) {
       this.screen_.deleteChars(count);
       this.clearCursorOverflow();
@@ -2442,12 +2460,13 @@ hterm.Terminal.prototype.getSelectionText = function() {
 
     while (node.previousSibling) {
       node = node.previousSibling;
-      startOffset += node.textContent.length;
+      startOffset += hterm.TextAttributes.nodeWidth(node);
     }
   }
 
   // End offset measures from the end of the line.
-  var endOffset = selection.endNode.textContent.length - selection.endOffset;
+  var endOffset = (hterm.TextAttributes.nodeWidth(selection.endNode) -
+                   selection.endOffset);
   var node = selection.endNode;
 
   if (node.nodeName != 'X-ROW') {
@@ -2462,13 +2481,13 @@ hterm.Terminal.prototype.getSelectionText = function() {
 
     while (node.nextSibling) {
       node = node.nextSibling;
-      endOffset += node.textContent.length;
+      endOffset += hterm.TextAttributes.nodeWidth(node);
     }
   }
 
   var rv = this.getRowsText(selection.startRow.rowIndex,
                             selection.endRow.rowIndex + 1);
-  return rv.substring(startOffset, rv.length - endOffset);
+  return lib.wc.substring(rv, startOffset, lib.wc.strWidth(rv) - endOffset);
 };
 
 /**

@@ -458,6 +458,26 @@ hterm.VT.Tests.addTest('erase-left', function(result, cx) {
   });
 
 /**
+ * Test the erase left command with widechar string.
+ */
+hterm.VT.Tests.addTest('erase-left-widechar', function(result, cx) {
+    this.terminal.interpret(
+        '\xe7\xac\xac\xe4\xb8\x80\xe8\xa1\x8c\r\n' +
+        '\xe7\xac\xac\xe4\xba\x8c\xe8\xa1\x8c\r\n' +
+        '\xe7\xac\xac\xe4\xb8\x89\xe8\xa1\x8c');
+    this.terminal.interpret('\x1b[5D' +
+                            '\x1b[A' +
+                            '\x1b[1KOO');
+
+    var text = this.terminal.getRowsText(0, 3);
+    result.assertEQ('\u7b2c\u4e00\u884c\n' +
+                    ' OO \u884c\n' +
+                    '\u7b2c\u4e09\u884c',
+                    text);
+    result.pass();
+  });
+
+/**
  * Test the erase right command.
  */
 hterm.VT.Tests.addTest('erase-right', function(result, cx) {
@@ -470,6 +490,25 @@ hterm.VT.Tests.addTest('erase-right', function(result, cx) {
                     'line one\n' +
                     'line two\n' +
                     'line three');
+    result.pass();
+  });
+
+/**
+ * Test the erase right command with widechar string.
+ */
+hterm.VT.Tests.addTest('erase-right-widechar', function(result, cx) {
+    this.terminal.interpret(
+        '\xe7\xac\xac\xe4\xb8\x80\xe8\xa1\x8c\r\n' +
+        '\xe7\xac\xac\xe4\xba\x8c\xe8\xa1\x8c\r\n' +
+        '\xe7\xac\xac\xe4\xb8\x89\xe8\xa1\x8c');
+    this.terminal.interpret('\x1b[5D\x1b[A' +
+                            '\x1b[0KOO');
+
+    var text = this.terminal.getRowsText(0, 3);
+    result.assertEQ('\u7b2c\u4e00\u884c\n' +
+                    'OO\n' +
+                    '\u7b2c\u4e09\u884c',
+                    text);
     result.pass();
   });
 
@@ -799,6 +838,34 @@ hterm.VT.Tests.addTest('color-change', function(result, cx) {
                     'bold........ Hi\n' +
                     'bold-bright. Hi\n' +
                     'bright-bold. Hi');
+
+    for (var i = 0; i < 5; i++) {
+      var row = this.terminal.getRowNode(i);
+      result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
+      result.assertEQ(row.childNodes[0].nodeType, 3, 'i: ' + i);
+      result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
+      result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
+      result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
+      result.assert(!!row.childNodes[1].style.fontWeight == (i > 1), 'i: ' + i);
+    }
+
+    result.pass();
+  });
+
+hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
+    this.terminal.interpret('[mplain....... [0;36m中\r\n' +
+                            '[mbright...... [0;96m中\r\n' +
+                            '[mbold........ [1;36m中\r\n' +
+                            '[mbold-bright. [1;96m中\r\n' +
+                            '[mbright-bold. [96;1m中');
+
+    var text = this.terminal.getRowsText(0, 5);
+    result.assertEQ(text,
+                    'plain....... \u4E2D\n' +
+                    'bright...... \u4E2D\n' +
+                    'bold........ \u4E2D\n' +
+                    'bold-bright. \u4E2D\n' +
+                    'bright-bold. \u4E2D');
 
     for (var i = 0; i < 5; i++) {
       var row = this.terminal.getRowNode(i);

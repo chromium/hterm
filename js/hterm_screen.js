@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.f',
+lib.rtdep('lib.f', 'lib.wc',
           'hterm.RowCol', 'hterm.Size', 'hterm.TextAttributes');
 
 /**
@@ -68,7 +68,7 @@ hterm.Screen = function(opt_columnCount) {
   // The node containing the span of text that the cursor is positioned on.
   this.cursorNode_ = null;
 
-  // The offset into cursorNode_ where the cursor is positioned.
+  // The offset in column width into cursorNode_ where the cursor is positioned.
   this.cursorOffset_ = null;
 };
 
@@ -332,14 +332,14 @@ hterm.Screen.prototype.setCursorPosition = function(row, column) {
 
   while (node) {
     var offset = column - currentColumn;
-    var textContent = node.textContent;
-    if (!node.nextSibling || textContent.length > offset) {
+    var width = hterm.TextAttributes.nodeWidth(node);
+    if (!node.nextSibling || width > offset) {
       this.cursorNode_ = node;
       this.cursorOffset_ = offset;
       return;
     }
 
-    currentColumn += textContent.length;
+    currentColumn += width;
     node = node.nextSibling;
   }
 };
@@ -372,17 +372,22 @@ hterm.Screen.prototype.splitNode_ = function(node, offset) {
   var afterNode = node.cloneNode(false);
 
   var textContent = node.textContent;
-  node.textContent = textContent.substr(0, offset);
-  afterNode.textContent = textContent.substr(offset);
+  node.textContent = hterm.TextAttributes.nodeSubstr(node, 0, offset);
+  afterNode.textContent = lib.wc.substr(textContent, offset);
 
-  node.parentNode.insertBefore(afterNode, node.nextSibling);
+  if (afterNode.textContent)
+    node.parentNode.insertBefore(afterNode, node.nextSibling);
+  if (!node.textContent)
+    node.parentNode.removeChild(node);
 };
 
 /**
  * Ensure that text is clipped and the cursor is clamped to the column count.
  */
 hterm.Screen.prototype.maybeClipCurrentRow = function() {
-  if (this.cursorRowNode_.textContent.length <= this.columnCount_) {
+  var width = hterm.TextAttributes.nodeWidth(this.cursorRowNode_);
+
+  if (width <= this.columnCount_) {
     // Current row does not need clipping, but may need clamping.
     if (this.cursorPosition.column >= this.columnCount_) {
       this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
@@ -399,10 +404,11 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
   this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
 
   // Remove any text that partially overflows.
-  var cursorNodeText = this.cursorNode_.textContent;
-  if (this.cursorOffset_ < cursorNodeText.length - 1) {
-    this.cursorNode_.textContent = cursorNodeText.substr(
-        0, this.cursorOffset_ + 1);
+  width = hterm.TextAttributes.nodeWidth(this.cursorNode_);
+
+  if (this.cursorOffset_ < width - 1) {
+    this.cursorNode_.textContent = hterm.TextAttributes.nodeSubstr(
+        this.cursorNode_, 0, this.cursorOffset_ + 1);
   }
 
   // Remove all nodes after the cursor.
@@ -440,20 +446,20 @@ hterm.Screen.prototype.insertString = function(str) {
 
   this.cursorRowNode_.removeAttribute('line-overflow');
 
-  // We may alter the length of the string by prepending some missing
-  // whitespace, so we need to record the string length ahead of time.
-  var strLength = str.length;
+  // We may alter the width of the string by prepending some missing
+  // whitespaces, so we need to record the string width ahead of time.
+  var strWidth = lib.wc.strWidth(str);
 
   // No matter what, before this function exits the cursor column will have
   // moved this much.
-  this.cursorPosition.column += strLength;
+  this.cursorPosition.column += strWidth;
 
   // Local cache of the cursor offset.
   var offset = this.cursorOffset_;
 
   // Reverse offset is the offset measured from the end of the string.
   // Zero implies that the cursor is at the end of the cursor node.
-  var reverseOffset = cursorNodeText.length - offset
+  var reverseOffset = hterm.TextAttributes.nodeWidth(cursorNode) - offset;
 
   if (reverseOffset < 0) {
     // A negative reverse offset means the cursor is positioned past the end
@@ -464,12 +470,14 @@ hterm.Screen.prototype.insertString = function(str) {
     // This whitespace should be completely unstyled.  Underline and background
     // color would be visible on whitespace, so we can't use one of those
     // spans to hold the text.
-    if (!(this.textAttributes.underline || this.textAttributes.background)) {
+    if (!(this.textAttributes.underline || this.textAttributes.background ||
+          this.textAttributes.wcNode)) {
       // Best case scenario, we can just pretend the spaces were part of the
       // original string.
       str = ws + str;
     } else if (cursorNode.nodeType == 3 ||
-               !(cursorNode.style.textDecoration ||
+               !(cursorNode.wcNode ||
+                 cursorNode.style.textDecoration ||
                  cursorNode.style.backgroundColor)) {
       // Second best case, the current node is able to hold the whitespace.
       cursorNode.textContent = (cursorNodeText += ws);
@@ -493,11 +501,12 @@ hterm.Screen.prototype.insertString = function(str) {
     } else if (offset == 0) {
       cursorNode.textContent = str + cursorNodeText;
     } else {
-      cursorNode.textContent = cursorNodeText.substr(0, offset) + str +
-          cursorNodeText.substr(offset);
+      cursorNode.textContent =
+          hterm.TextAttributes.nodeSubstr(cursorNode, 0, offset) +
+          str + hterm.TextAttributes.nodeSubstr(cursorNode, offset);
     }
 
-    this.cursorOffset_ += strLength;
+    this.cursorOffset_ += strWidth;
     return;
   }
 
@@ -512,14 +521,14 @@ hterm.Screen.prototype.insertString = function(str) {
         this.textAttributes.matchesContainer(previousSibling)) {
       previousSibling.textContent += str;
       this.cursorNode_ = previousSibling;
-      this.cursorOffset_ = previousSibling.textContent.length;
+      this.cursorOffset_ = lib.wc.strWidth(previousSibling.textContent);
       return;
     }
 
     var newNode = this.textAttributes.createContainer(str);
     this.cursorRowNode_.insertBefore(newNode, cursorNode);
     this.cursorNode_ = newNode;
-    this.cursorOffset_ = strLength;
+    this.cursorOffset_ = strWidth;
     return;
   }
 
@@ -530,7 +539,7 @@ hterm.Screen.prototype.insertString = function(str) {
         this.textAttributes.matchesContainer(nextSibling)) {
       nextSibling.textContent = str + nextSibling.textContent;
       this.cursorNode_ = nextSibling;
-      this.cursorOffset_ = strLength;
+      this.cursorOffset_ = lib.wc.strWidth(str);
       return;
     }
 
@@ -539,7 +548,7 @@ hterm.Screen.prototype.insertString = function(str) {
     this.cursorNode_ = newNode;
     // We specifically need to include any missing whitespace here, since it's
     // going in a new node.
-    this.cursorOffset_ = str.length;
+    this.cursorOffset_ = hterm.TextAttributes.nodeWidth(newNode);
     return;
   }
 
@@ -549,7 +558,7 @@ hterm.Screen.prototype.insertString = function(str) {
   var newNode = this.textAttributes.createContainer(str);
   this.cursorRowNode_.insertBefore(newNode, cursorNode.nextSibling);
   this.cursorNode_ = newNode;
-  this.cursorOffset_ = strLength;
+  this.cursorOffset_ = strWidth;
 };
 
 /**
@@ -566,15 +575,16 @@ hterm.Screen.prototype.overwriteString = function(str) {
   if (!maxLength)
     return [str];
 
-  if ((this.cursorNode_.textContent.substr(this.cursorOffset_) == str) &&
-      this.textAttributes.matchesContainer(this.cursorNode_)) {
+  var width = lib.wc.strWidth(str);
+  if (this.textAttributes.matchesContainer(this.cursorNode_) &&
+      this.cursorNode_.textContent.substr(this.cursorOffset_) == str) {
     // This overwrite would be a no-op, just move the cursor and return.
-    this.cursorOffset_ += str.length;
-    this.cursorPosition.column += str.length;
+    this.cursorOffset_ += width;
+    this.cursorPosition.column += width;
     return;
   }
 
-  this.deleteChars(Math.min(str.length, maxLength));
+  this.deleteChars(Math.min(width, maxLength));
   this.insertString(str);
 };
 
@@ -584,14 +594,13 @@ hterm.Screen.prototype.overwriteString = function(str) {
  * Text to the right of the deleted characters is shifted left.  Only affects
  * characters on the same row as the cursor.
  *
- * @param {integer} count The number of characters to delete.  This is clamped
- *     to the column width minus the cursor column.
- * @return {integer} The number of characters actually deleted.
+ * @param {integer} count The column width of characters to delete.  This is
+ *     clamped to the column width minus the cursor column.
+ * @return {integer} The column width of the characters actually deleted.
  */
 hterm.Screen.prototype.deleteChars = function(count) {
   var node = this.cursorNode_;
   var offset = this.cursorOffset_;
-  var textContent = node.textContent;
 
   var currentCursorColumn = this.cursorPosition.column;
   count = Math.min(count, this.columnCount_ - currentCursorColumn);
@@ -599,29 +608,50 @@ hterm.Screen.prototype.deleteChars = function(count) {
     return 0;
 
   var rv = count;
+  var startLength, endLength;
 
   while (node && count) {
-    var startLength = textContent.length;
-
-    textContent = textContent.substr(0, offset) +
-        textContent.substr(offset + count);
-
-    var endLength = textContent.length;
+    startLength = hterm.TextAttributes.nodeWidth(node);
+    node.textContent = hterm.TextAttributes.nodeSubstr(node, 0, offset) +
+        hterm.TextAttributes.nodeSubstr(node, offset + count);
+    endLength = hterm.TextAttributes.nodeWidth(node);
     count -= startLength - endLength;
-
-    if (endLength == 0 && node != this.cursorNode_) {
-      var nextNode = node.nextSibling;
-      node.parentNode.removeChild(node);
-      node = nextNode;
-    } else {
-      node.textContent = textContent;
-      node = node.nextSibling;
+    if (offset < startLength && endLength && startLength == endLength) {
+      // No characters were deleted when there should be.  We're probably trying
+      // to delete one column width from a wide character node.  We remove the
+      // wide character node here and replace it with a single space.
+      var spaceNode = this.textAttributes.createContainer(' ');
+      node.parentNode.insertBefore(spaceNode, node.nextSibling);
+      node.textContent = '';
+      endLength = 0;
+      count -= 1;
     }
 
-    if (node)
-      textContent = node.textContent;
-
+    var nextNode = node.nextSibling;
+    if (endLength == 0 && node != this.cursorNode_) {
+      node.parentNode.removeChild(node);
+    }
+    node = nextNode;
     offset = 0;
+  }
+
+  // Remove this.cursorNode_ if it is an empty non-text node.
+  if (this.cursorNode_.nodeType != 3 && !this.cursorNode_.textContent) {
+    var cursorNode = this.cursorNode_;
+    if (cursorNode.previousSibling) {
+      this.cursorNode_ = cursorNode.previousSibling;
+      this.cursorOffset_ = hterm.TextAttributes.nodeWidth(
+          cursorNode.previousSibling);
+    } else if (cursorNode.nextSibling) {
+      this.cursorNode_ = cursorNode.nextSibling;
+      this.cursorOffset_ = 0;
+    } else {
+      var emptyNode = this.cursorRowNode_.ownerDocument.createTextNode('');
+      this.cursorRowNode_.appendChild(emptyNode);
+      this.cursorNode_ = emptyNode;
+      this.cursorOffset_ = 0;
+    }
+    this.cursorRowNode_.removeChild(cursorNode);
   }
 
   return rv;
@@ -695,7 +725,7 @@ hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
     return -1;
   var position = 0;
   while (ancestorRow != row) {
-    position += row.textContent.length;
+    position += hterm.TextAttributes.nodeWidth(row);
     if (row.hasAttribute('line-overflow') && row.nextSibling) {
       row = row.nextSibling;
     } else {
@@ -724,7 +754,7 @@ hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
     var currentNode = row.childNodes[i];
     if (currentNode == node)
       return position + offset;
-    position += currentNode.textContent.length;
+    position += hterm.TextAttributes.nodeWidth(currentNode);
   }
   return -1;
 };
@@ -738,9 +768,9 @@ hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
  * @return {Array} Two element array containing node and offset respectively.
  **/
 hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
-  while (row && position > row.textContent.length) {
+  while (row && position > hterm.TextAttributes.nodeWidth(row)) {
     if (row.hasAttribute('line-overflow') && row.nextSibling) {
-      position -= row.textContent.length;
+      position -= hterm.TextAttributes.nodeWidth(row);
       row = row.nextSibling;
     } else {
       return -1;
@@ -760,7 +790,8 @@ hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
 hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
   for (var i = 0; i < row.childNodes.length; i++) {
     var node = row.childNodes[i];
-    if (position <= node.textContent.length) {
+    var nodeTextWidth = hterm.TextAttributes.nodeWidth(node);
+    if (position <= nodeTextWidth) {
       if (node.nodeName === 'SPAN') {
         /** Drill down to node contained by SPAN. **/
         return this.getNodeAndOffsetWithinRow_(node, position);
@@ -768,7 +799,7 @@ hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
         return [node, position];
       }
     }
-    position -= node.textContent.length;
+    position -= nodeTextWidth;
   }
   return null;
 };
@@ -831,19 +862,20 @@ hterm.Screen.prototype.expandSelection = function(selection) {
 
   //Move start to the left.
   var rowText = this.getLineText_(row);
-  var lineUpToRange = rowText.substring(0, endPosition);
+  var lineUpToRange = lib.wc.substring(rowText, 0, endPosition);
   var leftRegularExpression = new RegExp(outsideMatch + insideMatch + "$");
   var expandedStart = lineUpToRange.search(leftRegularExpression);
   if (expandedStart == -1 || expandedStart > startPosition)
     return;
 
   //Move end to the right.
-  var lineFromRange = rowText.substring(startPosition, rowText.length);
+  var lineFromRange = lib.wc.substring(rowText, startPosition,
+                                       lib.wc.strWidth(rowText));
   var rightRegularExpression = new RegExp("^" + insideMatch + outsideMatch);
   var found = lineFromRange.match(rightRegularExpression);
   if (!found)
     return;
-  var expandedEnd = startPosition + found[0].length;
+  var expandedEnd = startPosition + lib.wc.strWidth(found[0]);
   if (expandedEnd == -1 || expandedEnd < endPosition)
     return;
 
