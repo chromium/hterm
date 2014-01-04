@@ -256,6 +256,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.copyOnSelect = !!v;
     },
 
+    'ctrl-v-paste': function(v) {
+      terminal.keyboard.ctrlVPaste = v;
+    },
+
     'enable-8-bit-control': function(v) {
       terminal.vt.enable8BitControl = !!v;
     },

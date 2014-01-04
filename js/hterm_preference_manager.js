@@ -111,6 +111,12 @@ hterm.PreferenceManager = function(profileId) {
     ['copy-on-select', true],
 
     /**
+     * Ctrl+V pastes if true, sent to host if false.
+     * Ctrl+Shift+V sends a ^V to host if true, pastes if false.
+     */
+    ['ctrl-v-paste', false],
+
+    /**
      * True to enable 8-bit control characters, false to ignore them.
      *
      * We'll respect the two-byte versions of these control characters

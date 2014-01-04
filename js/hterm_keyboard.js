@@ -57,6 +57,12 @@ hterm.Keyboard = function(terminal) {
   this.pageKeysScroll = false;
 
   /**
+   * If true, don't send Ctrl-V to the host, but instead paste the contents of
+   * the clipboard. In that case, send a ^V to the host on Ctrl-Shift-V.
+   */
+  this.ctrlVPaste = false;
+
+  /**
    * Enable/disable application keypad.
    *
    * This changes the way numeric keys are sent from the keyboard.

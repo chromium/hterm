@@ -275,7 +275,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [90,  'zZ',   DEFAULT, ctl('Z'),               DEFAULT, DEFAULT],
     [88,  'xX',   DEFAULT, ctl('X'),               DEFAULT, DEFAULT],
     [67,  'cC',   DEFAULT, c('onCtrlC_'),          DEFAULT, c('onMetaC_')],
-    [86,  'vV',   DEFAULT, sh(ctl('V'), PASS),     DEFAULT, PASS],
+    [86,  'vV',   DEFAULT, c('onCtrlV_'),          DEFAULT, PASS],
     [66,  'bB',   DEFAULT, sh(ctl('B'), PASS),     DEFAULT, sh(DEFAULT, PASS)],
     [78,  'nN',   DEFAULT, c('onCtrlN_'),          DEFAULT, c('onMetaN_')],
     [77,  'mM',   DEFAULT, ctl('M'),               DEFAULT, DEFAULT],
@@ -519,6 +519,22 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
   }
 
   return '\x0e';
+};
+
+/**
+ * Either send a ^V or allow the browser to interpret the keystroke as a paste
+ * command.
+ *
+ * The default behavior is to paste if the user presses Ctrl-Shift-V, and send
+ * a ^V if the user presses Ctrl-V. This can be flipped with the
+ * 'ctrl-v-paste' preference.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
+  if ((!e.shiftKey && this.keyboard.ctrlVPaste) ||
+      (e.shiftKey && !this.keyboard.ctrlVPaste)) {
+    return hterm.Keyboard.KeyActions.PASS;
+  }
+  return '\x16';
 };
 
 /**
