@@ -2513,20 +2513,8 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
   e.processedByTerminalHandler_ = true;
 
-  if (e.type == 'dblclick') {
-    this.screen_.expandSelection(this.document_.getSelection());
-    hterm.copySelectionToClipboard(this.document_);
-    return;
-  }
-
-  if (e.type == 'mousedown' && e.which == this.mousePasteButton) {
-    this.paste();
-    return;
-  }
-
-  if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
-      !this.document_.getSelection().isCollapsed) {
-    hterm.copySelectionToClipboard(this.document_);
+  if (e.type == 'mousedown' && e.terminalColumn > this.screenSize.width) {
+    // Mousedown in the scrollbar area.
     return;
   }
 
@@ -2535,24 +2523,46 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   e.terminalColumn = parseInt(e.clientX /
                               this.scrollPort_.characterSize.width) + 1;
 
-  if (e.type == 'mousedown') {
-    if (e.terminalColumn > this.screenSize.width) {
-      // Mousedown in the scrollbar area.
+  if (this.enableMouseDragScroll) {
+    if (e.type == 'dblclick') {
+      this.screen_.expandSelection(this.document_.getSelection());
+      hterm.copySelectionToClipboard(this.document_);
       return;
     }
 
-    if (!this.enableMouseDragScroll) {
-      // Move the scroll-blocker into place if we want to keep the scrollport
-      // from scrolling.
-      this.scrollBlockerNode_.engaged = true;
-      this.scrollBlockerNode_.style.top = (e.clientY - 5) + 'px';
-      this.scrollBlockerNode_.style.left = (e.clientX - 5) + 'px';
+    if (e.type == 'mousedown' && e.which == this.mousePasteButton) {
+      this.paste();
+      return;
     }
-  } else if (this.scrollBlockerNode_.engaged &&
-             (e.type == 'mousemove' || e.type == 'mouseup')) {
-    // Disengage the scroll-blocker after one of these events.
-    this.scrollBlockerNode_.engaged = false;
-    this.scrollBlockerNode_.style.top = '-99px';
+
+    if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
+        !this.document_.getSelection().isCollapsed) {
+      hterm.copySelectionToClipboard(this.document_);
+      return;
+    }
+
+    if ((e.type == 'mousemove' || e.type == 'mouseup') &&
+        this.scrollBlockerNode_.engaged) {
+      // Disengage the scroll-blocker after one of these events.
+      this.scrollBlockerNode_.engaged = false;
+      this.scrollBlockerNode_.style.top = '-99px';
+    }
+
+  } else /* if (!this.enableMouseDragScroll) */ {
+    if (!this.scrollBlockerNode_.engaged) {
+      if (e.type == 'mousedown') {
+        // Move the scroll-blocker into place if we want to keep the scrollport
+        // from scrolling.
+        this.scrollBlockerNode_.engaged = true;
+        this.scrollBlockerNode_.style.top = (e.clientY - 5) + 'px';
+        this.scrollBlockerNode_.style.left = (e.clientX - 5) + 'px';
+      } else if (e.type == 'mousemove') {
+        // Oh.  This means that drag-scroll was disabled AFTER the mouse down,
+        // in which case it's too late to engage the scroll-blocker.
+        this.document_.getSelection().collapse();
+        e.preventDefault();
+      }
+    }
   }
 
   this.onMouse(e);

@@ -396,21 +396,6 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
   var y = String.fromCharCode(lib.f.clamp(e.terminalRow + 32, 32, 255));
 
   switch (e.type) {
-    case 'click':
-    case 'dblclick':
-      if (this.mouseReport_ == this.MOUSE_REPORT_CLICK ||
-          this.mouseReport_ == this.MOUSE_REPORT_CLICK_1002) {
-        // Buttons are encoded as button number plus 32.
-        var b = Math.min(e.which - 1, 2) + 32;
-
-        // And mix in the modifier keys.
-        b |= mod;
-
-        response = '\x1b[M' + String.fromCharCode(b) + x + y;
-        response += '\x1b[M\x23' + x + y;
-      }
-      break;
-
     case 'mousewheel':
       // Mouse wheel is treated as button 1 or 2 plus an additional 64.
       b = ((e.wheelDeltaY > 0) ? 0 : 1) + 96;
@@ -422,22 +407,18 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       break;
 
     case 'mousedown':
-      if (this.mouseReport_ == this.MOUSE_REPORT_DRAG && e.which) {
-        // Buttons are encoded as button number plus 32.
-        var b = Math.min(e.which - 1, 2) + 32;
+      // Buttons are encoded as button number plus 32.
+      var b = Math.min(e.which - 1, 2) + 32;
 
-        // And mix in the modifier keys.
-        b |= mod;
+      // And mix in the modifier keys.
+      b |= mod;
 
-        response = '\x1b[M' + String.fromCharCode(b) + x + y;
-      }
+      response = '\x1b[M' + String.fromCharCode(b) + x + y;
       break;
 
     case 'mouseup':
-      if (this.mouseReport_ == this.MOUSE_REPORT_DRAG && e.which) {
-        // Mouse up has no indication of which button was released.
-        response = '\x1b[M\x23' + x + y;
-      }
+      // Mouse up has no indication of which button was released.
+      response = '\x1b[M\x23' + x + y;
       break;
 
     case 'mousemove':
@@ -454,6 +435,10 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
         response = '\x1b[M' + String.fromCharCode(b) + x + y;
       }
 
+      break;
+
+    case 'click':
+    case 'dblclick':
       break;
 
     default:
