@@ -288,6 +288,9 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.xrowCssRule_ = doc.styleSheets[0].cssRules[0];
   this.xrowCssRule_.style.display = 'block';
 
+  this.userCssLink_ = doc.createElement('link');
+  this.userCssLink_.setAttribute('rel', 'stylesheet');
+
   // TODO(rginda): Sorry, this 'screen_' isn't the same thing as hterm.Screen
   // from screen.js.  I need to pick a better name for one of them to avoid
   // the collision.
@@ -395,6 +398,23 @@ hterm.ScrollPort.prototype.setFontFamily = function(fontFamily, opt_smoothing) {
 
 hterm.ScrollPort.prototype.getFontFamily = function() {
   return this.screen_.style.fontFamily;
+};
+
+/**
+ * Set a custom stylesheet to include in the scrollport.
+ *
+ * Defaults to null, meaning no custom css is loaded.  Set it back to null or
+ * the empty string to remove a previously applied custom css.
+ */
+hterm.ScrollPort.prototype.setUserCss = function(url) {
+  if (url) {
+    this.userCssLink_.setAttribute('href', url);
+
+    if (!this.userCssLink_.parentNode)
+      this.document_.head.appendChild(this.userCssLink_);
+  } else if (this.userCssLink_.parentNode) {
+    this.document_.head.removeChild(this.userCssLink_);
+  }
 };
 
 hterm.ScrollPort.prototype.focus = function() {

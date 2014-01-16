@@ -147,6 +147,11 @@ hterm.PreferenceManager = function(profileId) {
     ['enable-dec12', false],
 
     /**
+     * The default environment variables.
+     */
+    ['environment', {TERM: 'xterm-256color'}],
+
+    /**
      * Default font family for the terminal text.
      */
     ['font-family', ('"DejaVu Sans Mono", "Everson Mono", ' +
@@ -211,6 +216,13 @@ hterm.PreferenceManager = function(profileId) {
      * in the future.
      */
     ['mouse-paste-button', null],
+
+    /**
+     * If true, page up/down will control the terminal scrollbar and shift
+     * page up/down will send the VT keycodes.  If false then page up/down
+     * sends VT codes and shift page up/down scrolls.
+     */
+    ['page-keys-scroll', false],
 
     /**
      * Set whether we should pass Alt-1..9 to the browser.
@@ -289,16 +301,9 @@ hterm.PreferenceManager = function(profileId) {
     ['shift-insert-paste', true],
 
     /**
-     * The default environment variables.
+     * User stylesheet to include in the terminal document.
      */
-    ['environment', {TERM: 'xterm-256color'}],
-
-    /**
-     * If true, page up/down will control the terminal scrollbar and shift
-     * page up/down will send the VT keycodes.  If false then page up/down
-     * sends VT codes and shift page up/down scrolls.
-     */
-    ['page-keys-scroll', false],
+    ['user-css', ''],
    ]);
 };
 

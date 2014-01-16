@@ -316,6 +316,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.syncMousePasteButton();
     },
 
+    'page-keys-scroll': function(v) {
+      terminal.keyboard.pageKeysScroll = v;
+    },
+
     'pass-alt-number': function(v) {
       if (v == null) {
         var osx = window.navigator.userAgent.match(/Mac OS X/);
@@ -386,8 +390,8 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.keyboard.shiftInsertPaste = v;
     },
 
-    'page-keys-scroll': function(v) {
-      terminal.keyboard.pageKeysScroll = v;
+    'user-css': function(v) {
+      terminal.scrollPort_.setUserCss(v);
     }
   });
 
@@ -1048,6 +1052,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
   this.scrollPort_.setBackgroundPosition(
       this.prefs_.get('background-position'));
+  this.scrollPort_.setUserCss(this.prefs_.get('user-css'));
 
   this.div_.focus = this.focus.bind(this);
 
