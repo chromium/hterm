@@ -1,3 +1,7 @@
+1.27, 2014-01-28, Add fullwidth support.
+
+* Teaches hterm about the difference between halfwidth and fullwidth characters.
+
 1.26, 2014-01-16, Add 'user-css' preference.
 
 * Add a 'user-css' preference, which will load a user-defined css file (by url)
