@@ -1,3 +1,18 @@
+1.29, 2014-02-14, Better recursive "copy" fix.
+
+* BUG=chromium:340699: Auto copy doesn't work.
+  AFAICT, the e.clipboardData.setData call wasn't actually doing anything.  The
+  scrollport's "select bags" we doing the right thing though, so we have that
+  going for us.  It's likely that the recursive "copy" was required in older
+  versions of Chrome, but it doesn't seem to be necessary anymore.
+* Fix the "Selection Copied" message from OSC 52 based copies.
+
+1.28, 2014-02-13, Fix recursive "copy".
+
+* BUG=chromium:340699: Auto copy doesn't work.
+  Use e.clipboardData.setData, rather than causing a recursive
+  document.execCommand("copy").
+
 1.27, 2014-01-28, Add fullwidth support.
 
 * Teaches hterm about the difference between halfwidth and fullwidth characters.

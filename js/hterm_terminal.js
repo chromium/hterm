@@ -2408,10 +2408,8 @@ hterm.Terminal.prototype.paste = function() {
  * Note: If there is a selected range in the terminal, it'll be cleared.
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
-  if (this.prefs_.get('enable-clipboard-notice'))
-    setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
-
   var copySource = this.document_.createElement('pre');
+  copySource.addEventListener('copy', this.onCopy_.bind(this));
   copySource.textContent = str;
   copySource.style.cssText = (
       '-webkit-user-select: text;' +
@@ -2626,8 +2624,8 @@ hterm.Terminal.prototype.onPaste_ = function(e) {
  * React when the user tries to copy from the scrollPort.
  */
 hterm.Terminal.prototype.onCopy_ = function(e) {
-  e.preventDefault();
-  this.copySelectionToClipboard();
+  if (this.prefs_.get('enable-clipboard-notice'))
+    setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
 };
 
 /**
