@@ -1,8 +1,19 @@
+1.30, 2014-03-04, Even better recursive "copy" fix.
+
+* BUG=chromium:340699: Auto copy doesn't work.
+  Now I see why the "select bags" aren't enough.  Even for the simplest case
+  where we're copying an on-screen selection we need to use
+  Terminal.prototype.copySelectionToClipboard to handle copy of wrapped lines.
+  This fix reverts the changes from 1.28 and 1.29 in favor of just scheduling
+  the copy on a timeout, which defeats the recursive copy blocker.
+* Revert "Scrolling Speedups" change (which never got a distinct hterm version
+  number).  This caused issues with selections scrolled out of the visible area.
+
 1.29, 2014-02-14, Better recursive "copy" fix.
 
 * BUG=chromium:340699: Auto copy doesn't work.
   AFAICT, the e.clipboardData.setData call wasn't actually doing anything.  The
-  scrollport's "select bags" we doing the right thing though, so we have that
+  scrollport's "select bags" were doing the right thing though, so we have that
   going for us.  It's likely that the recursive "copy" was required in older
   versions of Chrome, but it doesn't seem to be necessary anymore.
 * Fix the "Selection Copied" message from OSC 52 based copies.
