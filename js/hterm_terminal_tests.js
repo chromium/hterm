@@ -81,8 +81,8 @@ hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
     var scrollPort = this.terminal.scrollPort_;
     var innerWidth = divSize.width - scrollPort.currentScrollbarWidthPx;
 
-    result.assertEQ(innerWidth, scrollPort.screenSize.width);
-    result.assertEQ(divSize.height, scrollPort.screenSize.height);
+    result.assertEQ(innerWidth, scrollPort.getScreenWidth());
+    result.assertEQ(divSize.height, scrollPort.getScreenHeight());
 
     result.assertEQ(innerWidth / scrollPort.characterSize.width,
                     this.visibleColumnCount);

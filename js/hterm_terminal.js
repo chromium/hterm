@@ -699,7 +699,6 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
 
   this.div_.style.width = this.scrollPort_.characterSize.width *
       columnCount + this.scrollPort_.currentScrollbarWidthPx + 'px';
-  this.scrollPort_.syncScreenSize();
   this.realizeSize_(columnCount, this.screenSize.height);
   this.scheduleSyncCursorPosition_();
 };
@@ -715,7 +714,6 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
 
   this.div_.style.height =
       this.scrollPort_.characterSize.height * rowCount + 'px';
-  this.scrollPort_.syncScreenSize();
   this.realizeSize_(this.screenSize.width, rowCount);
   this.scheduleSyncCursorPosition_();
 };
@@ -2639,9 +2637,9 @@ hterm.Terminal.prototype.onCopy_ = function(e) {
  * programmatic width change.
  */
 hterm.Terminal.prototype.onResize_ = function() {
-  var columnCount = Math.floor(this.scrollPort_.screenSize.width /
+  var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
                                this.scrollPort_.characterSize.width);
-  var rowCount = Math.floor(this.scrollPort_.screenSize.height /
+  var rowCount = Math.floor(this.scrollPort_.getScreenHeight() /
                             this.scrollPort_.characterSize.height);
 
   if (columnCount <= 0 || rowCount <= 0) {
