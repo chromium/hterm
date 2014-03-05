@@ -1,3 +1,28 @@
+1.32, 2014-03-04, Disable local selection in all mouse reporting modes.
+
+* Previously we allowed "local" selection (that which happens by default in
+  Chrome) to stay enabled for mouse mode 1001 (report mouseup/down only).  This
+  caused a few issues.  I didn't realize at the time that emacs used this
+  mouseup/down positions to set an active region, which conflicts with the
+  local selection.  You tend wind up with a confusing partial overlap of the two
+  selections.  Additionally, with copy-on-select enabled, the mouseup event
+  was consumed by the terminal and never sent to the host.
+
+  This change disables local selection when we're in mode 1001.  Local selection
+  was disabled in mode 1002, report mousedown/up/movement, which is preferred
+  by vi.
+
+  Our "mouse-cell-motion-trick" was all about allowing local selection in mode
+  1002, so that's been removed too.  I doubt this preference was widely used.
+
+  The change adds the ability to use alt-click to override the current mouse
+  state, so that you can make a local selection even while in mode 1001/1002.
+  Alt was chosen as its the only modifier key which can't be sent with a
+  mouse event, though if you're depending on alt === meta, you'll lose
+  the ability to send meta-mouse sequences.  If your local window manager
+  already maps alt-click to something, then you can add any other modifier in
+  addition to alt (say, alt-ctrl-mousedown) to defeat your existing binding.
+
 1.31, 2014-03-04, Add svg based zoom detection.
 
 * Re-implement zoom detection in terms of the currentScale property of svg

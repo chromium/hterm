@@ -91,6 +91,10 @@ hterm.Terminal = function(opt_profileId) {
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
 
+  // True if we should send mouse events to the vt, false if we want them
+  // to manage the local text selection.
+  this.reportMouseEvents_ = false;
+
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
   this.bellAudio_.setAttribute('preload', 'auto');
@@ -309,10 +313,6 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.keyboard.metaSendsEscape = v;
     },
 
-    'mouse-cell-motion-trick': function(v) {
-      terminal.vt.setMouseCellMotionTrick(v);
-    },
-
     'mouse-paste-button': function(v) {
       terminal.syncMousePasteButton();
     },
@@ -424,7 +424,6 @@ hterm.Terminal.prototype.getCursorColor = function() {
  */
 hterm.Terminal.prototype.setSelectionEnabled = function(state) {
   this.enableMouseDragScroll = state;
-  this.scrollPort_.setSelectionEnabled(state);
 };
 
 /**
@@ -2547,22 +2546,33 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   e.terminalColumn = parseInt(e.clientX /
                               this.scrollPort_.characterSize.width) + 1;
 
-  if (this.enableMouseDragScroll) {
+  if (e.type == 'mousedown') {
+    if (e.altKey || this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED) {
+      // If VT mouse reporting is disabled, or has been defeated with
+      // alt-mousedown, then the mouse will act on the local selection.
+      this.reportMouseEvents_ = false;
+      this.setSelectionEnabled(true);
+    } else {
+      // Otherwise we defer ownership of the mouse to the VT.
+      this.reportMouseEvents_ = true;
+      this.document_.getSelection().collapse();
+      this.setSelectionEnabled(false);
+      e.preventDefault();
+    }
+  }
+
+  if (!this.reportMouseEvents_) {
     if (e.type == 'dblclick') {
       this.screen_.expandSelection(this.document_.getSelection());
       hterm.copySelectionToClipboard(this.document_);
-      return;
     }
 
-    if (e.type == 'mousedown' && e.which == this.mousePasteButton) {
+    if (e.type == 'mousedown' && e.which == this.mousePasteButton)
       this.paste();
-      return;
-    }
 
     if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
         !this.document_.getSelection().isCollapsed) {
       hterm.copySelectionToClipboard(this.document_);
-      return;
     }
 
     if ((e.type == 'mousemove' || e.type == 'mouseup') &&
@@ -2572,7 +2582,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.scrollBlockerNode_.style.top = '-99px';
     }
 
-  } else /* if (!this.enableMouseDragScroll) */ {
+  } else /* if (this.reportMouseEvents) */ {
     if (!this.scrollBlockerNode_.engaged) {
       if (e.type == 'mousedown') {
         // Move the scroll-blocker into place if we want to keep the scrollport
@@ -2587,9 +2597,17 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
         e.preventDefault();
       }
     }
+
+    this.onMouse(e);
   }
 
-  this.onMouse(e);
+  if (e.type == 'mouseup' && this.document_.getSelection().isCollapsed) {
+    // Restore this on mouseup in case it was temporarily defeated with a
+    // alt-mousedown.  Only do this when the selection is empty so that
+    // we don't immediately kill the users selection.
+    this.reportMouseEvents_ = (this.vt.mouseReport !=
+                               this.vt.MOUSE_REPORT_DISABLED);
+  }
 };
 
 /**

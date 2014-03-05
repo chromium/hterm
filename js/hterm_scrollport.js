@@ -313,7 +313,6 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.addEventListener('mousewheel', this.onScrollWheel_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
-  this.screen_.addEventListener('mousedown', this.onMouseDown_.bind(this));
 
   // We send focus to this element just before a paste happens, so we can
   // capture the pasted text and forward it on to someone who cares.
@@ -380,15 +379,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'left: 0;' +
       'visibility: hidden');
 
-  this.setSelectionEnabled(true);
   this.resize();
-};
-
-/**
- * Enable or disable mouse based text selection in the scrollport.
- */
-hterm.ScrollPort.prototype.setSelectionEnabled = function(state) {
-  this.selectionEnabled_ = state;
 };
 
 /**
@@ -1326,15 +1317,6 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
       self.pasteTarget_.value = '';
       self.screen_.focus();
     }, 0);
-};
-
-/**
- * Handle mouse down events on the ScrollPort's screen element.
- */
-hterm.ScrollPort.prototype.onMouseDown_ = function(e) {
-  if (e.which == 1 && !this.selectionEnabled_) {
-    e.preventDefault();
-  }
 };
 
 /**

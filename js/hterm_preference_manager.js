@@ -198,15 +198,6 @@ hterm.PreferenceManager = function(profileId) {
     ['meta-sends-escape', true],
 
     /**
-     * Set whether we should treat DEC mode 1002 (mouse cell motion tracking)
-     * as if it were 1000 (mouse click tracking).
-     *
-     * This makes it possible to use vi's ":set mouse=a" mode without losing
-     * access to the system text selection mechanism.
-     */
-    ['mouse-cell-motion-trick', false],
-
-    /**
      * Mouse paste button, or null to autodetect.
      *
      * For autodetect, we'll try to enable middle button paste for non-X11

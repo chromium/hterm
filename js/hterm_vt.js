@@ -44,7 +44,7 @@ hterm.VT = function(terminal) {
   this.terminal = terminal;
 
   terminal.onMouse = this.onTerminalMouse_.bind(this);
-  this.mouseReport_ = this.MOUSE_REPORT_DISABLED;
+  this.mouseReport = this.MOUSE_REPORT_DISABLED;
 
   // Parse state left over from the last parse.  You should use the parseState
   // instance passed into your parse routine, rather than reading
@@ -61,9 +61,6 @@ hterm.VT = function(terminal) {
 
   // Whether or not to respect the escape codes for setting terminal width.
   this.allowColumnWidthChanges_ = false;
-
-  // True if we should fake-out mouse "cell motion" reporting (DECSET 1002)
-  this.mouseCellMotionTrick_ = false;
 
   // The amount of time we're willing to wait for the end of an OSC sequence.
   this.oscTimeLimit_ = 20000;
@@ -167,25 +164,6 @@ hterm.VT.prototype.MOUSE_REPORT_DISABLED = 0;
  * Report mouse down/up events only.
  */
 hterm.VT.prototype.MOUSE_REPORT_CLICK = 1;
-
-/**
- * Report only mouse down events.
- *
- * This is an hterm specific mode that tricks vi's ':set mouse=a' mode into
- * working more like emacs xterm-mouse-mode.  Clicks will reposition the
- * cursor, and the scroll wheel will scroll the buffer.  Selection, however,
- * will be browser-native, rather than the custom vi selection you usually get
- * with ':set mouse=a'.
- *
- * When the 'mouse-cell-motion-trick' pref is enabled, we'll use this mode
- * in place of MOUSE_REPORT_DRAG.
- *
- * It is distinct from the normal MOUSE_REPORT_CLICK so that we can switch it
- * off if the user changes their 'mouse-cell-motion-trick' pref while this
- * is enabled.  (If it weren't distinct, we wouldn't be sure how we got into
- * MOUSE_REPORT_CLICK mode.)
- */
-hterm.VT.prototype.MOUSE_REPORT_CLICK_1002 = 2;
 
 /**
  * DECSET mode 1002.
@@ -355,17 +333,7 @@ hterm.VT.prototype.reset = function() {
 
   this.savedState_ = new hterm.VT.CursorState(this);
 
-  this.mouseReport_ = this.MOUSE_REPORT_DISABLED;
-  this.terminal.setSelectionEnabled(true);
-};
-
-hterm.VT.prototype.setMouseCellMotionTrick = function(state) {
-  this.mouseCellMotionTrick_ = state;
-
-  if ((state && this.mouseReport_ == this.MOUSE_REPORT_DRAG) ||
-      (!state && this.mouseReport_ == this.MOUSE_REPORT_CLICK_1002)) {
-    this.setDECMode('1002', true);
-  }
+  this.mouseReport = this.MOUSE_REPORT_DISABLED;
 };
 
 /**
@@ -374,7 +342,7 @@ hterm.VT.prototype.setMouseCellMotionTrick = function(state) {
  * See the "Mouse Tracking" section of [xterm].
  */
 hterm.VT.prototype.onTerminalMouse_ = function(e) {
-  if (this.mouseReport_ == this.MOUSE_REPORT_DISABLED)
+  if (this.mouseReport == this.MOUSE_REPORT_DISABLED)
     return;
 
   // Temporary storage for our response.
@@ -422,7 +390,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       break;
 
     case 'mousemove':
-      if (this.mouseReport_ == this.MOUSE_REPORT_DRAG && e.which) {
+      if (this.mouseReport == this.MOUSE_REPORT_DRAG && e.which) {
         // Standard button bits.
         b = 32 + Math.min(e.which - 1, 2);
 
@@ -847,24 +815,13 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '1000':  // Report on mouse clicks only.
-      this.mouseReport_ = (
+      this.mouseReport = (
           state ? this.MOUSE_REPORT_CLICK : this.MOUSE_REPORT_DISABLED);
-      this.terminal.setSelectionEnabled(true);
       break;
 
     case '1002':  // Report on mouse clicks and drags
-      if (!state) {
-        this.mouseReport_ = this.MOUSE_REPORT_DISABLED;
-        this.terminal.setSelectionEnabled(true);
-
-      } else if (this.mouseCellMotionTrick_) {
-        this.mouseReport_ = this.MOUSE_REPORT_CLICK_1002;
-        this.terminal.setSelectionEnabled(true);
-
-      } else {
-        this.mouseReport_ = this.MOUSE_REPORT_DRAG;
-        this.terminal.setSelectionEnabled(false);
-      }
+      this.mouseReport = (
+          state ? this.MOUSE_REPORT_DRAG : this.MOUSE_REPORT_DISABLED);
       break;
 
     case '1010':  // rxvt
