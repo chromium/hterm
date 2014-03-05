@@ -1,3 +1,10 @@
+1.31, 2014-03-04, Add svg based zoom detection.
+
+* Re-implement zoom detection in terms of the currentScale property of svg
+  elements.  This requires the svg element to be in the topmost document,
+  or at least not in the "about:blank" document that the scrollport creates
+  so it may not be perfect, but it's better than nothing.
+
 1.30, 2014-03-04, Even better recursive "copy" fix.
 
 * BUG=chromium:340699: Auto copy doesn't work.

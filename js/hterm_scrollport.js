@@ -366,6 +366,20 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.scrollArea_.style.cssText = 'visibility: hidden';
   this.screen_.appendChild(this.scrollArea_);
 
+  // This svg element is used to detect when the browser is zoomed.  It must be
+  // placed in the outermost document for currentScale to be correct.
+  // TODO(rginda): This means that hterm nested in an iframe will not correctly
+  // detect browser zoom level.  We should come up with a better solution.
+  this.svg_ = this.div_.ownerDocument.createElementNS(
+      'http://www.w3.org/2000/svg', 'svg');
+  this.svg_.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  this.svg_.setAttribute('version', '1.1');
+  this.svg_.style.cssText = (
+      'position: absolute;' +
+      'top: 0;' +
+      'left: 0;' +
+      'visibility: hidden');
+
   this.setSelectionEnabled(true);
   this.resize();
 };
@@ -616,16 +630,9 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
 
   this.rowNodes_.removeChild(this.ruler_);
 
-  if ('width' in this.document_) {
-    size.zoomFactor = this.document_.width / this.document_.body.clientWidth;
-  } else {
-    // Current versions of Chrome have removed document.width/height.  We can
-    // no longer depend on it to determine the zoom factor.
-    // TODO(rginda): Remove this code once document.width/height are a distant
-    // memory.
-    size.zoomFactor = 1;
-  }
-
+  this.div_.ownerDocument.body.appendChild(this.svg_);
+  size.zoomFactor = this.svg_.currentScale;
+  this.div_.ownerDocument.body.removeChild(this.svg_);
 
   return size;
 };
