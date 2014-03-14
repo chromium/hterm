@@ -1,3 +1,7 @@
+1.33, 2014-03-14, Fix user-css merge lossage.
+
+* A previous merge lost the user-css pref changes to hterm_terminal.js.
+
 1.32, 2014-03-04, Disable local selection in all mouse reporting modes.
 
 * Previously we allowed "local" selection (that which happens by default in
