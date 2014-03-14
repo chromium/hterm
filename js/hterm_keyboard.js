@@ -57,6 +57,13 @@ hterm.Keyboard = function(terminal) {
   this.pageKeysScroll = false;
 
   /**
+   * If true, Ctrl-Plus/Minus/Zero controls zoom.
+   * If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ^_,
+   * Ctrl-Plus/Zero do nothing.
+   */
+  this.ctrlPlusMinusZeroZoom = true;
+
+  /**
    * If true, don't send Ctrl-V to the host, but instead paste the contents of
    * the clipboard. In that case, send a ^V to the host on Ctrl-Shift-V.
    */

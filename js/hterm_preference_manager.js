@@ -111,6 +111,13 @@ hterm.PreferenceManager = function(profileId) {
     ['copy-on-select', true],
 
     /**
+     * If true, Ctrl-Plus/Minus/Zero controls zoom.
+     * If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ^_,
+     * Ctrl-Plus/Zero do nothing.
+     */
+    ['ctrl-plus-minus-zero-zoom', true],
+
+    /**
      * Ctrl+V pastes if true, sent to host if false.
      * Ctrl+Shift+V sends a ^V to host if true, pastes if false.
      */

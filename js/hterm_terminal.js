@@ -261,6 +261,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.copyOnSelect = !!v;
     },
 
+    'ctrl-plus-minus-zero-zoom': function(v) {
+      terminal.keyboard.ctrlPlusMinusZeroZoom = v;
+    },
+
     'ctrl-v-paste': function(v) {
       terminal.keyboard.ctrlVPaste = v;
     },

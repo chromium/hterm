@@ -230,9 +230,9 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [55,  '7&', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [56,  '8*', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [57,  '9(', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
-    [48,  '0)', DEFAULT, c('onZoom_'),       c('onAltNum_'), c('onMetaNum_')],
-    [189, '-_', DEFAULT, sh(c('onZoom_'), ctl('_')),    DEFAULT,     DEFAULT],
-    [187, '=+', DEFAULT, c('onZoom_'),                  DEFAULT,     DEFAULT],
+    [48,  '0)', DEFAULT, c('onPlusMinusZero_'),c('onAltNum_'),c('onMetaNum_')],
+    [189, '-_', DEFAULT, c('onPlusMinusZero_'),         DEFAULT,     DEFAULT],
+    [187, '=+', DEFAULT, c('onPlusMinusZero_'),         DEFAULT,     DEFAULT],
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
@@ -587,7 +587,18 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
  * We override the browser zoom keys to change the ScrollPort's font size to
  * avoid the issue.
  */
-hterm.Keyboard.KeyMap.prototype.onZoom_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onPlusMinusZero_ = function(e, keyDef) {
+  if (!(this.keyboard.ctrlPlusMinusZeroZoom ^ e.shiftKey)) {
+    // If ctrl-PMZ controls zoom and the shift key is pressed, or
+    // ctrl-shift-PMZ controls zoom and this shift key is not pressed,
+    // then we want to send the control code instead of affecting zoom.
+    if (keyDef.keyCap == '-_')
+      return '\x1f';  // ^_
+
+    // Only ^_ is valid, the other sequences have no meaning.
+    return hterm.Keyboard.KeyActions.CANCEL;
+  }
+
   if (this.keyboard.terminal.getZoomFactor() != 1) {
     // If we're not at 1:1 zoom factor, let the Ctrl +/-/0 keys control the
     // browser zoom, so it's easier to for the user to get back to 100%.

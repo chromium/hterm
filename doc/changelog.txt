@@ -1,6 +1,7 @@
-1.33, 2014-03-14, Fix user-css merge lossage.
+1.34, 2014-03-14, Add ctrl-plus-minus-zero-zoom preference.
 
-* A previous merge lost the user-css pref changes to hterm_terminal.js.
+* In the default state (true) hterm works the same as before.  If set to
+  false, ctrl-shift-plus/minus/zero controls zoom, and ctrl-minus sends ^_.
 
 1.32, 2014-03-04, Disable local selection in all mouse reporting modes.
 
