@@ -53,6 +53,13 @@ hterm.TextAttributes = function(document) {
 hterm.TextAttributes.prototype.enableBold = true;
 
 /**
+ * If true, use bright colors (if available) for bold text.
+ *
+ * This setting is independent of the enableBold setting.
+ */
+hterm.TextAttributes.prototype.enableBoldAsBright = true;
+
+/**
  * A sentinel constant meaning "whatever the default color is in this context".
  */
 hterm.TextAttributes.prototype.DEFAULT_COLOR = new String('');
@@ -246,7 +253,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
     defaultBackground = this.defaultForeground;
   }
 
-  if (this.bold) {
+  if (this.enableBoldAsBright && this.bold) {
     if (foregroundIndex != null)
       foregroundIndex = getBrightIndex(foregroundIndex);
   }

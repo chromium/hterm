@@ -880,6 +880,98 @@ hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
     result.pass();
   });
 
+hterm.VT.Tests.addTest('bold-as-bright', function(result, cx) {
+    var attrs = this.terminal.primaryScreen_.textAttributes;
+    var alt_attrs = this.terminal.alternateScreen_.textAttributes;
+    attrs.enableBoldAsBright = true;
+    alt_attrs.enableBoldAsBright = true;
+
+    this.terminal.interpret('[mplain....... [0;36mHi\r\n' +
+                            '[mbright...... [0;96mHi\r\n' +
+                            '[mbold........ [1;36mHi\r\n' +
+                            '[mbold-bright. [1;96mHi\r\n' +
+                            '[mbright-bold. [96;1mHi');
+
+    var text = this.terminal.getRowsText(0, 5);
+    result.assertEQ(text,
+                    'plain....... Hi\n' +
+                    'bright...... Hi\n' +
+                    'bold........ Hi\n' +
+                    'bold-bright. Hi\n' +
+                    'bright-bold. Hi');
+
+    var fg = attrs.colorPalette[6];
+    var fg_bright = attrs.colorPalette[14];
+
+    var row_plain = this.terminal.getRowNode(0);
+    result.assertEQ(row_plain.childNodes[1].style.color, fg,
+                    'plain color');
+
+    var row_bright = this.terminal.getRowNode(1);
+    result.assertEQ(row_bright.childNodes[1].style.color, fg_bright,
+                    'bright color');
+
+    var row_bold = this.terminal.getRowNode(2);
+    result.assertEQ(row_bold.childNodes[1].style.color, fg_bright,
+                    'bold color');
+
+    var row_bold_bright = this.terminal.getRowNode(3);
+    result.assertEQ(row_bold_bright.childNodes[1].style.color, fg_bright,
+                    'bold bright color');
+
+    var row_bright_bold = this.terminal.getRowNode(4);
+    result.assertEQ(row_bright_bold.childNodes[1].style.color, fg_bright,
+                    'bright bold color');
+
+    result.pass();
+  });
+
+hterm.VT.Tests.addTest('disable-bold-as-bright', function(result, cx) {
+    var attrs = this.terminal.primaryScreen_.textAttributes;
+    var alt_attrs = this.terminal.alternateScreen_.textAttributes;
+    attrs.enableBoldAsBright = false;
+    alt_attrs.enableBoldAsBright = false;
+
+    this.terminal.interpret('[mplain....... [0;36mHi\r\n' +
+                            '[mbright...... [0;96mHi\r\n' +
+                            '[mbold........ [1;36mHi\r\n' +
+                            '[mbold-bright. [1;96mHi\r\n' +
+                            '[mbright-bold. [96;1mHi');
+
+    var text = this.terminal.getRowsText(0, 5);
+    result.assertEQ(text,
+                    'plain....... Hi\n' +
+                    'bright...... Hi\n' +
+                    'bold........ Hi\n' +
+                    'bold-bright. Hi\n' +
+                    'bright-bold. Hi');
+
+    var fg = attrs.colorPalette[6];
+    var fg_bright = attrs.colorPalette[14];
+
+    var row_plain = this.terminal.getRowNode(0);
+    result.assertEQ(row_plain.childNodes[1].style.color, fg,
+		    'plain color');
+
+    var row_bright = this.terminal.getRowNode(1);
+    result.assertEQ(row_bright.childNodes[1].style.color, fg_bright,
+		    'bright color');
+
+    var row_bold = this.terminal.getRowNode(2);
+    result.assertEQ(row_bold.childNodes[1].style.color, fg,
+		    'bold color');
+
+    var row_bold_bright = this.terminal.getRowNode(3);
+    result.assertEQ(row_bold_bright.childNodes[1].style.color, fg_bright,
+		    'bold bright color');
+
+    var row_bright_bold = this.terminal.getRowNode(4);
+    result.assertEQ(row_bright_bold.childNodes[1].style.color, fg_bright,
+		    'bright bold color');
+
+    result.pass();
+  });
+
 /**
  * Test the status report command.
  */

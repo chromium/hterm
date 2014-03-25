@@ -133,9 +133,15 @@ hterm.PreferenceManager = function(profileId) {
 
     /**
      * True if we should use bold weight font for text with the bold/bright
-     * attribute.  False to use bright colors only.  Null to autodetect.
+     * attribute.  False to use the normal weight font.  Null to autodetect.
      */
     ['enable-bold', null],
+
+    /**
+     * True if we should use bright colors (8-15 on a 16 color palette)
+     * for any text with the bold attribute.  False otherwise.
+     */
+    ['enable-bold-as-bright', true],
 
     /**
      * Allow the host to write directly to the system clipboard.

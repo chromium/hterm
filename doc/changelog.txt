@@ -1,3 +1,12 @@
+1.35, 2014-03-25, Add enable-bold-as-bright preference.
+
+* Adds a preference to control whether or not the bold attribute from ESC
+  "[ ... m" sequences also triggers bright colors.  Preference is on by default
+  to match the behavior of xterm (and previous versions of hterm).  Switch it
+  off to enable bold font face in non-bright colors.  This is especially useful
+  if you've overidden your 16 color palette to something other than the
+  typical 8-dark/8-bright scheme.
+
 1.34, 2014-03-14, Add ctrl-plus-minus-zero-zoom preference.
 
 * In the default state (true) hterm works the same as before.  If set to

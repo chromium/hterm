@@ -277,6 +277,11 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.syncBoldSafeState();
     },
 
+    'enable-bold-as-bright': function(v) {
+      terminal.primaryScreen_.textAttributes.enableBoldAsBright = !!v;
+      terminal.alternateScreen_.textAttributes.enableBoldAsBright = !!v;
+    },
+
     'enable-clipboard-write': function(v) {
       terminal.vt.enableClipboardWrite = !!v;
     },
