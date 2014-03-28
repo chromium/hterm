@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.fs', 'lib.Storage');
+lib.rtdep('lib.Storage');
 
 /**
  * @fileoverview Declares the hterm.* namespace and some basic shared utilities

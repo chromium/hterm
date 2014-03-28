@@ -7,7 +7,6 @@
 libdot/js/lib.js
 libdot/js/lib_colors.js
 libdot/js/lib_f.js
-libdot/js/lib_fs.js
 libdot/js/lib_message_manager.js
 libdot/js/lib_preference_manager.js
 libdot/js/lib_resource.js
