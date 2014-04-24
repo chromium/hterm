@@ -532,7 +532,7 @@ hterm.Terminal.prototype.isPrimaryScreen = function() {
  * terminal.
  */
 hterm.Terminal.prototype.installKeyboard = function() {
-  this.keyboard.installKeyboard(this.scrollPort_.getScreenNode());
+  this.keyboard.installKeyboard(this.scrollPort_.getDocument().body);
 }
 
 /**
@@ -1087,6 +1087,12 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   screenNode.addEventListener(
       'focus', this.onFocusChange_.bind(this, true));
+  // Listen for mousedown events on the screenNode as in FF the focus
+  // events don't bubble.
+  screenNode.addEventListener('mousedown', function() {
+    setTimeout(this.onFocusChange_.bind(this, true));
+  }.bind(this));
+
   screenNode.addEventListener(
       'blur', this.onFocusChange_.bind(this, false));
 
@@ -1117,7 +1123,8 @@ hterm.Terminal.prototype.decorate = function(div) {
        'display: block;' +
        'width: ' + this.scrollPort_.characterSize.width + 'px;' +
        'height: ' + this.scrollPort_.characterSize.height + 'px;' +
-       '-webkit-transition: opacity, background-color 100ms linear;');
+       '-webkit-transition: opacity, background-color 100ms linear;' +
+       '-moz-transition: opacity, background-color 100ms linear;');
 
   this.setCursorColor(this.prefs_.get('cursor-color'));
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
@@ -2321,7 +2328,9 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
         'right: 1.2em;' +
         'position: absolute;' +
         '-webkit-text-size-adjust: none;' +
-        '-webkit-user-select: none;');
+        '-webkit-user-select: none;' +
+        '-moz-text-size-adjust: none;' +
+        '-moz-user-select: none;');
   }
 
   this.zoomWarningNode_.textContent = lib.MessageManager.replaceReferences(
@@ -2364,7 +2373,9 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
         'padding: 0.2em 0.5em 0.2em 0.5em;' +
         'position: absolute;' +
         '-webkit-user-select: none;' +
-        '-webkit-transition: opacity 180ms ease-in;');
+        '-webkit-transition: opacity 180ms ease-in;' +
+        '-moz-user-select: none;' +
+        '-moz-transition: opacity 180ms ease-in;');
 
     this.overlayNode_.addEventListener('mousedown', function(e) {
       e.preventDefault();
@@ -2428,6 +2439,7 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   copySource.textContent = str;
   copySource.style.cssText = (
       '-webkit-user-select: text;' +
+      '-moz-user-select: text;' +
       'position: absolute;' +
       'top: -99px');
 
@@ -2635,8 +2647,8 @@ hterm.Terminal.prototype.onMouse = function(e) { };
 /**
  * React when focus changes.
  */
-hterm.Terminal.prototype.onFocusChange_ = function(state) {
-  this.cursorNode_.setAttribute('focus', state ? 'true' : 'false');
+hterm.Terminal.prototype.onFocusChange_ = function(focused) {
+  this.cursorNode_.setAttribute('focus', focused);
   this.restyleCursor_();
 };
 

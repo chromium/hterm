@@ -19,6 +19,7 @@ mkdir -p $CHROME_TEST_PROFILE
 
 google-chrome \
   "file:///$(pwd)/html/hterm_test.html" \
-  --allow-file-access-from-files --unlimited-quota-for-files \
+  --allow-file-access-from-files \
+  --unlimited-quota-for-files \
   --user-data-dir=$CHROME_TEST_PROFILE \
   &>/dev/null </dev/null &

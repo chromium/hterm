@@ -254,6 +254,7 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   this.isMultiline = anchorRow.rowIndex != focusRow.rowIndex;
 };
 
+
 /**
  * Turn a div into this hterm.ScrollPort.
  */
@@ -267,6 +268,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'position: absolute;' +
       'width: 100%');
 
+  // Set the iframe src to javascript.  Otherwise when the frame's load event
+  // fires in FF it clears out the content of the iframe.
+  this.iframe_.src = 'javascript:void(0);';
+
   div.appendChild(this.iframe_);
 
   this.iframe_.contentWindow.addEventListener('resize',
@@ -279,7 +284,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'height: 100%;' +
       'width: 100%;' +
       'overflow: hidden;' +
-      '-webkit-user-select: none;');
+      '-webkit-user-select: none;' +
+      '-moz-user-select: none;');
 
   var style = doc.createElement('style');
   style.textContent = 'x-row {}';
@@ -330,7 +336,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'display: block;' +
       'position: fixed;' +
       'overflow: hidden;' +
-      '-webkit-user-select: text;');
+      '-webkit-user-select: text;' +
+      '-moz-user-select: text;');
   this.screen_.appendChild(this.rowNodes_);
 
   // Two nodes to hold offscreen text during the copy event.

@@ -349,7 +349,12 @@ hterm.Screen.prototype.setCursorPosition = function(row, column) {
  * cursor position.
  */
 hterm.Screen.prototype.syncSelectionCaret = function(selection) {
-  selection.collapse(this.cursorNode_, this.cursorOffset_);
+  try {
+    selection.collapse(this.cursorNode_, this.cursorOffset_);
+  } catch (firefoxIgnoredException) {
+    // FF can throw an exception if the range is off, rather than just not
+    // performing the collapse.
+  }
 };
 
 /**

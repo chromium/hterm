@@ -62,7 +62,7 @@ lib.registerInit('hterm', function(onInit) {
   }
 
   function onTab(tab) {
-    if (tab) {
+    if (tab && window.chrome) {
       chrome.windows.get(tab.windowId, null, onWindow);
     } else {
       // TODO(rginda): This is where we end up for a v1 app's background page.
@@ -74,8 +74,9 @@ lib.registerInit('hterm', function(onInit) {
 
   if (!hterm.defaultStorage) {
     var ary = navigator.userAgent.match(/\sChrome\/(\d\d)/);
-    var version = parseInt(ary[1]);
-    if (chrome.storage && chrome.storage.sync && version > 21) {
+    var version = ary ? parseInt(ary[1]) : -1;
+    if (window.chrome && chrome.storage && chrome.storage.sync &&
+        version > 21) {
       hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
     } else {
       hterm.defaultStorage = new lib.Storage.Local();
@@ -85,7 +86,7 @@ lib.registerInit('hterm', function(onInit) {
   // The chrome.tabs API is not supported in packaged apps, and detecting if
   // you're a packaged app is a little awkward.
   var isPackagedApp = false;
-  if (chrome && chrome.runtime && chrome.runtime.getManifest) {
+  if (window.chrome && chrome.runtime && chrome.runtime.getManifest) {
     var manifest = chrome.runtime.getManifest();
     var isPackagedApp = manifest.app && manifest.app.background;
   }
@@ -94,7 +95,7 @@ lib.registerInit('hterm', function(onInit) {
     // Packaged apps are never displayed in browser tabs.
     setTimeout(onWindow.bind(null, {type: 'popup'}), 0);
   } else {
-    if (chrome && chrome.tabs) {
+    if (window.chrome && chrome.tabs) {
       // The getCurrent method gets the tab that is "currently running", not the
       // topmost or focused tab.
       chrome.tabs.getCurrent(onTab);
@@ -131,7 +132,12 @@ hterm.getClientHeight = function(dom) {
  * @param {HTMLDocument} The document with the selection to copy.
  */
 hterm.copySelectionToClipboard = function(document) {
-  document.execCommand('copy');
+  try {
+    document.execCommand('copy');
+  } catch (firefoxException) {
+    // Ignore this. FF throws an exception if there was an error, even though
+    // the spec says just return false.
+  }
 };
 
 /**
@@ -140,7 +146,12 @@ hterm.copySelectionToClipboard = function(document) {
  * @param {HTMLDocument} The document to paste into.
  */
 hterm.pasteFromClipboard = function(document) {
-  document.execCommand('paste');
+  try {
+    document.execCommand('paste');
+  } catch (firefoxException) {
+    // Ignore this. FF throws an exception if there was an error, even though
+    // the spec says just return false.
+  }
 };
 
 /**
