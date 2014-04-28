@@ -413,6 +413,15 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
   }.bind(this));
 };
 
+
+/**
+ * Returns the preferences manager used for configuring this terminal.
+ */
+hterm.Terminal.prototype.getPrefs = function() {
+  return this.prefs_;
+};
+
+
 /**
  * Set the color for the cursor.
  *
@@ -2455,8 +2464,12 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
 
   hterm.copySelectionToClipboard(this.document_);
 
-  selection.collapse(anchorNode, anchorOffset);
-  selection.extend(focusNode, focusOffset);
+  // IE doesn't support selection.extend. This means that the selection
+  // won't return on IE.
+  if (selection.extend) {
+    selection.collapse(anchorNode, anchorOffset);
+    selection.extend(focusNode, focusOffset);
+  }
 
   copySource.parentNode.removeChild(copySource);
 };

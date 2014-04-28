@@ -95,6 +95,14 @@ hterm.ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
 hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     var doc = this.scrollPort.getDocument();
 
+    var s = doc.getSelection();
+    // IE does not supposed the extend method on selections.  They support
+    // an approximation using addRange, but it automatically merges sibling
+    // ranges and selects the parent node.  Ignore this test on IE for now.
+    if (!s.extend) {
+      result.pass();
+    }
+
     // Scroll into a part of the buffer that can be scrolled off the top
     // and the bottom of the screen.
     this.scrollPort.scrollRowToTop(50);
@@ -104,8 +112,6 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     this.scrollPort.redraw_();
 
     // And select some text in the middle of the visible range.
-    var s = doc.getSelection();
-
     var anchorRow = this.rowProvider.getRowNode(55);
     var anchorNode = anchorRow;
     while (anchorNode.firstChild)

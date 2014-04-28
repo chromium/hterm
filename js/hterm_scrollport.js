@@ -268,9 +268,11 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'position: absolute;' +
       'width: 100%');
 
-  // Set the iframe src to javascript.  Otherwise when the frame's load event
-  // fires in FF it clears out the content of the iframe.
-  this.iframe_.src = 'javascript:void(0);';
+  // Set the iframe src to javascript in FF.  Otherwise when the frame's
+  // load event fires in FF it clears out the content of the iframe.
+  if (window.mozInnerScreenX) {  // detect a FF only property
+    this.iframe_.src = 'javascript:void(0);';
+  }
 
   div.appendChild(this.iframe_);
 
@@ -329,6 +331,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
     'top: -999px;');
 
   doc.body.appendChild(this.pasteTarget_);
+  this.pasteTarget_.addEventListener(
+      'textInput', this.handlePasteTargetTextInput_.bind(this));
 
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
@@ -1324,6 +1328,14 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
       self.pasteTarget_.value = '';
       self.screen_.focus();
     }, 0);
+};
+
+/**
+ * Handles a textInput event on the paste target. Stops this from
+ * propagating as we want this to be handled in the onPaste_ method.
+ */
+hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
+  e.stopPropagation();
 };
 
 /**
