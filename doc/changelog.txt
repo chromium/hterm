@@ -1,4 +1,9 @@
-1.36, 2014-04-28, plumb ssh-agent, firefox, and wss-relay telemetry
+1.35, 2014-04-29, Fix double-paste, add IE compatibility.
+
+* Fix double-paste issue introduced in 1.36.
+* First round of IE compatibility fixes.
+
+1.36, 2014-04-28, Plumb ssh-agent, firefox, and wss-relay telemetry
 
 * Add first round of Firefox compatibility fixes.
 * Add telemetry data for wss-based relay connections.
