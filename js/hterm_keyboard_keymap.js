@@ -164,6 +164,14 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     }
   }
 
+  // If not e.altKey a, else b.
+  function alt(a, b) {
+    return function(e, k) {
+      var action = !e.altKey ? a : b
+      return resolve(action, e, k);
+    }
+  }
+
   // If no modifiers a, else b.
   function mod(a, b) {
     return function (e, k) {
@@ -279,8 +287,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [66,  'bB',   DEFAULT, sh(ctl('B'), PASS),     DEFAULT, sh(DEFAULT, PASS)],
     [78,  'nN',   DEFAULT, c('onCtrlN_'),          DEFAULT, c('onMetaN_')],
     [77,  'mM',   DEFAULT, ctl('M'),               DEFAULT, DEFAULT],
-    [188, ',<',   DEFAULT, STRIP,                  DEFAULT, DEFAULT],
-    [190, '.>',   DEFAULT, STRIP,                  DEFAULT, DEFAULT],
+    [188, ',<',   DEFAULT, alt(STRIP, PASS),       DEFAULT, DEFAULT],
+    [190, '.>',   DEFAULT, alt(STRIP, PASS),       DEFAULT, DEFAULT],
     [191, '/?',   DEFAULT, sh(ctl('_'), ctl('?')), DEFAULT, DEFAULT],
 
     // Sixth and final row.
