@@ -268,10 +268,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'position: absolute;' +
       'width: 100%');
 
-  // Set the iframe src to javascript in FF.  Otherwise when the frame's
+  // Set the iframe src to # in FF.  Otherwise when the frame's
   // load event fires in FF it clears out the content of the iframe.
   if (window.mozInnerScreenX) {  // detect a FF only property
-    this.iframe_.src = 'javascript:void(0);';
+    this.iframe_.src = '#';
   }
 
   div.appendChild(this.iframe_);
