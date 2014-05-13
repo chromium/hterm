@@ -1,3 +1,17 @@
+1.36, 2014-05-13, Add 'ctrl-c-copy' preference.
+
+* Add a 'ctrl-c-copy' preference.  When this is set to false, the default
+  setting, Ctrl-C will always send ^C while Ctrl-Shift-C will copy if there is
+  an active selection and send ^C if not.
+
+  When 'ctrl-c-copy' set to true the meaning of the shift key is reversed.
+
+  On the open web, the only reliable cross-browser configuration is with
+  ctrl-c-copy set to true, as this allows the browser's built-in Ctrl-C handler
+  to do its job.  Embedders can call term.getPrefs().changeDefault(
+  'ctrl-c-copy', true) to adjust the default preference value in these
+  situations.
+
 1.35, 2014-04-29, Fix double-paste, add IE compatibility.
 
 * Fix double-paste issue introduced in 1.36.

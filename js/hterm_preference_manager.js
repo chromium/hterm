@@ -118,8 +118,14 @@ hterm.PreferenceManager = function(profileId) {
     ['ctrl-plus-minus-zero-zoom', true],
 
     /**
-     * Ctrl+V pastes if true, sent to host if false.
-     * Ctrl+Shift+V sends a ^V to host if true, pastes if false.
+     * Ctrl+C copies if true, send ^C to host if false.
+     * Ctrl+Shift+C sends ^C to host if true, copies if false.
+     */
+    ['ctrl-c-copy', false],
+
+    /**
+     * Ctrl+V pastes if true, send ^V to host if false.
+     * Ctrl+Shift+V sends ^V to host if true, pastes if false.
      */
     ['ctrl-v-paste', false],
 

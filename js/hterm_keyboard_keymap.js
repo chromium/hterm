@@ -491,27 +491,32 @@ hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e, keyDef) {
 };
 
 /**
- * Either send a ^C or allow the browser to interpret the keystroke as a copy
- * command.
- *
- * If there is no selection, or if the user presses Ctrl-Shift-C, then we'll
- * transmit a ^C ('\x03').  If there is a selection, we defer to the
- * browser.  In this case we clear out the selection so the user knows we
- * heard them, and also to give them a chance to send a ^C by just hitting
- * the key again.
+ * Either send a ^C or interpret the keystroke as a copy command.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
   var selection = this.keyboard.terminal.getDocument().getSelection();
-  if (e.shiftKey || selection.isCollapsed) {
-    // If the shift key is being held or there is no document selection, then
-    // send a ^C.
-    return '\x03';
+
+  if (!selection.isCollapsed) {
+    if (this.keyboard.ctrlCCopy && !e.shiftKey) {
+      // Ctrl-C should copy if there is a selection, send ^C otherwise.
+      // Perform the copy by letting the browser handle Ctrl-C.  On most
+      // browsers, this is the *only* way to place text on the clipboard from
+      // the 'drive-by' web.
+      setTimeout(selection.collapseToEnd.bind(selection), 50);
+      return hterm.Keyboard.KeyActions.PASS;
+    }
+
+    if (!this.keyboard.ctrlCCopy && e.shiftKey) {
+      // Ctrl-Shift-C should copy if there is a selection, send ^C otherwise.
+      // Perform the copy manually.  This only works in situations where
+      // document.execCommand('copy') is allowed.
+      setTimeout(selection.collapseToEnd.bind(selection), 50);
+      this.keyboard.terminal.copySelectionToClipboard();
+      return hterm.Keyboard.KeyActions.CANCEL;
+    }
   }
 
-  // Otherwise let the browser handle it as a copy command.  Clear the selection
-  // soon after a Ctrl-C copy, so that it frees up Ctrl-C to send ^C.
-  setTimeout(selection.collapseToEnd.bind(selection), 750);
-  return hterm.Keyboard.KeyActions.PASS;
+  return '\x03';
 };
 
 /**

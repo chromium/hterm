@@ -64,8 +64,14 @@ hterm.Keyboard = function(terminal) {
   this.ctrlPlusMinusZeroZoom = true;
 
   /**
-   * If true, don't send Ctrl-V to the host, but instead paste the contents of
-   * the clipboard. In that case, send a ^V to the host on Ctrl-Shift-V.
+   * Ctrl+C copies if true, sends ^C to host if false.
+   * Ctrl+Shift+C sends ^C to host if true, copies if false.
+   */
+  this.ctrlCCopy = false;
+
+  /**
+   * Ctrl+V pastes if true, sends ^V to host if false.
+   * Ctrl+Shift+V sends ^V to host if true, pastes if false.
    */
   this.ctrlVPaste = false;
 
