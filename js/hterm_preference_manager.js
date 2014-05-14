@@ -277,6 +277,11 @@ hterm.PreferenceManager = function(profileId) {
     ['pass-meta-number', null],
 
     /**
+     * Set whether meta-V gets passed to host.
+     */
+    ['pass-meta-v', true],
+
+    /**
      * Set the expected encoding for data received from the host.
      *
      * Valid values are 'utf-8' and 'raw'.

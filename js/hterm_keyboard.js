@@ -106,6 +106,11 @@ hterm.Keyboard = function(terminal) {
   this.metaSendsEscape = true;
 
   /**
+   * Set whether meta-V gets passed to host.
+   */
+  this.passMetaV = true;
+
+  /**
    * Controls how the alt key is handled.
    *
    *  escape....... Send an ESC prefix.

@@ -370,6 +370,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.passMetaNumber = v;
     },
 
+    'pass-meta-v': function(v) {
+      terminal.passMetaV = v;
+    },
+
     'receive-encoding': function(v) {
        if (!(/^(utf-8|raw)$/).test(v)) {
          console.warn('Invalid value for "receive-encoding": ' + v);
