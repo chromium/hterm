@@ -1,4 +1,15 @@
-1.36, 2014-05-13, Add 'ctrl-c-copy' preference.
+1.40, 2014-05-15, fix selection collapse.
+
+* s/selection.collapse()/selection.collapseToEnd().  The former now throws an
+  exception in Chrome if called with no arguments, which breaks our attempts
+  to block local selection when vt mouse is enabled.
+
+1.39, 2014-05-14, Add 'pass-meta-v' preference.
+
+* Add 'pass-meta-v' preference so Mac users can decide between Meta-V and
+  Meta-Shift-V for paste.
+
+1.38, 2014-05-13, Add 'ctrl-c-copy' preference.
 
 * Add a 'ctrl-c-copy' preference.  When this is set to false, the default
   setting, Ctrl-C will always send ^C while Ctrl-Shift-C will copy if there is
@@ -12,7 +23,7 @@
   'ctrl-c-copy', true) to adjust the default preference value in these
   situations.
 
-1.35, 2014-04-29, Fix double-paste, add IE compatibility.
+1.37, 2014-04-29, Fix double-paste, add IE compatibility.
 
 * Fix double-paste issue introduced in 1.36.
 * First round of IE compatibility fixes.

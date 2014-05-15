@@ -2602,7 +2602,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     } else {
       // Otherwise we defer ownership of the mouse to the VT.
       this.reportMouseEvents_ = true;
-      this.document_.getSelection().collapse();
+      this.document_.getSelection().collapseToEnd();
       this.setSelectionEnabled(false);
       e.preventDefault();
     }
@@ -2640,7 +2640,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       } else if (e.type == 'mousemove') {
         // Oh.  This means that drag-scroll was disabled AFTER the mouse down,
         // in which case it's too late to engage the scroll-blocker.
-        this.document_.getSelection().collapse();
+        this.document_.getSelection().collapseToEnd();
         e.preventDefault();
       }
     }
