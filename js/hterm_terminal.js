@@ -371,7 +371,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'pass-meta-v': function(v) {
-      terminal.passMetaV = v;
+      terminal.keyboard.passMetaV = v;
     },
 
     'receive-encoding': function(v) {
