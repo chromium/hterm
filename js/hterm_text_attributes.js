@@ -34,6 +34,7 @@ hterm.TextAttributes = function(document) {
   this.defaultBackground = 'rgb(0, 0, 0)';
 
   this.bold = false;
+  this.italic = false;
   this.blink = false;
   this.underline = false;
   this.inverse = false;
@@ -100,6 +101,7 @@ hterm.TextAttributes.prototype.reset = function() {
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
   this.bold = false;
+  this.italic = false;
   this.blink = false;
   this.underline = false;
   this.inverse = false;
@@ -124,6 +126,7 @@ hterm.TextAttributes.prototype.isDefault = function() {
   return (this.foregroundIndex == null &&
           this.backgroundIndex == null &&
           !this.bold &&
+          !this.italic &&
           !this.blink &&
           !this.underline &&
           !this.inverse &&
@@ -164,6 +167,9 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
 
   if (this.enableBold && this.bold)
     style.fontWeight = 'bold';
+
+  if (this.italic)
+    style.fontStyle = 'italic';
 
   if (this.blink)
     style.fontStyle = 'italic';
@@ -207,7 +213,7 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           this.foreground == style.color &&
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
-          this.blink == !!style.fontStyle &&
+          (this.blink || this.italic) == !!style.fontStyle &&
           this.underline == !!style.textDecoration);
 };
 

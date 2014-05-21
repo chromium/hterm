@@ -1924,11 +1924,13 @@ hterm.VT.CSI['?l'] = function(parseState) {
  *
  *    0 Normal (default).
  *    1 Bold.
+ *    3 Italic (non-xterm).
  *    4 Underlined.
  *    5 Blink (appears as Bold).
  *    7 Inverse.
  *    8 Invisible, i.e., hidden (VT300).
  *   22 Normal (neither bold nor faint).
+ *   23 Not italic (non-xterm).
  *   24 Not underlined.
  *   25 Steady (not blinking).
  *   27 Positive (not inverse).
@@ -1951,6 +1953,10 @@ hterm.VT.CSI['?l'] = function(parseState) {
  *   46 Set background color to Cyan.
  *   47 Set background color to White.
  *   49 Set background color to default (original)
+ *
+ * Non-xterm (italic) codes have mixed support, but are supported by both
+ * gnome-terminal and rxvt and are recognized as CSI codes on Wikipedia
+ * (http://en.wikipedia.org/wiki/ANSI_escape_code).
  *
  * For 16-color support, the following apply.
  *
@@ -2003,6 +2009,8 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.reset();
       } else if (arg == 1) {
         attrs.bold = true;
+      } else if (arg == 3) {
+        attrs.italic = true;
       } else if (arg == 4) {
         attrs.underline = true;
       } else if (arg == 5) {
@@ -2013,6 +2021,8 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.invisible = true;
       } else if (arg == 22) {
         attrs.bold = false;
+      } else if (arg == 23) {
+        attrs.italic = false;
       } else if (arg == 24) {
         attrs.underline = false;
       } else if (arg == 25) {

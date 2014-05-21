@@ -826,27 +826,32 @@ hterm.VT.Tests.disableTest('clear-all-tabstops', function(result, cx) {
  */
 hterm.VT.Tests.addTest('color-change', function(result, cx) {
     this.terminal.interpret('[mplain....... [0;36mHi\r\n' +
+                            '[mitalic...... [3;36mHi\r\n' +
                             '[mbright...... [0;96mHi\r\n' +
                             '[mbold........ [1;36mHi\r\n' +
                             '[mbold-bright. [1;96mHi\r\n' +
                             '[mbright-bold. [96;1mHi');
 
-    var text = this.terminal.getRowsText(0, 5);
+    var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
                     'plain....... Hi\n' +
+                    'italic...... Hi\n' +
                     'bright...... Hi\n' +
                     'bold........ Hi\n' +
                     'bold-bright. Hi\n' +
                     'bright-bold. Hi');
 
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 6; i++) {
       var row = this.terminal.getRowNode(i);
       result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
       result.assertEQ(row.childNodes[0].nodeType, 3, 'i: ' + i);
       result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
       result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
       result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
-      result.assert(!!row.childNodes[1].style.fontWeight == (i > 1), 'i: ' + i);
+      result.assert(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
+      result.assertEQ(
+          row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
+          'i: ' + i);
     }
 
     result.pass();
@@ -854,27 +859,32 @@ hterm.VT.Tests.addTest('color-change', function(result, cx) {
 
 hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
     this.terminal.interpret('[mplain....... [0;36m中\r\n' +
+                            '[mitalic...... [3;36m中\r\n' +
                             '[mbright...... [0;96m中\r\n' +
                             '[mbold........ [1;36m中\r\n' +
                             '[mbold-bright. [1;96m中\r\n' +
                             '[mbright-bold. [96;1m中');
 
-    var text = this.terminal.getRowsText(0, 5);
+    var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
                     'plain....... \u4E2D\n' +
+                    'italic...... \u4E2D\n' +
                     'bright...... \u4E2D\n' +
                     'bold........ \u4E2D\n' +
                     'bold-bright. \u4E2D\n' +
                     'bright-bold. \u4E2D');
 
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 6; i++) {
       var row = this.terminal.getRowNode(i);
       result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
       result.assertEQ(row.childNodes[0].nodeType, 3, 'i: ' + i);
       result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
       result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
       result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
-      result.assert(!!row.childNodes[1].style.fontWeight == (i > 1), 'i: ' + i);
+      result.assert(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
+      result.assert(
+          row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
+          'i: ' + i);
     }
 
     result.pass();
