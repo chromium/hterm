@@ -130,6 +130,11 @@ hterm.PreferenceManager = function(profileId) {
     ['ctrl-v-paste', false],
 
     /**
+     * Set whether East Asian Ambiguous characters have two column width.
+     */
+    ['east-asian-ambiguous-as-two-column', false],
+
+    /**
      * True to enable 8-bit control characters, false to ignore them.
      *
      * We'll respect the two-byte versions of these control characters

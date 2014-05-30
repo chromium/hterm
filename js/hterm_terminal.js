@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.colors', 'lib.PreferenceManager', 'lib.resource',
+lib.rtdep('lib.colors', 'lib.PreferenceManager', 'lib.resource', 'lib.wc',
           'hterm.Keyboard', 'hterm.Options', 'hterm.PreferenceManager',
           'hterm.Screen', 'hterm.ScrollPort', 'hterm.Size',
           'hterm.TextAttributes', 'hterm.VT');
@@ -271,6 +271,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'ctrl-v-paste': function(v) {
       terminal.keyboard.ctrlVPaste = v;
+    },
+
+    'east-asian-ambiguous-as-two-column': function(v) {
+      lib.wc.regardCjkAmbiguous = v;
     },
 
     'enable-8-bit-control': function(v) {
