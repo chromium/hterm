@@ -279,6 +279,14 @@ hterm.Keyboard.prototype.onTextInput_ = function(e) {
 hterm.Keyboard.prototype.onKeyPress_ = function(e) {
   var code;
 
+  var key = String.fromCharCode(e.which);
+  var lowerKey = key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && (lowerKey == 'c' || lowerKey == 'v')) {
+    // On FF the key press (not key down) event gets fired for copy/paste.
+    // Let it fall through for the default browser behaviour.
+    return;
+  }
+
   if (e.altKey && this.altSendsWhat == 'browser-key' && e.charCode == 0) {
     // If we got here because we were expecting the browser to handle an
     // alt sequence but it didn't do it, then we might be on an OS without

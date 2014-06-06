@@ -322,15 +322,18 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
 
+  doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
+
   // We send focus to this element just before a paste happens, so we can
   // capture the pasted text and forward it on to someone who cares.
   this.pasteTarget_ = doc.createElement('textarea');
   this.pasteTarget_.setAttribute('tabindex', '-1');
   this.pasteTarget_.style.cssText = (
     'position: absolute;' +
-    'top: -999px;');
+    'top: -9999px;');
+  this.pasteTarget_.contentEditable = true;
 
-  doc.body.appendChild(this.pasteTarget_);
+  this.screen_.appendChild(this.pasteTarget_);
   this.pasteTarget_.addEventListener(
       'textInput', this.handlePasteTargetTextInput_.bind(this));
 
@@ -1313,6 +1316,18 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
     this.bottomSelectBag_.textContent = this.rowProvider_.getRowsText(
         startBackfillIndex, this.selection.endRow.rowIndex);
     this.rowNodes_.insertBefore(this.bottomSelectBag_, this.selection.endRow);
+  }
+};
+
+/**
+ * Focuses on the paste target on a ctrl-v keydown event, as in
+ * FF a content editable element must be focused before the paste event.
+ */
+hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
+  var key = String.fromCharCode(e.which);
+  var lowerKey = key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && lowerKey == "v") {
+    this.pasteTarget_.focus();
   }
 };
 

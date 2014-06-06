@@ -502,7 +502,9 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
       // Perform the copy by letting the browser handle Ctrl-C.  On most
       // browsers, this is the *only* way to place text on the clipboard from
       // the 'drive-by' web.
-      setTimeout(selection.collapseToEnd.bind(selection), 50);
+      if (this.keyboard.terminal.clearSelectionAfterCopy) {
+        setTimeout(selection.collapseToEnd.bind(selection), 50);
+      }
       return hterm.Keyboard.KeyActions.PASS;
     }
 
@@ -510,7 +512,9 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
       // Ctrl-Shift-C should copy if there is a selection, send ^C otherwise.
       // Perform the copy manually.  This only works in situations where
       // document.execCommand('copy') is allowed.
-      setTimeout(selection.collapseToEnd.bind(selection), 50);
+      if (this.keyboard.terminal.clearSelectionAfterCopy) {
+        setTimeout(selection.collapseToEnd.bind(selection), 50);
+      }
       this.keyboard.terminal.copySelectionToClipboard();
       return hterm.Keyboard.KeyActions.CANCEL;
     }
@@ -586,7 +590,9 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
   }
 
   // Otherwise let the browser handle it as a copy command.
-  setTimeout(function() { document.getSelection().collapseToEnd() }, 50);
+  if (this.keyboard.terminal.clearSelectionAfterCopy) {
+    setTimeout(function() { document.getSelection().collapseToEnd() }, 50);
+  }
   return hterm.Keyboard.KeyActions.PASS;
 };
 

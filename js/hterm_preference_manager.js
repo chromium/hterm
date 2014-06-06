@@ -125,6 +125,16 @@ hterm.PreferenceManager = function(profileId) {
     ['copy-on-select', true],
 
     /**
+     * Whether to use the default window copy behaviour.
+     */
+    ['use-default-window-copy', false],
+
+    /**
+     * Whether to clear the selection after copying.
+     */
+    ['clear-selection-after-copy', true],
+
+    /**
      * If true, Ctrl-Plus/Minus/Zero controls zoom.
      * If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ^_,
      * Ctrl-Plus/Zero do nothing.

@@ -133,6 +133,11 @@ hterm.Terminal = function(opt_profileId) {
   this.copyOnSelect = null;
   this.mousePasteButton = null;
 
+  // Whether to use the default window copy behaviour.
+  this.useDefaultWindowCopy = false;
+
+  this.clearSelectionAfterCopy = true;
+
   this.realizeSize_(80, 24);
   this.setDefaultTabStops();
 
@@ -283,6 +288,14 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'copy-on-select': function(v) {
       terminal.copyOnSelect = !!v;
+    },
+
+    'use-default-window-copy': function(v) {
+      terminal.useDefaultWindowCopy = !!v;
+    },
+
+    'clear-selection-after-copy': function(v) {
+      terminal.clearSelectionAfterCopy = !!v;
     },
 
     'ctrl-plus-minus-zero-zoom': function(v) {
@@ -2511,7 +2524,7 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
 
   // IE doesn't support selection.extend. This means that the selection
   // won't return on IE.
-  if (selection.extend) {
+  if (this.clearSelectionAfterCopy && selection.extend) {
     selection.collapse(anchorNode, anchorOffset);
     selection.extend(focusNode, focusOffset);
   }
@@ -2730,8 +2743,10 @@ hterm.Terminal.prototype.onPaste_ = function(e) {
  * React when the user tries to copy from the scrollPort.
  */
 hterm.Terminal.prototype.onCopy_ = function(e) {
-  e.preventDefault();
-  setTimeout(this.copySelectionToClipboard.bind(this), 0);
+  if (!this.useDefaultWindowCopy) {
+    e.preventDefault();
+    setTimeout(this.copySelectionToClipboard.bind(this), 0);
+  }
 };
 
 /**
