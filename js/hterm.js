@@ -38,6 +38,14 @@ hterm.zoomWarningMessage = 'ZOOM != 100%';
  */
 hterm.notifyCopyMessage = '\u2702';
 
+
+/**
+ * Text shown in a desktop notification for the terminal
+ * bell.  \u226a is a unicode EIGHTH NOTE, %(title) will
+ * be replaced by the terminal title.
+ */
+hterm.desktopNotificationTitle = '\u266A %(title) \u266A';
+
 /**
  * List of known hterm test suites.
  *

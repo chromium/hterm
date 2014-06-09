@@ -44,6 +44,20 @@ hterm.PreferenceManager = function(profileId) {
     ['audible-bell-sound', 'lib-resource:hterm/audio/bell'],
 
     /**
+     * If true, terminal bells in the background will create a Web
+     * Notification. http://www.w3.org/TR/notifications/
+     *
+     * Displaying notifications requires permission from the user. When this
+     * option is set to true, hterm will attempt to ask the user for permission
+     * if necessary. Note browsers may not show this permission request if it
+     * did not originate from a user action.
+     *
+     * Chrome extensions with the "notfications" permission have permission to
+     * display notifications.
+     */
+    ['desktop-notification-bell', false],
+
+    /**
      * The background color for text with no other color attributes.
      */
     ['background-color', 'rgb(16, 16, 16)'],

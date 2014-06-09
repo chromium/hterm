@@ -99,6 +99,15 @@ hterm.Terminal = function(opt_profileId) {
   this.bellAudio_ = this.document_.createElement('audio');
   this.bellAudio_.setAttribute('preload', 'auto');
 
+  // All terminal bell notifications that have been generated (not necessarily
+  // shown).
+  this.bellNotificationList_ = [];
+
+  // Whether we have permission to display notifications.
+  this.desktopNotificationBell_ = false;
+  //this.notificationPermission_ = (Notification &&
+                                  //Notification.permission === 'granted');
+
   // Cursor position and attributes saved with DECSC.
   this.savedOptions_ = {};
 
@@ -197,6 +206,21 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
                                          lib.resource.getDataUrl(ary[1]));
       } else {
         terminal.bellAudio_.setAttribute('src', v);
+      }
+    },
+
+    'desktop-notification-bell': function(v) {
+      if (v && Notification) {
+        // We cannot rely on having notification permission by default.
+        if (Notification.permission !== 'granted') {
+          Notification.requestPermission(function(permission) {
+              terminal.desktopNotificationBell_ = (permission === 'granted');
+            });
+        } else {
+          terminal.desktopNotificationBell_ = true;
+        }
+      } else {
+        terminal.desktopNotificationBell_ = false;
       }
     },
 
@@ -2049,17 +2073,26 @@ hterm.Terminal.prototype.ringBell = function() {
       self.cursorNode_.style.backgroundColor = self.prefs_.get('cursor-color');
     }, 200);
 
+  // bellSquelchTimeout_ affects both audio and notification bells.
+  if (this.bellSquelchTimeout_)
+    return;
+
   if (this.bellAudio_.getAttribute('src')) {
-    if (this.bellSquelchTimeout_)
-      return;
-
     this.bellAudio_.play();
-
     this.bellSequelchTimeout_ = setTimeout(function() {
         delete this.bellSquelchTimeout_;
       }.bind(this), 500);
   } else {
     delete this.bellSquelchTimeout_;
+  }
+
+  if (this.desktopNotificationBell_ && !this.document_.hasFocus()) {
+    var n = new Notification(
+        lib.f.replaceVars(hterm.desktopNotificationTitle,
+                          {'title': this.document_.title || 'hterm'}));
+    this.bellNotificationList_.push(n);
+    // TODO: Should we try to raise the window here?
+    n.onclick = function() { self.closeBellNotifications_(); };
   }
 };
 
@@ -2675,6 +2708,8 @@ hterm.Terminal.prototype.onMouse = function(e) { };
 hterm.Terminal.prototype.onFocusChange_ = function(focused) {
   this.cursorNode_.setAttribute('focus', focused);
   this.restyleCursor_();
+  if (focused === true)
+    this.closeBellNotifications_();
 };
 
 /**
@@ -2759,4 +2794,14 @@ hterm.Terminal.prototype.onCursorBlink_ = function() {
  */
 hterm.Terminal.prototype.setScrollbarVisible = function(state) {
   this.scrollPort_.setScrollbarVisible(state);
+};
+
+/**
+ * Close all web notifications created by terminal bells.
+ */
+hterm.Terminal.prototype.closeBellNotifications_ = function() {
+  this.bellNotificationList_.forEach(function(n) {
+      n.close();
+    });
+  this.bellNotificationList_.length = 0;
 };

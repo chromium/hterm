@@ -40,6 +40,18 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
   this.terminal.decorate(div);
   this.terminal.setHeight(this.visibleRowCount);
   this.terminal.setWidth(this.visibleColumnCount);
+
+  this.origNotification_ = Notification;
+  Notification = MockNotification;
+};
+
+/**
+ * Restore any mocked out objects.
+ *
+ * Called after each test case in this suite.
+ */
+hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
+  Notification = this.origNotification_;
 };
 
 /**
@@ -157,4 +169,38 @@ hterm.Terminal.Tests.addTest('plaintext-stress-insert',
     }
 
     test(0);
+  });
+
+/**
+ * Test that accounting of desktop notifications works, and that they are
+ * closed under the right circumstances.
+ */
+hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
+                             function(result, cx) {
+    this.terminal.document_.hasFocus = function(){ return false; }
+    this.terminal.desktopNotificationBell_ = true;
+
+    // Gaining focus closes all desktop notifications.
+    result.assertEQ(0, this.terminal.bellNotificationList_.length);
+    result.assertEQ(0, MockNotification.count);
+    this.terminal.ringBell();
+    result.assertEQ(1, this.terminal.bellNotificationList_.length);
+    result.assertEQ(1, MockNotification.count);
+    this.terminal.ringBell();
+    result.assertEQ(2, this.terminal.bellNotificationList_.length);
+    result.assertEQ(2, MockNotification.count);
+    this.terminal.onFocusChange_(true);
+    result.assertEQ(0, this.terminal.bellNotificationList_.length);
+    result.assertEQ(0, MockNotification.count);
+
+    // A user click closes all desktop notifications.
+    this.terminal.ringBell();
+    this.terminal.ringBell();
+    result.assertEQ(2, this.terminal.bellNotificationList_.length);
+    result.assertEQ(2, MockNotification.count);
+    this.terminal.bellNotificationList_[0].onclick(null);
+    result.assertEQ(0, this.terminal.bellNotificationList_.length);
+    result.assertEQ(0, MockNotification.count);
+
+    result.pass();
   });
