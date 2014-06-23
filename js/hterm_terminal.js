@@ -105,8 +105,6 @@ hterm.Terminal = function(opt_profileId) {
 
   // Whether we have permission to display notifications.
   this.desktopNotificationBell_ = false;
-  //this.notificationPermission_ = (Notification &&
-                                  //Notification.permission === 'granted');
 
   // Cursor position and attributes saved with DECSC.
   this.savedOptions_ = {};
