@@ -1,3 +1,24 @@
+1.42, 2014-06-25, Stop requesting notification permission.
+
+* This code depended on a user action, but the preference observers aren't
+  run in the context of an action.  For now, it's up to the embedder to request
+  the permission in hterm's behalf.
+* Use window.document.title (not this.document_.title) as the default
+  notification text.
+
+1.41, 2014-06-24, Lots of new preferences.
+
+* Add 'clear-selection-after-copy' preference, defaults to true.  Set to false
+  to turn off hterm's policy of clearing your current selection after copying.
+* Add 'use-default-window-copy' preference, needed in some environments (open
+  web, certain browsers) to make copy actually work.
+* Add 'desktop-notification-bell' preference, to show a desktop notification
+  when the terminal bell is rung.
+* Add 'east-asian-ambiguous-as-two-column' preference, defaults to false.
+  Set to true to treat characters of ambiguous width as two columns wide.
+* Implement italic character attributes.  "CSI [ 3 m" to enable, "CSI [ 23 m"
+  to disable.
+
 1.40, 2014-05-15, fix selection collapse.
 
 * s/selection.collapse()/selection.collapseToEnd().  The former now throws an

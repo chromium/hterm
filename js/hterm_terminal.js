@@ -214,7 +214,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'desktop-notification-bell': function(v) {
       if (v && Notification) {
-        terminal.desktopNotificationBell_ = 
+        terminal.desktopNotificationBell_ =
             Notification.permission === 'granted';
         if (!terminal.desktopNotificationBell_) {
           // Note: We don't call Notification.requestPermission here because
@@ -2104,7 +2104,7 @@ hterm.Terminal.prototype.ringBell = function() {
   if (this.desktopNotificationBell_ && !this.document_.hasFocus()) {
     var n = new Notification(
         lib.f.replaceVars(hterm.desktopNotificationTitle,
-                          {'title': this.document_.title || 'hterm'}));
+                          {'title': window.document.title || 'hterm'}));
     this.bellNotificationList_.push(n);
     // TODO: Should we try to raise the window here?
     n.onclick = function() { self.closeBellNotifications_(); };
