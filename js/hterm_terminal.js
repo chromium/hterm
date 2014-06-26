@@ -214,13 +214,17 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'desktop-notification-bell': function(v) {
       if (v && Notification) {
-        // We cannot rely on having notification permission by default.
-        if (Notification.permission !== 'granted') {
-          Notification.requestPermission(function(permission) {
-              terminal.desktopNotificationBell_ = (permission === 'granted');
-            });
-        } else {
-          terminal.desktopNotificationBell_ = true;
+        terminal.desktopNotificationBell_ = 
+            Notification.permission === 'granted';
+        if (!terminal.desktopNotificationBell_) {
+          // Note: We don't call Notification.requestPermission here because
+          // Chrome requires the call be the result of a user action (such as an
+          // onclick handler), and pref listeners are run asynchronously.
+          //
+          // A way of working around this would be to display a dialog in the
+          // terminal with a "click-to-request-permission" button.
+          console.warn('desktop-notification-bell is true but we do not have ' +
+                       'permission to display notifications.');
         }
       } else {
         terminal.desktopNotificationBell_ = false;
