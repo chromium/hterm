@@ -330,6 +330,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'ctrl-v-paste': function(v) {
       terminal.keyboard.ctrlVPaste = v;
+      terminal.scrollPort_.setCtrlVPaste(v);
     },
 
     'east-asian-ambiguous-as-two-column': function(v) {

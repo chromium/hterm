@@ -75,7 +75,12 @@ hterm.ScrollPort = function(rowProvider) {
   /**
    * A guess at the current scrollbar width, fixed in resize().
    */
-  this.currentScrollbarWidthPx = 16
+  this.currentScrollbarWidthPx = 16;
+
+  /**
+   * Whether the ctrl-v key on the screen should paste.
+   */
+  this.ctrlVPaste = false;
 
   this.div_ = null;
   this.document_ = null;
@@ -467,6 +472,10 @@ hterm.ScrollPort.prototype.setBackgroundSize = function(size) {
 
 hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
   this.screen_.style.backgroundPosition = position;
+};
+
+hterm.ScrollPort.prototype.setCtrlVPaste = function(ctrlVPaste) {
+  this.ctrlVPaste = ctrlVPaste;
 };
 
 /**
@@ -1324,6 +1333,8 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
  * FF a content editable element must be focused before the paste event.
  */
 hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
+  if (!this.ctrlVPaste) return;
+
   var key = String.fromCharCode(e.which);
   var lowerKey = key.toLowerCase();
   if ((e.ctrlKey || e.metaKey) && lowerKey == "v") {
