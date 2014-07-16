@@ -882,7 +882,7 @@ hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
       result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
       result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
       result.assert(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
-      result.assert(
+      result.assertEQ(
           row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
           'i: ' + i);
     }
@@ -1245,6 +1245,49 @@ hterm.VT.Tests.addTest('long-wrap', function(result, cx) {
     result.assertEQ(this.terminal.getRowText(0), 'XXXXXXXXXXXXXXX');
     result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
     result.assertEQ(this.terminal.getRowText(2), 'XXXXXXXXXXXXXXX');
+
+    result.pass();
+  });
+
+/**
+ * Test reverse wraparound.
+ */
+hterm.VT.Tests.addTest('reverse-wrap', function(result, cx) {
+    // A line ending with a hard CRLF.
+    var str = 'AAAA\r\n';
+
+    // Enough X's to wrap once and leave the cursor in the overflow state at
+    // the end of the third row.
+    for (var i = 0; i < this.visibleColumnCount * 2; i++)
+      str += 'X';
+
+    // CR to put us at col 0, backspace to put us at the last column of the
+    // previous row, if reverse wraparound is enabled.
+    str += '\r\bBB';
+
+    // Without reverse wraparound, we should get stuck at column 0 of the third
+    // row.
+    this.terminal.interpret(str);
+
+    result.assertEQ(this.terminal.getRowText(0), 'AAAA');
+    result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
+    result.assertEQ(this.terminal.getRowText(2), 'BBXXXXXXXXXXXXX');
+
+    // With reverse wraparound, we'll back up to the previous row.
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b[?45h' + str);
+
+    result.assertEQ(this.terminal.getRowText(0), 'AAAA');
+    result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXB');
+    result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
+
+    // But reverse wraparound shouldn't extend to the "AAAA" row, which ended
+    // with a \r\n rather than a soft column wrap.
+    this.terminal.interpret('\r\b\r\bCC');
+
+    result.assertEQ(this.terminal.getRowText(0), 'AAAA');
+    result.assertEQ(this.terminal.getRowText(1), 'CCXXXXXXXXXXXXB');
+    result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
 
     result.pass();
   });

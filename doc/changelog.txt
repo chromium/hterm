@@ -1,3 +1,7 @@
+1.43, 2014-07-15, Implement reverse wraparound.
+
+* Implement reverse wraparound, add a test.
+
 1.42, 2014-06-25, Stop requesting notification permission.
 
 * This code depended on a user action, but the preference observers aren't

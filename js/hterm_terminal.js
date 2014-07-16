@@ -2036,10 +2036,37 @@ hterm.Terminal.prototype.cursorDown = function(count) {
 /**
  * Move the cursor left a specified number of columns.
  *
+ * If reverse wraparound mode is enabled and the previous row wrapped into
+ * the current row then we back up through the wraparound as well.
+ *
  * @param {integer} count The number of columns to move the cursor.
  */
 hterm.Terminal.prototype.cursorLeft = function(count) {
-  return this.cursorRight(-(count || 1));
+  count = count || 1;
+
+  if (count < 1)
+    return;
+
+  var currentColumn = this.screen_.cursorPosition.column;
+  var newColumn = currentColumn - count;
+  if (newColumn < 0) {
+    if (this.options_.reverseWraparound) {
+      var currentRow = this.screen_.cursorPosition.row;
+      if (currentRow > 0 &&
+          this.screen_.rowsArray[currentRow - 1].getAttribute(
+              'line-overflow')) {
+        this.setCursorPosition(currentRow - 1, this.screenSize.width - 1);
+        if (count - currentColumn - 1)
+          this.cursorLeft(count - currentColumn - 1);
+        return;
+      }
+    }
+
+    newColumn = 0;
+  }
+
+  this.setCursorColumn(newColumn);
+  return;
 };
 
 /**
@@ -2049,6 +2076,10 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
  */
 hterm.Terminal.prototype.cursorRight = function(count) {
   count = count || 1;
+
+  if (count < 1)
+    return;
+
   var column = lib.f.clamp(this.screen_.cursorPosition.column + count,
                            0, this.screenSize.width - 1);
   this.setCursorColumn(column);
