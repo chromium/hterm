@@ -84,6 +84,13 @@ hterm.Terminal = function(opt_profileId) {
   // The current color of the cursor.
   this.cursorColor_ = null;
 
+  // Cursor blink on/off cycle in ms, overwritten by prefs once they're loaded.
+  this.cursorBlinkCycle_ = [100, 100];
+
+  // Pre-bound onCursorBlink_ handler, so we don't have to do this for each
+  // cursor on/off servicing.
+  this.myOnCursorBlink_ = this.onCursorBlink_.bind(this);
+
   // These prefs are cached so we don't have to read from local storage with
   // each output and keystroke.  They are initialized by the preference manager.
   this.backgroundColor_ = null;
@@ -253,6 +260,19 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'cursor-blink': function(v) {
       terminal.setCursorBlink(!!v);
+    },
+
+    'cursor-blink-cycle': function(v) {
+        if (v instanceof Array &&
+            typeof v[0] == 'number' &&
+            typeof v[1] == 'number') {
+          terminal.cursorBlinkCycle_ = v;
+        } else if (typeof v == 'number') {
+          terminal.cursorBlinkCycle_ = [v, v];
+        } else {
+          // Fast blink indicates an error.
+          terminal.cursorBlinkCycle_ = [100, 100];
+        }
     },
 
     'cursor-color': function(v) {
@@ -2302,8 +2322,7 @@ hterm.Terminal.prototype.setCursorVisible = function(state) {
     if (this.timeouts_.cursorBlink)
       return;
 
-    this.timeouts_.cursorBlink = setInterval(this.onCursorBlink_.bind(this),
-                                             500);
+    this.onCursorBlink_();
   } else {
     if (this.timeouts_.cursorBlink) {
       clearTimeout(this.timeouts_.cursorBlink);
@@ -2832,11 +2851,20 @@ hterm.Terminal.prototype.onResize_ = function() {
  * Service the cursor blink timeout.
  */
 hterm.Terminal.prototype.onCursorBlink_ = function() {
+  if (!this.options_.cursorBlink) {
+    delete this.timeouts_.cursorBlink;
+    return;
+  }
+
   if (this.cursorNode_.getAttribute('focus') == 'false' ||
       this.cursorNode_.style.opacity == '0') {
     this.cursorNode_.style.opacity = '1';
+    this.timeouts_.cursorBlink = setTimeout(this.myOnCursorBlink_,
+                                            this.cursorBlinkCycle_[0]);
   } else {
     this.cursorNode_.style.opacity = '0';
+    this.timeouts_.cursorBlink = setTimeout(this.myOnCursorBlink_,
+                                            this.cursorBlinkCycle_[1]);
   }
 };
 

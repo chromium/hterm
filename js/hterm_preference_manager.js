@@ -98,6 +98,14 @@ hterm.PreferenceManager = function(profileId) {
     ['cursor-blink', false],
 
     /**
+     * The cursor blink rate in milliseconds.
+     *
+     * A two element array, the first of which is how long the cursor should be
+     * on, second is how long it should be off.
+     */
+    ['cursor-blink-cycle', [1000, 500]],
+
+    /**
      * The color of the visible cursor.
      */
     ['cursor-color', 'rgba(255,0,0,0.5)'],
