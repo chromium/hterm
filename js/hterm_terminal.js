@@ -2666,15 +2666,25 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
   e.processedByTerminalHandler_ = true;
 
+  // One based row/column stored on the mouse event.
+  e.terminalRow = parseInt((e.clientY - this.scrollPort_.visibleRowTopMargin) /
+                           this.scrollPort_.characterSize.height) + 1;
+  e.terminalColumn = parseInt(e.clientX /
+                              this.scrollPort_.characterSize.width) + 1;
+
   if (e.type == 'mousedown' && e.terminalColumn > this.screenSize.width) {
     // Mousedown in the scrollbar area.
     return;
   }
 
-  e.terminalRow = parseInt((e.clientY - this.scrollPort_.visibleRowTopMargin) /
-                           this.scrollPort_.characterSize.height) + 1;
-  e.terminalColumn = parseInt(e.clientX /
-                              this.scrollPort_.characterSize.width) + 1;
+  if (this.options_.cursorVisible) {
+    if (e.terminalRow - 1 == this.screen_.cursorPosition.row &&
+        e.terminalColumn - 1 == this.screen_.cursorPosition.column) {
+      this.cursorNode_.style.display = 'none';
+    } else if (this.cursorNode_.style.display == 'none') {
+      this.cursorNode_.style.display = '';
+    }
+  }
 
   if (e.type == 'mousedown') {
     if (e.altKey || this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED) {

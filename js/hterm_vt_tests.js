@@ -1384,9 +1384,11 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
 hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
     // Mock this out since we can't document.execCommand from the
     // test harness.
+    var old_cCSTC = hterm.copySelectionToClipboard;
     hterm.copySelectionToClipboard = function(document) {
       var s = document.getSelection();
       result.assertEQ(s.anchorNode.textContent, 'copypasta!');
+      hterm.copySelectionToClipboard = old_cCSTC;
       result.pass();
     };
 
@@ -1401,9 +1403,11 @@ hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
 hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
     // Mock this out since we can't document.execCommand from the
     // test harness.
+    var old_cCSTC = hterm.copySelectionToClipboard;
     hterm.copySelectionToClipboard = function(document) {
       var s = document.getSelection();
       result.assertEQ(s.anchorNode.textContent, expect);
+      hterm.copySelectionToClipboard = old_cCSTC;
       result.pass();
     };
 
