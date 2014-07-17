@@ -1281,13 +1281,22 @@ hterm.VT.Tests.addTest('reverse-wrap', function(result, cx) {
     result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXB');
     result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
 
-    // But reverse wraparound shouldn't extend to the "AAAA" row, which ended
-    // with a \r\n rather than a soft column wrap.
+    // Reverse wrapping should always go the the final column of the previous
+    // row, even if that row was not full of text.
     this.terminal.interpret('\r\b\r\bCC');
 
-    result.assertEQ(this.terminal.getRowText(0), 'AAAA');
-    result.assertEQ(this.terminal.getRowText(1), 'CCXXXXXXXXXXXXB');
+    result.assertEQ(this.terminal.getRowText(0), 'AAAA          C');
+    result.assertEQ(this.terminal.getRowText(1), 'CXXXXXXXXXXXXXB');
     result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
+
+    // Reverse wrapping past the first row should put us at the last row.
+    this.terminal.interpret('\r\b\r\bX');
+    result.assertEQ(this.terminal.getRowText(0), 'AAAA          C');
+    result.assertEQ(this.terminal.getRowText(1), 'CXXXXXXXXXXXXXB');
+    result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
+    result.assertEQ(this.terminal.getRowText(3), '');
+    result.assertEQ(this.terminal.getRowText(4), '');
+    result.assertEQ(this.terminal.getRowText(5), '              X');
 
     result.pass();
   });

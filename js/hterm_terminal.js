@@ -2068,25 +2068,35 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
     return;
 
   var currentColumn = this.screen_.cursorPosition.column;
-  var newColumn = currentColumn - count;
-  if (newColumn < 0) {
-    if (this.options_.reverseWraparound) {
-      var currentRow = this.screen_.cursorPosition.row;
-      if (currentRow > 0 &&
-          this.screen_.rowsArray[currentRow - 1].getAttribute(
-              'line-overflow')) {
-        this.setCursorPosition(currentRow - 1, this.screenSize.width - 1);
-        if (count - currentColumn - 1)
-          this.cursorLeft(count - currentColumn - 1);
+  if (this.options_.reverseWraparound) {
+    if (this.screen_.cursorPosition.overflow) {
+      // If this cursor is in the right margin, consume one count to get it
+      // back to the last column.  This only applies when we're in reverse
+      // wraparound mode.
+      count--;
+      this.clearCursorOverflow();
+
+      if (!count)
         return;
-      }
     }
 
-    newColumn = 0;
-  }
+    var newRow = this.screen_.cursorPosition.row;
+    var newColumn = currentColumn - count;
+    if (newColumn < 0) {
+      newRow = newRow - Math.floor(count / this.screenSize.width) - 1;
+      if (newRow < 0) {
+        // xterm also wraps from row 0 to the last row.
+        newRow = this.screenSize.height + newRow % this.screenSize.height;
+      }
+      newColumn = this.screenSize.width + newColumn % this.screenSize.width;
+    }
 
-  this.setCursorColumn(newColumn);
-  return;
+    this.setCursorPosition(Math.max(newRow, 0), newColumn);
+
+  } else {
+    var newColumn = Math.max(currentColumn - count, 0);
+    this.setCursorColumn(newColumn);
+  }
 };
 
 /**
