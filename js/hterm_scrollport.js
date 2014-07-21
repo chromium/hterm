@@ -275,9 +275,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   // Set the iframe src to # in FF.  Otherwise when the frame's
   // load event fires in FF it clears out the content of the iframe.
-  if (window.mozInnerScreenX) {  // detect a FF only property
+  if (window.hasOwnProperty('mozInnerScreenX'))  // detect a FF only property
     this.iframe_.src = '#';
-  }
 
   div.appendChild(this.iframe_);
 
