@@ -37,4 +37,5 @@ hterm.Options = function(opt_copy) {
   this.cursorBlink = opt_copy ? opt_copy.cursorBlink : false;
   this.insertMode = opt_copy ? opt_copy.insertMode : false;
   this.reverseVideo = opt_copy ? opt_copy.reverseVideo : false;
+  this.bracketedPaste = opt_copy ? opt_copy.bracketedPaste : false;
 };

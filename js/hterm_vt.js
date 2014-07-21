@@ -761,7 +761,7 @@ hterm.VT.prototype.setANSIMode = function(code, state) {
  *   1053 - [x] Set SCO function-key mode.
  *   1060 - [x] Set legacy keyboard emulation (X11R6).
  *   1061 - [!] Set VT220 keyboard emulation.
- *   2004 - [!] Set bracketed paste mode.
+ *   2004 - Set bracketed paste mode.
  *
  * [!] - Not currently implemented, may be in the future.
  * [x] - Will not implement.
@@ -858,6 +858,10 @@ hterm.VT.prototype.setDECMode = function(code, state) {
         this.savedState_.restore();
       }
 
+      break;
+
+    case '2004':  // Bracketed paste mode.
+      this.terminal.setBracketedPaste(state);
       break;
 
     default:

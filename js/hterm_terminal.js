@@ -493,6 +493,12 @@ hterm.Terminal.prototype.getPrefs = function() {
   return this.prefs_;
 };
 
+/**
+ * Enable or disable bracketed paste mode.
+ */
+hterm.Terminal.prototype.setBracketedPaste = function(state) {
+  this.options_.bracketedPaste = state;
+};
 
 /**
  * Set the color for the cursor.
@@ -2809,7 +2815,11 @@ hterm.Terminal.prototype.onScroll_ = function() {
  * React when text is pasted into the scrollPort.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  this.onVTKeystroke(e.text.replace(/\n/mg, '\r'));
+  var data = e.text.replace(/\n/mg, '\r');
+  if (this.options_.bracketedPaste)
+    data = '\x1b[200~' + data + '\x1b[201~';
+
+  this.io.sendString(data);
 };
 
 /**

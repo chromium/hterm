@@ -1533,6 +1533,27 @@ hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {
     result.pass();
   });
 
+hterm.VT.Tests.addTest('bracketed-paste', function(result, cx) {
+    var resultString;
+    terminal.io.sendString = function (str) { resultString = str };
+
+    result.assertEQ(this.terminal.options_.bracketedPaste, false);
+
+    this.terminal.interpret('\x1b[?2004h');
+    result.assertEQ(this.terminal.options_.bracketedPaste, true);
+
+    this.terminal.onPaste_({text: 'hello world'});
+    result.assertEQ(resultString, '\x1b[200~hello world\x1b[201~');
+
+    this.terminal.interpret('\x1b[?2004l');
+    result.assertEQ(this.terminal.options_.bracketedPaste, false);
+
+    this.terminal.onPaste_({text: 'hello world'});
+    result.assertEQ(resultString, 'hello world');
+
+    result.pass();
+  });
+
 hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';
