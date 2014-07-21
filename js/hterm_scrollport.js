@@ -335,7 +335,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.pasteTarget_.setAttribute('tabindex', '-1');
   this.pasteTarget_.style.cssText = (
     'position: absolute;' +
-    'top: -9999px;');
+    'height: 5px;' +
+    'bottom: -10px');
   this.pasteTarget_.contentEditable = true;
 
   this.screen_.appendChild(this.pasteTarget_);
@@ -1333,13 +1334,13 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
  * FF a content editable element must be focused before the paste event.
  */
 hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
-  if (!this.ctrlVPaste) return;
+  if (!this.ctrlVPaste)
+    return;
 
   var key = String.fromCharCode(e.which);
   var lowerKey = key.toLowerCase();
-  if ((e.ctrlKey || e.metaKey) && lowerKey == "v") {
+  if ((e.ctrlKey || e.metaKey) && lowerKey == "v")
     this.pasteTarget_.focus();
-  }
 };
 
 /**

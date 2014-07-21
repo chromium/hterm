@@ -551,6 +551,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
       (e.shiftKey && !this.keyboard.ctrlVPaste)) {
     return hterm.Keyboard.KeyActions.PASS;
   }
+
   return '\x16';
 };
 
