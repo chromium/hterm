@@ -1,3 +1,17 @@
+1.44, 2014-07-22, Add 'cursor-blink-cycle', bracketed paste, other fixes.
+
+* Fix Firefox detection in hterm.ScrollPort..decorate.
+* Implement bracketed paste, BUG=chromium:393622
+* Fix flash on paste, BUG=chromium:390357, BUG=chromium:394568
+* Fix hollow-cursor-after-paste issue, BUG=chromium:390357
+* Fix reverse-wrap.
+* Add a 'cursor-blink-cycle' preference which can be a number or a two-number
+  array.  If two numbers are provided, the first is how long a blinking cursor
+  should be on, the second is how long it should be off.  If a single number is
+  given it's used for both on and off.  Anything else results in a fast
+  blinking cursor.  BUG=chromium:366206
+* Hide terminal cursor when mouse cursor is over it, BUG=chromium:365910
+
 1.43, 2014-07-15, Implement reverse wraparound.
 
 * Implement reverse wraparound, add a test.
