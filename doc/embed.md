@@ -35,7 +35,7 @@ You'll want a sacrificial DOM node which will become the terminal widget.  It sh
 In our example, we'll assume this DOM:
 
 ```html
-<DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <body>
     <div id="terminal"
@@ -97,12 +97,25 @@ t.onTerminalReady = function() {
     // some ioctls on the host.
   };
 
-  io.print('Print a string without a newline');
-  io.println('Print a string and add CRLF');
-
   // You can call io.push() to foreground a fresh io context, which can
   // be uses to give control of the terminal to something else.  When that
   // thing is complete, should call io.pop() to restore control to the
   // previous io object.
 };
+```
+
+Once you've registered your onTerminalReady handler you can connect the terminal
+to sacrifical DOM node.
+
+```
+t.decorate(document.quertSelector('#terminal'));
+```
+
+## Step 5, Write to the terminal.
+
+Once onTerminalReady fires, you're free to start outputting text to the terminal!
+
+```js
+t.io.print('Print a string without a newline');
+t.io.println('Print a string and add CRLF');
 ```
