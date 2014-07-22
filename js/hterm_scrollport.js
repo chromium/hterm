@@ -275,7 +275,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   // Set the iframe src to # in FF.  Otherwise when the frame's
   // load event fires in FF it clears out the content of the iframe.
-  if (window.hasOwnProperty('mozInnerScreenX'))  // detect a FF only property
+  if ('mozInnerScreenX' in window)  // detect a FF only property
     this.iframe_.src = '#';
 
   div.appendChild(this.iframe_);
@@ -335,7 +335,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.pasteTarget_.style.cssText = (
     'position: absolute;' +
     'height: 5px;' +
-    'bottom: -10px');
+    'bottom: -999px');
   this.pasteTarget_.contentEditable = true;
 
   this.screen_.appendChild(this.pasteTarget_);
