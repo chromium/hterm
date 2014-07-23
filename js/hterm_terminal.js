@@ -2532,9 +2532,10 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   var divSize = hterm.getClientSize(this.div_);
   var overlaySize = hterm.getClientSize(this.overlayNode_);
 
-  this.overlayNode_.style.top = (divSize.height - overlaySize.height) / 2;
+  this.overlayNode_.style.top =
+      (divSize.height - overlaySize.height) / 2 + 'px';
   this.overlayNode_.style.left = (divSize.width - overlaySize.width -
-      this.scrollPort_.currentScrollbarWidthPx) / 2;
+      this.scrollPort_.currentScrollbarWidthPx) / 2 + 'px';
 
   var self = this;
 

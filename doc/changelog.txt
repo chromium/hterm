@@ -1,3 +1,8 @@
+1.45, 2014-07-22, Fix overlay position on Firefox.
+
+* Add the trailing 'px' in the css top/left property.  Chrome is ok without it,
+  but it's required on Firefox.
+
 1.44, 2014-07-22, Add 'cursor-blink-cycle', bracketed paste, other fixes.
 
 * Fix Firefox detection in hterm.ScrollPort..decorate.
