@@ -328,20 +328,6 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
 
-  // We send focus to this element just before a paste happens, so we can
-  // capture the pasted text and forward it on to someone who cares.
-  this.pasteTarget_ = doc.createElement('textarea');
-  this.pasteTarget_.setAttribute('tabindex', '-1');
-  this.pasteTarget_.style.cssText = (
-    'position: absolute;' +
-    'height: 5px;' +
-    'bottom: -999px');
-  this.pasteTarget_.contentEditable = true;
-
-  this.screen_.appendChild(this.pasteTarget_);
-  this.pasteTarget_.addEventListener(
-      'textInput', this.handlePasteTargetTextInput_.bind(this));
-
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
   this.rowNodes_.style.cssText = (
@@ -397,6 +383,24 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'top: 0;' +
       'left: 0;' +
       'visibility: hidden');
+
+
+  // We send focus to this element just before a paste happens, so we can
+  // capture the pasted text and forward it on to someone who cares.
+  this.pasteTarget_ = doc.createElement('textarea');
+  this.pasteTarget_.setAttribute('tabindex', '-1');
+  this.pasteTarget_.style.cssText = (
+    'position: absolute;' +
+    'height: 1px;' +
+    'width: 1px;' +
+    'left: 0px; ' +
+    'bottom: 0px;' +
+    'opacity: 0');
+  this.pasteTarget_.contentEditable = true;
+
+  this.screen_.appendChild(this.pasteTarget_);
+  this.pasteTarget_.addEventListener(
+      'textInput', this.handlePasteTargetTextInput_.bind(this));
 
   this.resize();
 };

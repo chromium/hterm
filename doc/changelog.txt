@@ -1,3 +1,10 @@
+1.46, 2014-07-24, Fix right-click paste issues.
+
+* Version 1.44 introduced an issue with right-click paste where focusing the
+  paste target would force the page to scroll 1000px past the end of the
+  terminal.  Now we place the paste target within the visible bounds of the
+  terminal, but nehind it in z-index.
+
 1.45, 2014-07-22, Fix overlay position on Firefox.
 
 * Add the trailing 'px' in the css top/left property.  Chrome is ok without it,
