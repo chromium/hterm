@@ -96,7 +96,7 @@ hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
     result.assertEQ(innerWidth, scrollPort.getScreenWidth());
     result.assertEQ(divSize.height, scrollPort.getScreenHeight());
 
-    result.assertEQ(innerWidth / scrollPort.characterSize.width,
+    result.assertEQ(Math.floor(innerWidth / scrollPort.characterSize.width),
                     this.visibleColumnCount);
     result.assertEQ(divSize.height / scrollPort.characterSize.height,
                     this.visibleRowCount);

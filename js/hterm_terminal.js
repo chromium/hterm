@@ -796,8 +796,9 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
     return;
   }
 
-  this.div_.style.width = this.scrollPort_.characterSize.width *
-      columnCount + this.scrollPort_.currentScrollbarWidthPx + 'px';
+  this.div_.style.width = Math.ceil(
+      this.scrollPort_.characterSize.width *
+      columnCount + this.scrollPort_.currentScrollbarWidthPx) + 'px';
   this.realizeSize_(columnCount, this.screenSize.height);
   this.scheduleSyncCursorPosition_();
 };
