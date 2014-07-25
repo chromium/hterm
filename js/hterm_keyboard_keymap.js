@@ -239,8 +239,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [56,  '8*', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [57,  '9(', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [48,  '0)', DEFAULT, c('onPlusMinusZero_'),c('onAltNum_'),c('onMetaNum_')],
-    [189, '-_', DEFAULT, c('onPlusMinusZero_'),         DEFAULT,     DEFAULT],
-    [187, '=+', DEFAULT, c('onPlusMinusZero_'),         DEFAULT,     DEFAULT],
+    [189, '-_', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    [187, '=+', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
