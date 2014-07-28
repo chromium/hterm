@@ -1,3 +1,16 @@
+1.47, 2014-07-28, Fix clear-selection-after-copy, fractional sizes
+
+* Always restore the selection after a copy operation, if we can.
+  The clearSelectionAfterCopy option shouldn't come in to play here.
+  We should only be clearing the selection after a delay, which means
+  we'll always need to restore after a copy.
+* Chrome 38 returns fractional dimensions for nodes that were
+  set to a fractional size, where previous versions did not.
+  However, a node contained by such a node whose width is set to
+  '100%' returns only the integer portion of the width.  This patch
+  makes us round up rather than set a fractional terminal width, and
+  adjusts the test to exepect this behavior.
+
 1.46, 2014-07-24, Fix right-click paste issues.
 
 * Version 1.44 introduced an issue with right-click paste where focusing the
