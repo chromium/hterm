@@ -2595,7 +2595,7 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
 
   // IE doesn't support selection.extend. This means that the selection
   // won't return on IE.
-  if (this.clearSelectionAfterCopy && selection.extend) {
+  if (selection.extend) {
     selection.collapse(anchorNode, anchorOffset);
     selection.extend(focusNode, focusOffset);
   }
