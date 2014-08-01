@@ -238,9 +238,15 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [55,  '7&', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [56,  '8*', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [57,  '9(', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
-    [48,  '0)', DEFAULT, c('onPlusMinusZero_'),c('onAltNum_'),c('onMetaNum_')],
+    [48,  '0)', DEFAULT, c('onPlusMinusZero_'),c('onAltNum_'),c('onPlusMinusZero_')],
     [189, '-_', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
     [187, '=+', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    // Firefox -_ and =+
+    [173, '-_', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    [61, '=+', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    // Firefox Italian +*
+    [171, '+*', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
     // Third row.
@@ -347,10 +353,11 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+"26~", DEFAULT],
     [182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+"28~", DEFAULT],
     [216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+"29~", DEFAULT],
-    [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+"31~", DEFAULT],
-    [173, '[MUTE]',   med(CSI + '19~'),           DEFAULT, CSI+"32~", DEFAULT],
-    [174, '[VOL-]',   med(CSI + '20~'),           DEFAULT, CSI+"33~", DEFAULT],
-    [175, '[VOL+]',   med(CSI + '21~'),           DEFAULT, CSI+"34~", DEFAULT]
+    [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+"31~", DEFAULT]
+
+    // 173 [MUTE], 174 [VOL-] and 175 [VOL+] are trapped by the Chrome OS
+    // window manager, so we'll never see them. Note that 173 is also
+    // Firefox's -_ keycode.
   );
 };
 
