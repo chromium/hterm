@@ -157,13 +157,8 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (this.foreground != this.DEFAULT_COLOR)
     style.color = this.foreground;
 
-  if (this.background != this.DEFAULT_COLOR) {
+  if (this.background != this.DEFAULT_COLOR)
     style.backgroundColor = this.background;
-    // This bottom border ensures that the extra row of pixels at the bottom of
-    // the character cell (used to hold underscores in some fonts) has the
-    // correct background color.
-    style.borderBottom = '1px ' + this.background + ' solid';
-  }
 
   if (this.enableBold && this.bold)
     style.fontWeight = 'bold';
