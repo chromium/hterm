@@ -619,11 +619,15 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
         'height: auto !important;' +
         'width: auto !important;');
 
-    this.ruler_.textContent = ('XXXXXXXXXXXXXXXXXXXX' +
-                               'XXXXXXXXXXXXXXXXXXXX' +
-                               'XXXXXXXXXXXXXXXXXXXX' +
-                               'XXXXXXXXXXXXXXXXXXXX' +
-                               'XXXXXXXXXXXXXXXXXXXX');
+    // We need to put the text in a span to make the size calculation
+    // work properly in Firefox
+    this.rulerSpan_ = this.document_.createElement('span');
+    this.rulerSpan_.textContent = ('XXXXXXXXXXXXXXXXXXXX' +
+                                   'XXXXXXXXXXXXXXXXXXXX' +
+                                   'XXXXXXXXXXXXXXXXXXXX' +
+                                   'XXXXXXXXXXXXXXXXXXXX' +
+                                   'XXXXXXXXXXXXXXXXXXXX');
+    this.ruler_.appendChild(this.rulerSpan_);
 
     this.rulerBaseline_ = this.document_.createElement('span');
     // We want to collapse it on the baseline
@@ -631,10 +635,10 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
     this.rulerBaseline_.textContent = 'X';
   }
 
-  this.ruler_.style.fontWeight = opt_weight || '';
+  this.rulerSpan_.style.fontWeight = opt_weight || '';
 
   this.rowNodes_.appendChild(this.ruler_);
-  var rulerSize = hterm.getClientSize(this.ruler_);
+  var rulerSize = hterm.getClientSize(this.rulerSpan_);
 
   // In some fonts, underscores actually show up below the reported height.
   // We add one to the height here to compensate, and have to add a bottom
