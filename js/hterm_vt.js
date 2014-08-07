@@ -2300,7 +2300,7 @@ hterm.VT.CSI[' t'] = hterm.VT.ignore;
  * Restore cursor (ANSI.SYS).
  */
 hterm.VT.CSI['u'] = function() {
-  this.terminal.restoreOptions();
+  this.savedState_.restore();
 };
 
 /**
