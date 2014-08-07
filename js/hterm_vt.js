@@ -2346,6 +2346,27 @@ hterm.VT.CSI['*x'] = hterm.VT.ignore;
 hterm.VT.CSI['$x'] = hterm.VT.ignore;
 
 /**
+ * vt_tiledata (as used by NAOhack and UnNetHack)
+ * (see http://nethackwiki.com/wiki/Vt_tiledata for more info)
+ *
+ * Implemented as far as we care (start a glyph and end a glyph).
+ */
+hterm.VT.CSI['z'] = function(parseState) {
+  if (parseState.args.length < 1)
+    return;
+  var arg = parseState.args[0];
+  if (arg == '0') {
+    // Start a glyph (one parameter, the glyph number).
+    if (parseState.args.length < 2)
+      return;
+    this.terminal.getTextAttributes().tileData = parseState.args[1];
+  } else if (arg == '1') {
+    // End a glyph.
+    this.terminal.getTextAttributes().tileData = null;
+  }
+};
+
+/**
  * Enable Locator Reporting (DECELR).
  *
  * Not currently implemented.

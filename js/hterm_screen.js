@@ -475,13 +475,16 @@ hterm.Screen.prototype.insertString = function(str) {
     // This whitespace should be completely unstyled.  Underline and background
     // color would be visible on whitespace, so we can't use one of those
     // spans to hold the text.
-    if (!(this.textAttributes.underline || this.textAttributes.background ||
-          this.textAttributes.wcNode)) {
+    if (!(this.textAttributes.underline ||
+          this.textAttributes.background ||
+          this.textAttributes.wcNode ||
+          this.textAttributes.tileData != null)) {
       // Best case scenario, we can just pretend the spaces were part of the
       // original string.
       str = ws + str;
     } else if (cursorNode.nodeType == 3 ||
                !(cursorNode.wcNode ||
+                 cursorNode.tileNode ||
                  cursorNode.style.textDecoration ||
                  cursorNode.style.backgroundColor)) {
       // Second best case, the current node is able to hold the whitespace.

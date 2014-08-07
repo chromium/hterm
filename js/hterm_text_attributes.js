@@ -40,6 +40,7 @@ hterm.TextAttributes = function(document) {
   this.inverse = false;
   this.invisible = false;
   this.wcNode = false;
+  this.tileData = null;
 
   this.colorPalette = null;
   this.resetColorPalette();
@@ -94,6 +95,7 @@ hterm.TextAttributes.prototype.clone = function() {
  * Reset the current set of attributes.
  *
  * This does not affect the palette.  Use resetColorPalette() for that.
+ * It also doesn't affect the tile data, it's not meant to.
  */
 hterm.TextAttributes.prototype.reset = function() {
   this.foregroundIndex = null;
@@ -131,7 +133,8 @@ hterm.TextAttributes.prototype.isDefault = function() {
           !this.underline &&
           !this.inverse &&
           !this.invisible &&
-          !this.wcNode);
+          !this.wcNode &&
+          this.tileData == null);
 };
 
 /**
@@ -142,6 +145,8 @@ hterm.TextAttributes.prototype.isDefault = function() {
  * an HTML span if the text is styled.  Due to lack of monospace wide character
  * fonts on certain systems (e.g. Chrome OS), we need to put each wide character
  * in a span of CSS class '.wc-node' which has double column width.
+ * Each vt_tiledata tile is also represented by a span with a single
+ * character, with CSS classes '.tile' and '.tile_<glyph number>'.
  *
  * @param {string} opt_textContent Optional text content for the new container.
  * @return {HTMLNode} An HTML span or text nodes styled to match the current
@@ -177,6 +182,12 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
     span.wcNode = true;
   }
 
+  if (this.tileData != null) {
+    // This could be a wcNode too, so we add to the className here.
+    span.className += ' tile tile_' + this.tileData;
+    span.tileNode = true;
+  }
+
   if (opt_textContent)
     span.textContent = opt_textContent;
 
@@ -202,9 +213,10 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
 
   var style = obj.style;
 
-  // We don't want to put multiple wide characters in a wcNode. See the comment
-  // in createContainer.
+  // We don't want to put multiple characters in a wcNode or a tile.
+  // See the comments in createContainer.
   return (!(this.wcNode || obj.wcNode) &&
+          !(this.tileData != null || obj.tileNode) &&
           this.foreground == style.color &&
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
