@@ -2365,6 +2365,13 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
     return;
   }
 
+  if (this.options_.cursorVisible &&
+      this.cursorNode_.style.display == 'none') {
+    // Re-display the terminal cursor if it was hidden by the mouse cursor.
+    this.cursorNode_.style.display = '';
+  }
+
+
   this.cursorNode_.style.top = this.scrollPort_.visibleRowTopMargin +
       this.scrollPort_.characterSize.height * (cursorRowIndex - topRowIndex) +
       'px';
@@ -2715,7 +2722,12 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     return;
   }
 
-  if (this.options_.cursorVisible) {
+  if (this.options_.cursorVisible &&
+      this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED) {
+    // If the cursor is visible and we're not sending mouse events to the
+    // host app, then we want to hide the terminal cursor when the mouse
+    // cursor is over top.  This keeps the terminal cursor from interfering
+    // with local text selection.
     if (e.terminalRow - 1 == this.screen_.cursorPosition.row &&
         e.terminalColumn - 1 == this.screen_.cursorPosition.column) {
       this.cursorNode_.style.display = 'none';
