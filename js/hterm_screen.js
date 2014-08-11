@@ -835,11 +835,6 @@ hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
 /**
  * Expands selection to surround URLs.
  *
- * Uses this regular expression to expand the selection:
- * [^\s\[\](){}<>"'\^!@#$%&*,.;:~`]
- * [^\s\[\](){}<>"'\^]*
- * [^\s\[\](){}<>"'\^!@#$%&*,.;:~`]
- *
  * @param {Selection} selection Selection to expand.
  **/
 hterm.Screen.prototype.expandSelection = function(selection) {
@@ -865,13 +860,15 @@ hterm.Screen.prototype.expandSelection = function(selection) {
   if (endPosition == -1)
     return;
 
-  var outsideMatch = '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,.;:~`]';
+  // Matches can start with '~' or '.', since paths frequently do.
+  var leftMatch   = '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:`]';
+  var rightMatch  = '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:~.`]';
   var insideMatch = '[^\\s\\[\\](){}<>"\'\\^]*';
 
   //Move start to the left.
   var rowText = this.getLineText_(row);
   var lineUpToRange = lib.wc.substring(rowText, 0, endPosition);
-  var leftRegularExpression = new RegExp(outsideMatch + insideMatch + "$");
+  var leftRegularExpression = new RegExp(leftMatch + insideMatch + "$");
   var expandedStart = lineUpToRange.search(leftRegularExpression);
   if (expandedStart == -1 || expandedStart > startPosition)
     return;
@@ -879,7 +876,7 @@ hterm.Screen.prototype.expandSelection = function(selection) {
   //Move end to the right.
   var lineFromRange = lib.wc.substring(rowText, startPosition,
                                        lib.wc.strWidth(rowText));
-  var rightRegularExpression = new RegExp("^" + insideMatch + outsideMatch);
+  var rightRegularExpression = new RegExp("^" + insideMatch + rightMatch);
   var found = lineFromRange.match(rightRegularExpression);
   if (!found)
     return;
