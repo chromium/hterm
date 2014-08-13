@@ -1,3 +1,16 @@
+1.48, 2014-08-13, grab bag of fixes.
+
+* Place ruler text inside a span to fix issues on Firefox.
+* Improve zoom keyboard handling on Mac and Firefox.
+* Fix "CSI u" sequence.
+* Remove the height + 1 underscore hack.
+* Add parser routine and set css class for vt_tiledata support.  Users will
+  still need to add a custom stylesheet to see vt tiles.
+* Allow double-click selections to start with "." or "~".
+* Disable terminal cursor hiding when vt mouse tracking is enabled.
+* If the terminal cursor is hidden because it's under the mouse cursor, restore
+  the visibility when the terminal cursor moves.
+
 1.47, 2014-07-28, Fix clear-selection-after-copy, fractional sizes
 
 * Always restore the selection after a copy operation, if we can.
