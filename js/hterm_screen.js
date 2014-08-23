@@ -258,9 +258,18 @@ hterm.Screen.prototype.clearCursorRow = function() {
     text = lib.f.getWhitespace(this.columnCount_);
   }
 
+  // We shouldn't honour inverse colors when clearing an area, to match
+  // xterm's back color erase behaviour.
+  var inverse = this.textAttributes.inverse;
+  this.textAttributes.inverse = false;
+  this.textAttributes.syncColors();
+
   var node = this.textAttributes.createContainer(text);
   this.cursorRowNode_.appendChild(node);
   this.cursorNode_ = node;
+
+  this.textAttributes.inverse = inverse;
+  this.textAttributes.syncColors();
 };
 
 /**
