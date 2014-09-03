@@ -2830,6 +2830,7 @@ hterm.Terminal.prototype.onScroll_ = function() {
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
   var data = e.text.replace(/\n/mg, '\r');
+  data = this.keyboard.encode(data);
   if (this.options_.bracketedPaste)
     data = '\x1b[200~' + data + '\x1b[201~';
 
