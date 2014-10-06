@@ -377,7 +377,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyInsert_ = function(e) {
 hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
   if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
     if ((e.altey || e.ctrlKey || e.shiftKey) ||
-        !this.keyboard.applicationKeypad) {
+        !this.keyboard.applicationCursor) {
       return '\x1b[H';
     }
 
@@ -394,7 +394,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
 hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
   if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
     if ((e.altKey || e.ctrlKey || e.shiftKey) ||
-        !this.keyboard.applicationKeypad) {
+        !this.keyboard.applicationCursor) {
       return '\x1b[F';
     }
 

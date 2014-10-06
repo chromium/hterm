@@ -1,3 +1,8 @@
+1.49, 2014-10-06, Fix HOME/END under application cursor mode.
+
+* Send OSC H/OSC F for HOME/END when in application cursor mode, rather than
+  application keypad mode.
+
 1.48, 2014-08-13, grab bag of fixes.
 
 * Place ruler text inside a span to fix issues on Firefox.
