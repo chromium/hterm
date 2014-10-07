@@ -1606,7 +1606,7 @@ hterm.VT.OSC['52'] = function(parseState) {
   // Args come in as a single 'clipboard;b64-data' string.  The clipboard
   // parameter is used to select which of the X clipboards to address.  Since
   // we're not integrating with X, we treat them all the same.
-  var args = parseState.args[0].match(/^[cps01234567]+;(.*)/);
+  var args = parseState.args[0].match(/^[cps01234567]*;(.*)/);
   if (!args)
     return;
 
