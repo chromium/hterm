@@ -5,9 +5,6 @@
   two semicolons.  We toss out the clipboard identifier anyway, so making it
   optional makes tmux clipboard integration work.
 
-* Send OSC H/OSC F for HOME/END when in application cursor mode, rather than
-  application keypad mode.
-
 1.49, 2014-10-06, Fix HOME/END under application cursor mode.
 
 * Send OSC H/OSC F for HOME/END when in application cursor mode, rather than
