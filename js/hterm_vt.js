@@ -1985,6 +1985,10 @@ hterm.VT.CSI['?l'] = function(parseState) {
  *  38 ; 5 ; P Set foreground color to P.
  *  48 ; 5 ; P Set background color to P.
  *
+ *  For true color (24-bit) support, the following apply.
+ *  38 ; 2 ; R ; G ; B Set foreground color to rgb(R, G, B)
+ *  48 ; 2 ; R ; G ; B Set background color to rgb(R, G, B)
+ *
  * Note that most terminals consider "bold" to be "bold and bright".  In
  * some documents the bold state is even referred to as bright.  We interpret
  * bold as bold-bright here too, but only when the "bold" setting comes before
@@ -1996,6 +2000,16 @@ hterm.VT.CSI['m'] = function(parseState) {
       return null;
 
     return parseState.iarg(i + 2, 0);
+  }
+
+  function getTrueColor(i) {
+    if (parseState.args.length < i + 5 || parseState.args[i + 1] != '2')
+      return null;
+    var r = parseState.iarg(i + 2, 0);
+    var g = parseState.iarg(i + 3, 0);
+    var b = parseState.iarg(i + 4, 0);
+
+    return 'rgb(' + r + ' ,' + g + ' ,' + b + ')';
   }
 
   var attrs = this.terminal.getTextAttributes();
@@ -2039,48 +2053,69 @@ hterm.VT.CSI['m'] = function(parseState) {
 
     } else if (arg < 50) {
       // Select fore/background color from bottom half of 16 color palette
-      // or from the 256 color palette.
+      // or from the 256 color palette or alternative specify color in fully
+      // qualified rgb(r, g, b) form.
       if (arg < 38) {
-        attrs.foregroundIndex = arg - 30;
+        attrs.foregroundSource = arg - 30;
 
       } else if (arg == 38) {
-        var c = get256(i);
-        if (c == null)
-          break;
+        // First check for true color definition
+        var trueColor = getTrueColor(i);
+        if (trueColor != null) {
+          attrs.foregroundSource = attrs.SRC_RGB;
+          attrs.foreground = trueColor;
 
-        i += 2;
+          i += 5;
+        } else {
+          // Check for 256 color
+          var c = get256(i);
+          if (c == null)
+            break;
 
-        if (c >= attrs.colorPalette.length)
-          continue;
+          i += 2;
 
-        attrs.foregroundIndex = c;
+          if (c >= attrs.colorPalette.length)
+            continue;
+
+          attrs.foregroundSource = c;
+        }
 
       } else if (arg == 39) {
-        attrs.foregroundIndex = null;
+        attrs.foregroundSource = attrs.SRC_DEFAULT;
 
       } else if (arg < 48) {
-        attrs.backgroundIndex = arg - 40;
+        attrs.backgroundSource = arg - 40;
 
       } else if (arg == 48) {
-        var c = get256(i);
-        if (c == null)
-          break;
+        // First check for true color definition
+        var trueColor = getTrueColor(i);
+        if (trueColor != null) {
+          attrs.backgroundSource = attrs.SRC_RGB;
+          attrs.background = trueColor;
 
-        i += 2;
+          i += 5;
+        } else {
+          // Check for 256 color
+          var c = get256(i);
+          if (c == null)
+            break;
 
-        if (c >= attrs.colorPalette.length)
-          continue;
+          i += 2;
 
-        attrs.backgroundIndex = c;
+          if (c >= attrs.colorPalette.length)
+            continue;
+
+          attrs.backgroundSource = c;
+        }
       } else {
-        attrs.backgroundIndex = null;
+        attrs.backgroundSource = attrs.SRC_DEFAULT;
       }
 
     } else if (arg >= 90 && arg <= 97) {
-      attrs.foregroundIndex = arg - 90 + 8;
+      attrs.foregroundSource = arg - 90 + 8;
 
     } else if (arg >= 100 && arg <= 107) {
-      attrs.backgroundIndex = arg - 100 + 8;
+      attrs.backgroundSource = arg - 100 + 8;
     }
   }
 

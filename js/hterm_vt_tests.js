@@ -1120,6 +1120,51 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     result.pass();
   });
 
+/*
+ * Test setting of true color mode on text
+ */
+hterm.VT.Tests.addTest('true-color-mode', function(result, cx) {
+    function getEscape(row, fg) {
+      return  '\x1b[' + (fg == true ? 38 : 48) + ';2;' + row[1] + ';' +
+              row[2] + ';' + row[3] + 'm';
+    }
+
+    function getRGB(row) {
+      return 'rgb(' + row[1] + ', ' + row[2] + ', ' + row[3] + ')';
+    }
+
+    this.terminal.setWidth(80);
+
+    var colors =  [['Aero', 124, 185, 232],
+                   ['Amber', 255, 191, 0],
+                   ['Bitter Lime', 191, 255, 0],
+                   ['Coffee', 111, 78, 55],
+                   ['Electric Crimson', 255, 0, 63],
+                   ['French Rose', 246, 74, 138]];
+
+    for (var i = 0; i < 6; i++) {
+      var fg = getRGB(colors[i]);
+      for (var j = 0; j < 6; j++ ) {
+        this.terminal.interpret('[mTrue Color Test ' +
+                                getEscape(colors[i],true) +
+                                getEscape(colors[j],false) + colors[i][0] +
+                                ' and ' + colors[j][0] + '\r\n');
+
+        var text = this.terminal.getRowText(6*i+j,1);
+        result.assertEQ(text, 'True Color Test ' + colors[i][0] + ' and ' +
+                        colors[j][0]);
+
+        var bg = getRGB(colors[j]);
+        var style = this.terminal.getRowNode(6*i+j).childNodes[1].style;
+        result.assertEQ(style.color,fg);
+        result.assertEQ(style.backgroundColor,bg);
+      }
+    }
+
+    result.pass();
+  });
+
+
 /**
  * TODO(rginda): Test origin mode.
  */

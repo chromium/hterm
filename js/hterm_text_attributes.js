@@ -22,11 +22,15 @@ lib.rtdep('lib.colors');
  */
 hterm.TextAttributes = function(document) {
   this.document_ = document;
-  this.foregroundIndex = null;
-  this.backgroundIndex = null;
+  // These variables contain the source of the color as either:
+  // SRC_DEFAULT  (use context default)
+  // SRC_RGB      (specified in 'rgb( r, g, b)' form)
+  // number       (representing the index from color palette to use)
+  this.foregroundSource = this.SRC_DEFAULT;
+  this.backgroundSource = this.SRC_DEFAULT;
 
-  // These properties cache the value in the color table, but foregroundIndex
-  // and backgroundIndex contain the canonical values.
+  // These properties cache the value in the color table, but foregroundSource
+  // and backgroundSource contain the canonical values.
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
 
@@ -67,6 +71,18 @@ hterm.TextAttributes.prototype.enableBoldAsBright = true;
 hterm.TextAttributes.prototype.DEFAULT_COLOR = new String('');
 
 /**
+ * A constant string used to specify that source color is context default.
+ */
+hterm.TextAttributes.prototype.SRC_DEFAULT = 'default';
+
+
+/**
+ * A constant string used to specify that the source of a color is a valid
+ * rgb( r, g, b) specifier.
+ */
+hterm.TextAttributes.prototype.SRC_RGB = 'rgb';
+
+/**
  * The document object which should own the DOM nodes created by this instance.
  *
  * @param {HTMLDocument} document The parent document.
@@ -98,8 +114,8 @@ hterm.TextAttributes.prototype.clone = function() {
  * It also doesn't affect the tile data, it's not meant to.
  */
 hterm.TextAttributes.prototype.reset = function() {
-  this.foregroundIndex = null;
-  this.backgroundIndex = null;
+  this.foregroundSource = this.SRC_DEFAULT;
+  this.backgroundSource = this.SRC_DEFAULT;
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
   this.bold = false;
@@ -125,8 +141,8 @@ hterm.TextAttributes.prototype.resetColorPalette = function() {
  * @return {boolean} True if the current attributes describe unstyled text.
  */
 hterm.TextAttributes.prototype.isDefault = function() {
-  return (this.foregroundIndex == null &&
-          this.backgroundIndex == null &&
+  return (this.foregroundSource == this.SRC_DEFAULT &&
+          this.backgroundSource == this.SRC_DEFAULT &&
           !this.bold &&
           !this.italic &&
           !this.blink &&
@@ -253,31 +269,38 @@ hterm.TextAttributes.prototype.syncColors = function() {
     return i;
   }
 
-  var foregroundIndex = this.foregroundIndex;
-  var backgroundIndex = this.backgroundIndex;
+  var foregroundSource = this.foregroundSource;
+  var backgroundSource = this.backgroundSource;
   var defaultForeground = this.DEFAULT_COLOR;
   var defaultBackground = this.DEFAULT_COLOR;
 
   if (this.inverse) {
-    foregroundIndex = this.backgroundIndex;
-    backgroundIndex = this.foregroundIndex;
+    foregroundSource = this.backgroundSource;
+    backgroundSource = this.foregroundSource;
     // We can't inherit the container's color anymore.
     defaultForeground = this.defaultBackground;
     defaultBackground = this.defaultForeground;
   }
 
   if (this.enableBoldAsBright && this.bold) {
-    if (foregroundIndex != null)
-      foregroundIndex = getBrightIndex(foregroundIndex);
+    if (foregroundSource != this.SRC_DEFAULT &&
+        foregroundSource != this.SRC_RGB)
+      foregroundSource = getBrightIndex(foregroundSource);
   }
 
   if (this.invisible)
-    foregroundIndex = backgroundIndex;
+    foregroundSource = backgroundSource;
 
-  this.foreground = ((foregroundIndex == null) ? defaultForeground :
-                     this.colorPalette[foregroundIndex]);
-  this.background = ((backgroundIndex == null) ? defaultBackground :
-                     this.colorPalette[backgroundIndex]);
+  // Set fore/background colors unless already specified in rgb( r, g, b) form.
+  if (foregroundSource != this.SRC_RGB) {
+    this.foreground = ((foregroundSource == this.SRC_DEFAULT) ?
+        defaultForeground : this.colorPalette[foregroundSource]);
+  }
+
+  if (backgroundSource != this.SRC_RGB) {
+    this.background = ((backgroundSource == this.SRC_DEFAULT) ?
+        defaultForeground : this.colorPalette[backgroundSource]);
+  }
 };
 
 /**
