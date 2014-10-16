@@ -17,9 +17,9 @@ $ git clone https://chromium.googlesource.com/apps/libapps
 The build process for hterm bundles some resources as JavaScript source and concatenates the JavaScript into a single file.  It only works on Linux and BSD based systems (yes, OS X should work).  To build hterm, run...
 
 ```sh
-$ cd ~/src/libdot
+$ cd ~/src/libapps
 $ LIBDOT_SEARCH_PATH=$(pwd) ./libdot/bin/concat.sh -i \
-   ./hterm/concat/hterm_all.js -o /path/to/hterm_all.js
+   ./hterm/concat/hterm_all.concat -o /path/to/hterm_all.js
 ```
 
 Replace `/path/to/hterm_all.js` with a path to where you'd like the resulting JavaScript file to live.
