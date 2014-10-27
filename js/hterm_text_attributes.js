@@ -284,22 +284,23 @@ hterm.TextAttributes.prototype.syncColors = function() {
 
   if (this.enableBoldAsBright && this.bold) {
     if (foregroundSource != this.SRC_DEFAULT &&
-        foregroundSource != this.SRC_RGB)
+        foregroundSource != this.SRC_RGB) {
       foregroundSource = getBrightIndex(foregroundSource);
+    }
   }
 
   if (this.invisible)
     foregroundSource = backgroundSource;
 
-  // Set fore/background colors unless already specified in rgb( r, g, b) form.
+  // Set fore/background colors unless already specified in rgb(r, g, b) form.
   if (foregroundSource != this.SRC_RGB) {
     this.foreground = ((foregroundSource == this.SRC_DEFAULT) ?
-        defaultForeground : this.colorPalette[foregroundSource]);
+                       defaultForeground : this.colorPalette[foregroundSource]);
   }
 
   if (backgroundSource != this.SRC_RGB) {
     this.background = ((backgroundSource == this.SRC_DEFAULT) ?
-        defaultForeground : this.colorPalette[backgroundSource]);
+                       defaultBackground : this.colorPalette[backgroundSource]);
   }
 };
 
