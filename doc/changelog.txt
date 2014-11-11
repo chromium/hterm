@@ -1,3 +1,7 @@
+1.51, 2014-11-11, 24-bit ANSI color support.
+
+* Change log update to reflect previous commits.
+
 1.50, 2014-10-07, Allow missing clipboard id in OSC 52
 
 * Tmux sends OSC 52 as "ESC ] 52 ; ; ... BEL", but we failed to recognize the
