@@ -34,7 +34,10 @@ PubSubTests.addTest('publish-order', function(result, cx) {
     function one() { result.assertEQ(1, ++callbackCount) }
     function two() { result.assertEQ(2, ++callbackCount) }
     function three() { result.assertEQ(3, ++callbackCount) }
-    function last() { result.assertEQ(4, ++callbackCount); result.pass() }
+    function last() {
+      result.assertEQ(4, ++callbackCount);
+      result.pass();
+    }
 
     var obj = {};
     PubSub.addBehavior(obj);
@@ -122,5 +125,5 @@ PubSubTests.addTest('exception', function(result, cx) {
         result.pass();
       }, 100);
 
-    result.requestTime(200);
+    result.requestTime(1000);
   });

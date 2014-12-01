@@ -125,7 +125,7 @@ CannedTests.addTest = function(name, data) {
     setTimeout(function() {
         self.terminal.setCursorPosition(0, 0);
         self.terminal.setCursorVisible(true);
-        self.testCannedData(data, name);
+        self.testCannedData(result, data);
       }, 0);
 
     result.requestTime(5000);

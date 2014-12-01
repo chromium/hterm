@@ -133,21 +133,21 @@ VTTests.addTest('utf8', function(result, cx) {
     // require surrogate pairs in UTF-16. Run these through the
     // decoder directly because the terminal ignores 00 and 7F.
     result.assertEQ(
-      new utf8.decode('\x00' +
-          '\xc2\x80' +
-          '\xe0\xa0\x80' +
-          '\xf0\x90\x80\x80' +
-          '\xf8\x88\x80\x80\x80' +
-          '\xfc\x84\x80\x80\x80\x80'),
+        utf8.decode('\x00' +
+                    '\xc2\x80' +
+                    '\xe0\xa0\x80' +
+                    '\xf0\x90\x80\x80' +
+                    '\xf8\x88\x80\x80\x80' +
+                    '\xfc\x84\x80\x80\x80\x80'),
       '\u0000\u0080\u0800\ud800\udc00\ufffd\ufffd');
     result.assertEQ(
-      new utf8.decode('\x7f' +
-          '\xdf\xbf' +
-          '\xef\xbf\xbf' +
-          '\xf7\xbf\xbf\xbf' +
-          '\xfb\xbf\xbf\xbf\xbf' +
-          '\xfd\xbf\xbf\xbf\xbf\xbf'),
-      '\u007f\u07ff\uffff\ufffd\ufffd\ufffd');
+        utf8.decode('\x7f' +
+                    '\xdf\xbf' +
+                    '\xef\xbf\xbf' +
+                    '\xf7\xbf\xbf\xbf' +
+                    '\xfb\xbf\xbf\xbf\xbf' +
+                    '\xfd\xbf\xbf\xbf\xbf\xbf'),
+        '\u007f\u07ff\uffff\ufffd\ufffd\ufffd');
 
     result.pass();
   });
@@ -862,12 +862,12 @@ VTTests.addTest('color-change', function(result, cx) {
   });
 
 VTTests.addTest('color-change-wc', function(result, cx) {
-    this.terminal.interpret('\x1b[mplain....... \x1b[0;36m中\r\n' +
-                            '\x1b[mitalic...... \x1b[3;36m中\r\n' +
-                            '\x1b[mbright...... \x1b[0;96m中\r\n' +
-                            '\x1b[mbold........ \x1b[1;36m中\r\n' +
-                            '\x1b[mbold-bright. \x1b[1;96m中\r\n' +
-                            '\x1b[mbright-bold. \x1b[96;1m中');
+    this.terminal.interpret('\x1b[mplain....... \x1b[0;36m\xE4\xB8\xad\r\n' +
+                            '\x1b[mitalic...... \x1b[3;36m\xe4\xb8\xad\r\n' +
+                            '\x1b[mbright...... \x1b[0;96m\xe4\xb8\xad\r\n' +
+                            '\x1b[mbold........ \x1b[1;36m\xe4\xb8\xad\r\n' +
+                            '\x1b[mbold-bright. \x1b[1;96m\xe4\xb8\xad\r\n' +
+                            '\x1b[mbright-bold. \x1b[96;1m\xe4\xb8\xad');
 
     var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
@@ -1025,8 +1025,8 @@ VTTests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1l');
     result.assertEQ(this.terminal.keyboard.applicationCursor, false);
 
-    var fg = this.terminal.prefs_.get('foreground-color');
-    var bg = this.terminal.prefs_.get('background-color');
+    var fg = this.terminal.config.get('foreground-color');
+    var bg = this.terminal.config.get('background-color');
 
     this.terminal.interpret('\x1b[?5h');
     result.assertEQ(this.terminal.scrollPort_.getForegroundColor(), bg);

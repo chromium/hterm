@@ -21,6 +21,12 @@
                               November 1,  2012
 
 
+# WARNING
+
+This document is out of date.  It refers to the version of hterm hosted at
+https://chromium.googlesource.com/apps/libapps/+/master/hterm/
+
+
 # Introduction
 
 hterm is a JavaScript based terminal emulator that can be embeded in Chrome

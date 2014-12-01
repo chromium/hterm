@@ -560,8 +560,7 @@ TestManager.TestRun.prototype.onUncaughtException_ = function(
     message, file, line) {
 
   if (message.indexOf('Uncaught TestManager.Result.TestComplete') === 0 ||
-      message.indexOf('status: passed') != -1 ||
-      (message == 'Script error.' && line === 0)) {
+      message.indexOf('status: passed') != -1) {
     // This is a result.pass() or result.fail() call from a callback.  We're
     // already going to deal with it as part of the completeTest_() call
     // that raised it.  We can safely squelch this error message.

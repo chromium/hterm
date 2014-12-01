@@ -179,7 +179,7 @@ TerminalTests.addTest('plaintext-stress-insert',
  */
 TerminalTests.addTest('desktop-notification-bell-test',
                       function(result, cx) {
-    this.terminal.document_.hasFocus = function(){ return false };
+    this.terminal.document_.hasFocus = function() { return false };
     this.terminal.desktopNotificationBell_ = true;
 
     // Gaining focus closes all desktop notifications.

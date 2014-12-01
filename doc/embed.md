@@ -1,3 +1,8 @@
+# WARNING
+
+This document is out of date.  It refers to the version of hterm hosted at
+https://chromium.googlesource.com/apps/libapps/+/master/hterm/
+
 # Embedding hterm
 
 This is a quick overview describing how to use hterm in your own application.  Please direct any questions to the [chromium-hterm mailing list](https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm).
