@@ -2,7 +2,7 @@
   "name": "hterm",
   "description": "An xterm compatible terminal emulator written in JavaScript.",
   "version": "2.0.0",
-  "repository": "http://github.com/rginda/hterm",
+  "repository": "http://github.com/chromium/hterm",
   "readme": "README.md",
   "devDependencies": {
     "grunt": "^0.4.5",
