@@ -29,6 +29,12 @@ module.exports = function(grunt) {
           src: [pkg.name + '.amd.js',
                 pkg.name + '.amd.min.js'],
           dest: 'dist/amd/lib'
+        },
+        {
+          expand: true,
+          cwd: 'out/cjs',
+          src: ['lib/**/*.js'],
+          dest: 'dist/cjs'
         }]
       }
     },
@@ -37,13 +43,22 @@ module.exports = function(grunt) {
     // AMD version for use in the browser, and a CommonJS version for use in
     // node.js.
     transpile: {
-      lib: {
+      amd: {
         type: "amd",
         files: [{
           expand: true,
           cwd: 'lib/',
           src: ['**/*.js'],
           dest: 'out/amd/lib/'
+        }]
+      },
+      cjs: {
+        type: "cjs",
+        files: [{
+          expand: true,
+          cwd: 'lib/',
+          src: ['**/*.js'],
+          dest: 'out/cjs/lib/'
         }]
       },
       test: {
