@@ -346,6 +346,12 @@ hterm.PreferenceManager.defaultPreferences = {
   'scrollbar-visible': true,
 
   /**
+   * The multiplier for the pixel delta in mousewheel event caused by the scroll
+   * wheel. Alters how fast the page scrolls.
+   */
+  'scroll-wheel-move-multiplier': 1,
+
+  /**
    * Set the encoding for data sent to host.
    *
    * Valid values are 'utf-8' and 'raw'.

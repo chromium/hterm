@@ -459,6 +459,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.setScrollbarVisible(v);
     },
 
+    'scroll-wheel-move-multiplier': function(v) {
+      terminal.setScrollWheelMoveMultipler(v);
+    },
+
     'send-encoding': function(v) {
        if (!(/^(utf-8|raw)$/).test(v)) {
          console.warn('Invalid value for "send-encoding": ' + v);
@@ -1161,6 +1165,8 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.syncFontFamily();
 
   this.setScrollbarVisible(this.prefs_.get('scrollbar-visible'));
+  this.setScrollWheelMoveMultipler(
+      this.prefs_.get('scroll-wheel-move-multiplier'));
 
   this.document_ = this.scrollPort_.getDocument();
 
@@ -2916,6 +2922,18 @@ hterm.Terminal.prototype.onCursorBlink_ = function() {
  */
 hterm.Terminal.prototype.setScrollbarVisible = function(state) {
   this.scrollPort_.setScrollbarVisible(state);
+};
+
+/**
+ * Set the scroll wheel move multiplier.  This will affect how fast the page
+ * scrolls on mousewheel events.
+ *
+ * Defaults to 1.
+ *
+ * @param {number} multiplier.
+ */
+hterm.Terminal.prototype.setScrollWheelMoveMultipler = function(multiplier) {
+  this.scrollPort_.setScrollWheelMoveMultipler(multiplier);
 };
 
 /**

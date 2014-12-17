@@ -64,6 +64,10 @@ hterm.ScrollPort = function(rowProvider) {
   // syncScrollHeight().
   this.lastRowCount_ = 0;
 
+  // The scroll wheel pixel delta multiplier to increase/descrease
+  // the scroll speed of mouse wheel events. See: http://goo.gl/sXelnq
+  this.scrollWheelMultiplier_ = 1;
+
   /**
    * True if the last scroll caused the scrollport to show the final row.
    */
@@ -323,6 +327,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   this.screen_.addEventListener('scroll', this.onScroll_.bind(this));
   this.screen_.addEventListener('mousewheel', this.onScrollWheel_.bind(this));
+  this.screen_.addEventListener(
+      'DOMMouseScroll', this.onScrollWheel_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
 
@@ -1232,7 +1238,13 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   if (e.defaultPrevented)
     return;
 
-  var top = this.screen_.scrollTop - e.wheelDeltaY;
+  // In FF, the event is DOMMouseScroll and puts the scroll pixel delta in the
+  // 'detail' field of the event.  It also flips the mapping of which direction
+  // a negative number means in the scroll.
+  var delta = e.type == 'DOMMouseScroll' ? (-1 * e.detail) : e.wheelDeltaY;
+  delta *= this.scrollWheelMultiplier_;
+
+  var top = this.screen_.scrollTop - delta;
   if (top < 0)
     top = 0;
 
@@ -1374,4 +1386,12 @@ hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
  */
 hterm.ScrollPort.prototype.setScrollbarVisible = function(state) {
   this.screen_.style.overflowY = state ? 'scroll' : 'hidden';
+};
+
+/**
+ * Set scroll wheel multiplier. This alters how much the screen scrolls on
+ * mouse wheel events.
+ */
+hterm.ScrollPort.prototype.setScrollWheelMoveMultipler = function(multiplier) {
+  this.scrollWheelMultiplier_ = multiplier;
 };
