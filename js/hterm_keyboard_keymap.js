@@ -113,7 +113,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
 
   var self = this;
 
-  // This function us used by the "macro" functions below.  It makes it
+  // This function is used by the "macro" functions below.  It makes it
   // possible to use the call() macro as an argument to any other macro.
   function resolve(action, e, k) {
     if (typeof action == 'function')
@@ -174,7 +174,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
 
   // If no modifiers a, else b.
   function mod(a, b) {
-    return function (e, k) {
+    return function(e, k) {
       var action = !(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) ? a : b;
       return resolve(action, e, k);
     }
@@ -186,11 +186,15 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   // Call a method on the keymap instance.
   function c(m) { return function (e, k) { return this[m](e, k) } }
 
-  // Ignore if not trapping media keys
+  // Ignore if not trapping media keys.
   function med(fn) {
     return function(e, k) {
       if (!self.keyboard.mediaKeysAreFKeys) {
-        return hterm.Keyboard.KeyActions.PASS;
+        // Block Back, Forward, and Reload keys to avoid navigating away from
+        // the current page.
+        return (e.keyCode == 166 || e.keyCode == 167 || e.keyCode == 168) ?
+            hterm.Keyboard.KeyActions.CANCEL :
+            hterm.Keyboard.KeyActions.PASS;
       }
       return resolve(fn, e, k);
     };
