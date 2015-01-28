@@ -5,7 +5,7 @@
 'use strict';
 
 lib.rtdep('lib.colors', 'lib.PreferenceManager', 'lib.resource', 'lib.wc',
-          'hterm.Keyboard', 'hterm.Options', 'hterm.PreferenceManager',
+          'lib.f', 'hterm.Keyboard', 'hterm.Options', 'hterm.PreferenceManager',
           'hterm.Screen', 'hterm.ScrollPort', 'hterm.Size',
           'hterm.TextAttributes', 'hterm.VT');
 
@@ -2864,7 +2864,7 @@ hterm.Terminal.prototype.onCopy_ = function(e) {
 hterm.Terminal.prototype.onResize_ = function() {
   var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
                                this.scrollPort_.characterSize.width);
-  var rowCount = Math.floor(this.scrollPort_.getScreenHeight() /
+  var rowCount = lib.f.smartFloorDivide(this.scrollPort_.getScreenHeight(),
                             this.scrollPort_.characterSize.height);
 
   if (columnCount <= 0 || rowCount <= 0) {

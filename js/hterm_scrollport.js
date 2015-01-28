@@ -4,7 +4,7 @@
 
 'use strict';
 
-lib.rtdep('hterm.PubSub', 'hterm.Size');
+lib.rtdep('lib.f', 'hterm.PubSub', 'hterm.Size');
 
 /**
  * A 'viewport' view of fixed-height rows with support for selection and
@@ -718,8 +718,8 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
 
   // We don't want to show a partial row because it would be distracting
   // in a terminal, so we floor any fractional row count.
-  this.visibleRowCount = Math.floor(
-      screenSize.height / this.characterSize.height);
+  this.visibleRowCount = lib.f.smartFloorDivide(
+      screenSize.height, this.characterSize.height);
 
   // Then compute the height of our integral number of rows.
   var visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
@@ -1180,7 +1180,8 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
  * returns the row that *should* be at the top.
  */
 hterm.ScrollPort.prototype.getTopRowIndex = function() {
-  return Math.floor(this.screen_.scrollTop / this.characterSize.height);
+  return lib.f.smartFloorDivide(
+      this.screen_.scrollTop, this.characterSize.height);
 };
 
 /**
