@@ -1,3 +1,20 @@
+1.52, 2015-02-18, Treat Ctrl-Alt as AltGr
+
+* Assume that Ctrl-Alt-[Printable] means AltGr-[Printable].  After this change,
+  we ignore the ctrl/alt modifiers when they appear in keydown, leaving it
+  up to the browser to send the correct key code in the keypress event.  This
+  fixes a longstanding issue with international keyboards where users could
+  not type characters/symbols that required use of AltGr.
+
+  We will still have trouble on the mac, which does not set Ctrl+Alt when
+  AltGr is used.
+
+  BUG=chromium:211925
+* Fix for issue where cursor would dissappear at non-100% zoom levels.
+* Prevent navigation via media keys.
+* Capture fullscreen ESC.
+* Fix mouse wheel scrolling in FF.
+
 1.51, 2014-11-11, 24-bit ANSI color support.
 
 * Change log update to reflect previous commits.

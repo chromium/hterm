@@ -384,6 +384,16 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   var alt = this.altIsMeta ? false : e.altKey;
   var meta = this.altIsMeta ? (e.altKey || e.metaKey) : e.metaKey;
 
+  // In the key-map, we surround the keyCap for non-printables in "[...]"
+  var isPrintable = !(/^\[\w+\]$/.test(keyDef.keyCap));
+
+  if (isPrintable && control && alt) {
+    // ctrl-alt-printable means altGr on the web.  We clear out the control and
+    // alt modifiers and wait to see the charCode in the keydown event.
+    control = false;
+    alt = false;
+  }
+
   var action;
 
   if (control) {
