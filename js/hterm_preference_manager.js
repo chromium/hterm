@@ -22,6 +22,18 @@ hterm.PreferenceManager = function(profileId) {
 
 hterm.PreferenceManager.defaultPreferences = {
   /**
+   * Select an AltGr detection hack^Wheuristic.
+   *
+   * null: Autodetect based on navigator.language:
+   *       'en-us' => 'none', else => 'right-alt'
+   * 'none': Disable any AltGr related munging.
+   * 'ctrl-alt': Assume Ctrl+Alt means AltGr.
+   * 'left-alt': Assume left Alt means AltGr.
+   * 'right-alt': Assume right Alt means AltGr.
+   */
+  'alt-gr-mode': null,
+
+  /**
    * If set, undoes the Chrome OS Alt-Backspace->DEL remap, so that
    * alt-backspace indeed is alt-backspace.
    */

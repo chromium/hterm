@@ -129,7 +129,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
       var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
                     !self.keyboard.applicationKeypad) ? a : b;
       return resolve(action, e, k);
-    }
+    };
   }
 
   // If mod or not application cursor a, else b.  The keys that care about
@@ -139,21 +139,21 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
       var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
                     !self.keyboard.applicationCursor) ? a : b;
       return resolve(action, e, k);
-    }
+    };
   }
 
   // If not backspace-sends-backspace keypad a, else b.
   function bs(a, b) {
     return function(e, k) {
-      var action = !self.keyboard.backspaceSendsBackspace ? a : b
+      var action = !self.keyboard.backspaceSendsBackspace ? a : b;
       return resolve(action, e, k);
-    }
+    };
   }
 
   // If not e.shiftKey a, else b.
   function sh(a, b) {
     return function(e, k) {
-      var action = !e.shiftKey ? a : b
+      var action = !e.shiftKey ? a : b;
 
       // Clear e.shiftKey so that the keyboard code doesn't try to apply
       // additional modifiers to the sequence.
@@ -161,15 +161,15 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
       e.shiftKey = false;
 
       return resolve(action, e, k);
-    }
+    };
   }
 
   // If not e.altKey a, else b.
   function alt(a, b) {
     return function(e, k) {
-      var action = !e.altKey ? a : b
+      var action = !e.altKey ? a : b;
       return resolve(action, e, k);
-    }
+    };
   }
 
   // If no modifiers a, else b.
@@ -177,7 +177,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     return function(e, k) {
       var action = !(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) ? a : b;
       return resolve(action, e, k);
-    }
+    };
   }
 
   // Compute a control character for a given character.
@@ -430,7 +430,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
  */
 hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
   if (this.keyboard.altBackspaceIsMetaBackspace &&
-      this.keyboard.altIsPressed && !e.altKey)
+      this.keyboard.altKeyPressed && !e.altKey)
     return '\x1b\x7f';
   return '\x1b[3~';
 };

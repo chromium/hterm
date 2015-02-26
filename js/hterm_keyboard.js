@@ -39,6 +39,14 @@ hterm.Keyboard = function(terminal) {
   this.keyMap = new hterm.Keyboard.KeyMap(this);
 
   /**
+   * none: Disable any AltGr related munging.
+   * ctrl-alt: Assume Ctrl+Alt means AltGr.
+   * left-alt: Assume left Alt means AltGr.
+   * right-alt: Assume right Alt means AltGr.
+   */
+  this.altGrMode = 'none';
+
+  /**
    * If true, Shift-Insert will fall through to the browser as a paste.
    * If false, the keystroke will be sent to the host.
    */
@@ -147,9 +155,11 @@ hterm.Keyboard = function(terminal) {
 
   /**
    * Used to keep track of the current alt-key state, which is necessary for
-   * the altBackspaceIsMetaBackspace preference above.
+   * the altBackspaceIsMetaBackspace preference above and for the altGrMode
+   * preference.  This is a bitmap with where bit positions correspond to the
+   * "location" property of the key event.
    */
-  this.altIsPressed = false;
+  this.altKeyPressed = 0;
 
   /**
    * If true, Chrome OS media keys will be mapped to their F-key equivalent.
@@ -326,12 +336,13 @@ hterm.Keyboard.prototype.preventChromeAppNonShiftDefault_ = function(e) {
 };
 
 hterm.Keyboard.prototype.onBlur_ = function(e) {
-  this.altIsPressed = false;
+  this.altKeyPressed = 0;
 };
 
 hterm.Keyboard.prototype.onKeyUp_ = function(e) {
   if (e.keyCode == 18)
-    this.altIsPressed = false;
+    this.altKeyPressed = this.altKeyPressed & ~(1 << (e.location - 1));
+
   if (e.keyCode == 27)
     this.preventChromeAppNonShiftDefault_(e);
 };
@@ -341,7 +352,8 @@ hterm.Keyboard.prototype.onKeyUp_ = function(e) {
  */
 hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   if (e.keyCode == 18)
-    this.altIsPressed = true;
+    this.altKeyPressed = this.altKeyPressed | (1 << (e.location - 1));
+
   if (e.keyCode == 27)
     this.preventChromeAppNonShiftDefault_(e);
 
@@ -387,11 +399,29 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   // In the key-map, we surround the keyCap for non-printables in "[...]"
   var isPrintable = !(/^\[\w+\]$/.test(keyDef.keyCap));
 
-  if (isPrintable && control && alt) {
-    // ctrl-alt-printable means altGr on the web.  We clear out the control and
-    // alt modifiers and wait to see the charCode in the keydown event.
-    control = false;
-    alt = false;
+  switch (this.altGrMode) {
+    case 'ctrl-alt':
+    if (isPrintable && control && alt) {
+      // ctrl-alt-printable means altGr.  We clear out the control and
+      // alt modifiers and wait to see the charCode in the keydown event.
+      control = false;
+      alt = false;
+    }
+    break;
+
+    case 'right-alt':
+    if (isPrintable && (this.terminal.keyboard.altKeyPressed & 2)) {
+      control = false;
+      alt = false;
+    }
+    break;
+
+    case 'left-alt':
+    if (isPrintable && (this.terminal.keyboard.altKeyPressed & 1)) {
+      control = false;
+      alt = false;
+    }
+    break;
   }
 
   var action;

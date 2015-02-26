@@ -1,3 +1,20 @@
+1.53, 2015-02-26, Add 'alt-gr-mode' preference.
+
+* Add a preference to select the preferred AltGr heuristic.  This replaces the
+  change from 1.52, which prevented the use of Ctrl-Alt-... on all platforms.
+  The new preference takes one of the following values:
+
+    null: Autodetect based on navigator.locale:
+          'en-us' => 'none', else => 'right-alt'
+    'none': Disable any AltGr related munging.
+    'ctrl-alt': Assume Ctrl+Alt means AltGr.
+    'left-alt': Assume left Alt means AltGr.
+    'right-alt': Assume right Alt means AltGr.
+
+  The default value is null.  Autodection won't work in many cases, and the
+  left-alt/right-alt tracking will have issues if the window loses focus
+  while the alt key is down, but this may be the best we can do on the web.
+
 1.52, 2015-02-18, Treat Ctrl-Alt as AltGr
 
 * Assume that Ctrl-Alt-[Printable] means AltGr-[Printable].  After this change,

@@ -194,6 +194,25 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
   this.prefs_ = new hterm.PreferenceManager(this.profileId_);
   this.prefs_.addObservers(null, {
+    'alt-gr-mode': function(v) {
+      if (v == null) {
+        if (navigator.language.toLowerCase() == 'en-us') {
+          v = 'none';
+        } else {
+          v = 'right-alt';
+        }
+      } else if (typeof v == 'string') {
+        v = v.toLowerCase();
+      } else {
+        v = 'none';
+      }
+
+      if (!/^(none|ctrl-alt|left-alt|right-alt)$/.test(v))
+        v = 'none';
+
+      terminal.keyboard.altGrMode = v;
+    },
+
     'alt-backspace-is-meta-backspace': function(v) {
       terminal.keyboard.altBackspaceIsMetaBackspace = v;
     },
