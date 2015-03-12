@@ -302,11 +302,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [191, '/?',   DEFAULT, sh(ctl('_'), ctl('?')), DEFAULT, DEFAULT],
 
     // Sixth and final row.
-    [17,  '[CTRL]', PASS,    PASS,     PASS,    PASS],
-    [18,  '[ALT]',  PASS,    PASS,     PASS,    PASS],
-    [91,  '[LAPL]', PASS,    PASS,     PASS,    PASS],
-    [32,  ' ',      DEFAULT, ctl('@'), DEFAULT, DEFAULT],
-    [92,  '[RAPL]', PASS,    PASS,     PASS,    PASS],
+    [17,  '[CTRL]',  PASS,    PASS,     PASS,    PASS],
+    [18,  '[ALT]',   PASS,    PASS,     PASS,    PASS],
+    [91,  '[LAPL]',  PASS,    PASS,     PASS,    PASS],
+    [32,  ' ',       DEFAULT, ctl('@'), DEFAULT, DEFAULT],
+    [92,  '[RAPL]',  PASS,    PASS,     PASS,    PASS],
+    [93,  '[RMENU]', PASS,    PASS,     PASS,    PASS],
 
     // These things.
     [42,  '[PRTSCR]', PASS, PASS, PASS, PASS],
