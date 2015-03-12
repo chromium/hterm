@@ -277,6 +277,22 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.keyboard.backspaceSendsBackspace = v;
     },
 
+    'character-map-overrides': function(v) {
+      if (!(v == null || v instanceof Object)) {
+        console.warn('Preference character-map-modifications is not an ' +
+                     'object: ' + v);
+        return;
+      }
+
+      for (var code in v) {
+        var glmap = hterm.VT.CharacterMap.maps[code].glmap;
+        for (var received in v[code]) {
+          glmap[received] = v[code][received];
+        }
+        hterm.VT.CharacterMap.maps[code].reset(glmap);
+      }
+    },
+
     'cursor-blink': function(v) {
       terminal.setCursorBlink(!!v);
     },

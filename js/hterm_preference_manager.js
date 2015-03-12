@@ -105,6 +105,19 @@ hterm.PreferenceManager.defaultPreferences = {
   'backspace-sends-backspace': false,
 
   /**
+   * Character map overrides.
+   *
+   * This is specified as an object. It is a sparse array, where each property
+   * is the character set code and the value is an object that is a sparse array
+   * itself. In that sparse array, each property is the received character and
+   * the value is the displayed character.
+   *
+   * For example:
+   *   {"0":{"+":"\u2192",",":"\u2190","-":"\u2191",".":"\u2193","0":"\u2588"}}
+   */
+  'character-map-overrides': null,
+
+  /**
    * Whether or not to close the window when the command exits.
    */
   'close-on-exit': true,
