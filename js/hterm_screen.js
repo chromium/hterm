@@ -481,10 +481,11 @@ hterm.Screen.prototype.insertString = function(str) {
     // whitespace.
     var ws = lib.f.getWhitespace(-reverseOffset);
 
-    // This whitespace should be completely unstyled.  Underline and background
-    // color would be visible on whitespace, so we can't use one of those
-    // spans to hold the text.
+    // This whitespace should be completely unstyled.  Underline, background
+    // color, and strikethrough would be visible on whitespace, so we can't use
+    // one of those spans to hold the text.
     if (!(this.textAttributes.underline ||
+          this.textAttributes.strikethrough ||
           this.textAttributes.background ||
           this.textAttributes.wcNode ||
           this.textAttributes.tileData != null)) {

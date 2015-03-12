@@ -10,7 +10,7 @@ lib.rtdep('lib.colors');
  * Constructor for TextAttribute objects.
  *
  * These objects manage a set of text attributes such as foreground/
- * background color, bold, italic, blink and underline.
+ * background color, bold, italic, blink, underline, and strikethrough.
  *
  * TextAttribute instances can be used to construct a DOM container implementing
  * the current attributes, or to test an existing DOM container for
@@ -41,6 +41,7 @@ hterm.TextAttributes = function(document) {
   this.italic = false;
   this.blink = false;
   this.underline = false;
+  this.strikethrough = false;
   this.inverse = false;
   this.invisible = false;
   this.wcNode = false;
@@ -122,6 +123,7 @@ hterm.TextAttributes.prototype.reset = function() {
   this.italic = false;
   this.blink = false;
   this.underline = false;
+  this.strikethrough = false;
   this.inverse = false;
   this.invisible = false;
   this.wcNode = false;
@@ -147,6 +149,7 @@ hterm.TextAttributes.prototype.isDefault = function() {
           !this.italic &&
           !this.blink &&
           !this.underline &&
+          !this.strikethrough &&
           !this.inverse &&
           !this.invisible &&
           !this.wcNode &&
@@ -190,8 +193,18 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (this.blink)
     style.fontStyle = 'italic';
 
-  if (this.underline)
-    style.textDecoration = 'underline';
+  var textDecoration = '';
+  if (this.underline) {
+    textDecoration += ' underline';
+    span.underline = true;
+  }
+  if (this.strikethrough) {
+    textDecoration += ' line-through';
+    span.strikethrough = true;
+  }
+  if (textDecoration) {
+    style.textDecoration = textDecoration;
+  }
 
   if (this.wcNode) {
     span.className = 'wc-node';
@@ -237,7 +250,8 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
           (this.blink || this.italic) == !!style.fontStyle &&
-          this.underline == !!style.textDecoration);
+          !!this.underline == !!obj.underline &&
+          !!this.strikethrough == !!obj.strikethrough);
 };
 
 hterm.TextAttributes.prototype.setDefaults = function(foreground, background) {

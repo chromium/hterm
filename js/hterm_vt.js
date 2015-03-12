@@ -1943,12 +1943,14 @@ hterm.VT.CSI['?l'] = function(parseState) {
  *    5 Blink (appears as Bold).
  *    7 Inverse.
  *    8 Invisible, i.e., hidden (VT300).
+ *    9 Crossed out (ECMA-48).
  *   22 Normal (neither bold nor faint).
  *   23 Not italic (non-xterm).
  *   24 Not underlined.
  *   25 Steady (not blinking).
  *   27 Positive (not inverse).
  *   28 Visible, i.e., not hidden (VT300).
+ *   29 Not crossed out (ECMA-48).
  *   30 Set foreground color to Black.
  *   31 Set foreground color to Red.
  *   32 Set foreground color to Green.
@@ -2047,6 +2049,8 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.inverse = true;
       } else if (arg == 8) {  // Invisible.
         attrs.invisible = true;
+      } else if (arg == 9) {
+        attrs.strikethrough = true;
       } else if (arg == 22) {
         attrs.bold = false;
       } else if (arg == 23) {
@@ -2059,6 +2063,8 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.inverse = false;
       } else if (arg == 28) {
         attrs.invisible = false;
+      } else if (arg == 29) {
+        attrs.strikethrough = false;
       }
 
     } else if (arg < 50) {
