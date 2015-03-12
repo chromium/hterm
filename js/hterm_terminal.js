@@ -2353,6 +2353,10 @@ hterm.Terminal.prototype.setCursorVisible = function(state) {
   this.options_.cursorVisible = state;
 
   if (!state) {
+    if (this.timeouts_.cursorBlink) {
+      clearTimeout(this.timeouts_.cursorBlink);
+      delete this.timeouts_.cursorBlink;
+    }
     this.cursorNode_.style.opacity = '0';
     return;
   }
