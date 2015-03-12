@@ -1100,11 +1100,19 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1036l');
     result.assertEQ(this.terminal.keyboard.metaSendsEscape, false);
 
+    // Save the altSendsWhat setting and change the current setting to something
+    // other than 'escape'.
+    var previousAltSendsWhat = this.terminal.keyboard.altSendsWhat;
+    this.terminal.keyboard.altSendsWhat = '8-bit';
+
     this.terminal.interpret('\x1b[?1039h');
-    result.assertEQ(this.terminal.keyboard.altSendsEscape, true);
+    result.assertEQ(this.terminal.keyboard.altSendsWhat, 'escape');
 
     this.terminal.interpret('\x1b[?1039l');
-    result.assertEQ(this.terminal.keyboard.altSendsEscape, false);
+    result.assertEQ(this.terminal.keyboard.altSendsWhat, '8-bit');
+
+    // Restore the previous altSendsWhat setting.
+    this.terminal.keyboard.altSendsWhat = previousAltSendsWhat;
 
     result.assertEQ(this.terminal.screen_,
                     this.terminal.primaryScreen_);

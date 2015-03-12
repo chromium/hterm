@@ -837,7 +837,17 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case '1039':  // no-spec
-      this.terminal.keyboard.altSendsEscape = state;
+      if (state) {
+        if (!this.terminal.keyboard.previousAltSendsWhat_) {
+          this.terminal.keyboard.previousAltSendsWhat_ =
+              this.terminal.keyboard.altSendsWhat;
+          this.terminal.keyboard.altSendsWhat = 'escape';
+        }
+      } else if (this.terminal.keyboard.previousAltSendsWhat_) {
+        this.terminal.keyboard.altSendsWhat =
+            this.terminal.keyboard.previousAltSendsWhat_;
+        this.terminal.keyboard.previousAltSendsWhat_ = null;
+      }
       break;
 
     case '47':

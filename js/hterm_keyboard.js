@@ -166,6 +166,13 @@ hterm.Keyboard = function(terminal) {
    * E.g. "Back" will be mapped to F1. If false, Chrome will handle the keys.
    */
   this.mediaKeysAreFKeys = false;
+
+  /**
+   * Holds the previous setting of altSendsWhat when DECSET 1039 is used. When
+   * DECRST 1039 is used, altSendsWhat is changed back to this and this is
+   * nulled out.
+   */
+  this.previousAltSendsWhat_ = null;
 };
 
 /**
