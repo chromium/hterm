@@ -289,8 +289,10 @@ hterm.TextAttributes.prototype.syncColors = function() {
     }
   }
 
-  if (this.invisible)
+  if (this.invisible) {
     foregroundSource = backgroundSource;
+    defaultForeground = this.defaultBackground;
+  }
 
   // Set fore/background colors unless already specified in rgb(r, g, b) form.
   if (foregroundSource != this.SRC_RGB) {
