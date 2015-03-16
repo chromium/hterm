@@ -10,7 +10,7 @@ lib.rtdep('lib.colors');
  * Constructor for TextAttribute objects.
  *
  * These objects manage a set of text attributes such as foreground/
- * background color, bold, italic, blink, underline, and strikethrough.
+ * background color, bold, faint, italic, blink, underline, and strikethrough.
  *
  * TextAttribute instances can be used to construct a DOM container implementing
  * the current attributes, or to test an existing DOM container for
@@ -38,6 +38,7 @@ hterm.TextAttributes = function(document) {
   this.defaultBackground = 'rgb(0, 0, 0)';
 
   this.bold = false;
+  this.faint = false;
   this.italic = false;
   this.blink = false;
   this.underline = false;
@@ -120,6 +121,7 @@ hterm.TextAttributes.prototype.reset = function() {
   this.foreground = this.DEFAULT_COLOR;
   this.background = this.DEFAULT_COLOR;
   this.bold = false;
+  this.faint = false;
   this.italic = false;
   this.blink = false;
   this.underline = false;
@@ -146,6 +148,7 @@ hterm.TextAttributes.prototype.isDefault = function() {
   return (this.foregroundSource == this.SRC_DEFAULT &&
           this.backgroundSource == this.SRC_DEFAULT &&
           !this.bold &&
+          !this.faint &&
           !this.italic &&
           !this.blink &&
           !this.underline &&
@@ -186,6 +189,9 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
 
   if (this.enableBold && this.bold)
     style.fontWeight = 'bold';
+
+  if (this.faint)
+    span.faint = true;
 
   if (this.italic)
     style.fontStyle = 'italic';
@@ -312,6 +318,12 @@ hterm.TextAttributes.prototype.syncColors = function() {
   if (foregroundSource != this.SRC_RGB) {
     this.foreground = ((foregroundSource == this.SRC_DEFAULT) ?
                        defaultForeground : this.colorPalette[foregroundSource]);
+  }
+
+  if (this.faint && !this.invisible) {
+    var colorToMakeFaint = ((this.foreground == this.DEFAULT_COLOR) ?
+                            this.defaultForeground : this.foreground);
+    this.foreground = lib.colors.mix(colorToMakeFaint, 'rgb(0, 0, 0)', 0.3333);
   }
 
   if (backgroundSource != this.SRC_RGB) {

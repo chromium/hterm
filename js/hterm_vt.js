@@ -1938,6 +1938,7 @@ hterm.VT.CSI['?l'] = function(parseState) {
  *
  *    0 Normal (default).
  *    1 Bold.
+ *    2 Faint.
  *    3 Italic (non-xterm).
  *    4 Underlined.
  *    5 Blink (appears as Bold).
@@ -2039,6 +2040,8 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.reset();
       } else if (arg == 1) {
         attrs.bold = true;
+      } else if (arg == 2) {
+        attrs.faint = true;
       } else if (arg == 3) {
         attrs.italic = true;
       } else if (arg == 4) {
@@ -2053,6 +2056,7 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.strikethrough = true;
       } else if (arg == 22) {
         attrs.bold = false;
+        attrs.faint = false;
       } else if (arg == 23) {
         attrs.italic = false;
       } else if (arg == 24) {
