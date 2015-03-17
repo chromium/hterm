@@ -1050,6 +1050,9 @@ hterm.Terminal.prototype.softReset = function() {
   // Reset terminal options to their default values.
   this.options_ = new hterm.Options();
 
+  // We show the cursor on soft reset but do not alter the blink state.
+  this.options_.cursorBlink = !!this.timeouts_.cursorBlink;
+
   // Xterm also resets the color palette on soft reset, even though it doesn't
   // seem to be documented anywhere.
   this.primaryScreen_.textAttributes.resetColorPalette();
