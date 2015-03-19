@@ -443,10 +443,6 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     action = getAction('normal');
   }
 
-  // The action may have cleared the e.shiftKey, so we wait until after
-  // getAction to read it.
-  var shift = e.shiftKey;
-
   if (alt && this.altSendsWhat == 'browser-key' && action == DEFAULT) {
     // When altSendsWhat is 'browser-key', we wait for the keypress event.
     // In keypress, the browser should have set the event.charCode to the
@@ -498,6 +494,11 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   } else if (resolvedActionType == 'meta') {
     meta = false;
   }
+
+  // Maybe strip the shift modifier too, for the same reason as above.
+  // This is only used for Ctrl-Shift-Tab, which should send "CSI Z", not
+  // "CSI 1 ; 2 Z".
+  var shift = !e.maskShiftKey && e.shiftKey;
 
   if (action.substr(0, 2) == '\x1b[' && (alt || control || shift)) {
     // The action is an escape sequence that and it was triggered in the
