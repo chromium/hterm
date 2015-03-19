@@ -1,3 +1,17 @@
+1.54, 2015-03-19, Grab bag o' fixes.
+
+* Avoid changing e.shiftKey property.
+* Add faint SGR mode.
+* Fix cursor blink on soft reset.
+* Fix lib.colors.mix.
+* Fix rgbToHex for red values lower than 16.
+* Add strikethrough mode.
+* Fix DECSET 1039 to actually affect what Alt sends.
+* Add key code for right Command key.
+* Add character map overrides preference.
+* Fix transition from blinking cursor to invisible cursor.
+* Fix concealed/invisible text for default background.
+
 1.53, 2015-02-26, Add 'alt-gr-mode' preference.
 
 * Add a preference to select the preferred AltGr heuristic.  This replaces the
