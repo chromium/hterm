@@ -340,8 +340,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [103, '[KP7]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
     [104, '[KP8]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
     [105, '[KP9]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
-    [107, '[KP+]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
-    [109, '[KP-]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+    [107, '[KP+]', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    [109, '[KP-]', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
     [106, '[KP*]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
     [111, '[KP/]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
     [110, '[KP.]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
@@ -653,7 +653,7 @@ hterm.Keyboard.KeyMap.prototype.onPlusMinusZero_ = function(e, keyDef) {
   } else {
     var size = this.keyboard.terminal.getFontSize();
 
-    if (cap == '-') {
+    if (cap == '-' || keyDef.keyCap == '[KP-]') {
       size -= 1;
     } else {
       size += 1;
