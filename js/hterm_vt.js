@@ -1051,6 +1051,11 @@ hterm.VT.CC1['\x13'] = hterm.VT.ignore;
  * It also causes the error character to be displayed.
  */
 hterm.VT.CC1['\x18'] = function(parseState) {
+  // If we've shifted in the G1 character set, shift it back out to
+  // the default character set.
+  if (this.GL == 'G1') {
+    this.GL = 'G0';
+  }
   parseState.resetParseFunction();
   this.terminal.print('?');
 };
