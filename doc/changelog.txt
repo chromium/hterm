@@ -1,3 +1,8 @@
+1.55, 2015-05-19, More fixes.
+
+* Shifts out the G1 character set with the \x18 cancel control code.
+* Enables terminal font resizing for the numeric +/- keys.
+
 1.54, 2015-03-19, Grab bag o' fixes.
 
 * Avoid changing e.shiftKey property.
