@@ -32,6 +32,15 @@ If you select a region larger than this size, it won't be copied to your system
 clipboard.  Since clipboard data is base 64 encoded, the actual number of
 characters that can be copied is 1/3 of this value.")
 
+(defun osc52-encode-utf8-base64 (string &rest base64-encode-args)
+  "Encode STRING as utf8, convert to base64, and return the result.
+
+BASE64-ENCODE-ARGS, if supplied, are passed as the second and later arguments to
+`base64-encode-string'."
+  (apply 'base64-encode-string
+         (encode-coding-string string 'utf-8)
+         base64-encode-args))
+
 (defun osc52-select-text (string &optional replace yank-handler)
   "Copy STRING to the system clipboard using the OSC 52 escape sequence.
 
@@ -50,7 +59,7 @@ natively support OSC 52."
     (if (<= b64-length osc52-max-sequence)
         (send-string-to-terminal
          (concat "\e]52;c;"
-                 (base64-encode-string string t)
+                 (osc52-encode-utf8-base64 string t)
                  "\07"))
         (message "Selection too long to send to terminal %d" b64-length)
         (sit-for 2))))
@@ -75,7 +84,7 @@ hitting screen's max DCS length."
         (send-string-to-terminal
          (concat "\eP\e]52;c;"
                  (replace-regexp-in-string "\n" "\e\\\\\eP"
-                                           (base64-encode-string string))
+                                           (osc52-encode-utf8-base64 string))
                  "\07\e\\"))
         (message "Selection too long to send to terminal %d" b64-length)
         (sit-for 2))))
