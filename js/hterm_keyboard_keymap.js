@@ -99,13 +99,6 @@ hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(var_args) {
 };
 
 /**
- * Inherit from hterm.Keyboard.KeyMap, as defined in keyboard.js.
- */
-hterm.Keyboard.KeyMap.prototype = {
-  __proto__: hterm.Keyboard.KeyMap.prototype
-};
-
-/**
  * Set up the default state for this keymap.
  */
 hterm.Keyboard.KeyMap.prototype.reset = function() {

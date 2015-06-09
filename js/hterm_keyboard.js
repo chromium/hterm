@@ -38,6 +38,8 @@ hterm.Keyboard = function(terminal) {
    */
   this.keyMap = new hterm.Keyboard.KeyMap(this);
 
+  this.bindings = new hterm.Keyboard.Bindings(this);
+
   /**
    * none: Disable any AltGr related munging.
    * ctrl-alt: Assume Ctrl+Alt means AltGr.
@@ -443,6 +445,33 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     action = getAction('normal');
   }
 
+  // If e.maskShiftKey was set (during getAction) it means the shift key is
+  // already accounted for in the action, and we should not act on it any
+  // further. This is currently only used for Ctrl-Shift-Tab, which should send
+  // "CSI Z", not "CSI 1 ; 2 Z".
+  var shift = !e.maskShiftKey && e.shiftKey;
+
+  var keyDown = {
+    keyCode: e.keyCode,
+    shift: e.shiftKey, // not `var shift` from above.
+    ctrl: control,
+    alt: alt,
+    meta: meta
+  };
+
+  var binding = this.bindings.getBinding(keyDown);
+
+  if (binding) {
+    // Clear out the modifier bits so we don't try to munge the sequence
+    // further.
+    shift = control = alt = meta = false;
+    resolvedActionType = 'normal';
+    action = binding.action;
+
+    if (typeof action == 'function')
+      action = action.call(this, this.terminal, keyDown);
+  }
+
   if (alt && this.altSendsWhat == 'browser-key' && action == DEFAULT) {
     // When altSendsWhat is 'browser-key', we wait for the keypress event.
     // In keypress, the browser should have set the event.charCode to the
@@ -471,7 +500,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
       action = action.apply(this.keyMap, [e, keyDef]);
 
     if (action == DEFAULT && keyDef.keyCap.length == 2)
-      action = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
+      action = keyDef.keyCap.substr((shift ? 1 : 0), 1);
   }
 
   e.preventDefault();
@@ -494,11 +523,6 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   } else if (resolvedActionType == 'meta') {
     meta = false;
   }
-
-  // Maybe strip the shift modifier too, for the same reason as above.
-  // This is only used for Ctrl-Shift-Tab, which should send "CSI Z", not
-  // "CSI 1 ; 2 Z".
-  var shift = !e.maskShiftKey && e.shiftKey;
 
   if (action.substr(0, 2) == '\x1b[' && (alt || control || shift)) {
     // The action is an escape sequence that and it was triggered in the
@@ -534,7 +558,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
   } else {
     if (action === DEFAULT) {
-      action = keyDef.keyCap.substr((e.shiftKey ? 1 : 0), 1);
+      action = keyDef.keyCap.substr((shift ? 1 : 0), 1);
 
       if (control) {
         var unshifted = keyDef.keyCap.substr(0, 1);

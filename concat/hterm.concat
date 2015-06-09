@@ -11,8 +11,12 @@
 hterm/js/hterm.js
 hterm/js/hterm_frame.js
 hterm/js/hterm_keyboard.js
+hterm/js/hterm_keyboard_bindings.js
 hterm/js/hterm_keyboard_keymap.js
+hterm/js/hterm_keyboard_keypattern.js
 hterm/js/hterm_options.js
+hterm/js/hterm_parser.js
+hterm/js/hterm_parser_identifiers.js
 hterm/js/hterm_preference_manager.js
 hterm/js/hterm_pubsub.js
 hterm/js/hterm_screen.js
