@@ -16,382 +16,361 @@ hterm.PreferenceManager = function(profileId) {
                              '/hterm/profiles/' + profileId);
   var defs = hterm.PreferenceManager.defaultPreferences;
   Object.keys(defs).forEach(function(key) {
-    this.definePreference(key, defs[key]);
+    this.definePreference(key, defs[key][1]);
   }.bind(this));
 };
 
+hterm.PreferenceManager.categories = {};
+hterm.PreferenceManager.categories.Keyboard = 'Keyboard';
+hterm.PreferenceManager.categories.Appearance = 'Appearance';
+hterm.PreferenceManager.categories.CopyPaste = 'CopyPaste';
+hterm.PreferenceManager.categories.Sounds = 'Sounds';
+hterm.PreferenceManager.categories.Scrolling = 'Scrolling';
+hterm.PreferenceManager.categories.Encoding = 'Encoding';
+hterm.PreferenceManager.categories.Miscellaneous = 'Miscellaneous';
+
+/**
+ * List of categories, ordered by display order (top to bottom)
+ */
+hterm.PreferenceManager.categoryDefinitions = [
+  { id: hterm.PreferenceManager.categories.Appearance,
+    text: 'Appearance (fonts, colors, images)'},
+  { id: hterm.PreferenceManager.categories.CopyPaste,
+    text: 'Copy & Paste'},
+  { id: hterm.PreferenceManager.categories.Encoding,
+    text: 'Encoding'},
+  { id: hterm.PreferenceManager.categories.Keyboard,
+    text: 'Keyboard'},
+  { id: hterm.PreferenceManager.categories.Scrolling,
+    text: 'Scrolling'},
+  { id: hterm.PreferenceManager.categories.Sounds,
+    text: 'Sounds'},
+  { id: hterm.PreferenceManager.categories.Miscellaneous,
+    text: 'Misc.'}
+];
+
+
 hterm.PreferenceManager.defaultPreferences = {
-  /**
-   * Select an AltGr detection hack^Wheuristic.
-   *
-   * null: Autodetect based on navigator.language:
-   *       'en-us' => 'none', else => 'right-alt'
-   * 'none': Disable any AltGr related munging.
-   * 'ctrl-alt': Assume Ctrl+Alt means AltGr.
-   * 'left-alt': Assume left Alt means AltGr.
-   * 'right-alt': Assume right Alt means AltGr.
-   */
-  'alt-gr-mode': null,
+  'alt-gr-mode':
+  [hterm.PreferenceManager.categories.Keyboard, null,
+   [null, 'none', 'ctrl-alt', 'left-alt', 'right-alt'],
+   'Select an AltGr detection hack^Wheuristic.\n' +
+   '\n' +
+   '\'null\': Autodetect based on navigator.language:\n' +
+   '      \'en-us\' => \'none\', else => \'right-alt\'\n' +
+   '\'none\': Disable any AltGr related munging.\n' +
+   '\'ctrl-alt\': Assume Ctrl+Alt means AltGr.\n' +
+   '\'left-alt\': Assume left Alt means AltGr.\n' +
+   '\'right-alt\': Assume right Alt means AltGr.\n'],
 
-  /**
-   * If set, undoes the Chrome OS Alt-Backspace->DEL remap, so that
-   * alt-backspace indeed is alt-backspace.
-   */
-  'alt-backspace-is-meta-backspace': false,
+  'alt-backspace-is-meta-backspace':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'If set, undoes the Chrome OS Alt-Backspace->DEL remap, so that ' +
+   'alt-backspace indeed is alt-backspace.'],
 
-  /**
-   * Set whether the alt key acts as a meta key or as a distinct alt key.
-   */
-  'alt-is-meta': false,
+  'alt-is-meta':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'Set whether the alt key acts as a meta key or as a distinct alt key.'],
 
-  /**
-   * Controls how the alt key is handled.
-   *
-   *  escape....... Send an ESC prefix.
-   *  8-bit........ Add 128 to the unshifted character as in xterm.
-   *  browser-key.. Wait for the keypress event and see what the browser says.
-   *                (This won't work well on platforms where the browser
-   *                 performs a default action for some alt sequences.)
-   */
-  'alt-sends-what': 'escape',
+  'alt-sends-what':
+  [hterm.PreferenceManager.categories.Keyboard, 'escape',
+   ['escape', '8-bit', 'browser-key'],
+   'Controls how the alt key is handled.\n' +
+   '\n' +
+   '  escape....... Send an ESC prefix.\n' +
+   '  8-bit........ Add 128 to the unshifted character as in xterm.\n' +
+   '  browser-key.. Wait for the keypress event and see what the browser \n' +
+   '                says.  (This won\'t work well on platforms where the \n' +
+   '                browser performs a default action for some alt sequences.)'
+  ],
 
-  /**
-   * Terminal bell sound.  Empty string for no audible bell.
-   */
-  'audible-bell-sound': 'lib-resource:hterm/audio/bell',
+  'audible-bell-sound':
+  [hterm.PreferenceManager.categories.Sounds, 'lib-resource:hterm/audio/bell', 'url',
+   'URL of the terminal bell sound.  Empty string for no audible bell.'],
 
-  /**
-   * If true, terminal bells in the background will create a Web
-   * Notification. http://www.w3.org/TR/notifications/
-   *
-   * Displaying notifications requires permission from the user. When this
-   * option is set to true, hterm will attempt to ask the user for permission
-   * if necessary. Note browsers may not show this permission request if it
-   * did not originate from a user action.
-   *
-   * Chrome extensions with the "notfications" permission have permission to
-   * display notifications.
-   */
-  'desktop-notification-bell': false,
+  'desktop-notification-bell':
+  [hterm.PreferenceManager.categories.Sounds, false, 'bool',
+   'If true, terminal bells in the background will create a Web ' +
+   'Notification. http://www.w3.org/TR/notifications/\n' +
+   '\n'+
+   'Displaying notifications requires permission from the user. When this ' +
+   'option is set to true, hterm will attempt to ask the user for permission ' +
+   'if necessary. Note browsers may not show this permission request if it ' +
+   'did not originate from a user action.\n' +
+   '\n' +
+   'Chrome extensions with the "notifications" permission have permission to ' +
+   'display notifications.'],
 
-  /**
-   * The background color for text with no other color attributes.
-   */
-  'background-color': 'rgb(16, 16, 16)',
+  'background-color':
+  [hterm.PreferenceManager.categories.Appearance, 'rgb(16, 16, 16)', 'color',
+   'The background color for text with no other color attributes.'],
 
-  /**
-   * The background image.
-   */
-  'background-image': '',
+  'background-image':
+  [hterm.PreferenceManager.categories.Appearance, '', 'string',
+   'CSS value of the background image.  Empty string for no image.\n' +
+   '\n' +
+   'For example:\n' +
+   '  url(https://goo.gl/anedTK)\n' +
+   '  linear-gradient(top bottom, blue, red)'],
 
-  /**
-   * The background image size,
-   *
-   * Defaults to none.
-   */
-  'background-size': '',
+  'background-size':
+  [hterm.PreferenceManager.categories.Appearance, '', 'string',
+   'CSS value of the background image size.  Defaults to none.'],
 
-  /**
-   * The background image position,
-   *
-   * Defaults to none.
-   */
-  'background-position': '',
+  'background-position':
+  [hterm.PreferenceManager.categories.Appearance, '', 'string',
+   'CSS value of the background image position.\n' +
+   '\n' +
+   'For example:\n' +
+   '  10% 10%\n' +
+   '  center'],
 
-  /**
-   * If true, the backspace should send BS ('\x08', aka ^H).  Otherwise
-   * the backspace key should send '\x7f'.
-   */
-  'backspace-sends-backspace': false,
+  'backspace-sends-backspace':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'If true, the backspace should send BS (\'\\x08\', aka ^H).  Otherwise ' +
+   'the backspace key should send \'\\x7f\'.'],
 
-  /**
-   * Character map overrides.
-   *
-   * This is specified as an object. It is a sparse array, where each property
-   * is the character set code and the value is an object that is a sparse array
-   * itself. In that sparse array, each property is the received character and
-   * the value is the displayed character.
-   *
-   * For example:
-   *   {"0":{"+":"\u2192",",":"\u2190","-":"\u2191",".":"\u2193","0":"\u2588"}}
-   */
-  'character-map-overrides': null,
+  'character-map-overrides':
+  [hterm.PreferenceManager.categories.Keyboard, null, 'value',
+    'This is specified as an object. It is a sparse array, where each '  +
+    'property is the character set code and the value is an object that is ' +' ' +
+    'a sparse array itself. In that sparse array, each property is the ' +
+    'received character and the value is the displayed character.\n' +
+    '\n' +
+    'For example:\n' +
+    '  {"0":{"+":"\\u2192",",":"\\u2190","-":"\\u2191",".":"\\u2193", ' +
+    '"0":"\\u2588"}}'
+  ],
 
-  /**
-   * Whether or not to close the window when the command exits.
-   */
-  'close-on-exit': true,
+  'close-on-exit':
+  [hterm.PreferenceManager.categories.Miscellaneous, true, 'bool',
+   'Whether or not to close the window when the command exits.'],
 
-  /**
-   * Whether or not to blink the cursor by default.
-   */
-  'cursor-blink': false,
+  'cursor-blink':
+  [hterm.PreferenceManager.categories.Appearance, false, 'bool',
+   'Whether or not to blink the cursor by default.'],
 
-  /**
-   * The cursor blink rate in milliseconds.
-   *
-   * A two element array, the first of which is how long the cursor should be
-   * on, second is how long it should be off.
-   */
-  'cursor-blink-cycle': [1000, 500],
+  'cursor-blink-cycle':
+  [hterm.PreferenceManager.categories.Appearance, [1000, 500], 'value',
+   'The cursor blink rate in milliseconds.\n' +
+   '\n' +
+   'A two element array, the first of which is how long the cursor should be ' +
+   'on, second is how long it should be off.'],
 
-  /**
-   * The color of the visible cursor.
-   */
-  'cursor-color': 'rgba(255, 0, 0, 0.5)',
+  'cursor-color':
+  [hterm.PreferenceManager.categories.Appearance, 'rgba(255, 0, 0, 0.5)', 'color',
+   'The color of the visible cursor.'],
 
-  /**
-   * Override colors in the default palette.
-   *
-   * This can be specified as an array or an object.  If specified as an
-   * object it is assumed to be a sparse array, where each property
-   * is a numeric index into the color palette.
-   *
-   * Values can be specified as css almost any css color value.  This
-   * includes #RGB, #RRGGBB, rgb(...), rgba(...), and any color names
-   * that are also part of the stock X11 rgb.txt file.
-   *
-   * You can use 'null' to specify that the default value should be not
-   * be changed.  This is useful for skipping a small number of indicies
-   * when the value is specified as an array.
-   */
-  'color-palette-overrides': null,
+  'color-palette-overrides':
+  [hterm.PreferenceManager.categories.Appearance, null, 'value',
+   'Override colors in the default palette.\n' +
+   '\n' +
+   'This can be specified as an array or an object.  If specified as an ' +
+   'object it is assumed to be a sparse array, where each property ' +
+   'is a numeric index into the color palette.\n' +
+   '\n' +
+   'Values can be specified as almost any css color value.  This ' +
+   'includes #RGB, #RRGGBB, rgb(...), rgba(...), and any color names ' +
+   'that are also part of the stock X11 rgb.txt file.\n' +
+   '\n' +
+   'You can use \'null\' to specify that the default value should be not ' +
+   'be changed.  This is useful for skipping a small number of indicies ' +
+   'when the value is specified as an array.'],
 
-  /**
-   * Automatically copy mouse selection to the clipboard.
-   */
-  'copy-on-select': true,
+  'copy-on-select':
+  [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
+   'Automatically copy mouse selection to the clipboard.'],
 
-  /**
-   * Whether to use the default window copy behaviour.
-   */
-  'use-default-window-copy': false,
+  'use-default-window-copy':
+  [hterm.PreferenceManager.categories.CopyPaste, false, 'bool',
+   'Whether to use the default window copy behaviour'],
 
-  /**
-   * Whether to clear the selection after copying.
-   */
-  'clear-selection-after-copy': true,
+  'clear-selection-after-copy':
+  [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
+   'Whether to clear the selection after copying.'],
 
-  /**
-   * If true, Ctrl-Plus/Minus/Zero controls zoom.
-   * If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ^_,
-   * Ctrl-Plus/Zero do nothing.
-   */
-  'ctrl-plus-minus-zero-zoom': true,
+  'ctrl-plus-minus-zero-zoom':
+  [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
+   'If true, Ctrl-Plus/Minus/Zero controls zoom.\n' +
+   'If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ^_, ' +
+   'Ctrl-Plus/Zero do nothing.'],
 
-  /**
-   * Ctrl+C copies if true, send ^C to host if false.
-   * Ctrl+Shift+C sends ^C to host if true, copies if false.
-   */
-  'ctrl-c-copy': false,
+  'ctrl-c-copy':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'Ctrl+C copies if true, send ^C to host if false.\n' +
+   'Ctrl+Shift+C sends ^C to host if true, copies if false.'],
 
-  /**
-   * Ctrl+V pastes if true, send ^V to host if false.
-   * Ctrl+Shift+V sends ^V to host if true, pastes if false.
-   */
-  'ctrl-v-paste': false,
+  'ctrl-v-paste':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'Ctrl+V pastes if true, send ^V to host if false.\n' +
+   'Ctrl+Shift+V sends ^V to host if true, pastes if false.'],
 
-  /**
-   * Set whether East Asian Ambiguous characters have two column width.
-   */
-  'east-asian-ambiguous-as-two-column': false,
+  'east-asian-ambiguous-as-two-column':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'Set whether East Asian Ambiguous characters have two column width.'],
 
-  /**
-   * True to enable 8-bit control characters, false to ignore them.
-   *
-   * We'll respect the two-byte versions of these control characters
-   * regardless of this setting.
-   */
-  'enable-8-bit-control': false,
+  'enable-8-bit-control':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'True to enable 8-bit control characters, false to ignore them.\n' +
+   '\n' |
+   'We\'ll respect the two-byte versions of these control characters ' +
+   'regardless of this setting.'],
 
-  /**
-   * True if we should use bold weight font for text with the bold/bright
-   * attribute.  False to use the normal weight font.  Null to autodetect.
-   */
-  'enable-bold': null,
+  'enable-bold':
+  [hterm.PreferenceManager.categories.Appearance, null, 'tristate',
+   'True if we should use bold weight font for text with the bold/bright ' +
+   'attribute.  False to use the normal weight font.  Null to autodetect.'],
 
-  /**
-   * True if we should use bright colors (8-15 on a 16 color palette)
-   * for any text with the bold attribute.  False otherwise.
-   */
-  'enable-bold-as-bright': true,
+  'enable-bold-as-bright':
+  [hterm.PreferenceManager.categories.Appearance, true, 'bool',
+   'True if we should use bright colors (8-15 on a 16 color palette) ' +
+   'for any text with the bold attribute.  False otherwise.'],
 
-  /**
-   * Allow the host to write directly to the system clipboard.
-   */
-  'enable-clipboard-notice': true,
+  'enable-clipboard-notice':
+  [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
+   'Show a message in the terminal when the host writes to the clipboard.'],
 
-  /**
-   * Allow the host to write directly to the system clipboard.
-   */
-  'enable-clipboard-write': true,
+  'enable-clipboard-write':
+  [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
+   'Allow the host to write directly to the system clipboard.'],
 
-  /**
-   * Respect the host's attempt to change the cursor blink status using
-   * DEC Private Mode 12.
-   */
-  'enable-dec12': false,
+  'enable-dec12':
+  [hterm.PreferenceManager.categories.Miscellaneous, false, 'bool',
+   'Respect the host\'s attempt to change the cursor blink status using ' +
+   'DEC Private Mode 12.'],
 
-  /**
-   * The default environment variables.
-   */
-  'environment': {'TERM': 'xterm-256color'},
+  'environment':
+  [hterm.PreferenceManager.categories.Miscellaneous, {'TERM': 'xterm-256color'}, 'value',
+   'The default environment variables, as an object.'],
 
-  /**
-   * Default font family for the terminal text.
-   */
-  'font-family': ('"DejaVu Sans Mono", "Everson Mono", ' +
-                  'FreeMono, "Menlo", "Terminal", ' +
-                  'monospace'),
+  'font-family':
+  [hterm.PreferenceManager.categories.Appearance,
+   '"DejaVu Sans Mono", "Everson Mono", FreeMono, "Menlo", "Terminal", ' +
+   'monospace', 'string',
+   'Default font family for the terminal text.'],
 
-  /**
-   * The default font size in pixels.
-   */
-  'font-size': 15,
+  'font-size':
+  [hterm.PreferenceManager.categories.Appearance, 15, 'int',
+   'The default font size in pixels.'],
 
-  /**
-   * Anti-aliasing.
-   */
-  'font-smoothing': 'antialiased',
+  'font-smoothing':
+  [hterm.PreferenceManager.categories.Appearance, 'antialiased', 'string',
+   'CSS font-smoothing property.'],
 
-  /**
-   * The foreground color for text with no other color attributes.
-   */
-  'foreground-color': 'rgb(240, 240, 240)',
+  'foreground-color':
+  [hterm.PreferenceManager.categories.Appearance, 'rgb(240, 240, 240)', 'color',
+   'The foreground color for text with no other color attributes.'],
 
-  /**
-   * If true, home/end will control the terminal scrollbar and shift home/end
-   * will send the VT keycodes.  If false then home/end sends VT codes and
-   * shift home/end scrolls.
-   */
-  'home-keys-scroll': false,
+  'home-keys-scroll':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'If true, home/end will control the terminal scrollbar and shift home/end ' +
+   'will send the VT keycodes.  If false then home/end sends VT codes and ' +
+   'shift home/end scrolls.'],
 
-  /**
-   * Max length of a DCS, OSC, PM, or APS sequence before we give up and
-   * ignore the code.
-   */
-  'max-string-sequence': 100000,
+  'max-string-sequence':
+  [hterm.PreferenceManager.categories.Encoding, 100000, 'int',
+   'Max length of a DCS, OSC, PM, or APS sequence before we give up and ' +
+   'ignore the code.'],
 
-  /**
-   * If true, convert media keys to their Fkey equivalent. If false, let
-   * Chrome handle the keys.
-   */
-  'media-keys-are-fkeys': false,
+  'media-keys-are-fkeys':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'If true, convert media keys to their Fkey equivalent. If false, let ' +
+   'the browser handle the keys.'],
 
-  /**
-   * Set whether the meta key sends a leading escape or not.
-   */
-  'meta-sends-escape': true,
+  'meta-sends-escape':
+  [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
+   'Set whether the meta key sends a leading escape or not.'],
 
-  /**
-   * Mouse paste button, or null to autodetect.
-   *
-   * For autodetect, we'll try to enable middle button paste for non-X11
-   * platforms.
-   *
-   * On X11 we move it to button 3, but that'll probably be a context menu
-   * in the future.
-   */
-  'mouse-paste-button': null,
+  'mouse-paste-button':
+  [hterm.PreferenceManager.categories.CopyPaste, null, [null, 0, 1, 2, 3, 4, 5, 6],
+   'Mouse paste button, or null to autodetect.\n' +
+   '\n' +
+   'For autodetect, we\'ll try to enable middle button paste for non-X11 ' +
+   'platforms.  On X11 we move it to button 3.'],
 
-  /**
-   * If true, page up/down will control the terminal scrollbar and shift
-   * page up/down will send the VT keycodes.  If false then page up/down
-   * sends VT codes and shift page up/down scrolls.
-   */
-  'page-keys-scroll': false,
+  'page-keys-scroll':
+  [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
+   'If true, page up/down will control the terminal scrollbar and shift ' +
+   'page up/down will send the VT keycodes.  If false then page up/down ' +
+   'sends VT codes and shift page up/down scrolls.'],
 
-  /**
-   * Set whether we should pass Alt-1..9 to the browser.
-   *
-   * This is handy when running hterm in a browser tab, so that you don't lose
-   * Chrome's "switch to tab" keyboard accelerators.  When not running in a
-   * tab it's better to send these keys to the host so they can be used in
-   * vim or emacs.
-   *
-   * If true, Alt-1..9 will be handled by the browser.  If false, Alt-1..9
-   * will be sent to the host.  If null, autodetect based on browser platform
-   * and window type.
-   */
-  'pass-alt-number': null,
+  'pass-alt-number':
+  [hterm.PreferenceManager.categories.Keyboard, null, 'tristate',
+   'Set whether we should pass Alt-1..9 to the browser.\n' +
+   '\n' +
+   'This is handy when running hterm in a browser tab, so that you don\'t ' +
+   'lose Chrome\'s "switch to tab" keyboard accelerators.  When not running ' +
+   'in a tab it\'s better to send these keys to the host so they can be ' +
+   'used in vim or emacs.\n' +
+   '\n' +
+   'If true, Alt-1..9 will be handled by the browser.  If false, Alt-1..9 ' +
+   'will be sent to the host.  If null, autodetect based on browser platform ' +
+   'and window type.'],
 
-  /**
-   * Set whether we should pass Ctrl-1..9 to the browser.
-   *
-   * This is handy when running hterm in a browser tab, so that you don't lose
-   * Chrome's "switch to tab" keyboard accelerators.  When not running in a
-   * tab it's better to send these keys to the host so they can be used in
-   * vim or emacs.
-   *
-   * If true, Ctrl-1..9 will be handled by the browser.  If false, Ctrl-1..9
-   * will be sent to the host.  If null, autodetect based on browser platform
-   * and window type.
-   */
-  'pass-ctrl-number': null,
+  'pass-ctrl-number':
+  [hterm.PreferenceManager.categories.Keyboard, null, 'tristate',
+   'Set whether we should pass Ctrl-1..9 to the browser.\n' +
+   '\n' +
+   'This is handy when running hterm in a browser tab, so that you don\'t ' +
+   'lose Chrome\'s "switch to tab" keyboard accelerators.  When not running ' +
+   'in a tab it\'s better to send these keys to the host so they can be ' +
+   'used in vim or emacs.\n' +
+   '\n' +
+   'If true, Ctrl-1..9 will be handled by the browser.  If false, Ctrl-1..9 ' +
+   'will be sent to the host.  If null, autodetect based on browser platform ' +
+   'and window type.'],
 
-  /**
-   * Set whether we should pass Meta-1..9 to the browser.
-   *
-   * This is handy when running hterm in a browser tab, so that you don't lose
-   * Chrome's "switch to tab" keyboard accelerators.  When not running in a
-   * tab it's better to send these keys to the host so they can be used in
-   * vim or emacs.
-   *
-   * If true, Meta-1..9 will be handled by the browser.  If false, Meta-1..9
-   * will be sent to the host.  If null, autodetect based on browser platform
-   * and window type.
-   */
-  'pass-meta-number': null,
+   'pass-meta-number':
+  [hterm.PreferenceManager.categories.Keyboard, null, 'tristate',
+   'Set whether we should pass Meta-1..9 to the browser.\n' +
+   '\n' +
+   'This is handy when running hterm in a browser tab, so that you don\'t ' +
+   'lose Chrome\'s "switch to tab" keyboard accelerators.  When not running ' +
+   'in a tab it\'s better to send these keys to the host so they can be ' +
+   'used in vim or emacs.\n' +
+   '\n' +
+   'If true, Meta-1..9 will be handled by the browser.  If false, Meta-1..9 ' +
+   'will be sent to the host.  If null, autodetect based on browser platform ' +
+   'and window type.'],
 
-  /**
-   * Set whether meta-V gets passed to host.
-   */
-  'pass-meta-v': true,
+  'pass-meta-v':
+  [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
+   'Set whether meta-V gets passed to host.'],
 
-  /**
-   * Set the expected encoding for data received from the host.
-   *
-   * Valid values are 'utf-8' and 'raw'.
-   */
-  'receive-encoding': 'utf-8',
+  'receive-encoding':
+  [hterm.PreferenceManager.categories.Encoding, 'utf-8', ['utf-8', 'raw'],
+   'Set the expected encoding for data received from the host.\n' +
+   '\n' +
+   'Valid values are \'utf-8\' and \'raw\'.'],
 
-  /**
-   * If true, scroll to the bottom on any keystroke.
-   */
-  'scroll-on-keystroke': true,
+  'scroll-on-keystroke':
+  [hterm.PreferenceManager.categories.Scrolling, true, 'bool',
+   'If true, scroll to the bottom on any keystroke.'],
 
-  /**
-   * If true, scroll to the bottom on terminal output.
-   */
-  'scroll-on-output': false,
+  'scroll-on-output':
+  [hterm.PreferenceManager.categories.Scrolling, false, 'bool',
+   'If true, scroll to the bottom on terminal output.'],
 
-  /**
-   * The vertical scrollbar mode.
-   */
-  'scrollbar-visible': true,
+  'scrollbar-visible':
+  [hterm.PreferenceManager.categories.Scrolling, true, 'bool',
+   'The vertical scrollbar mode.'],
 
-  /**
-   * The multiplier for the pixel delta in mousewheel event caused by the scroll
-   * wheel. Alters how fast the page scrolls.
-   */
-  'scroll-wheel-move-multiplier': 1,
+  'scroll-wheel-move-multiplier':
+  [hterm.PreferenceManager.categories.Scrolling, 1, 'int',
+   'The multiplier for the pixel delta in mousewheel event caused by the ' +
+   'scroll wheel. Alters how fast the page scrolls.'],
 
-  /**
-   * Set the encoding for data sent to host.
-   *
-   * Valid values are 'utf-8' and 'raw'.
-   */
-  'send-encoding': 'utf-8',
+  'send-encoding':
+  [hterm.PreferenceManager.categories.Encoding, 'utf-8', ['utf-8', 'raw'],
+   'Set the encoding for data sent to host.'],
 
-  /**
-   * Shift + Insert pastes if true, sent to host if false.
-   */
-  'shift-insert-paste': true,
+  'shift-insert-paste':
+  [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
+   'Shift + Insert pastes if true, sent to host if false.'],
 
-  /**
-   * User stylesheet to include in the terminal document.
-   */
-  'user-css': ''
+  'user-css':
+  [hterm.PreferenceManager.categories.Appearance, '', 'url',
+   'URL of user stylesheet to include in the terminal document.'],
 };
 
 hterm.PreferenceManager.prototype = {
