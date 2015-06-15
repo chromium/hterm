@@ -413,6 +413,24 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.keyboard.homeKeysScroll = v;
     },
 
+    'keybindings': function(v) {
+      terminal.keyboard.bindings.clear();
+
+      if (!v)
+        return;
+
+      if (!(v instanceof Object)) {
+        console.error('Error in keybindings preference: Expected object');
+        return;
+      }
+
+      try {
+        terminal.keyboard.bindings.addBindings(v);
+      } catch (ex) {
+        console.error('Error in keybindings preference: ' + ex);
+      }
+    },
+
     'max-string-sequence': function(v) {
       terminal.vt.maxStringSequence = v;
     },

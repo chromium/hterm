@@ -85,7 +85,8 @@ hterm.PreferenceManager.defaultPreferences = {
   ],
 
   'audible-bell-sound':
-  [hterm.PreferenceManager.categories.Sounds, 'lib-resource:hterm/audio/bell', 'url',
+  [hterm.PreferenceManager.categories.Sounds, 'lib-resource:hterm/audio/bell',
+   'url',
    'URL of the terminal bell sound.  Empty string for no audible bell.'],
 
   'desktop-notification-bell':
@@ -131,9 +132,9 @@ hterm.PreferenceManager.defaultPreferences = {
    'the backspace key should send \'\\x7f\'.'],
 
   'character-map-overrides':
-  [hterm.PreferenceManager.categories.Keyboard, null, 'value',
+  [hterm.PreferenceManager.categories.Appearance, null, 'value',
     'This is specified as an object. It is a sparse array, where each '  +
-    'property is the character set code and the value is an object that is ' +' ' +
+    'property is the character set code and the value is an object that is ' +
     'a sparse array itself. In that sparse array, each property is the ' +
     'received character and the value is the displayed character.\n' +
     '\n' +
@@ -158,7 +159,8 @@ hterm.PreferenceManager.defaultPreferences = {
    'on, second is how long it should be off.'],
 
   'cursor-color':
-  [hterm.PreferenceManager.categories.Appearance, 'rgba(255, 0, 0, 0.5)', 'color',
+  [hterm.PreferenceManager.categories.Appearance, 'rgba(255, 0, 0, 0.5)',
+   'color',
    'The color of the visible cursor.'],
 
   'color-palette-overrides':
@@ -240,7 +242,8 @@ hterm.PreferenceManager.defaultPreferences = {
    'DEC Private Mode 12.'],
 
   'environment':
-  [hterm.PreferenceManager.categories.Miscellaneous, {'TERM': 'xterm-256color'}, 'value',
+  [hterm.PreferenceManager.categories.Miscellaneous, {'TERM': 'xterm-256color'},
+   'value',
    'The default environment variables, as an object.'],
 
   'font-family':
@@ -267,6 +270,21 @@ hterm.PreferenceManager.defaultPreferences = {
    'will send the VT keycodes.  If false then home/end sends VT codes and ' +
    'shift home/end scrolls.'],
 
+  'keybindings':
+  [hterm.PreferenceManager.categories.Keyboard, null, 'value',
+   'A map of key sequence to key actions.  Key sequences include zero or ' +
+   'more modifier keys followed by a key code.  Key codes can be decimal or ' +
+   'hexadecimal numbers, or a key identifier.  Key actions can be specified ' +
+   'a string to send to the host, or an action identifier.  For a full ' +
+   'list of key code and action identifiers, see https://goo.gl/8AoD09.' +
+   '\n' +
+   '\n' +
+   'Sample keybindings:\n' +
+   '{ "Ctrl-Alt-K": "clearScrollback",\n' +
+   '  "Ctrl-Shift-L": "PASS",\n' +
+   '  "Ctrl-H": "\'HELLO\\n\'"\n' +
+   '}'],
+
   'max-string-sequence':
   [hterm.PreferenceManager.categories.Encoding, 100000, 'int',
    'Max length of a DCS, OSC, PM, or APS sequence before we give up and ' +
@@ -282,7 +300,8 @@ hterm.PreferenceManager.defaultPreferences = {
    'Set whether the meta key sends a leading escape or not.'],
 
   'mouse-paste-button':
-  [hterm.PreferenceManager.categories.CopyPaste, null, [null, 0, 1, 2, 3, 4, 5, 6],
+  [hterm.PreferenceManager.categories.CopyPaste, null,
+   [null, 0, 1, 2, 3, 4, 5, 6],
    'Mouse paste button, or null to autodetect.\n' +
    '\n' +
    'For autodetect, we\'ll try to enable middle button paste for non-X11 ' +
@@ -370,7 +389,7 @@ hterm.PreferenceManager.defaultPreferences = {
 
   'user-css':
   [hterm.PreferenceManager.categories.Appearance, '', 'url',
-   'URL of user stylesheet to include in the terminal document.'],
+   'URL of user stylesheet to include in the terminal document.']
 };
 
 hterm.PreferenceManager.prototype = {

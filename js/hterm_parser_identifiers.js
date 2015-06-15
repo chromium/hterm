@@ -137,32 +137,56 @@ hterm.Parser.identifiers.keyCodes = {
  * Identifiers for use in key actions.
  */
 hterm.Parser.identifiers.actions = {
+  /**
+   * Prevent the browser and operating system from handling the event.
+   */
   CANCEL: hterm.Keyboard.KeyActions.CANCEL,
 
+  /**
+   * Wait for a "keypress" event, send the keypress charCode to the host.
+   */
   DEFAULT: hterm.Keyboard.KeyActions.DEFAULT,
 
+  /**
+   * Let the browser or operating system handle the key.
+   */
   PASS: hterm.Keyboard.KeyActions.PASS,
 
+  /**
+   * Scroll the terminal one page up.
+   */
   scrollPageUp: function(terminal) {
     terminal.scrollPageUp();
     return hterm.Keyboard.KeyActions.CANCEL;
   },
 
+  /**
+   * Scroll the terminal one page down.
+   */
   scrollPageDown: function(terminal) {
     terminal.scrollPageDown();
     return hterm.Keyboard.KeyActions.CANCEL;
   },
 
+  /**
+   * Scroll the terminal to the top.
+   */
   scrollToTop: function(terminal) {
     terminal.scrollEnd();
     return hterm.Keyboard.KeyActions.CANCEL;
   },
 
+  /**
+   * Scroll the terminal to the bottom.
+   */
   scrollToBottom: function(terminal) {
     terminal.scrollEnd();
     return hterm.Keyboard.KeyActions.CANCEL;
   },
 
+  /**
+   * Clear the terminal and scrollback buffer.
+   */
   clearScrollback: function(terminal) {
     terminal.wipeContents();
     return hterm.Keyboard.KeyActions.CANCEL;
