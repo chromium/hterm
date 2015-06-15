@@ -44,31 +44,37 @@ hterm.Parser.prototype.reset = function(source, opt_pos) {
 /**
  * Parse a key sequence.
  *
- * Key sequences look like:
- *  "X", Just the letter X.
- *  88, Another way of specifying the letter X.  88 is the keyCode for the 'xX'
- *    keycap.
- *  Ctrl-"X", Ctrl followed by the letter X.
- *  Ctrl-"x", Ctrl followed by the letter X.
- *  Ctrl-"8", Ctrl followed by the number 8 key.
- *  Ctrl-88, Another way of specifying Ctrl X.
- *  Ctrl-Alt-"[", Ctrl Alt and the open-square-bracket.
- *  Ctrl-Alt-[TAB], Ctrl Alt and the Tab key specified as a mnemonic.
+ * A key sequence is zero or more of the key modifiers defined in
+ * hterm.Parser.identifiers.modifierKeys followed by a key code.  Key
+ * codes can be an integer or an identifier from
+ * hterm.Parser.identifiers.keyCodes.  Modifiers and keyCodes should be joined
+ * by the dash character.
  *
- * Modifier names are Ctrl, Alt, and Meta.  Mnemonic names come from
- * hterm_keyboard_keymap.js.
+ * An asterisk "*" can be used to indicate that the unspecified modifiers
+ * are optional.
  *
- * @return {Object} An object with shift, ctrl, alt, meta, charCode
+ * For example:
+ *   A: Matches only an unmodified "A" character.
+ *   65: Same as above.
+ *   0x41: Same as above.
+ *   Ctrl-A: Matches only Ctrl-A.
+ *   Ctrl-65: Same as above.
+ *   Ctrl-0x41: Same as above.
+ *   Ctrl-Shift-A: Matches only Ctrl-Shift-A.
+ *   Ctrl-*-A: Matches Ctrl-A, as well as any other key sequence that includes
+ *     at least the Ctrl and A keys.
+ *
+ * @return {Object} An object with shift, ctrl, alt, meta, keyCode
  *   properties.
  */
 hterm.Parser.prototype.parseKeySequence = function() {
   var rv = {
-    shift: false,
-    ctrl: false,
-    alt: false,
-    meta: false,
     keyCode: null
   };
+
+  for (var k in hterm.Parser.identifiers.modifierKeys) {
+    rv[hterm.Parser.identifiers.modifierKeys[k]] = false;
+  }
 
   while (this.pos < this.source.length) {
     this.skipSpace();
@@ -78,14 +84,14 @@ hterm.Parser.prototype.parseKeySequence = function() {
       rv.keyCode = token.value;
 
     } else if (token.type == 'identifier') {
-      if (token.value.match(/^(shift|ctrl|alt|meta)$/i)) {
-        var mod = token.value.toLowerCase();
+      if (token.value in hterm.Parser.identifiers.modifierKeys) {
+        var mod = hterm.Parser.identifiers.modifierKeys[token.value];
         if (rv[mod] && rv[mod] != '*')
           throw this.error('Duplicate modifier: ' + token.value);
         rv[mod] = true;
 
-      } else if (token.value in hterm.Parser.identifiers.keys) {
-        rv.keyCode = hterm.Parser.identifiers.keys[token.value];
+      } else if (token.value in hterm.Parser.identifiers.keyCodes) {
+        rv.keyCode = hterm.Parser.identifiers.keyCodes[token.value];
 
       } else {
         throw this.error('Unknown key: ' + token.value);
@@ -93,10 +99,11 @@ hterm.Parser.prototype.parseKeySequence = function() {
 
     } else if (token.type == 'symbol') {
       if (token.value == '*') {
-        ['shift', 'ctrl', 'alt', 'meta'].forEach(function(p) {
+        for (var id in hterm.Parser.identifiers.modifierKeys) {
+          var p = hterm.Parser.identifiers.modifierKeys[id];
           if (!rv[p])
             rv[p] =  '*';
-        });
+        }
       } else {
         throw this.error('Unexpected symbol: ' + token.value);
       }

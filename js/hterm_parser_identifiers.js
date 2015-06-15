@@ -9,8 +9,15 @@
  */
 hterm.Parser.identifiers = {};
 
+hterm.Parser.identifiers.modifierKeys = {
+  Shift: 'shift',
+  Ctrl: 'ctrl',
+  Alt: 'alt',
+  Meta: 'meta'
+};
+
 /**
- * Identifiers for use in key sequences.
+ * Key codes useful when defining key sequences.
  *
  * Punctuation is mostly left out of this list because they can move around
  * based on keyboard locale and browser.
@@ -18,7 +25,7 @@ hterm.Parser.identifiers = {};
  * In a key sequence like "Ctrl-ESC", the ESC comes from this list of
  * identifiers.  It is equivalent to "Ctrl-27" and "Ctrl-0x1b".
  */
-hterm.Parser.identifiers.keys = {
+hterm.Parser.identifiers.keyCodes = {
   // Top row.
   ESC: 27,
   F1: 112,

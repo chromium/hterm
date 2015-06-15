@@ -60,8 +60,6 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   };
 
   checkResult('Shift-X', true, false, false, false);
-  checkResult('shift-X', true, false, false, false);
-  checkResult('SHIFT-X', true, false, false, false);
   checkResult('Ctrl-X', false, true, false, false);
   checkResult('Alt-X', false, false, true, false);
   checkResult('Meta-X', false, false, false, true);
@@ -71,6 +69,13 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   checkResult('Shift-Meta-X', true, false, false, true);
   checkResult('Shift-Ctrl-Alt-Meta-X', true, true, true, true);
 
+  checkResult('Shift-*-X', true, '*', '*', '*');
+  checkResult('Shift-Ctrl-*-X', true, true, '*', '*');
+  checkResult('Shift-Ctrl-Alt-*-X', true, true, true, '*');
+  checkResult('Shift-Ctrl-Alt-Meta-*-X', true, true, true, true);
+
+  this.negKeySeq(result, 'shift-X', /Unknown key: shift$/);
+  this.negKeySeq(result, 'SHIFT-X', /Unknown key: SHIFT$/);
   this.negKeySeq(result, 'Foo-X', /Unknown key: Foo$/);
   this.negKeySeq(result, 'Ctrl-Foo-X', /Unknown key: Foo$/);
   this.negKeySeq(result, 'Ctrl-Ctrl-X', /Duplicate modifier: Ctrl$/);
