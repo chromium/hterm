@@ -1,3 +1,12 @@
+1.56, 2015-06-16, pref shuffle, keybindings, utf-8, and Mouse reporting.
+
+* Fix mouse reporting.  Previously users had to click, then move the mouse
+  before mouse reporting would start.
+* Deal with surrogate pairs more properly.
+* Add customizable keybindings.
+* hterm_preference_manager.js: Group prefs into categories, declare input types
+  rather than guess based on default value, improve layout.
+
 1.55, 2015-05-19, More fixes.
 
 * Shifts out the G1 character set with the \x18 cancel control code.
