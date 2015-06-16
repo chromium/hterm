@@ -98,9 +98,8 @@ hterm.Terminal = function(opt_profileId) {
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
 
-  // True if we should send mouse events to the vt, false if we want them
-  // to manage the local text selection.
-  this.reportMouseEvents_ = false;
+  // True if we should override mouse event reporting to allow local selection.
+  this.defeatMouseReports_ = false;
 
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
@@ -2775,6 +2774,9 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     return;
   }
 
+  var reportMouseEvents = (!this.defeatMouseReports_ &&
+      this.vt.mouseReport != this.vt.MOUSE_REPORT_DISABLED);
+
   e.processedByTerminalHandler_ = true;
 
   // One based row/column stored on the mouse event.
@@ -2788,8 +2790,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     return;
   }
 
-  if (this.options_.cursorVisible &&
-      this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED) {
+  if (this.options_.cursorVisible && !reportMouseEvents) {
     // If the cursor is visible and we're not sending mouse events to the
     // host app, then we want to hide the terminal cursor when the mouse
     // cursor is over top.  This keeps the terminal cursor from interfering
@@ -2803,21 +2804,21 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   if (e.type == 'mousedown') {
-    if (e.altKey || this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED) {
+    if (e.altKey || !reportMouseEvents) {
       // If VT mouse reporting is disabled, or has been defeated with
       // alt-mousedown, then the mouse will act on the local selection.
-      this.reportMouseEvents_ = false;
+      this.defeatMouseReports_ = true;
       this.setSelectionEnabled(true);
     } else {
       // Otherwise we defer ownership of the mouse to the VT.
-      this.reportMouseEvents_ = true;
+      this.defeatMouseReports_ = false;
       this.document_.getSelection().collapseToEnd();
       this.setSelectionEnabled(false);
       e.preventDefault();
     }
   }
 
-  if (!this.reportMouseEvents_) {
+  if (!reportMouseEvents) {
     if (e.type == 'dblclick') {
       this.screen_.expandSelection(this.document_.getSelection());
       hterm.copySelectionToClipboard(this.document_);
@@ -2861,8 +2862,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     // Restore this on mouseup in case it was temporarily defeated with a
     // alt-mousedown.  Only do this when the selection is empty so that
     // we don't immediately kill the users selection.
-    this.reportMouseEvents_ = (this.vt.mouseReport !=
-                               this.vt.MOUSE_REPORT_DISABLED);
+    this.defeatMouseReports_ = false;
   }
 };
 
