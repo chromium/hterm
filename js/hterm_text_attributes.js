@@ -439,18 +439,20 @@ hterm.TextAttributes.splitWidecharString = function(str) {
   var rv = [];
   var base = 0, length = 0;
 
-  for (var i = 0; i < str.length; i++) {
-    var c = str.charCodeAt(i);
+  for (var i = 0; i < str.length;) {
+    var c = str.codePointAt(i);
+    var increment = (c <= 0xffff) ? 1 : 2;
     if (c < 128 || lib.wc.charWidth(c) == 1) {
-      length++;
+      length += increment;
     } else {
       if (length) {
         rv.push({str: str.substr(base, length)});
       }
-      rv.push({str: str.substr(i, 1), wcNode: true});
-      base = i + 1;
+      rv.push({str: str.substr(i, increment), wcNode: true});
+      base = i + increment;
       length = 0;
     }
+    i += increment;
   }
 
   if (length)
