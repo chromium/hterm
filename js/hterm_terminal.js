@@ -2923,14 +2923,16 @@ hterm.Terminal.prototype.onCopy_ = function(e) {
  */
 hterm.Terminal.prototype.onResize_ = function() {
   var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
-                               this.scrollPort_.characterSize.width);
+                               this.scrollPort_.characterSize.width) || 0;
   var rowCount = lib.f.smartFloorDivide(this.scrollPort_.getScreenHeight(),
-                            this.scrollPort_.characterSize.height);
+                            this.scrollPort_.characterSize.height) || 0;
 
   if (columnCount <= 0 || rowCount <= 0) {
     // We avoid these situations since they happen sometimes when the terminal
     // gets removed from the document or during the initial load, and we can't
     // deal with that.
+    // This can also happen if called before the scrollPort calculates the
+    // character size, meaning we dived by 0 above and default to 0 values.
     return;
   }
 
