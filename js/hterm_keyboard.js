@@ -331,16 +331,16 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
 };
 
 /**
- * Prevent default handling for non-shifted event.
+ * Prevent default handling for non-ctrl-shifted event.
  *
  * When combined with Chrome permission 'app.window.fullscreen.overrideEsc',
  * and called for both key down and key up events,
  * the ESC key remains usable within fullscreen Chrome app windows.
  */
-hterm.Keyboard.prototype.preventChromeAppNonShiftDefault_ = function(e) {
+hterm.Keyboard.prototype.preventChromeAppNonCtrlShiftDefault_ = function(e) {
   if (!window.chrome || !window.chrome.app || !window.chrome.app.window)
     return;
-  if (!e.shiftKey)
+  if (!e.ctrlKey || !e.shiftKey)
     e.preventDefault();
 };
 
@@ -353,7 +353,7 @@ hterm.Keyboard.prototype.onKeyUp_ = function(e) {
     this.altKeyPressed = this.altKeyPressed & ~(1 << (e.location - 1));
 
   if (e.keyCode == 27)
-    this.preventChromeAppNonShiftDefault_(e);
+    this.preventChromeAppNonCtrlShiftDefault_(e);
 };
 
 /**
@@ -364,7 +364,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     this.altKeyPressed = this.altKeyPressed | (1 << (e.location - 1));
 
   if (e.keyCode == 27)
-    this.preventChromeAppNonShiftDefault_(e);
+    this.preventChromeAppNonCtrlShiftDefault_(e);
 
   var keyDef = this.keyMap.keyDefs[e.keyCode];
   if (!keyDef) {
