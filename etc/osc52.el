@@ -97,7 +97,7 @@ causes tmux to pass the wrapped OSC 52 sequence along to the host terminal."
                                            (base64-encode-string string))
                  "\07\e\\"))
       (message "Selection too long to send to terminal %d" b64-length)
-      (set-for 2))))
+      (sit-for 2))))
 
 (defun osc52-set-cut-function ()
   "Initialize the `interprogram-cut-function' based on the value of
