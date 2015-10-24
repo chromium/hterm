@@ -214,7 +214,7 @@ hterm.PreferenceManager.defaultPreferences = {
   'enable-8-bit-control':
   [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
    'True to enable 8-bit control characters, false to ignore them.\n' +
-   '\n' |
+   '\n' +
    'We\'ll respect the two-byte versions of these control characters ' +
    'regardless of this setting.'],
 
