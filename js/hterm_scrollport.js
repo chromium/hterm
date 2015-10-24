@@ -294,6 +294,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'height: 100%;' +
       'width: 100%;' +
       'overflow: hidden;' +
+      'cursor: text;' +
       '-webkit-user-select: none;' +
       '-moz-user-select: none;');
 
