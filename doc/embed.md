@@ -48,16 +48,16 @@ You'll also need to choose a storage implementation.  This is the backing store 
 
 ```js
 // If you are a cross-browser web app and want to use window.localStorage
-hterm.defaultStorage = new lib.storage.Local()
+hterm.defaultStorage = new lib.Storage.Local()
 
 // If you are a cross-browser web app and want in-memory storage only
-hterm.defaultStorage = new lib.storage.Memory()
+hterm.defaultStorage = new lib.Storage.Memory()
 
 // If you are a Chrome app and want sync storage
-hterm.defaultStorage = new lib.storage.Chrome(chrome.storage.sync)
+hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync)
 
 // If you are a Chrome app and want local storage
-hterm.defaultStorage = new lib.storage.Chrome(chrome.storage.local)
+hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.local)
 ```
 
 Now create an instance of `hterm.Terminal`:
@@ -108,7 +108,7 @@ Once you've registered your onTerminalReady handler you can connect the terminal
 to sacrifical DOM node.
 
 ```
-t.decorate(document.quertSelector('#terminal'));
+t.decorate(document.querySelector('#terminal'));
 ```
 
 ## Step 5, Write to the terminal.
