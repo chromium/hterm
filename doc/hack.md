@@ -1,5 +1,4 @@
-
-
+```
                             .--~~~~~~~~~~~~~------.
                            /--===============------\
                            | |```````````````|     |
@@ -15,11 +14,8 @@
                           \_________________________/
 
 
-
                             hterm Developer Guide
-
-                              November 1,  2012
-
+```
 
 # Introduction
 
@@ -27,28 +23,29 @@ hterm is a JavaScript based terminal emulator that can be embeded in Chrome
 web applications.  It almost works in Firefox, but depends on a small number
 of changes that haven't been merged yet.
 
-See ../../HACK.md for general information about working with the source
+See [/HACK.md](/HACK.md) for general information about working with the source
 control setup.
 
 # Building the distributables
 
-The ./bin/mkdist.sh script can be used to generate the ./dist directory, which
-contains the hterm library source concatenated into ./dist/js/hterm_all.js.
-This is the file you should copy into your own projects.
+The `./bin/mkdist.sh` script can be used to generate the `./dist` directory,
+which contains the hterm library source concatenated into
+`./dist/js/hterm_all.js`.  This is the file you should copy into your own
+projects.
 
 # Tests
 
-The ./bin/load_tests.sh script can be used to launch a new instance of Chrome
+The `./bin/load_tests.sh` script can be used to launch a new instance of Chrome
 in an isolated profile, with the necessary command line arguments, and load the
 hterm test cases.  Test results will appear in the JavaScript console.
 
 You can re-run the tests by reloading the web page as long as you haven't made
-changes to hterm/concat/hterm_resources.concat.  If you *do* change resources,
-run ./bin/mkdist.sh to re-create them.
+changes to `hterm/concat/hterm_resources.concat`.  If you *do* change resources,
+run `./bin/mkdist.sh` to re-create them.
 
 # Debugging escape sequences
 
-The ./bin/vtscope.py script can be used to step through a pre-recorded VT
+The `./bin/vtscope.py` script can be used to step through a pre-recorded VT
 session on multiple terminals.  This is extremely useful for finding and
 debugging how hterm responds to terminal escape sequences.
 
@@ -99,4 +96,4 @@ If you're going to hand-edit your test data in emacs, don't forget to add...
 ...as the first line of the file (using vi, of course).  Otherwise emacs will
 likely munge your escape sequences the first time you save.
 
-Check out the comments in ./bin/vtscope.py for some more tricks.
+Check out the comments in `./bin/vtscope.py` for some more tricks.

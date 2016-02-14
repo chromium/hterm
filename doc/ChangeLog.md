@@ -1,4 +1,4 @@
-1.56, 2015-06-16, pref shuffle, keybindings, utf-8, and Mouse reporting.
+# 1.56, 2015-06-16, pref shuffle, keybindings, utf-8, and Mouse reporting.
 
 * Fix mouse reporting.  Previously users had to click, then move the mouse
   before mouse reporting would start.
@@ -7,12 +7,12 @@
 * hterm_preference_manager.js: Group prefs into categories, declare input types
   rather than guess based on default value, improve layout.
 
-1.55, 2015-05-19, More fixes.
+# 1.55, 2015-05-19, More fixes.
 
 * Shifts out the G1 character set with the \x18 cancel control code.
 * Enables terminal font resizing for the numeric +/- keys.
 
-1.54, 2015-03-19, Grab bag o' fixes.
+# 1.54, 2015-03-19, Grab bag o' fixes.
 
 * Avoid changing e.shiftKey property.
 * Add faint SGR mode.
@@ -26,7 +26,7 @@
 * Fix transition from blinking cursor to invisible cursor.
 * Fix concealed/invisible text for default background.
 
-1.53, 2015-02-26, Add 'alt-gr-mode' preference.
+# 1.53, 2015-02-26, Add 'alt-gr-mode' preference.
 
 * Add a preference to select the preferred AltGr heuristic.  This replaces the
   change from 1.52, which prevented the use of Ctrl-Alt-... on all platforms.
@@ -43,7 +43,7 @@
   left-alt/right-alt tracking will have issues if the window loses focus
   while the alt key is down, but this may be the best we can do on the web.
 
-1.52, 2015-02-18, Treat Ctrl-Alt as AltGr
+# 1.52, 2015-02-18, Treat Ctrl-Alt as AltGr
 
 * Assume that Ctrl-Alt-[Printable] means AltGr-[Printable].  After this change,
   we ignore the ctrl/alt modifiers when they appear in keydown, leaving it
@@ -60,23 +60,23 @@
 * Capture fullscreen ESC.
 * Fix mouse wheel scrolling in FF.
 
-1.51, 2014-11-11, 24-bit ANSI color support.
+# 1.51, 2014-11-11, 24-bit ANSI color support.
 
 * Change log update to reflect previous commits.
 
-1.50, 2014-10-07, Allow missing clipboard id in OSC 52
+# 1.50, 2014-10-07, Allow missing clipboard id in OSC 52
 
 * Tmux sends OSC 52 as "ESC ] 52 ; ; ... BEL", but we failed to recognize the
   sequence because we expect a "clipboard identifier" character between the
   two semicolons.  We toss out the clipboard identifier anyway, so making it
   optional makes tmux clipboard integration work.
 
-1.49, 2014-10-06, Fix HOME/END under application cursor mode.
+# 1.49, 2014-10-06, Fix HOME/END under application cursor mode.
 
 * Send OSC H/OSC F for HOME/END when in application cursor mode, rather than
   application keypad mode.
 
-1.48, 2014-08-13, grab bag of fixes.
+# 1.48, 2014-08-13, grab bag of fixes.
 
 * Place ruler text inside a span to fix issues on Firefox.
 * Improve zoom keyboard handling on Mac and Firefox.
@@ -89,7 +89,7 @@
 * If the terminal cursor is hidden because it's under the mouse cursor, restore
   the visibility when the terminal cursor moves.
 
-1.47, 2014-07-28, Fix clear-selection-after-copy, fractional sizes
+# 1.47, 2014-07-28, Fix clear-selection-after-copy, fractional sizes
 
 * Always restore the selection after a copy operation, if we can.
   The clearSelectionAfterCopy option shouldn't come in to play here.
@@ -102,19 +102,19 @@
   makes us round up rather than set a fractional terminal width, and
   adjusts the test to exepect this behavior.
 
-1.46, 2014-07-24, Fix right-click paste issues.
+# 1.46, 2014-07-24, Fix right-click paste issues.
 
 * Version 1.44 introduced an issue with right-click paste where focusing the
   paste target would force the page to scroll 1000px past the end of the
   terminal.  Now we place the paste target within the visible bounds of the
   terminal, but nehind it in z-index.
 
-1.45, 2014-07-22, Fix overlay position on Firefox.
+# 1.45, 2014-07-22, Fix overlay position on Firefox.
 
 * Add the trailing 'px' in the css top/left property.  Chrome is ok without it,
   but it's required on Firefox.
 
-1.44, 2014-07-22, Add 'cursor-blink-cycle', bracketed paste, other fixes.
+# 1.44, 2014-07-22, Add 'cursor-blink-cycle', bracketed paste, other fixes.
 
 * Fix Firefox detection in hterm.ScrollPort..decorate.
 * Implement bracketed paste, BUG=chromium:393622
@@ -128,11 +128,11 @@
   blinking cursor.  BUG=chromium:366206
 * Hide terminal cursor when mouse cursor is over it, BUG=chromium:365910
 
-1.43, 2014-07-15, Implement reverse wraparound.
+# 1.43, 2014-07-15, Implement reverse wraparound.
 
 * Implement reverse wraparound, add a test.
 
-1.42, 2014-06-25, Stop requesting notification permission.
+# 1.42, 2014-06-25, Stop requesting notification permission.
 
 * This code depended on a user action, but the preference observers aren't
   run in the context of an action.  For now, it's up to the embedder to request
@@ -140,7 +140,7 @@
 * Use window.document.title (not this.document_.title) as the default
   notification text.
 
-1.41, 2014-06-24, Lots of new preferences.
+# 1.41, 2014-06-24, Lots of new preferences.
 
 * Add 'clear-selection-after-copy' preference, defaults to true.  Set to false
   to turn off hterm's policy of clearing your current selection after copying.
@@ -153,18 +153,18 @@
 * Implement italic character attributes.  "CSI [ 3 m" to enable, "CSI [ 23 m"
   to disable.
 
-1.40, 2014-05-15, fix selection collapse.
+# 1.40, 2014-05-15, fix selection collapse.
 
 * s/selection.collapse()/selection.collapseToEnd().  The former now throws an
   exception in Chrome if called with no arguments, which breaks our attempts
   to block local selection when vt mouse is enabled.
 
-1.39, 2014-05-14, Add 'pass-meta-v' preference.
+# 1.39, 2014-05-14, Add 'pass-meta-v' preference.
 
 * Add 'pass-meta-v' preference so Mac users can decide between Meta-V and
   Meta-Shift-V for paste.
 
-1.38, 2014-05-13, Add 'ctrl-c-copy' preference.
+# 1.38, 2014-05-13, Add 'ctrl-c-copy' preference.
 
 * Add a 'ctrl-c-copy' preference.  When this is set to false, the default
   setting, Ctrl-C will always send ^C while Ctrl-Shift-C will copy if there is
@@ -178,12 +178,12 @@
   'ctrl-c-copy', true) to adjust the default preference value in these
   situations.
 
-1.37, 2014-04-29, Fix double-paste, add IE compatibility.
+# 1.37, 2014-04-29, Fix double-paste, add IE compatibility.
 
 * Fix double-paste issue introduced in 1.36.
 * First round of IE compatibility fixes.
 
-1.36, 2014-04-28, Plumb ssh-agent, firefox, and wss-relay telemetry
+# 1.36, 2014-04-28, Plumb ssh-agent, firefox, and wss-relay telemetry
 
 * Add first round of Firefox compatibility fixes.
 * Add telemetry data for wss-based relay connections.
@@ -191,7 +191,7 @@
 * Add ssh-agent plumbing.
 * Remote lib_fs.js dependency.
 
-1.35, 2014-03-25, Add enable-bold-as-bright preference.
+# 1.35, 2014-03-25, Add enable-bold-as-bright preference.
 
 * Adds a preference to control whether or not the bold attribute from ESC
   "[ ... m" sequences also triggers bright colors.  Preference is on by default
@@ -200,12 +200,12 @@
   if you've overidden your 16 color palette to something other than the
   typical 8-dark/8-bright scheme.
 
-1.34, 2014-03-14, Add ctrl-plus-minus-zero-zoom preference.
+# 1.34, 2014-03-14, Add ctrl-plus-minus-zero-zoom preference.
 
 * In the default state (true) hterm works the same as before.  If set to
   false, ctrl-shift-plus/minus/zero controls zoom, and ctrl-minus sends ^_.
 
-1.32, 2014-03-04, Disable local selection in all mouse reporting modes.
+# 1.32, 2014-03-04, Disable local selection in all mouse reporting modes.
 
 * Previously we allowed "local" selection (that which happens by default in
   Chrome) to stay enabled for mouse mode 1001 (report mouseup/down only).  This
@@ -230,14 +230,14 @@
   already maps alt-click to something, then you can add any other modifier in
   addition to alt (say, alt-ctrl-mousedown) to defeat your existing binding.
 
-1.31, 2014-03-04, Add svg based zoom detection.
+# 1.31, 2014-03-04, Add svg based zoom detection.
 
 * Re-implement zoom detection in terms of the currentScale property of svg
   elements.  This requires the svg element to be in the topmost document,
   or at least not in the "about:blank" document that the scrollport creates
   so it may not be perfect, but it's better than nothing.
 
-1.30, 2014-03-04, Even better recursive "copy" fix.
+# 1.30, 2014-03-04, Even better recursive "copy" fix.
 
 * BUG=chromium:340699: Auto copy doesn't work.
   Now I see why the "select bags" aren't enough.  Even for the simplest case
@@ -248,7 +248,7 @@
 * Revert "Scrolling Speedups" change (which never got a distinct hterm version
   number).  This caused issues with selections scrolled out of the visible area.
 
-1.29, 2014-02-14, Better recursive "copy" fix.
+# 1.29, 2014-02-14, Better recursive "copy" fix.
 
 * BUG=chromium:340699: Auto copy doesn't work.
   AFAICT, the e.clipboardData.setData call wasn't actually doing anything.  The
@@ -257,94 +257,94 @@
   versions of Chrome, but it doesn't seem to be necessary anymore.
 * Fix the "Selection Copied" message from OSC 52 based copies.
 
-1.28, 2014-02-13, Fix recursive "copy".
+# 1.28, 2014-02-13, Fix recursive "copy".
 
 * BUG=chromium:340699: Auto copy doesn't work.
   Use e.clipboardData.setData, rather than causing a recursive
   document.execCommand("copy").
 
-1.27, 2014-01-28, Add fullwidth support.
+# 1.27, 2014-01-28, Add fullwidth support.
 
 * Teaches hterm about the difference between halfwidth and fullwidth characters.
 
-1.26, 2014-01-16, Add 'user-css' preference.
+# 1.26, 2014-01-16, Add 'user-css' preference.
 
 * Add a 'user-css' preference, which will load a user-defined css file (by url)
   into the terminal document.  This could be used to load a web font, or to
   style the terminal in perverse ways.
 
-1.25, 2014-01-08, Fix DECSET 1002-while-mousedown.
+# 1.25, 2014-01-08, Fix DECSET 1002-while-mousedown.
 
 * Fix an issue where DECSET 1002 failed if received while a mouse button was
   down.
 * Add option to swap Ctrl-V/Ctrl-Shift-V.
 
-1.24, 2013-12-10, Fix cursor height regression.
+# 1.24, 2013-12-10, Fix cursor height regression.
 
 * Fix cursor sizing regression.  syncCursorPosition_ is now only about the
   position of the cursor, restyleCursor_ now sets cursor width, in addition to
   height and cursor shape related stuff.  Call restyleCursor_ from onResize_.
 
-1.23, 2013-11-25, Prevent overlay focus, fix timeout tracking.
+# 1.23, 2013-11-25, Prevent overlay focus, fix timeout tracking.
 
 * Prevent the terminal overlay (hterm.Terminal.prototype.showOverlay) from
   taking focus if it happens to get clicked.
 * Fix the overlay timeout tracking to fix cases where showOverlay is called
   again before the previous overlay has timed out.
 
-1.22, 2013-11-25, Fix full-screen scroll region fix.
+# 1.22, 2013-11-25, Fix full-screen scroll region fix.
 
 * hterm 1.19 attempted to ignore full-screen scroll regions, but the patch
   got the variable names wrong.  This fixes them.
 
-1.21, 2013-10-31, Clear line-overflow whenever we insert characters.
+# 1.21, 2013-10-31, Clear line-overflow whenever we insert characters.
 
 * BUG=266128, Clear line-overflow state when inserting text.  This keeps
   us from accidentally re-using the overflow state of text that was already
   visible on the line.
 
-1.20, 2013-10-31, Ignore ECH/EL in the presence of a cursor overflow.
+# 1.20, 2013-10-31, Ignore ECH/EL in the presence of a cursor overflow.
 
 * BUG=232390, Ignore erase-characters and erase-in-line escapes when the cursor
   has overflowed the terminal width.  This deviates from xterm, but matches
   gnome-terminal and other modern emulators.
 
-1.19, 2013-10-30, Ignore full-screen vt scroll regions.
+# 1.19, 2013-10-30, Ignore full-screen vt scroll regions.
 
 * BUG=266197, If the host attempts to set the VT scroll region to be the entire
   terminal height, we remove the scroll region entirely.  This lets full-screen
   apps overflow into the local scrollback buffer, which makes screen and tmux
   much more pleasant to use.
 
-1.18, 2013-10-29, Implement Cursor shape change sequences.
+# 1.18, 2013-10-29, Implement Cursor shape change sequences.
 
 * Implement cursor shape changes via DECSCUSR.
 * Implement cursor shape changes via OSC 50 CursorShape (as described in
   http://vim.wikia.com/wiki/Change_cursor_shape_in_different_modes.)
 * Don't blink the cursor when the terminal is unfocused.
 
-1.17, 2013-07-26, Double-click to select url-ish.
+# 1.17, 2013-07-26, Double-click to select url-ish.
 
 * On double-click, expand the text selection to make it easy to select URLs
   or other interesting substrings.
 
-1.16, 2013-07-25, More fix newline regression.
+# 1.16, 2013-07-25, More fix newline regression.
 
 * 1.15 got the treatment of the areas above/below the scroll region wrong.
 
-1.15, 2013-07-25, Fix newline regression.
+# 1.15, 2013-07-25, Fix newline regression.
 
 * getVTScrollBottom returns the row count if there is no vt scroll region in
   effect, need to read the vtScrollBottom_ property directly instead.
 
-1.14, 2013-07-19, Fix newline in VT Scroll Region, packaged app fix.
+# 1.14, 2013-07-19, Fix newline in VT Scroll Region, packaged app fix.
 
 * BUG=chromium:223140, Terminal viewer doesn't handle horizontally split curses
   application correctly.
 * Fix the hterm.windowType detection to not barf when hterm is used in a
   Chrome packaged app.
 
-1.13, 2013-07-17, Disable zoom warning on newer Chrome builds.
+# 1.13, 2013-07-17, Disable zoom warning on newer Chrome builds.
 
 * New builds of Chrome removed document.width/height, so we're not able to use
   them to detect the zoom factor.  Disabled zoom detection when these properties
@@ -354,11 +354,11 @@
 * Stop printing "CSI K", "CSI ? J", and "ESC #" sequences with bad params.
 * Shell script changes to pacify BSD.
 
-1.12, 2013-06-24, Fix zoom warning.
+# 1.12, 2013-06-24, Fix zoom warning.
 
 * Fix the browser-zoom detection so we show the zoom warning again.
 
-1.11, 2013-06-20, Add 'send-encoding'/'receive-encoding' preferences.
+# 1.11, 2013-06-20, Add 'send-encoding'/'receive-encoding' preferences.
 
 * Splits 'character-encoding' into two preferences so send and receive
   encodings can be set independently.
@@ -366,55 +366,55 @@
   combinations.
 * Fix regression in Terminal..onPaste_.
 
-1.10, 2013-06-20, Add 'character-encoding' preference.
+# 1.10, 2013-06-20, Add 'character-encoding' preference.
 
 * Adds a 'character-encoding' preference which can be set to 'utf-8' (default)
   or 'raw'.  When set to 'utf-8' hterm's behavior is unchanged from previous
   versions.  When set to 'raw', hterm will not attempt to decode input or
   encode output.
 
-1.9, 2013-06-19, Fix issues with shift-key and CSI sequences.
+# 1.9, 2013-06-19, Fix issues with shift-key and CSI sequences.
 
 * Clear e.shiftKey in hterm_keyboard_keymap.js' sh() function so that
   hterm_keyboard.js doesn't apply its own shift key munging.
 
-1.8, 2013-05-31, overscroll fix
+# 1.8, 2013-05-31, overscroll fix
 
 * BUG=chromium:245700: Call preventDefault on mousewheel events that we've
   handled.
 
-1.7, 2013-05-31, Fix onTerminalResize, dec12 pref
+# 1.7, 2013-05-31, Fix onTerminalResize, dec12 pref
 
 * Pass width and height in io.onTerminalResize again, which regressed in the
   previous commit.
 * BUG=245120: Add 'enable-dec12' preference, off by default, which allows the
   host to control the cursor blink state via DEC private mode 12.
 
-1.6, 2013-05-24, Track terminal size on the io object.
+# 1.6, 2013-05-24, Track terminal size on the io object.
 
 * This installs a default onTerminalResize handler on the hterm.Terminal.IO
   object that records the most recent terminal size as io.columnCount and
   io.rowCount.  This gives consumers synchronous access to these values without
   having to wire up the event handler themselves.
 
-1.5, 2013-04-18, Pass shift-ctrl-L
+# 1.5, 2013-04-18, Pass shift-ctrl-L
 
 * BUG=chromium:233008, PASS shift-ctrl-L (CrOS screen lock combo)
 
-1.4, 2013-04-05, wipeContents fix
+# 1.4, 2013-04-05, wipeContents fix
 
 * BUG=chromium:226819, Handle clearing screen when not scrolled to bottom
 
-1.3, 2013-04-04, Keyboard fixes
+# 1.3, 2013-04-04, Keyboard fixes
 
 * BUG=chromium:174410, Fix to allow Alt-Backspace to send Meta-Backspace
 * BUG=chromium:226752, Don't trap media keys (e.g. Mute) by default.
 
-1.2, 2013-03-19, Fix bell regression.
+# 1.2, 2013-03-19, Fix bell regression.
 
 * Fix bug that made terminal bell only ring once.
 
-1.1, 2013-03-13, Grab bag of fixes.
+# 1.1, 2013-03-13, Grab bag of fixes.
 
 * Fix base64 encoding of the bell audio.
 * Break out of a parseUntilStringTerminator_ if an embedded ESC is
@@ -426,7 +426,7 @@
 * BUG=chromum-os:35288, scroll-on-output doesn't appear to work
 * BUG=chromum-os:39645, Application keypad doesn't work properly
 
-1.0, 2013-03-06, Initial split from Secure Shell codebase.
+# 1.0, 2013-03-06, Initial split from Secure Shell codebase.
 
 * Move nassh related files out into ../nassh/.
 * Add hterm_resources.concat.
