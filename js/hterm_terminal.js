@@ -2540,6 +2540,10 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
         '-webkit-user-select: none;' +
         '-moz-text-size-adjust: none;' +
         '-moz-user-select: none;');
+
+    this.zoomWarningNode_.addEventListener('click', function(e) {
+      this.parentNode.removeChild(this);
+    });
   }
 
   this.zoomWarningNode_.textContent = lib.MessageManager.replaceReferences(
