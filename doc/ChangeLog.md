@@ -1,3 +1,11 @@
+# 1.57, 2016-04-06, A little polish.
+
+* Fix race on IE with scrollport initialization.
+* Fix ctrl-shift-esc handling on OS X.
+* Always use the text cursor in the terminal.
+* Fix 8-bit help text in options page.
+* Allow zoom warning to be dismissed.
+
 # 1.56, 2015-06-16, pref shuffle, keybindings, utf-8, and Mouse reporting.
 
 * Fix mouse reporting.  Previously users had to click, then move the mouse
