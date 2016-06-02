@@ -108,7 +108,7 @@ Once you've registered your onTerminalReady handler you can connect the terminal
 to sacrifical DOM node.
 
 ```
-t.decorate(document.quertSelector('#terminal'));
+t.decorate(document.querySelector('#terminal'));
 ```
 
 ## Step 5, Write to the terminal.
