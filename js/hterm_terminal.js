@@ -2823,9 +2823,9 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   if (!reportMouseEvents) {
-    if (e.type == 'dblclick') {
+    if (e.type == 'dblclick' && this.copyOnSelect) {
       this.screen_.expandSelection(this.document_.getSelection());
-      hterm.copySelectionToClipboard(this.document_);
+      this.copySelectionToClipboard(this.document_);
     }
 
     if (e.type == 'mousedown' && e.which == this.mousePasteButton)
@@ -2833,7 +2833,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
     if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
         !this.document_.getSelection().isCollapsed) {
-      hterm.copySelectionToClipboard(this.document_);
+      this.copySelectionToClipboard(this.document_);
     }
 
     if ((e.type == 'mousemove' || e.type == 'mouseup') &&

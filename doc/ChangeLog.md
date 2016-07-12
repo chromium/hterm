@@ -1,3 +1,8 @@
+# 1.58, 2016-07-12, copySelectionToClipboard fixes.
+
+* In hterm_terminal.js, use Terminal.prototype.copySelectionToClipboard, rather
+  than the raw hterm.copySelectionToClipboard.
+
 # 1.57, 2016-04-06, A little polish.
 
 * Fix race on IE with scrollport initialization.
