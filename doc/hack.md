@@ -19,7 +19,7 @@
 
 # Introduction
 
-hterm is a JavaScript based terminal emulator that can be embeded in Chrome
+hterm is a JavaScript based terminal emulator that can be embedded in Chrome
 web applications.  It almost works in Firefox, but depends on a small number
 of changes that haven't been merged yet.
 
