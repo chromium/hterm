@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if [ -z $DISPLAY ]; then
+if [ -z "${DISPLAY}" ]; then
   export DISPLAY="0.0"
 fi
 
@@ -13,13 +13,32 @@ if [ -z "$CHROME_TEST_PROFILE" ]; then
   CHROME_TEST_PROFILE=$HOME/.config/google-chrome-run_local
 fi
 
-mkdir -p $CHROME_TEST_PROFILE
+mkdir -p "${CHROME_TEST_PROFILE}"
 
 ./bin/mkdist.sh
 
-google-chrome \
+# Chrome goes by many names.  We know them all!
+find_chrome() {
+  local bin
+  for bin in google-chrome google-chrome-{stable,beta,unstable,trunk}; do
+    if which ${bin} 2>/dev/null; then
+      return
+    fi
+  done
+}
+
+if [ -z "${CHROME_BIN}" ]; then
+  CHROME_BIN=$(find_chrome)
+  if [ -z "${CHROME_BIN}" ]; then
+    echo "error: could not find google-chrome; please set CHROME_BIN" >&2
+    exit 1
+  fi
+  echo "Running tests against ${CHROME_BIN}; set CHROME_BIN to use a diff browser"
+fi
+
+${CHROME_BIN} \
   "file:///$(pwd)/html/hterm_test.html" \
   --allow-file-access-from-files \
   --unlimited-quota-for-files \
-  --user-data-dir=$CHROME_TEST_PROFILE \
+  --user-data-dir="${CHROME_TEST_PROFILE}" \
   &>/dev/null </dev/null &
