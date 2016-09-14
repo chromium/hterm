@@ -1,3 +1,9 @@
+# 1.59, 2016-09-14, A little polish.
+
+* Fix hexToRGB parsing of more formats.
+* Fix misrendering of last line with some resolutions.
+* Update window.postMessage API to work with Chrome M54+.
+
 # 1.58, 2016-07-12, copySelectionToClipboard fixes.
 
 * In hterm_terminal.js, use Terminal.prototype.copySelectionToClipboard, rather
