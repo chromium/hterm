@@ -617,6 +617,8 @@ hterm.ScrollPort.prototype.getFontSize = function() {
  * @return {hterm.Size} A new hterm.Size object.
  */
 hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
+  // Number of lines used to average the height of a single character.
+  var numberOfLines = 100;
   if (!this.ruler_) {
     this.ruler_ = this.document_.createElement('div');
     this.ruler_.style.cssText = (
@@ -630,11 +632,16 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
     // We need to put the text in a span to make the size calculation
     // work properly in Firefox
     this.rulerSpan_ = this.document_.createElement('span');
-    this.rulerSpan_.textContent = ('XXXXXXXXXXXXXXXXXXXX' +
-                                   'XXXXXXXXXXXXXXXXXXXX' +
-                                   'XXXXXXXXXXXXXXXXXXXX' +
-                                   'XXXXXXXXXXXXXXXXXXXX' +
-                                   'XXXXXXXXXXXXXXXXXXXX');
+    var rulerSingleLineContents = 'XXXXXXXXXXXXXXXXXXXX' +
+                                  'XXXXXXXXXXXXXXXXXXXX' +
+                                  'XXXXXXXXXXXXXXXXXXXX' +
+                                  'XXXXXXXXXXXXXXXXXXXX' +
+                                  'XXXXXXXXXXXXXXXXXXXX';
+    var rulerContents = '' + rulerSingleLineContents;
+    for (var i = 0; i < numberOfLines - 1; ++i)
+      rulerContents += String.fromCharCode(13) + rulerSingleLineContents;
+
+    this.rulerSpan_.innerHTML = rulerContents;
     this.ruler_.appendChild(this.rulerSpan_);
 
     this.rulerBaseline_ = this.document_.createElement('span');
@@ -648,8 +655,9 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   this.rowNodes_.appendChild(this.ruler_);
   var rulerSize = hterm.getClientSize(this.rulerSpan_);
 
-  var size = new hterm.Size(rulerSize.width / this.ruler_.textContent.length,
-                            rulerSize.height);
+  var size = new hterm.Size(
+      rulerSize.width / (this.ruler_.textContent.length / numberOfLines),
+      rulerSize.height / numberOfLines);
 
   this.ruler_.appendChild(this.rulerBaseline_);
   size.baseline = this.rulerBaseline_.offsetTop;
