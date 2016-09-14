@@ -64,7 +64,7 @@ hterm.Frame.prototype.onLoad_ = function() {
   this.messageChannel_.port1.start();
   this.iframe_.contentWindow.postMessage(
       {name: 'ipc-init', argv: [{messagePort: this.messageChannel_.port2}]},
-      [this.messageChannel_.port2], this.url);
+      this.url, [this.messageChannel_.port2]);
 };
 
 /**
