@@ -619,6 +619,11 @@ hterm.ScrollPort.prototype.getFontSize = function() {
 hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   // Number of lines used to average the height of a single character.
   var numberOfLines = 100;
+  var rulerSingleLineContents = ('XXXXXXXXXXXXXXXXXXXX' +
+                                 'XXXXXXXXXXXXXXXXXXXX' +
+                                 'XXXXXXXXXXXXXXXXXXXX' +
+                                 'XXXXXXXXXXXXXXXXXXXX' +
+                                 'XXXXXXXXXXXXXXXXXXXX');
   if (!this.ruler_) {
     this.ruler_ = this.document_.createElement('div');
     this.ruler_.style.cssText = (
@@ -632,11 +637,6 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
     // We need to put the text in a span to make the size calculation
     // work properly in Firefox
     this.rulerSpan_ = this.document_.createElement('span');
-    var rulerSingleLineContents = 'XXXXXXXXXXXXXXXXXXXX' +
-                                  'XXXXXXXXXXXXXXXXXXXX' +
-                                  'XXXXXXXXXXXXXXXXXXXX' +
-                                  'XXXXXXXXXXXXXXXXXXXX' +
-                                  'XXXXXXXXXXXXXXXXXXXX';
     var rulerContents = '' + rulerSingleLineContents;
     for (var i = 0; i < numberOfLines - 1; ++i)
       rulerContents += String.fromCharCode(13) + rulerSingleLineContents;
@@ -655,9 +655,8 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   this.rowNodes_.appendChild(this.ruler_);
   var rulerSize = hterm.getClientSize(this.rulerSpan_);
 
-  var size = new hterm.Size(
-      rulerSize.width / (this.ruler_.textContent.length / numberOfLines),
-      rulerSize.height / numberOfLines);
+  var size = new hterm.Size(rulerSize.width / rulerSingleLineContents.length,
+                            rulerSize.height / numberOfLines);
 
   this.ruler_.appendChild(this.rulerBaseline_);
   size.baseline = this.rulerBaseline_.offsetTop;
