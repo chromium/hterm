@@ -1,3 +1,7 @@
+# 1.60, 2016-09-15, Full bake.
+
+- Fix horizontal cursor tracking broken by the misrendering fix.
+
 # 1.59, 2016-09-14, A little polish.
 
 * Fix hexToRGB parsing of more formats.
