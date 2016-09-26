@@ -21,12 +21,10 @@
 
 COMMAND_LINE="$(readlink -f $0) $@"
 
-if [ -z "$LIBDOT_SEARCH_PATH" ]; then
-  export LIBDOT_SEARCH_PATH="$(readlink -f "$(dirname "$0")/../..")"
-fi
+LIBDOT_DIR="$(dirname -- "$0")/../../libdot"
+source "${LIBDOT_DIR}/bin/common.sh"
 
-cd "$(readlink -f "$(dirname "$0")/..")"
-source "../libdot/bin/common.sh"
+cd "${BIN_DIR}/.."
 
 DEFINE_boolean forever "$FLAGS_FALSE" \
   "Recreate dist/js whenever an input file changes." f
@@ -36,12 +34,12 @@ eval set -- "${FLAGS_ARGV}"
 
 function concat() {
   local outdir="$1"
-  local concat="../libdot/bin/concat.sh -I "
+  local concat=( concat.sh -I )
 
-  insist $concat -i ./concat/hterm_deps.concat -o "$outdir/hterm_deps.js"
-  insist $concat -i ./concat/hterm_resources.concat -o \
+  insist "${concat[@]}" -i ./concat/hterm_deps.concat -o "$outdir/hterm_deps.js"
+  insist "${concat[@]}" -i ./concat/hterm_resources.concat -o \
     "$outdir/hterm_resources.js"
-  insist $concat -i ./concat/hterm.concat -o "$outdir/hterm.js"
+  insist "${concat[@]}" -i ./concat/hterm.concat -o "$outdir/hterm.js"
 
   cat "$outdir/hterm_deps.js" "$outdir/hterm_resources.js" > \
     "$outdir/hterm_all.js"
@@ -67,4 +65,4 @@ function main() {
   fi
 }
 
-main
+main "$@"

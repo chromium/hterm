@@ -3,11 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+LIBDOT_DIR="$(dirname -- "$0")/../../libdot"
+source "${LIBDOT_DIR}/bin/common.sh"
+
+cd "${BIN_DIR}/.."
+
 if [ -z "${DISPLAY}" ]; then
   export DISPLAY="0.0"
 fi
-
-cd "$(readlink -f "$(dirname "$0")/..")"
 
 if [ -z "$CHROME_TEST_PROFILE" ]; then
   CHROME_TEST_PROFILE=$HOME/.config/google-chrome-run_local
