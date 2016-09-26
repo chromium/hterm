@@ -25,16 +25,13 @@ hterm.Keyboard.Bindings.prototype.clear = function () {
 /**
  * Add a new binding.
  *
- * If a binding for the keyPattern already exists it will be overridden.
- *
- * More specific keyPatterns take precedence over those with wildcards.  Given
- * bindings for "Ctrl-A" and "Ctrl-*-A", and a "Ctrl-A" keydown, the "Ctrl-A"
- * binding will match even if "Ctrl-*-A" was created last.
+ * Internal API that assumes parsed objects as inputs.
+ * See the public addBinding for more details.
  *
  * @param {hterm.Keyboard.KeyPattern} keyPattern
  * @param {string|function|hterm.Keyboard.KeyAction} action
  */
-hterm.Keyboard.Bindings.prototype.addBinding = function(keyPattern, action) {
+hterm.Keyboard.Bindings.prototype.addBinding_ = function(keyPattern, action) {
   var binding = null;
   var list = this.bindings_[keyPattern.keyCode];
   if (list) {
@@ -65,48 +62,93 @@ hterm.Keyboard.Bindings.prototype.addBinding = function(keyPattern, action) {
 };
 
 /**
+ * Add a new binding.
+ *
+ * If a binding for the keyPattern already exists it will be overridden.
+ *
+ * More specific keyPatterns take precedence over those with wildcards.  Given
+ * bindings for "Ctrl-A" and "Ctrl-*-A", and a "Ctrl-A" keydown, the "Ctrl-A"
+ * binding will match even if "Ctrl-*-A" was created last.
+ *
+ * If action is a string, it will be passed through hterm.Parser.parseKeyAction.
+ *
+ * For example:
+ *   // Will replace Ctrl-P keystrokes with the string "hiya!".
+ *   addBinding('Ctrl-P', "'hiya!'");
+ *   // Will cancel the keystroke entirely (make it do nothing).
+ *   addBinding('Alt-D', hterm.Keyboard.KeyActions.CANCEL);
+ *   // Will execute the code and return the action.
+ *   addBinding('Ctrl-T', function() {
+ *     console.log('Got a T!');
+ *     return hterm.Keyboard.KeyActions.PASS;
+ *   });
+ *
+ * @param {string|hterm.Keyboard.KeyPattern} keyPattern
+ * @param {string|function|hterm.Keyboard.KeyAction} action
+ */
+hterm.Keyboard.Bindings.prototype.addBinding = function(key, action) {
+  // If we're given a hterm.Keyboard.KeyPattern object, pass it down.
+  if (typeof key != 'string') {
+    this.addBinding_(key, action);
+    return;
+  }
+
+  // Here we treat key as a string.
+  var p = new hterm.Parser();
+
+  p.reset(key);
+  var sequence;
+
+  try {
+    sequence = p.parseKeySequence();
+  } catch (ex) {
+    console.error(ex);
+    return;
+  }
+
+  if (!p.isComplete()) {
+    console.error(p.error('Expected end of sequence: ' + sequence));
+    return;
+  }
+
+  // If action is a string, parse it.  Otherwise assume it's callable.
+  if (typeof action == 'string') {
+    p.reset(action);
+    try {
+      action = p.parseKeyAction();
+    } catch (ex) {
+      console.error(ex);
+      return;
+    }
+  }
+
+  if (!p.isComplete()) {
+    console.error(p.error('Expected end of sequence: ' + sequence));
+    return;
+  }
+
+  this.addBinding_(new hterm.Keyboard.KeyPattern(sequence), action);
+};
+
+/**
  * Add multiple bindings at a time using a map of {string: string, ...}
  *
  * This uses hterm.Parser to parse the maps key into KeyPatterns, and the
  * map values into {string|function|KeyAction}.
  *
+ * For example:
+ *  {
+ *    // Will replace Ctrl-P keystrokes with the string "hiya!".
+ *    'Ctrl-P': "'hiya!'",
+ *    // Will cancel the keystroke entirely (make it do nothing).
+ *    'Alt-D': hterm.Keyboard.KeyActions.CANCEL,
+ *  }
+ *
  * @param {Object} map
  */
 hterm.Keyboard.Bindings.prototype.addBindings = function(map) {
-  var p = new hterm.Parser();
-
   for (var key in map) {
-    p.reset(key);
-    var sequence;
-
-    try {
-      sequence = p.parseKeySequence();
-    } catch (ex) {
-      console.error(ex);
-      continue;
-    }
-
-    if (!p.isComplete()) {
-      console.error(p.error('Expected end of sequence: ' + sequence));
-      continue;
-    }
-
-    p.reset(map[key]);
-    var action;
-
-    try {
-      action = p.parseKeyAction();
-    } catch (ex) {
-      console.error(ex);
-      continue;
-    }
-
-    if (!p.isComplete()) {
-      console.error(p.error('Expected end of sequence: ' + sequence));
-      continue;
-    }
-
-    this.addBinding(new hterm.Keyboard.KeyPattern(sequence), action);
+    this.addBinding(key, map[key]);
   }
 };
 
