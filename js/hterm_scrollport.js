@@ -1189,8 +1189,7 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
  * returns the row that *should* be at the top.
  */
 hterm.ScrollPort.prototype.getTopRowIndex = function() {
-  return lib.f.smartFloorDivide(
-      this.screen_.scrollTop, this.characterSize.height);
+  return Math.round(this.screen_.scrollTop / this.characterSize.height);
 };
 
 /**
