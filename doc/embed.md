@@ -119,3 +119,5 @@ Once onTerminalReady fires, you're free to start outputting text to the terminal
 t.io.print('Print a string without a newline');
 t.io.println('Print a string and add CRLF');
 ```
+
+You can also call `t.installKeyboard()` to capture all keyboard input at this point.
