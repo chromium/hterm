@@ -178,7 +178,7 @@ hterm.Terminal.prototype.tabWidth = 8;
  * This will load the terminal preferences for the given profile name and
  * associate subsequent preference changes with the new preference profile.
  *
- * @param {string} newName The name of the preference profile.  Forward slash
+ * @param {string} profileId The name of the preference profile.  Forward slash
  *     characters will be removed from the name.
  * @param {function} opt_callback Optional callback to invoke when the profile
  *     transition is complete.
@@ -544,6 +544,8 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
 /**
  * Returns the preferences manager used for configuring this terminal.
+ *
+ * @return {hterm.PreferenceManager}
  */
 hterm.Terminal.prototype.getPrefs = function() {
   return this.prefs_;
@@ -551,6 +553,8 @@ hterm.Terminal.prototype.getPrefs = function() {
 
 /**
  * Enable or disable bracketed paste mode.
+ *
+ * @param {boolean} state The value to set.
  */
 hterm.Terminal.prototype.setBracketedPaste = function(state) {
   this.options_.bracketedPaste = state;
@@ -561,6 +565,8 @@ hterm.Terminal.prototype.setBracketedPaste = function(state) {
  *
  * If you want this setting to persist, set it through prefs_, rather than
  * with this method.
+ *
+ * @param {string} color The color to set.
  */
 hterm.Terminal.prototype.setCursorColor = function(color) {
   this.cursorColor_ = color;
@@ -570,6 +576,7 @@ hterm.Terminal.prototype.setCursorColor = function(color) {
 
 /**
  * Return the current cursor color as a string.
+ * @return {string}
  */
 hterm.Terminal.prototype.getCursorColor = function() {
   return this.cursorColor_;
@@ -577,6 +584,8 @@ hterm.Terminal.prototype.getCursorColor = function() {
 
 /**
  * Enable or disable mouse based text selection in the terminal.
+ *
+ * @param {boolean} state The value to set.
  */
 hterm.Terminal.prototype.setSelectionEnabled = function(state) {
   this.enableMouseDragScroll = state;
@@ -587,6 +596,8 @@ hterm.Terminal.prototype.setSelectionEnabled = function(state) {
  *
  * If you want this setting to persist, set it through prefs_, rather than
  * with this method.
+ *
+ * @param {string} color The color to set.
  */
 hterm.Terminal.prototype.setBackgroundColor = function(color) {
   this.backgroundColor_ = lib.colors.normalizeCSS(color);
@@ -602,6 +613,8 @@ hterm.Terminal.prototype.setBackgroundColor = function(color) {
  *
  * Intended for use by other classes, so we don't have to expose the entire
  * prefs_ object.
+ *
+ * @return {string}
  */
 hterm.Terminal.prototype.getBackgroundColor = function() {
   return this.backgroundColor_;
@@ -612,6 +625,8 @@ hterm.Terminal.prototype.getBackgroundColor = function() {
  *
  * If you want this setting to persist, set it through prefs_, rather than
  * with this method.
+ *
+ * @param {string} color The color to set.
  */
 hterm.Terminal.prototype.setForegroundColor = function(color) {
   this.foregroundColor_ = lib.colors.normalizeCSS(color);
@@ -627,6 +642,8 @@ hterm.Terminal.prototype.setForegroundColor = function(color) {
  *
  * Intended for use by other classes, so we don't have to expose the entire
  * prefs_ object.
+ *
+ * @return {string}
  */
 hterm.Terminal.prototype.getForegroundColor = function() {
   return this.foregroundColor_;
@@ -663,6 +680,8 @@ hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
 
 /**
  * Returns true if the current screen is the primary screen, false otherwise.
+ *
+ * @return {boolean}
  */
 hterm.Terminal.prototype.isPrimaryScreen = function() {
   return this.screen_ == this.primaryScreen_;
@@ -707,6 +726,8 @@ hterm.Terminal.prototype.setFontSize = function(px) {
 
 /**
  * Get the current font size.
+ *
+ * @return {number}
  */
 hterm.Terminal.prototype.getFontSize = function() {
   return this.scrollPort_.getFontSize();
@@ -714,6 +735,8 @@ hterm.Terminal.prototype.getFontSize = function() {
 
 /**
  * Get the current font family.
+ *
+ * @return {string}
  */
 hterm.Terminal.prototype.getFontFamily = function() {
   return this.scrollPort_.getFontFamily();
@@ -782,10 +805,20 @@ hterm.Terminal.prototype.saveCursor = function() {
   return this.screen_.cursorPosition.clone();
 };
 
+/**
+ * Return the current text attributes.
+ *
+ * @return {string}
+ */
 hterm.Terminal.prototype.getTextAttributes = function() {
   return this.screen_.textAttributes;
 };
 
+/**
+ * Set the text attributes.
+ *
+ * @param {string} textAttributes The attributes to set.
+ */
 hterm.Terminal.prototype.setTextAttributes = function(textAttributes) {
   this.screen_.textAttributes = textAttributes;
 };
@@ -801,6 +834,8 @@ hterm.Terminal.prototype.getZoomFactor = function() {
 
 /**
  * Change the title of this terminal's window.
+ *
+ * @param {string} title The title to set.
  */
 hterm.Terminal.prototype.setWindowTitle = function(title) {
   window.document.title = title;
@@ -830,6 +865,8 @@ hterm.Terminal.prototype.clearCursorOverflow = function() {
 
 /**
  * Sets the cursor shape
+ *
+ * @param {string} shape The shape to set.
  */
 hterm.Terminal.prototype.setCursorShape = function(shape) {
   this.cursorShape_ = shape;
@@ -838,6 +875,8 @@ hterm.Terminal.prototype.setCursorShape = function(shape) {
 
 /**
  * Get the cursor shape
+ *
+ * @return {string}
  */
 hterm.Terminal.prototype.getCursorShape = function() {
   return this.cursorShape_;
@@ -845,6 +884,8 @@ hterm.Terminal.prototype.getCursorShape = function() {
 
 /**
  * Set the width of the terminal, resizing the UI to match.
+ *
+ * @param {number} columnCount
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
   if (columnCount == null) {
@@ -861,6 +902,8 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
 
 /**
  * Set the height of the terminal, resizing the UI to match.
+ *
+ * @param {number} rowCount The height in rows.
  */
 hterm.Terminal.prototype.setHeight = function(rowCount) {
   if (rowCount == null) {
@@ -877,6 +920,8 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
 /**
  * Deal with terminal size changes.
  *
+ * @param {number} columnCount The number of columns.
+ * @param {number} rowCount The number of rows.
  */
 hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
   if (columnCount != this.screenSize.width)
@@ -899,6 +944,8 @@ hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
  *
  * Relying on the browser to send us an async resize event means we may not be
  * in the correct state yet when the next escape sequence hits.
+ *
+ * @param {number} columnCount The number of columns.
  */
 hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
   if (columnCount <= 0)
@@ -934,6 +981,8 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
  *
  * Relying on the browser to send us an async resize event means we may not be
  * in the correct state yet when the next escape sequence hits.
+ *
+ * @param {number} rowCount The number of rows.
  */
 hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
   if (rowCount <= 0)
@@ -1123,7 +1172,7 @@ hterm.Terminal.prototype.backwardTabStop = function() {
 /**
  * Set a tab stop at the given column.
  *
- * @param {int} column Zero based column.
+ * @param {integer} column Zero based column.
  */
 hterm.Terminal.prototype.setTabStop = function(column) {
   for (var i = this.tabStops_.length - 1; i >= 0; i--) {
@@ -1172,7 +1221,7 @@ hterm.Terminal.prototype.clearAllTabStops = function() {
  * This does not clear the existing tab stops first, use clearAllTabStops
  * for that.
  *
- * @param {int} opt_start Optional starting zero based starting column, useful
+ * @param {integer} opt_start Optional starting zero based starting column, useful
  *     for filling out missing tab stops when the terminal is resized.
  */
 hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
@@ -1318,6 +1367,8 @@ hterm.Terminal.prototype.decorate = function(div) {
 
 /**
  * Return the HTML document that contains the terminal DOM nodes.
+ *
+ * @return {HTMLDocument}
  */
 hterm.Terminal.prototype.getDocument = function() {
   return this.document_;
@@ -1423,6 +1474,8 @@ hterm.Terminal.prototype.getRowCount = function() {
  * be using moveRows() in cases where they would matter.
  *
  * The cursor will be positioned at column 0 of the first inserted line.
+ *
+ * @param {number} count The number of rows to created.
  */
 hterm.Terminal.prototype.appendRows_ = function(count) {
   var cursorRow = this.screen_.rowsArray.length;
@@ -1457,6 +1510,10 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
  * In this case, the blank lines scrolled into the scroll region are made of
  * the nodes we scrolled off.  These have their rowIndex properties carefully
  * renumbered so as not to confuse the ScrollPort.
+ *
+ * @param {number} fromIndex The start index.
+ * @param {number} count The number of rows to move.
+ * @param {number} toIndex The destination index.
  */
 hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
   var ary = this.screen_.removeRows(fromIndex, count);
@@ -1482,6 +1539,10 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
  * Rows in the scrollback buffer cannot be renumbered.  Since they are not
  * addressable (you can't delete them, scroll them, etc), you should have
  * no need to renumber scrollback rows.
+ *
+ * @param {number} start The start index.
+ * @param {number} end The end index.
+ * @param {hterm.Screen} opt_screen The screen to renumber.
  */
 hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
   var screen = opt_screen || this.screen_;
@@ -1718,6 +1779,8 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  * eraseToRight is ignored in the presence of a cursor overflow.  This deviates
  * from xterm, but agrees with gnome-terminal and konsole, xfce4-terminal.  See
  * crbug.com/232390 for details.
+ *
+ * @param {number} opt_count The number of characters to erase.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
   if (this.screen_.cursorPosition.overflow)
@@ -1889,6 +1952,8 @@ hterm.Terminal.prototype.insertLines = function(count) {
  *
  * New rows are added to the bottom of scroll region to take their place.  New
  * rows are strictly there to take up space and have no content or style.
+ *
+ * @param {number} count The number of lines to delete.
  */
 hterm.Terminal.prototype.deleteLines = function(count) {
   var cursor = this.saveCursor();
@@ -1916,6 +1981,8 @@ hterm.Terminal.prototype.deleteLines = function(count) {
  * Inserts the given number of spaces at the current cursor position.
  *
  * The cursor position is not changed.
+ *
+ * @param {number} count The number of spaces to insert.
  */
 hterm.Terminal.prototype.insertSpace = function(count) {
   var cursor = this.saveCursor();
@@ -2008,6 +2075,12 @@ hterm.Terminal.prototype.setCursorPosition = function(row, column) {
   }
 };
 
+/**
+ * Move the cursor relative to its current position.
+ *
+ * @param {number} row
+ * @param {number} column
+ */
 hterm.Terminal.prototype.setRelativeCursorPosition = function(row, column) {
   var scrollTop = this.getVTScrollTop();
   row = lib.f.clamp(row + scrollTop, scrollTop, this.getVTScrollBottom());
@@ -2015,6 +2088,12 @@ hterm.Terminal.prototype.setRelativeCursorPosition = function(row, column) {
   this.screen_.setCursorPosition(row, column);
 };
 
+/**
+ * Move the cursor to the specified position.
+ *
+ * @param {number} row
+ * @param {number} column
+ */
 hterm.Terminal.prototype.setAbsoluteCursorPosition = function(row, column) {
   row = lib.f.clamp(row, 0, this.screenSize.height - 1);
   column = lib.f.clamp(column, 0, this.screenSize.width - 1);
@@ -2192,6 +2271,8 @@ hterm.Terminal.prototype.cursorRight = function(count) {
  * TODO(rginda): Test xterm to see if reverse is respected for text that has
  * been drawn with attributes that happen to coincide with the default
  * 'no-attribute' colors.  My guess is probably not.
+ *
+ * @param {boolean} state The state to set.
  */
 hterm.Terminal.prototype.setReverseVideo = function(state) {
   this.options_.reverseVideo = state;
@@ -2278,6 +2359,8 @@ hterm.Terminal.prototype.setInsertMode = function(state) {
  * If auto carriage return is on then a formfeed character is interpreted
  * as a newline, otherwise it's the same as a linefeed.  The difference boils
  * down to whether or not the cursor column is reset.
+ *
+ * @param {boolean} state The state to set.
  */
 hterm.Terminal.prototype.setAutoCarriageReturn = function(state) {
   this.options_.autoCarriageReturn = state;
@@ -2644,6 +2727,8 @@ hterm.Terminal.prototype.paste = function() {
  * Copy a string to the system clipboard.
  *
  * Note: If there is a selected range in the terminal, it'll be cleared.
+ *
+ * @param {string} str The string to copy.
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   if (this.prefs_.get('enable-clipboard-notice'))
@@ -2679,6 +2764,11 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   copySource.parentNode.removeChild(copySource);
 };
 
+/**
+ * Returns the selected text, or null if no text is selected.
+ *
+ * @return {string|null}
+ */
 hterm.Terminal.prototype.getSelectionText = function() {
   var selection = this.scrollPort_.selection;
   selection.sync();
@@ -2765,6 +2855,8 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
  *
  * The terminalRow and terminalColumn properties contain the (row, column)
  * coordinates for the mouse event.
+ *
+ * @param {Event} e The mouse event to handle.
  */
 hterm.Terminal.prototype.onMouse_ = function(e) {
   if (e.processedByTerminalHandler_) {
@@ -2875,11 +2967,15 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
  *
  * The event parameter will be a normal DOM mouse click event with additional
  * 'terminalRow' and 'terminalColumn' properties.
+ *
+ * @param {Event} e The mouse event to handle.
  */
 hterm.Terminal.prototype.onMouse = function(e) { };
 
 /**
  * React when focus changes.
+ *
+ * @param {boolean} focused True if focused, false otherwise.
  */
 hterm.Terminal.prototype.onFocusChange_ = function(focused) {
   this.cursorNode_.setAttribute('focus', focused);
@@ -2897,6 +2993,8 @@ hterm.Terminal.prototype.onScroll_ = function() {
 
 /**
  * React when text is pasted into the scrollPort.
+ *
+ * @param {Event} e The DOM paste event to handle.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
   var data = e.text.replace(/\n/mg, '\r');
@@ -2909,6 +3007,8 @@ hterm.Terminal.prototype.onPaste_ = function(e) {
 
 /**
  * React when the user tries to copy from the scrollPort.
+ *
+ * @param {Event} e The DOM copy event.
  */
 hterm.Terminal.prototype.onCopy_ = function(e) {
   if (!this.useDefaultWindowCopy) {
@@ -2996,7 +3096,7 @@ hterm.Terminal.prototype.setScrollbarVisible = function(state) {
  *
  * Defaults to 1.
  *
- * @param {number} multiplier.
+ * @param {number} multiplier The multiplier to set.
  */
 hterm.Terminal.prototype.setScrollWheelMoveMultipler = function(multiplier) {
   this.scrollPort_.setScrollWheelMoveMultipler(multiplier);

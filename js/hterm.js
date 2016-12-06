@@ -210,7 +210,7 @@ hterm.Size.prototype.setTo = function(that) {
  * Test if another hterm.Size instance is equal to this one.
  *
  * @param {hterm.Size} that The other hterm.Size instance.
- * @return {boolen} True if both instances have the same width/height, false
+ * @return {boolean} True if both instances have the same width/height, false
  *     otherwise.
  */
 hterm.Size.prototype.equals = function(that) {
@@ -289,7 +289,7 @@ hterm.RowCol.prototype.setTo = function(that) {
  * Test if another hterm.RowCol instance is equal to this one.
  *
  * @param {hterm.RowCol} that The other hterm.RowCol instance.
- * @return {boolen} True if both instances have the same row/column, false
+ * @return {boolean} True if both instances have the same row/column, false
  *     otherwise.
  */
 hterm.RowCol.prototype.equals = function(that) {

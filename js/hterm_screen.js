@@ -134,7 +134,7 @@ hterm.Screen.prototype.shiftRows = function(count) {
 /**
  * Insert a row at the top of the screen.
  *
- * @param {HTMLElement} The row to insert.
+ * @param {HTMLElement} row The row to insert.
  */
 hterm.Screen.prototype.unshiftRow = function(row) {
   this.rowsArray.splice(0, 0, row);
@@ -143,7 +143,7 @@ hterm.Screen.prototype.unshiftRow = function(row) {
 /**
  * Insert rows at the top of the screen.
  *
- * @param {Array.<HTMLElement>} The rows to insert.
+ * @param {Array.<HTMLElement>} rows The rows to insert.
  */
 hterm.Screen.prototype.unshiftRows = function(rows) {
   this.rowsArray.unshift.apply(this.rowsArray, rows);
@@ -171,7 +171,7 @@ hterm.Screen.prototype.popRows = function(count) {
 /**
  * Insert a row at the bottom of the screen.
  *
- * @param {HTMLElement} The row to insert.
+ * @param {HTMLElement} row The row to insert.
  */
 hterm.Screen.prototype.pushRow = function(row) {
   this.rowsArray.push(row);
@@ -180,25 +180,27 @@ hterm.Screen.prototype.pushRow = function(row) {
 /**
  * Insert rows at the bottom of the screen.
  *
- * @param {Array.<HTMLElement>} The rows to insert.
+ * @param {Array.<HTMLElement>} rows The rows to insert.
  */
 hterm.Screen.prototype.pushRows = function(rows) {
   rows.push.apply(this.rowsArray, rows);
 };
 
 /**
- * Insert a row at the specified column of the screen.
+ * Insert a row at the specified row of the screen.
  *
- * @param {HTMLElement} The row to insert.
+ * @param {integer} index The index to insert the row.
+ * @param {HTMLElement} row The row to insert.
  */
 hterm.Screen.prototype.insertRow = function(index, row) {
   this.rowsArray.splice(index, 0, row);
 };
 
 /**
- * Insert rows at the specified column of the screen.
+ * Insert rows at the specified row of the screen.
  *
- * @param {Array.<HTMLElement>} The rows to insert.
+ * @param {integer} index The index to insert the rows.
+ * @param {Array.<HTMLElement>} rows The rows to insert.
  */
 hterm.Screen.prototype.insertRows = function(index, rows) {
   for (var i = 0; i < rows.length; i++) {
@@ -207,8 +209,9 @@ hterm.Screen.prototype.insertRows = function(index, rows) {
 };
 
 /**
- * Remove a last row from the specified column of the screen and return it.
+ * Remove a row from the screen and return it.
  *
+ * @param {integer} index The index of the row to remove.
  * @return {HTMLElement} The selected row.
  */
 hterm.Screen.prototype.removeRow = function(index) {
@@ -218,6 +221,7 @@ hterm.Screen.prototype.removeRow = function(index) {
 /**
  * Remove rows from the bottom of the screen and return them as an array.
  *
+ * @param {integer} index The index to start removing rows.
  * @param {integer} count The number of rows to remove.
  * @return {Array.<HTMLElement>} The selected rows.
  */
