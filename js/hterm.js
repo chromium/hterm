@@ -96,7 +96,7 @@ lib.registerInit('hterm', function(onInit) {
   var isPackagedApp = false;
   if (window.chrome && chrome.runtime && chrome.runtime.getManifest) {
     var manifest = chrome.runtime.getManifest();
-    var isPackagedApp = manifest.app && manifest.app.background;
+    isPackagedApp = manifest.app && manifest.app.background;
   }
 
   if (isPackagedApp) {

@@ -146,7 +146,7 @@ hterm.Terminal = function(opt_profileId) {
   this.setDefaultTabStops();
 
   this.setProfile(opt_profileId || 'default',
-                  function() { this.onTerminalReady() }.bind(this));
+                  function() { this.onTerminalReady(); }.bind(this));
 };
 
 /**
@@ -338,7 +338,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
         }
       }
 
-      terminal.primaryScreen_.textAttributes.resetColorPalette()
+      terminal.primaryScreen_.textAttributes.resetColorPalette();
       terminal.alternateScreen_.textAttributes.resetColorPalette();
     },
 
@@ -1274,7 +1274,7 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.document_ = this.scrollPort_.getDocument();
 
-  this.document_.body.oncontextmenu = function() { return false };
+  this.document_.body.oncontextmenu = function() { return false; };
 
   var onMouse = this.onMouse_.bind(this);
   var screenNode = this.scrollPort_.getScreenNode();
@@ -1346,7 +1346,6 @@ hterm.Terminal.prototype.decorate = function(div) {
        'height: 10px;');
   this.document_.body.appendChild(this.scrollBlockerNode_);
 
-  var onMouse = this.onMouse_.bind(this);
   this.scrollPort_.onScrollWheel = onMouse;
   ['mousedown', 'mouseup', 'mousemove', 'click', 'dblclick',
    ].forEach(function(event) {
@@ -2800,7 +2799,7 @@ hterm.Terminal.prototype.getSelectionText = function() {
   // End offset measures from the end of the line.
   var endOffset = (hterm.TextAttributes.nodeWidth(selection.endNode) -
                    selection.endOffset);
-  var node = selection.endNode;
+  node = selection.endNode;
 
   if (node.nodeName != 'X-ROW') {
     // If the selection doesn't end on an x-row node, then it must be

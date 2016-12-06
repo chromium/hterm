@@ -423,7 +423,7 @@ hterm.TextAttributes.nodeSubstring = function(node, start, end) {
   } else {
     return node.textContent.substring(start, end);
   }
-}
+};
 
 /**
  * Static method to split a string into contiguous runs of single-width
@@ -459,4 +459,4 @@ hterm.TextAttributes.splitWidecharString = function(str) {
     rv.push({str: str.substr(base, length)});
 
   return rv;
-}
+};
