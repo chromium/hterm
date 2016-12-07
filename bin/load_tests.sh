@@ -39,7 +39,11 @@ if [ -z "${CHROME_BIN}" ]; then
   echo "Running tests against ${CHROME_BIN}; set CHROME_BIN to use a diff browser"
 fi
 
-${CHROME_BIN} \
+# We quote CHROME_BIN because it might contain spaces.  On macOS or Windows,
+# this can be common with names like "Google Chrome".  It means it doesn't
+# allow people to pass flags, but we can figure that out when/if anyone makes
+# such a request.
+"${CHROME_BIN}" \
   "file:///$(pwd)/html/hterm_test.html" \
   --allow-file-access-from-files \
   --unlimited-quota-for-files \
