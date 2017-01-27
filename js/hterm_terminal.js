@@ -2849,6 +2849,40 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
 };
 
 /**
+ * Launches url in a new tab.
+ *
+ * @param {string} url URL to launch in a new tab.
+ */
+hterm.Terminal.prototype.openUrl = function(url) {
+  var win = window.open(url, '_blank');
+  win.focus();
+}
+
+/**
+ * Open the selected url.
+ */
+hterm.Terminal.prototype.openSelectedUrl_ = function() {
+  var str = this.getSelectionText();
+
+  // If there is no selection, try and expand wherever they clicked.
+  if (str == null) {
+    this.screen_.expandSelection(this.document_.getSelection());
+    str = this.getSelectionText();
+  }
+
+  // Make sure URL is valid before opening.
+  if (str.length > 2048 || str.search(/[\s\[\](){}<>"'\\^`]/) >= 0)
+    return;
+  // If the URL isn't anchored, it'll open relative to the extension.
+  // We have no way of knowing the correct schema, so assume http.
+  if (str.search('^[a-zA-Z][a-zA-Z0-9+.-]*://') < 0)
+    str = 'http://' + str;
+
+  this.openUrl(str);
+}
+
+
+/**
  * Add the terminalRow and terminalColumn properties to mouse events and
  * then forward on to onMouse().
  *
@@ -2917,6 +2951,16 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     if (e.type == 'dblclick' && this.copyOnSelect) {
       this.screen_.expandSelection(this.document_.getSelection());
       this.copySelectionToClipboard(this.document_);
+    }
+
+    if (e.type == 'click' && !e.shiftKey && e.ctrlKey) {
+      // Debounce this event with the dblclick event.  If you try to doubleclick
+      // a URL to open it, Chrome will fire click then dblclick, but we won't
+      // have expanded the selection text at the first click event.
+      clearTimeout(this.timeouts_.openUrl);
+      this.timeouts_.openUrl = setTimeout(this.openSelectedUrl_.bind(this),
+                                          500);
+      return;
     }
 
     if (e.type == 'mousedown' && e.which == this.mousePasteButton)
