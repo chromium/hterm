@@ -1,6 +1,10 @@
-# 1.61
+# 1.61, 2017-01-31, A little polish.
 
 * On ctrl-click, if a URL is selected, launch a new tab with the URL.
+* Update test lists to match all the existing ones.
+* Polish documentation/comments.
+* Fix missing last line with some fonts/zoom levels.
+* Allow keyboard shortcuts to be more easily bound by users.
 
 # 1.60, 2016-09-15, Full bake.
 
