@@ -41,8 +41,8 @@ function concat() {
     "$outdir/hterm_resources.js"
   insist "${concat[@]}" -i ./concat/hterm.concat -o "$outdir/hterm.js"
 
-  cat "$outdir/hterm_deps.js" "$outdir/hterm_resources.js" > \
-    "$outdir/hterm_all.js"
+  cat "$outdir/hterm_deps.js" "$outdir/hterm_resources.js" \
+    "$outdir/hterm.js" > "$outdir/hterm_all.js"
 }
 
 function main() {
