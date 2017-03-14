@@ -64,7 +64,7 @@ hterm.ScrollPort = function(rowProvider) {
   // syncScrollHeight().
   this.lastRowCount_ = 0;
 
-  // The scroll wheel pixel delta multiplier to increase/descrease
+  // The scroll wheel pixel delta multiplier to increase/decrease
   // the scroll speed of mouse wheel events. See: http://goo.gl/sXelnq
   this.scrollWheelMultiplier_ = 1;
 

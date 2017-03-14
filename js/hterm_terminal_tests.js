@@ -58,7 +58,7 @@ hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
  * Overridden addTest method.
  *
  * Every test in this suite needs to wait for the terminal initialization to
- * complete asynchronously.  Rather than stick a bunch of biolerplate into each
+ * complete asynchronously.  Rather than stick a bunch of boilerplate into each
  * test case, we use this overridden addTest method to add a proxy around the
  * actual test.
  */

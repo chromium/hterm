@@ -124,7 +124,7 @@ hterm.Terminal = function(opt_profileId) {
   // The VT escape sequence interpreter.
   this.vt = new hterm.VT(this);
 
-  // The keyboard hander.
+  // The keyboard handler.
   this.keyboard = new hterm.Keyboard(this);
 
   // General IO interface that can be given to third parties without exposing
@@ -137,7 +137,7 @@ hterm.Terminal = function(opt_profileId) {
   this.copyOnSelect = null;
   this.mousePasteButton = null;
 
-  // Whether to use the default window copy behaviour.
+  // Whether to use the default window copy behavior.
   this.useDefaultWindowCopy = false;
 
   this.clearSelectionAfterCopy = true;
@@ -1391,7 +1391,7 @@ hterm.Terminal.prototype.focus = function() {
  *
  * @param {integer} index The zero-based row index, measured relative to the
  *     start of the scrollback buffer.  On-screen rows will always have the
- *     largest indicies.
+ *     largest indices.
  * @return {HTMLElement} The 'x-row' element containing for the requested row.
  */
 hterm.Terminal.prototype.getRowNode = function(index) {
@@ -1411,7 +1411,7 @@ hterm.Terminal.prototype.getRowNode = function(index) {
  *
  * @param {integer} start The zero-based row index to start from, measured
  *     relative to the start of the scrollback buffer.  On-screen rows will
- *     always have the largest indicies.
+ *     always have the largest indices.
  * @param {integer} end The zero-based row index to end on, measured
  *     relative to the start of the scrollback buffer.
  * @return {string} A single string containing the text value of the range of
@@ -1438,7 +1438,7 @@ hterm.Terminal.prototype.getRowsText = function(start, end) {
  *
  * @param {integer} index The zero-based row index to return, measured
  *     relative to the start of the scrollback buffer.  On-screen rows will
- *     always have the largest indicies.
+ *     always have the largest indices.
  * @return {string} A string containing the text value of the selected row.
  */
 hterm.Terminal.prototype.getRowText = function(index) {
@@ -1534,7 +1534,7 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
 /**
  * Renumber the rowIndex property of the given range of rows.
  *
- * The start and end indicies are relative to the screen, not the scrollback.
+ * The start and end indices are relative to the screen, not the scrollback.
  * Rows in the scrollback buffer cannot be renumbered.  Since they are not
  * addressable (you can't delete them, scroll them, etc), you should have
  * no need to renumber scrollback rows.
@@ -1667,7 +1667,7 @@ hterm.Terminal.prototype.getVTScrollTop = function() {
  * restrict scrolling to some higher row.  It is used for some VT cursor
  * positioning and scrolling commands.
  *
- * @return {integer} The bottommost row in the terminal's scroll region.
+ * @return {integer} The bottom most row in the terminal's scroll region.
  */
 hterm.Terminal.prototype.getVTScrollBottom = function() {
   if (this.vtScrollBottom_ != null)

@@ -229,7 +229,7 @@ hterm.VT.ParseState.prototype.resetArguments = function(opt_arg_zero) {
 /**
  * Get an argument as an integer.
  *
- * @param {number} argnum The argument number to retreive.
+ * @param {number} argnum The argument number to retrieve.
  */
 hterm.VT.ParseState.prototype.iarg = function(argnum, defaultValue) {
   var str = this.args[argnum];
@@ -244,7 +244,7 @@ hterm.VT.ParseState.prototype.iarg = function(argnum, defaultValue) {
 };
 
 /**
- * Advance the parse postion.
+ * Advance the parse position.
  *
  * @param {integer} count The number of bytes to advance.
  */
@@ -526,7 +526,7 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
     parseState.resetParseFunction();
 
   } else if (ch == ';') {
-    // Parameter delimeter.
+    // Parameter delimiter.
     if (this.trailingModifier_) {
       // Parameter delimiter after the trailing modifier.  That's a paddlin'.
       parseState.resetParseFunction();

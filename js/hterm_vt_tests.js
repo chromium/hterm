@@ -62,7 +62,7 @@ hterm.VT.Tests.prototype.postamble = function(result, cx) {
  * Overridden addTest method.
  *
  * Every test in this suite needs to wait for the terminal initialization to
- * complete asynchronously.  Rather than stick a bunch of biolerplate into each
+ * complete asynchronously.  Rather than stick a bunch of boilerplate into each
  * test case, we use this overridden addTest method to add a proxy around the
  * actual test.
  */
@@ -1428,7 +1428,7 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     text = this.terminal.getRowsText(0, 10);
     result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7 XX\n8\n9\n10');
 
-    // Aand back to alternate screen.
+    // And back to alternate screen.
     this.terminal.interpret('\x1b[?1049h');
     text = this.terminal.getRowsText(0, 10);
     result.assertEQ(text, '1\n2\n3\n4\n\n\n\n\n\n');

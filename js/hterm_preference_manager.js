@@ -176,7 +176,7 @@ hterm.PreferenceManager.defaultPreferences = {
    'that are also part of the stock X11 rgb.txt file.\n' +
    '\n' +
    'You can use \'null\' to specify that the default value should be not ' +
-   'be changed.  This is useful for skipping a small number of indicies ' +
+   'be changed.  This is useful for skipping a small number of indices ' +
    'when the value is specified as an array.'],
 
   'copy-on-select':
@@ -185,7 +185,7 @@ hterm.PreferenceManager.defaultPreferences = {
 
   'use-default-window-copy':
   [hterm.PreferenceManager.categories.CopyPaste, false, 'bool',
-   'Whether to use the default window copy behaviour'],
+   'Whether to use the default window copy behavior'],
 
   'clear-selection-after-copy':
   [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',

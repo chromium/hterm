@@ -262,8 +262,8 @@ hterm.Screen.prototype.clearCursorRow = function() {
     text = lib.f.getWhitespace(this.columnCount_);
   }
 
-  // We shouldn't honour inverse colors when clearing an area, to match
-  // xterm's back color erase behaviour.
+  // We shouldn't honor inverse colors when clearing an area, to match
+  // xterm's back color erase behavior.
   var inverse = this.textAttributes.inverse;
   this.textAttributes.inverse = false;
   this.textAttributes.syncColors();
@@ -375,7 +375,7 @@ hterm.Screen.prototype.syncSelectionCaret = function(selection) {
  *
  * For example:
  * Given the DOM fragment '<div><span>Hello World</span></div>', call splitNode_
- * passing the span and an offset of 6.  This would modifiy the fragment to
+ * passing the span and an offset of 6.  This would modify the fragment to
  * become: '<div><span>Hello </span><span>World</span></div>'.  If the span
  * had any attributes they would have been copied to the new span as well.
  *

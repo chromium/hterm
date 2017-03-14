@@ -47,7 +47,7 @@ hterm.PubSub.Tests.addTest('publish-order', function(result, cx) {
   });
 
 /**
- * Test that a published parameter is haneded off to all subscribers.
+ * Test that a published parameter is handed off to all subscribers.
  */
 hterm.PubSub.Tests.addTest('parameter', function(result, cx) {
     var expected = {};

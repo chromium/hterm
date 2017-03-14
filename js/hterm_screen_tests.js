@@ -364,7 +364,7 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
 
     result.assertEQ(ary[1].innerHTML, 'XXXXX');
 
-    // Test overwritting widechar string.
+    // Test overwriting widechar string.
     var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
     this.screen.setCursorPosition(2, 0);
     this.screen.textAttributes.wcNode = true;

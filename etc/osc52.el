@@ -76,7 +76,7 @@ If the resulting OSC 52 sequence would be longer than
 clipboard.
 
 This function wraps the OSC 52 in a Device Control String sequence.  This causes
-screen to pass the wrapped OSC 52 sequence along to the host termianl.  This
+screen to pass the wrapped OSC 52 sequence along to the host terminal.  This
 function also chops long DCS sequences into multiple smaller ones to avoid
 hitting screen's max DCS length."
   (let ((b64-length (+ (* (length string) 3) 2)))

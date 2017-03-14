@@ -232,7 +232,7 @@ hterm.Size.prototype.toString = function() {
  *
  * Instances of this class have public read/write members for row and column.
  *
- * This class includes an 'overflow' bit which is use to indicate that the an
+ * This class includes an 'overflow' bit which is use to indicate that an
  * attempt has been made to move the cursor column passed the end of the
  * screen.  When this happens we leave the cursor column set to the last column
  * of the screen but set the overflow bit.  In this state cursor movement

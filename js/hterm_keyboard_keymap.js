@@ -74,7 +74,7 @@ hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
 };
 
 /**
- * Add mutiple key definitions in a single call.
+ * Add multiple key definitions in a single call.
  *
  * This function takes the key definitions as variable argument list.  Each
  * argument is the key definition specified as an array.

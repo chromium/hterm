@@ -302,7 +302,7 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
   var lowerKey = key.toLowerCase();
   if ((e.ctrlKey || e.metaKey) && (lowerKey == 'c' || lowerKey == 'v')) {
     // On FF the key press (not key down) event gets fired for copy/paste.
-    // Let it fall through for the default browser behaviour.
+    // Let it fall through for the default browser behavior.
     return;
   }
 
@@ -394,7 +394,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   }
 
   // Note that we use the triple-equals ('===') operator to test equality for
-  // these constants, in order to distingush usage of the constant from usage
+  // these constants, in order to distinguish usage of the constant from usage
   // of a literal string that happens to contain the same bytes.
   var CANCEL = hterm.Keyboard.KeyActions.CANCEL;
   var DEFAULT = hterm.Keyboard.KeyActions.DEFAULT;

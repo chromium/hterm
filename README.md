@@ -3,7 +3,7 @@
 hterm is a JS library that provides a terminal emulator.  It is reasonably fast,
 reasonably correct, and reasonably portable across browsers.
 
-Do not confuse this with an ssh client (like [SecureShell](/wassh/)) or a
+Do not confuse this with an ssh client (like [Secure Shell](/nassh/)) or a
 shell environment by itself.  It only provides the platform for rendering
 terminal output and accepting keyboard input.
 
