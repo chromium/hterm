@@ -228,6 +228,10 @@ hterm.PreferenceManager.defaultPreferences = {
    'True if we should use bright colors (8-15 on a 16 color palette) ' +
    'for any text with the bold attribute.  False otherwise.'],
 
+  'enable-blink':
+  [hterm.PreferenceManager.categories.Appearance, true, 'bool',
+   'True if we should respect the blink attribute.  False to ignore it.  '],
+
   'enable-clipboard-notice':
   [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
    'Show a message in the terminal when the host writes to the clipboard.'],

@@ -384,6 +384,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.alternateScreen_.textAttributes.enableBoldAsBright = !!v;
     },
 
+    'enable-blink': function(v) {
+      terminal.syncBlinkState();
+    },
+
     'enable-clipboard-write': function(v) {
       terminal.vt.enableClipboardWrite = !!v;
     },
@@ -794,6 +798,15 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
 
   this.primaryScreen_.textAttributes.enableBold = isBoldSafe;
   this.alternateScreen_.textAttributes.enableBold = isBoldSafe;
+};
+
+/**
+ * Enable or disable blink based on the enable-blink pref.
+ */
+hterm.Terminal.prototype.syncBlinkState = function() {
+  this.document_.documentElement.style.setProperty(
+      '--hterm-blink-node-duration',
+      this.prefs_.get('enable-blink') ? '0.7s' : '0');
 };
 
 /**
@@ -1306,6 +1319,20 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  display: inline-block;' +
        '  text-align: center;' +
        '  width: ' + this.scrollPort_.characterSize.width * 2 + 'px;' +
+       '}' +
+       ':root {' +
+       '  --hterm-blink-node-duration: 0.7s;' +
+       '}' +
+       '@keyframes blink {' +
+       '  from { opacity: 1.0; }' +
+       '  to { opacity: 0.0; }' +
+       '}' +
+       '.blink-node {' +
+       '  animation-name: blink;' +
+       '  animation-duration: var(--hterm-blink-node-duration);' +
+       '  animation-iteration-count: infinite;' +
+       '  animation-timing-function: ease-in-out;' +
+       '  animation-direction: alternate;' +
        '}');
   this.document_.head.appendChild(style);
 

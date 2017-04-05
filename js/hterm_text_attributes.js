@@ -180,6 +180,7 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
 
   var span = this.document_.createElement('span');
   var style = span.style;
+  var classes = [];
 
   if (this.foreground != this.DEFAULT_COLOR)
     style.color = this.foreground;
@@ -196,8 +197,10 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (this.italic)
     style.fontStyle = 'italic';
 
-  if (this.blink)
-    style.fontStyle = 'italic';
+  if (this.blink) {
+    classes.push('blink-node');
+    span.blinkNode = true;
+  }
 
   var textDecoration = '';
   if (this.underline) {
@@ -213,18 +216,21 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   }
 
   if (this.wcNode) {
-    span.className = 'wc-node';
+    classes.push('wc-node');
     span.wcNode = true;
   }
 
   if (this.tileData != null) {
-    // This could be a wcNode too, so we add to the className here.
-    span.className += ' tile tile_' + this.tileData;
+    classes.push('tile');
+    classes.push('tile_' + this.tileData);
     span.tileNode = true;
   }
 
   if (opt_textContent)
     span.textContent = opt_textContent;
+
+  if (classes.length)
+    span.className = classes.join(' ');
 
   return span;
 };
@@ -255,7 +261,8 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           this.foreground == style.color &&
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
-          (this.blink || this.italic) == !!style.fontStyle &&
+          this.blink == obj.blinkNode &&
+          this.italic == !!style.fontStyle &&
           !!this.underline == !!obj.underline &&
           !!this.strikethrough == !!obj.strikethrough);
 };
