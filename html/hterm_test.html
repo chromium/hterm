@@ -50,8 +50,23 @@
         height: 100%;
         width: 100%;
       }
+      .good {
+        color: green;
+      }
+      .bad {
+        color: red;
+      }
+      pre#log {
+        white-space: pre-wrap;
+      }
     </style>
   </head>
 
-  <body></body>
+  <body>
+    <p>Check JavaScript console for test log/status.</p>
+    <p id='status'>Running...</p>
+    <p id='passed' class='good'></p>
+    <p id='failed' class='bad'></p>
+    <pre id='log'></pre>
+  </body>
 </html>

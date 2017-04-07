@@ -14,7 +14,50 @@ window.onload = function() {
 
   lib.init(lib.f.alarm(function() {
     testManager = new lib.TestManager();
+    testManager.log.save = true;
     testRun = testManager.createTestRun({window: window});
+
+    testManager.onTestRunComplete = (testRun) => {
+      var document = testRun.cx.window.document;
+      document.body.innerHTML = '';
+
+      var results = document.createElement('div');
+      var p, pre;
+
+      p = document.createElement('p');
+      p.innerText = 'Check JavaScript console for test log/status.';
+      results.appendChild(p);
+
+      p = document.createElement('p');
+      p.id = 'status';
+      p.innerText = 'Finished.';
+      p.className = (testRun.failures.length == 0) ? 'good' : 'bad';
+      results.appendChild(p);
+
+      p = document.createElement('p');
+      p.id = 'passed';
+      p.className = 'good';
+      p.innerText = testRun.passes.length + ' tests passed.';
+      results.appendChild(p);
+
+      p = document.createElement('p');
+      p.id = 'failed';
+      p.className = 'bad';
+      if (testRun.failures.length != 0)
+        p.innerText = 'ERROR: ' + testRun.failures.length + ' tests failed!';
+      results.appendChild(p);
+
+      pre = document.createElement('pre');
+      pre.id = 'log';
+      pre.innerText = testRun.testManager.log.data;
+      results.appendChild(pre);
+
+      // Only clear the body if everything passed in case the current rendering
+      // is useful to debugging.  Insert our log/results above it.
+      if (testRun.failures.length == 0)
+        document.body.innerText = '';
+      document.body.insertBefore(results, document.body.firstChild);
+    };
 
     // Stop after the first failure to make it easier to debug in the
     // JS console.
