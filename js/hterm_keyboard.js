@@ -26,7 +26,7 @@ hterm.Keyboard = function(terminal) {
   // The event handlers we are interested in, and their bound callbacks, saved
   // so they can be uninstalled with removeEventListener, when required.
   this.handlers_ = [
-      ['blur', this.onBlur_.bind(this)],
+      ['focusout', this.onFocusOut_.bind(this)],
       ['keydown', this.onKeyDown_.bind(this)],
       ['keypress', this.onKeyPress_.bind(this)],
       ['keyup', this.onKeyUp_.bind(this)],
@@ -344,7 +344,7 @@ hterm.Keyboard.prototype.preventChromeAppNonCtrlShiftDefault_ = function(e) {
     e.preventDefault();
 };
 
-hterm.Keyboard.prototype.onBlur_ = function(e) {
+hterm.Keyboard.prototype.onFocusOut_ = function(e) {
   this.altKeyPressed = 0;
 };
 
