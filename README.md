@@ -31,6 +31,15 @@ language features (such as `await` and `async`) that can't be polyfilled.
 Of course, we might slip up and use something that violates these stated goals.
 Feel free to let us know via the Contact section above! :)
 
+# Mirrors & Packaging
+
+* https://chromium.googlesource.com/apps/libapps/+/master/hterm: Main project site.
+* https://github.com/chromium/hterm: Mirror of just the hterm/ subdir.
+  Updated from time to time by developers.
+* https://github.com/libapps/hterm: Another mirror (in the libapps namespace).
+* https://www.npmjs.com/package/hterm: Packaging for npm installs.
+* `//depot/google3/third_party/javascript/hterm/`: Internal Google packaging.
+
 # Documentation
 
 * [Authors](./doc/AUTHORS.md) -- List of people who have contributed
