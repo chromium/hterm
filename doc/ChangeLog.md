@@ -1,3 +1,11 @@
+# 1.62, 2017-04-17, Test improvements, and a few fixes/features.
+
+* Fix hterm_all.js to include all of hterm source files.
+* Add support for blinking text via CSS animations.
+* Improve test UI to include results in the HTML output.
+* Fix handling of the alt key across alt+tab window switches (for
+  alt-backspace-is-meta-backspace preference).
+
 # 1.61, 2017-01-31, A little polish.
 
 * On ctrl-click, if a URL is selected, launch a new tab with the URL.
