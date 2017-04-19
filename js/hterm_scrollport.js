@@ -65,7 +65,7 @@ hterm.ScrollPort = function(rowProvider) {
   this.lastRowCount_ = 0;
 
   // The scroll wheel pixel delta multiplier to increase/decrease
-  // the scroll speed of mouse wheel events. See: http://goo.gl/sXelnq
+  // the scroll speed of mouse wheel events. See: https://goo.gl/sXelnq
   this.scrollWheelMultiplier_ = 1;
 
   /**
@@ -383,8 +383,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // TODO(rginda): This means that hterm nested in an iframe will not correctly
   // detect browser zoom level.  We should come up with a better solution.
   this.svg_ = this.div_.ownerDocument.createElementNS(
-      'http://www.w3.org/2000/svg', 'svg');
-  this.svg_.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      'https://www.w3.org/2000/svg', 'svg');
+  this.svg_.setAttribute('xmlns', 'https://www.w3.org/2000/svg');
   this.svg_.setAttribute('version', '1.1');
   this.svg_.style.cssText = (
       'position: absolute;' +

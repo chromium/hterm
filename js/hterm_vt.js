@@ -30,9 +30,9 @@ lib.rtdep('lib.colors', 'lib.f', 'lib.UTF8Decoder',
  *   [XTERM] Xterm Control Sequences
  *           http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
  *   [CTRL]  Wikipedia: C0 and C1 Control Codes
- *           http://en.wikipedia.org/wiki/C0_and_C1_control_codes
+ *           https://en.wikipedia.org/wiki/C0_and_C1_control_codes
  *   [CSI]   Wikipedia: ANSI Escape Code
- *           http://en.wikipedia.org/wiki/Control_Sequence_Introducer
+ *           https://en.wikipedia.org/wiki/Control_Sequence_Introducer
  *   man 5 terminfo, man infocmp, infocmp -L xterm-new
  *
  * @param {hterm.Terminal} terminal Terminal to use with the interpreter.
@@ -454,7 +454,7 @@ hterm.VT.prototype.decode = function(str) {
 /**
  * Encode a UTF-16 string as UTF-8.
  *
- * See also: http://en.wikipedia.org/wiki/UTF-16
+ * See also: https://en.wikipedia.org/wiki/UTF-16
  */
 hterm.VT.prototype.encodeUTF8 = function(str) {
   return lib.encodeUTF8(str);
@@ -1978,7 +1978,7 @@ hterm.VT.CSI['?l'] = function(parseState) {
  *
  * Non-xterm (italic) codes have mixed support, but are supported by both
  * gnome-terminal and rxvt and are recognized as CSI codes on Wikipedia
- * (http://en.wikipedia.org/wiki/ANSI_escape_code).
+ * (https://en.wikipedia.org/wiki/ANSI_escape_code).
  *
  * For 16-color support, the following apply.
  *
@@ -2407,7 +2407,7 @@ hterm.VT.CSI['$x'] = hterm.VT.ignore;
 
 /**
  * vt_tiledata (as used by NAOhack and UnNetHack)
- * (see http://nethackwiki.com/wiki/Vt_tiledata for more info)
+ * (see https://nethackwiki.com/wiki/Vt_tiledata for more info)
  *
  * Implemented as far as we care (start a glyph and end a glyph).
  */

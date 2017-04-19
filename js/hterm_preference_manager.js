@@ -92,7 +92,7 @@ hterm.PreferenceManager.defaultPreferences = {
   'desktop-notification-bell':
   [hterm.PreferenceManager.categories.Sounds, false, 'bool',
    'If true, terminal bells in the background will create a Web ' +
-   'Notification. http://www.w3.org/TR/notifications/\n' +
+   'Notification. https://www.w3.org/TR/notifications/\n' +
    '\n'+
    'Displaying notifications requires permission from the user. When this ' +
    'option is set to true, hterm will attempt to ask the user for permission ' +

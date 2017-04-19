@@ -151,7 +151,7 @@ hterm.Keyboard = function(terminal) {
    * that it's impossible to do meta-backspace. If the user enables this pref,
    * we use a trick to tell a true DEL keypress from alt-backspace: on
    * alt-backspace, we will see the alt key go down, then get a DEL keystroke
-   * that indicates that alt is not pressed. See http://crbug.com/174410 .
+   * that indicates that alt is not pressed. See https://crbug.com/174410 .
    */
   this.altBackspaceIsMetaBackspace = false;
 

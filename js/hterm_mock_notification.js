@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Mock Notification class. See http://www.w3.org/TR/notifications/.
+ * Mock Notification class. See https://www.w3.org/TR/notifications/.
  */
 function MockNotification (name, opts) {
   MockNotification.count++;
