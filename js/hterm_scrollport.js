@@ -382,9 +382,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // placed in the outermost document for currentScale to be correct.
   // TODO(rginda): This means that hterm nested in an iframe will not correctly
   // detect browser zoom level.  We should come up with a better solution.
-  this.svg_ = this.div_.ownerDocument.createElementNS(
-      'https://www.w3.org/2000/svg', 'svg');
-  this.svg_.setAttribute('xmlns', 'https://www.w3.org/2000/svg');
+  // Note: This must be http:// else Chrome cannot create the element correctly.
+  var xmlns = 'http://www.w3.org/2000/svg';
+  this.svg_ = this.div_.ownerDocument.createElementNS(xmlns, 'svg');
+  this.svg_.setAttribute('xmlns', xmlns);
   this.svg_.setAttribute('version', '1.1');
   this.svg_.style.cssText = (
       'position: absolute;' +
