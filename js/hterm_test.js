@@ -15,7 +15,6 @@ window.onload = function() {
   lib.init(lib.f.alarm(function() {
     testManager = new lib.TestManager();
     testManager.log.save = true;
-    testRun = testManager.createTestRun({window: window});
 
     testManager.onTestRunComplete = (testRun) => {
       var document = testRun.cx.window.document;
@@ -37,14 +36,15 @@ window.onload = function() {
       p = document.createElement('p');
       p.id = 'passed';
       p.className = 'good';
-      p.innerText = testRun.passes.length + ' tests passed.';
+      document.title = p.innerText = testRun.passes.length + ' tests passed.';
       results.appendChild(p);
 
       p = document.createElement('p');
       p.id = 'failed';
       p.className = 'bad';
       if (testRun.failures.length != 0)
-        p.innerText = 'ERROR: ' + testRun.failures.length + ' tests failed!';
+        document.title = p.innerText =
+            'ERROR: ' + testRun.failures.length + ' tests failed!';
       results.appendChild(p);
 
       pre = document.createElement('pre');
@@ -58,6 +58,15 @@ window.onload = function() {
         document.body.innerText = '';
       document.body.insertBefore(results, document.body.firstChild);
     };
+
+    testManager.testPreamble = (result, cx) => {
+      var testRun = result.testRun;
+      cx.window.document.title =
+          '[' + (testRun.passes.length + testRun.failures.length) + '] ' +
+          result.test.fullName;
+    };
+
+    testRun = testManager.createTestRun({window: window});
 
     // Stop after the first failure to make it easier to debug in the
     // JS console.
