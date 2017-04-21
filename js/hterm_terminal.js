@@ -2161,7 +2161,7 @@ hterm.Terminal.prototype.setAbsoluteCursorRow = function(row) {
  *
  * @return {integer} The zero-based cursor row.
  */
-hterm.Terminal.prototype.getCursorRow = function(row) {
+hterm.Terminal.prototype.getCursorRow = function() {
   return this.screen_.cursorPosition.row;
 };
 
