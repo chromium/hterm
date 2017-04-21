@@ -52,6 +52,7 @@ hterm.PreferenceManager.categories.CopyPaste = 'CopyPaste';
 hterm.PreferenceManager.categories.Sounds = 'Sounds';
 hterm.PreferenceManager.categories.Scrolling = 'Scrolling';
 hterm.PreferenceManager.categories.Encoding = 'Encoding';
+hterm.PreferenceManager.categories.Extensions = 'Extensions';
 hterm.PreferenceManager.categories.Miscellaneous = 'Miscellaneous';
 
 /**
@@ -70,6 +71,8 @@ hterm.PreferenceManager.categoryDefinitions = [
     text: 'Scrolling'},
   { id: hterm.PreferenceManager.categories.Sounds,
     text: 'Sounds'},
+  { id: hterm.PreferenceManager.categories.Extensions,
+    text: 'Extensions'},
   { id: hterm.PreferenceManager.categories.Miscellaneous,
     text: 'Misc.'}
 ];
@@ -496,6 +499,12 @@ hterm.PreferenceManager.defaultPreferences = {
   'user-css-text':
   [hterm.PreferenceManager.categories.Appearance, '', 'multiline-string',
    'Custom CSS text for styling the terminal.'],
+
+  'allow-images-inline':
+  [hterm.PreferenceManager.categories.Extensions, null, 'tristate',
+   'Whether to allow the remote side to display images in the terminal.\n' +
+   '\n' +
+   'By default, we prompt until a choice is made.'],
 };
 
 hterm.PreferenceManager.prototype =

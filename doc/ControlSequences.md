@@ -388,7 +388,57 @@ For example:
 |  118 | Reset Tektronix cursor color       | Ignored                 | ESC ] 118 ; \a |
 |  119 | Reset highlight foreground color   | Ignored                 | ESC ] 119 ; \a |
 |  777 | rxvt-unicode (urxvt) modules       | Only "notify" supported | ESC ] 777 ; notify ; [title] ; [body] \a |
-| 1337 | iTerm2 sequences                   | Ignored                 | |
+|[1337]| iTerm2 sequences                   | Only "File" supported   | ESC ] 1337 ; File = [args] : [base64 data] \a |
+
+### OSC+1337: iTerm2 sequences {#OSC-1337}
+
+The [iTerm2](https://www.iterm2.com/) terminal for macOS provides a lot of
+proprietary options via the OSC 1337 command.  Many of them duplicate other
+standard sequences, so most of them aren't supported.
+
+We support media display and file transfers.  This is specified via the `File=`
+keyword.  None of the options below are required as a reasonable default will
+be selected automatically.
+
+***note
+There is a [helper script](../etc/hterm-show-file.sh) you can use to handle
+the protocol for you.
+***
+
+***note
+*Warning:* You should avoid transferring larger files as Chrome performance
+will suffer.  If it's under 2 MB, it probably will be fine, but YMMV.
+***
+
+The overall form looks like ESC+] 1337 ; File=name=[base64];inline=1 :
+[base64 data] BEL.
+
+* `name`: The base64 encoded name of the file or other human readable text.
+* `size`: How many bytes in the base64 data (for transfer progress).
+* `width`: The display width specification (see below).  Defaults to `auto`.
+* `height`: The display height specification (see below).  Defaults to `auto`.
+* `preserveAspectRatio`: If `0`, scale/stretch the display to fit the space.
+  If `1` (the default), fill the display as much as possible without stretching.
+* `inline`: If `0` (the default), download the file instead of displaying it.
+  If `1`, display the file in the terminal.
+* `align`: Set the display alignment with `left` (the default), `right`, or
+  `center`.
+
+For the base64 encoded fields, make sure to omit whitespace (e.g. newlines) if
+using a tool like `base64`.
+
+For the `width` & `height` fields, a number of forms are accepted.  Note that
+the terminal will probably restrict the maximum size automatically to the active
+terminal dimensions.  e.g. If the terminal is 1000 pixels wide, specifying a
+width greater than that will automatically be limited to 1000 pixels.
+
+* `N`: How many cells (e.g. rows or columns) to fill.
+* `Npx`: How many pixels to fill.
+* `N%`: A percentage of the overall terminal screen.
+* `auto`: Use the file's dimension.
+
+For inline display, currently only images in formats Chrome itself understands
+are supported.
 
 ## Control Sequence Introducer (CSI) {#CSI}
 
@@ -769,6 +819,8 @@ color selection.
 [SCS]: #SCS
 [SGR]: #SGR
 [SM]: #SM
+
+[1337]: #OSC-1337
 
 [ECMA-35]: http://www.ecma-international.org/publications/standards/Ecma-035.htm
 [ECMA-43]: http://www.ecma-international.org/publications/standards/Ecma-043.htm

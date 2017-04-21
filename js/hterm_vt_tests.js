@@ -1982,6 +1982,130 @@ hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {
   });
 
 /**
+ * Test iTerm2 1337 non-file transfers.
+ */
+hterm.VT.Tests.addTest('OSC-1337-ignore', function(result, cx) {
+  this.terminal.displayImage =
+      () => result.fail('Unknown should not trigger file display');
+
+  this.terminal.interpret('\x1b]1337;CursorShape=1\x07');
+
+  result.pass();
+});
+
+/**
+ * Test iTerm2 1337 file transfer defaults.
+ */
+hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
+  this.terminal.displayImage = (options) => {
+    result.assertEQ('', options.name);
+    result.assertEQ(0, options.size);
+    result.assertEQ(true, options.preserveAspectRatio);
+    result.assertEQ(false, options.inline);
+    result.assertEQ('auto', options.width);
+    result.assertEQ('auto', options.height);
+    result.assertEQ('left', options.align);
+    result.assertEQ('data:application/octet-stream;base64,Cg==',
+                    options.uri);
+    result.pass();
+  };
+
+  this.terminal.interpret('\x1b]1337;File=:Cg==\x07');
+});
+
+/**
+ * Test iTerm2 1337 invalid values.
+ */
+hterm.VT.Tests.addTest('OSC-1337-file-invalid', function(result, cx) {
+  this.terminal.displayImage = (options) => {
+    result.assertEQ('', options.name);
+    result.assertEQ(1, options.size);
+    result.assertEQ(undefined, options.unk);
+    result.pass();
+  };
+
+  this.terminal.interpret(
+      '\x1b]1337;File=' +
+      // Ignore unknown keys.
+      'unk=key;' +
+      // The name is supposed to be base64 encoded.
+      'name=[oo]ps;' +
+      // Include a valid field to make sure we parsed it all
+      'size=1;;;:Cg==\x07');
+});
+
+/**
+ * Test iTerm2 1337 valid options.
+ */
+hterm.VT.Tests.addTest('OSC-1337-file-valid', function(result, cx) {
+  // Check "false" values.
+  this.terminal.displayImage = (options) => {
+    result.assertEQ(false, options.preserveAspectRatio);
+    result.assertEQ(false, options.inline);
+  };
+  this.terminal.interpret(
+      '\x1b]1337;File=preserveAspectRatio=0;inline=0:Cg==\x07');
+
+  // Check "true" values.
+  this.terminal.displayImage = (options) => {
+    result.assertEQ(true, options.preserveAspectRatio);
+    result.assertEQ(true, options.inline);
+  };
+  this.terminal.interpret(
+      '\x1b]1337;File=preserveAspectRatio=1;inline=1:Cg==\x07');
+
+  // Check the rest.
+  this.terminal.displayImage = (options) => {
+    result.assertEQ('yes', options.name);
+    result.assertEQ(1234, options.size);
+    result.assertEQ('12px', options.width);
+    result.assertEQ('50%', options.height);
+    result.assertEQ('center', options.align);
+
+    result.pass();
+  };
+  this.terminal.interpret(
+      '\x1b]1337;File=' +
+      'name=eWVz;' +
+      'size=1234;' +
+      'width=12px;' +
+      'height=50%;' +
+      'align=center;' +
+      ':Cg==\x07');
+});
+
+/**
+ * Test handling of extra data after an iTerm2 1337 file sequence.
+ */
+hterm.VT.Tests.addTest('OSC-1337-file-queue', function(result, cx) {
+  let text;
+
+  // For non-inline files, things will be processed right away.
+  this.terminal.displayImage = () => {};
+  this.terminal.interpret('\x1b]1337;File=:Cg==\x07OK');
+  text = this.terminal.getRowsText(0, 1);
+  result.assertEQ('OK', text);
+
+  // For inline files, things should be delayed.
+  // The io/timeout logic is supposed to mock the normal behavior.
+  this.terminal.displayImage = function() {
+    const io = this.io.push();
+    setTimeout(() => {
+      io.pop();
+      text = this.getRowsText(0, 1);
+      result.assertEQ('OK', text);
+      result.pass();
+    }, 0);
+  };
+  this.terminal.clearHome();
+  this.terminal.interpret('\x1b]1337;File=inline=1:Cg==\x07OK');
+  text = this.terminal.getRowsText(0, 1);
+  result.assertEQ('', text);
+
+  result.requestTime(200);
+});
+
+/**
  * Test the cursor shape changes using DECSCUSR.
  */
 hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {

@@ -1897,6 +1897,85 @@ hterm.VT.OSC['52'] = function(parseState) {
 };
 
 /**
+ * iTerm2 extended sequences.
+ *
+ * We only support image display atm.
+ */
+hterm.VT.OSC['1337'] = function(parseState) {
+  // Args come in as a set of key value pairs followed by data.
+  // File=name=<base64>;size=123;inline=1:<base64 data>
+  let args = parseState.args[0].match(/^File=([^:]*):([\s\S]*)$/m);
+  if (!args) {
+    if (this.warnUnimplemented)
+      console.log(`iTerm2 1337: unsupported sequence: ${args[1]}`);
+    return;
+  }
+
+  const options = {
+    name: '',
+    size: 0,
+    preserveAspectRatio: true,
+    inline: false,
+    width: 'auto',
+    height: 'auto',
+    align: 'left',
+    uri: 'data:application/octet-stream;base64,' + args[2].replace(/[\n\r]+/gm, ''),
+  };
+  // Walk the "key=value;" sets.
+  args[1].split(';').forEach((ele) => {
+    const kv = ele.match(/^([^=]+)=(.*)$/m);
+    if (!kv)
+      return;
+
+    // Sanitize values nicely.
+    switch (kv[1]) {
+      case 'name':
+        try {
+          options.name = window.atob(kv[2]);
+        } catch (e) {}
+        break;
+      case 'size':
+        try {
+          options.size = parseInt(kv[2]);
+        } catch (e) {}
+        break;
+      case 'width':
+        options.width = kv[2];
+        break;
+      case 'height':
+        options.height = kv[2];
+        break;
+      case 'preserveAspectRatio':
+        options.preserveAspectRatio = !(kv[2] == '0');
+        break;
+      case 'inline':
+        options.inline = !(kv[2] == '0');
+        break;
+      // hterm-specific keys.
+      case 'align':
+        options.align = kv[2];
+        break;
+      default:
+        // Ignore unknown keys.  Don't want remote stuffing our JS env.
+        break;
+    }
+  });
+
+  // This is a bit of a hack.  If the buffer has data following the image, we
+  // need to delay processing of it until after we've finished with the image.
+  // Otherwise while we wait for the the image to load asynchronously, the new
+  // text data will intermingle with the image.
+  if (options.inline) {
+    const io = this.terminal.io;
+    const queued = parseState.peekRemainingBuf();
+    parseState.advance(queued.length);
+    this.terminal.displayImage(options);
+    io.writeUTF8(queued);
+  } else
+    this.terminal.displayImage(options);
+};
+
+/**
  * URxvt perl modules.
  *
  * This is the escape system used by rxvt-unicode and its perl modules.

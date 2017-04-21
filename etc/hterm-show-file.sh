@@ -46,11 +46,28 @@ print_seq() {
   esac
 }
 
-# Send a notification.
-# Usage: [title] [body]
-notify() {
-  local title="${1-}" body="${2-}"
-  print_seq "$(printf '\033]777;notify;%s;%s\a' "${title}" "${body}")"
+# Base64 encode stdin.
+b64enc() {
+  base64 | tr -d '\n'
+}
+
+# Get the image height/width via imagemagick if possible.
+# Usage: <file>
+dimensions() {
+  identify -format 'width=%wpx;height=%hpx;' "$1" 2>/dev/null
+}
+
+# Send the 1337 OSC sequence to display the file.
+# Usage: <file>
+show() {
+  local name="$1"
+  local opts="inline=1;$2"
+
+  print_seq "$(printf '\033]1337;File=name=%s;%s%s:%s\a' \
+    "$(echo "$(basename "${name}")" | b64enc)" \
+    "$(dimensions "${name}")" \
+    "${opts}" \
+    "$(b64enc <"${name}")")"
 }
 
 # Write tool usage and exit.
@@ -60,14 +77,10 @@ usage() {
     exec 1>&2
   fi
   cat <<EOF
-Usage: hterm-notify [options] <title> [body]
+Usage: hterm-show-file [options] <file> [options]
 
-Send a notification to hterm.
-
-Notes:
-- The title should not have a semi-colon in it.
-- Neither field should have escape sequences in them.
-  Best to stick to plain text.
+Send a file to hterm.  It can be shown inline or downloaded.
+This can also be used for small file transfers.
 EOF
 
   if [ $# -gt 0 ]; then
@@ -96,12 +109,12 @@ main() {
   done
 
   if [ $# -eq 0 ]; then
-    die "Missing message to send"
+    die "Missing file to send"
   fi
   if [ $# -gt 2 ]; then
     usage "Too many arguments"
   fi
 
-  notify "$@"
+  show "$@"
 }
 main "$@"
