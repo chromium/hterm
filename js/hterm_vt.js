@@ -16,24 +16,7 @@ lib.rtdep('lib.colors', 'lib.f', 'lib.UTF8Decoder',
  * This interpreter is intended to be compatible with xterm, though it
  * ignores some of the more esoteric escape sequences.
  *
- * Some sequences are marked "Will not implement", meaning that they aren't
- * considered relevant to hterm and will probably never be implemented.
- *
- * Others are marked "Not currently implemented", meaning that they are lower
- * priority items that may be useful to implement at some point.
- *
- * See also:
- *   [VT100] VT100 User Guide
- *           http://vt100.net/docs/vt100-ug/chapter3.html
- *   [VT510] VT510 Video Terminal Programmer Information
- *           http://vt100.net/docs/vt510-rm/contents
- *   [XTERM] Xterm Control Sequences
- *           http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
- *   [CTRL]  Wikipedia: C0 and C1 Control Codes
- *           https://en.wikipedia.org/wiki/C0_and_C1_control_codes
- *   [CSI]   Wikipedia: ANSI Escape Code
- *           https://en.wikipedia.org/wiki/Control_Sequence_Introducer
- *   man 5 terminfo, man infocmp, infocmp -L xterm-new
+ * Control sequences are documented in hterm/doc/ControlSequences.md.
  *
  * @param {hterm.Terminal} terminal Terminal to use with the interpreter.
  */
@@ -681,18 +664,12 @@ hterm.VT.prototype.dispatch = function(type, code, parseState) {
  *
  * Invoked in response to SM/RM.
  *
- * Expected values for code:
- *   2 - Keyboard Action Mode (AM).  Will not implement.
- *   4 - Insert Mode (IRM).
- *   12 - Send/receive (SRM).  Will not implement.
- *   20 - Automatic Newline (LNM).
- *
  * Unexpected and unimplemented values are silently ignored.
  */
 hterm.VT.prototype.setANSIMode = function(code, state) {
-  if (code == 4) {
+  if (code == 4) {  // Insert Mode (IRM)
     this.terminal.setInsertMode(state);
-  } else if (code == 20) {
+  } else if (code == 20) {  // Automatic Newline (LNM)
     this.terminal.setAutoCarriageReturn(state);
   } else if (this.warnUnimplemented) {
     console.warn('Unimplemented ANSI Mode: ' + code);
@@ -703,68 +680,6 @@ hterm.VT.prototype.setANSIMode = function(code, state) {
  * Set or reset one of the DEC Private modes.
  *
  * Invoked in response to DECSET/DECRST.
- *
- * Expected values for code:
- *      1 - Application Cursor Keys (DECCKM).
- *      2 - [!] Designate USASCII for character sets G0-G3 (DECANM), and set
- *          VT100 mode.
- *      3 - 132 Column Mode (DECCOLM).
- *      4 - [x] Smooth (Slow) Scroll (DECSCLM).
- *      5 - Reverse Video (DECSCNM).
- *      6 - Origin Mode (DECOM).
- *      7 - Wraparound Mode (DECAWM).
- *      8 - [x] Auto-repeat Keys (DECARM).
- *      9 - [!] Send Mouse X & Y on button press.
- *     10 - [x] Show toolbar (rxvt).
- *     12 - Start Blinking Cursor (att610).
- *     18 - [!] Print form feed (DECPFF).
- *     19 - [x] Set print extent to full screen (DECPEX).
- *     25 - Show Cursor (DECTCEM).
- *     30 - [!] Show scrollbar (rxvt).
- *     35 - [x] Enable font-shifting functions (rxvt).
- *     38 - [x] Enter Tektronix Mode (DECTEK).
- *     40 - Allow 80 - 132 Mode.
- *     41 - [!] more(1) fix (see curses resource).
- *     42 - [!] Enable Nation Replacement Character sets (DECNRCM).
- *     44 - [!] Turn On Margin Bell.
- *     45 - Reverse-wraparound Mode.
- *     46 - [x] Start Logging.
- *     47 - [!] Use Alternate Screen Buffer.
- *     66 - [!] Application keypad (DECNKM).
- *     67 - Backarrow key sends backspace (DECBKM).
- *   1000 - Send Mouse X & Y on button press and release.  (MOUSE_REPORT_CLICK)
- *   1001 - [!] Use Hilite Mouse Tracking.
- *   1002 - Use Cell Motion Mouse Tracking.  (MOUSE_REPORT_DRAG)
- *   1003 - [!] Use All Motion Mouse Tracking.
- *   1004 - [!] Send FocusIn/FocusOut events.
- *   1005 - [!] Enable Extended Mouse Mode.
- *   1010 - Scroll to bottom on tty output (rxvt).
- *   1011 - Scroll to bottom on key press (rxvt).
- *   1034 - [x] Interpret "meta" key, sets eighth bit.
- *   1035 - [x] Enable special modifiers for Alt and NumLock keys.
- *   1036 - Send ESC when Meta modifies a key.
- *   1037 - [!] Send DEL from the editing-keypad Delete key.
- *   1039 - Send ESC when Alt modifies a key.
- *   1040 - [x] Keep selection even if not highlighted.
- *   1041 - [x] Use the CLIPBOARD selection.
- *   1042 - [!] Enable Urgency window manager hint when Control-G is received.
- *   1043 - [!] Enable raising of the window when Control-G is received.
- *   1047 - [!] Use Alternate Screen Buffer.
- *   1048 - Save cursor as in DECSC.
- *   1049 - Save cursor as in DECSC and use Alternate Screen Buffer, clearing
- *          it first. (This may be disabled by the titeInhibit resource). This
- *          combines the effects of the 1047 and 1048 modes. Use this with
- *          terminfo-based applications rather than the 47 mode.
- *   1050 - [!] Set terminfo/termcap function-key mode.
- *   1051 - [x] Set Sun function-key mode.
- *   1052 - [x] Set HP function-key mode.
- *   1053 - [x] Set SCO function-key mode.
- *   1060 - [x] Set legacy keyboard emulation (X11R6).
- *   1061 - [!] Set VT220 keyboard emulation.
- *   2004 - Set bracketed paste mode.
- *
- * [!] - Not currently implemented, may be in the future.
- * [x] - Will not implement.
  */
 hterm.VT.prototype.setDECMode = function(code, state) {
   switch (parseInt(code, 10)) {
@@ -793,7 +708,7 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.setWraparound(state);
       break;
 
-    case 12:  // att610
+    case 12:  // Start blinking cursor
       if (this.enableDec12)
         this.terminal.setCursorBlink(state);
       break;
@@ -806,15 +721,15 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.setScrollbarVisible(state);
       break;
 
-    case 40:  // no-spec
+    case 40:  // Allow 80 - 132 (DECCOLM) Mode
       this.terminal.allowColumnWidthChanges_ = state;
       break;
 
-    case 45:  // no-spec
+    case 45:  // Reverse-wraparound Mode
       this.terminal.setReverseWraparound(state);
       break;
 
-    case 67:  // DECBKM
+    case 67:  // Backarrow key sends backspace (DECBKM)
       this.terminal.keyboard.backspaceSendsBackspace = state;
       break;
 
@@ -828,19 +743,19 @@ hterm.VT.prototype.setDECMode = function(code, state) {
           state ? this.MOUSE_REPORT_DRAG : this.MOUSE_REPORT_DISABLED);
       break;
 
-    case 1010:  // rxvt
+    case 1010:  // Scroll to bottom on tty output
       this.terminal.scrollOnOutput = state;
       break;
 
-    case 1011:  // rxvt
+    case 1011:  // Scroll to bottom on key press
       this.terminal.scrollOnKeystroke = state;
       break;
 
-    case 1036:  // no-spec
+    case 1036:  // Send ESC when Meta modifies a key
       this.terminal.keyboard.metaSendsEscape = state;
       break;
 
-    case 1039:  // no-spec
+    case 1039:  // Send ESC when Alt modifies a key
       if (state) {
         if (!this.terminal.keyboard.previousAltSendsWhat_) {
           this.terminal.keyboard.previousAltSendsWhat_ =
@@ -854,8 +769,8 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       }
       break;
 
-    case 47:
-    case 1047:  // no-spec
+    case 47:  // Use Alternate Screen Buffer
+    case 1047:
       this.terminal.setAlternateMode(state);
       break;
 
@@ -1169,7 +1084,7 @@ hterm.VT.ESC['P'] = function(parseState) {
 };
 
 /**
- * Start of Protected Area (SPA).
+ * Start of Guarded Area (SPA).
  *
  * Will not implement.
  */
@@ -1177,7 +1092,7 @@ hterm.VT.CC1['\x96'] =
 hterm.VT.ESC['V'] = hterm.VT.ignore;
 
 /**
- * End of Protected Area (EPA).
+ * End of Guarded Area (EPA).
  *
  * Will not implement.
  */
@@ -1305,21 +1220,11 @@ hterm.VT.ESC['\x20'] = function(parseState) {
 
 /**
  * DEC 'ESC #' sequences.
- *
- * Handled:
- *   ESC # 8 - DEC Screen Alignment Test (DECALN).
- *             Fills the terminal with 'E's.  Used liberally by vttest.
- *
- * Ignored:
- *   ESC # 3 - DEC double-height line, top half (DECDHL).
- *   ESC # 4 - DEC double-height line, bottom half (DECDHL).
- *   ESC # 5 - DEC single-width line (DECSWL).
- *   ESC # 6 - DEC double-width line (DECDWL).
  */
 hterm.VT.ESC['#'] = function(parseState) {
   parseState.func = function(parseState) {
     var ch = parseState.consumeChar();
-    if (ch == '8')
+    if (ch == '8')  // DEC Screen Alignment Test (DECALN)
       this.terminal.fill('E');
 
     parseState.resetParseFunction();
@@ -1333,7 +1238,7 @@ hterm.VT.ESC['#'] = function(parseState) {
  *   ESC % @ - Set ISO 8859-1 character set.
  *   ESC % G - Set UTF-8 character set.
  *
- * All other ESC # sequences are echoed to the terminal.
+ * All other ESC % sequences are echoed to the terminal.
  *
  * TODO(rginda): Implement.
  */
@@ -1357,24 +1262,7 @@ hterm.VT.ESC['%'] = function(parseState) {
  *   ESC . Ps - Set G2 character set (VT300).
  *   ESC / Ps - Set G3 character set (VT300).
  *
- * Values for Ps are:
- *   0 - DEC Special Character and Line Drawing Set.
- *   A - United Kingdom (UK).
- *   B - United States (USASCII).
- *   4 - Dutch.
- *   C or 5 - Finnish.
- *   R - French.
- *   Q - French Canadian.
- *   K - German.
- *   Y - Italian.
- *   E or 6 - Norwegian/Danish.
- *   Z - Spanish.
- *   H or 7 - Swedish.
- *   = - Swiss.
- *
  * All other sequences are echoed to the terminal.
- *
- * TODO(rginda): Implement.
  */
 hterm.VT.ESC['('] =
 hterm.VT.ESC[')'] =
@@ -1424,7 +1312,7 @@ hterm.VT.ESC['7'] = function() {
 };
 
 /**
- * Restore Cursor (DECSC).
+ * Restore Cursor (DECRC).
  */
 hterm.VT.ESC['8'] = function() {
   this.savedState_.restore();
@@ -1438,14 +1326,14 @@ hterm.VT.ESC['8'] = function() {
 hterm.VT.ESC['9'] = hterm.VT.ignore;
 
 /**
- * Application keypad (DECPAM).
+ * Application keypad (DECKPAM).
  */
 hterm.VT.ESC['='] = function() {
   this.terminal.keyboard.applicationKeypad = true;
 };
 
 /**
- * Normal keypad (DECPNM).
+ * Normal keypad (DECKPNM).
  */
 hterm.VT.ESC['>'] = function() {
   this.terminal.keyboard.applicationKeypad = false;
@@ -1640,15 +1528,15 @@ hterm.VT.OSC['50'] = function(parseState) {
   }
 
   switch (args[1]) {
-    case '1':
+    case '1':  // CursorShape=1: I-Beam.
       this.terminal.setCursorShape(hterm.Terminal.cursorShape.BEAM);
       break;
 
-    case '2':
+    case '2':  // CursorShape=2: Underline.
       this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
       break;
 
-    default:
+    default:  // CursorShape=0: Block.
       this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
   }
 };
@@ -1767,7 +1655,7 @@ hterm.VT.CSI['?J'] = function(parseState, code) {
   var arg = parseState.args[0];
 
   if (!arg || arg == 0) {
-      this.terminal.eraseBelow();
+    this.terminal.eraseBelow();
   } else if (arg == 1) {
     this.terminal.eraseAbove();
   } else if (arg == 2) {
@@ -1992,79 +1880,8 @@ hterm.VT.CSI['?l'] = function(parseState) {
 /**
  * Character Attributes (SGR).
  *
- * Iterate through the list of arguments, applying the following attribute
- * changes based on the argument value...
- *
- *    0 Normal (default).
- *    1 Bold.
- *    2 Faint.
- *    3 Italic (non-xterm).
- *    4 Underlined.
- *    5 Blink (appears as Bold).
- *    7 Inverse.
- *    8 Invisible, i.e., hidden (VT300).
- *    9 Crossed out (ECMA-48).
- *   22 Normal (neither bold nor faint).
- *   23 Not italic (non-xterm).
- *   24 Not underlined.
- *   25 Steady (not blinking).
- *   27 Positive (not inverse).
- *   28 Visible, i.e., not hidden (VT300).
- *   29 Not crossed out (ECMA-48).
- *   30 Set foreground color to Black.
- *   31 Set foreground color to Red.
- *   32 Set foreground color to Green.
- *   33 Set foreground color to Yellow.
- *   34 Set foreground color to Blue.
- *   35 Set foreground color to Magenta.
- *   36 Set foreground color to Cyan.
- *   37 Set foreground color to White.
- *   39 Set foreground color to default (original).
- *   40 Set background color to Black.
- *   41 Set background color to Red.
- *   42 Set background color to Green.
- *   43 Set background color to Yellow.
- *   44 Set background color to Blue.
- *   45 Set background color to Magenta.
- *   46 Set background color to Cyan.
- *   47 Set background color to White.
- *   49 Set background color to default (original)
- *
- * Non-xterm (italic) codes have mixed support, but are supported by both
- * gnome-terminal and rxvt and are recognized as CSI codes on Wikipedia
- * (https://en.wikipedia.org/wiki/ANSI_escape_code).
- *
- * For 16-color support, the following apply.
- *
- *   90 Set foreground color to Bright Black.
- *   91 Set foreground color to Bright Red.
- *   92 Set foreground color to Bright Green.
- *   93 Set foreground color to Bright Yellow.
- *   94 Set foreground color to Bright Blue.
- *   95 Set foreground color to Bright Magenta.
- *   96 Set foreground color to Bright Cyan.
- *   97 Set foreground color to Bright White.
- *  100 Set background color to Bright Black.
- *  101 Set background color to Bright Red.
- *  102 Set background color to Bright Green.
- *  103 Set background color to Bright Yellow.
- *  104 Set background color to Bright Blue.
- *  105 Set background color to Bright Magenta.
- *  106 Set background color to Bright Cyan.
- *  107 Set background color to Bright White.
- *
- * For 88- or 256-color support, the following apply.
- *  38 ; 5 ; P Set foreground color to P.
- *  48 ; 5 ; P Set background color to P.
- *
- *  For true color (24-bit) support, the following apply.
- *  38 ; 2 ; R ; G ; B Set foreground color to rgb(R, G, B)
- *  48 ; 2 ; R ; G ; B Set background color to rgb(R, G, B)
- *
- * Note that most terminals consider "bold" to be "bold and bright".  In
- * some documents the bold state is even referred to as bright.  We interpret
- * bold as bold-bright here too, but only when the "bold" setting comes before
- * the color selection.
+ * Iterate through the list of arguments, applying the attribute changes based
+ * on the argument value...
  */
 hterm.VT.CSI['m'] = function(parseState) {
   function get256(i) {
@@ -2095,38 +1912,38 @@ hterm.VT.CSI['m'] = function(parseState) {
     var arg = parseState.iarg(i, 0);
 
     if (arg < 30) {
-      if (arg == 0) {
+      if (arg == 0) {  // Normal (default).
         attrs.reset();
-      } else if (arg == 1) {
+      } else if (arg == 1) {  // Bold.
         attrs.bold = true;
-      } else if (arg == 2) {
+      } else if (arg == 2) {  // Faint.
         attrs.faint = true;
-      } else if (arg == 3) {
+      } else if (arg == 3) {  // Italic.
         attrs.italic = true;
-      } else if (arg == 4) {
+      } else if (arg == 4) {  // Underline.
         attrs.underline = true;
-      } else if (arg == 5) {
+      } else if (arg == 5) {  // Blink.
         attrs.blink = true;
       } else if (arg == 7) {  // Inverse.
         attrs.inverse = true;
       } else if (arg == 8) {  // Invisible.
         attrs.invisible = true;
-      } else if (arg == 9) {
+      } else if (arg == 9) {  // Crossed out.
         attrs.strikethrough = true;
-      } else if (arg == 22) {
+      } else if (arg == 22) {  // Not bold & not faint.
         attrs.bold = false;
         attrs.faint = false;
-      } else if (arg == 23) {
+      } else if (arg == 23) {  // Not italic.
         attrs.italic = false;
-      } else if (arg == 24) {
+      } else if (arg == 24) {  // Not underlined.
         attrs.underline = false;
-      } else if (arg == 25) {
+      } else if (arg == 25) {  // Not blink.
         attrs.blink = false;
-      } else if (arg == 27) {
+      } else if (arg == 27) {  // Steady.
         attrs.inverse = false;
-      } else if (arg == 28) {
+      } else if (arg == 28) {  // Visible.
         attrs.invisible = false;
-      } else if (arg == 29) {
+      } else if (arg == 29) {  // Not crossed out.
         attrs.strikethrough = false;
       }
 
@@ -2309,12 +2126,6 @@ hterm.VT.CSI['q'] = hterm.VT.ignore;
 
 /**
  * Set cursor style (DECSCUSR, VT520).
- *
- *   0 - Blinking block.
- *   1 - Blinking block (default).
- *   2 - Steady block.
- *   3 - Blinking underline.
- *   4 - Steady underline.
  */
 hterm.VT.CSI[' q'] = function(parseState) {
   var arg = parseState.args[0];
