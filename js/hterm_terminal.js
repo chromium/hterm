@@ -533,8 +533,12 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'user-css': function(v) {
-      terminal.scrollPort_.setUserCss(v);
-    }
+      terminal.scrollPort_.setUserCssUrl(v);
+    },
+
+    'user-css-text': function(v) {
+      terminal.scrollPort_.setUserCssText(v);
+    },
   });
 
   this.prefs_.readStorage(function() {
@@ -1274,7 +1278,8 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
   this.scrollPort_.setBackgroundPosition(
       this.prefs_.get('background-position'));
-  this.scrollPort_.setUserCss(this.prefs_.get('user-css'));
+  this.scrollPort_.setUserCssUrl(this.prefs_.get('user-css'));
+  this.scrollPort_.setUserCssText(this.prefs_.get('user-css-text'));
 
   this.div_.focus = this.focus.bind(this);
 

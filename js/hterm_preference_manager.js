@@ -393,7 +393,11 @@ hterm.PreferenceManager.defaultPreferences = {
 
   'user-css':
   [hterm.PreferenceManager.categories.Appearance, '', 'url',
-   'URL of user stylesheet to include in the terminal document.']
+   'URL of user stylesheet to include in the terminal document.'],
+
+  'user-css-text':
+  [hterm.PreferenceManager.categories.Appearance, '', 'multiline-string',
+   'Custom CSS text for styling the terminal.'],
 };
 
 hterm.PreferenceManager.prototype = {
