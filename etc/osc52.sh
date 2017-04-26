@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -24,8 +24,8 @@ OSC_52_MAX_SEQUENCE="100000"
 # single OSC 52 sequence.
 #
 # This is appropriate when running on a raw terminal that supports OSC 52.
-function get_osc52() {
-  echo -ne "\e]52;c;$(base64 | tr -d '\n')\x07"
+get_osc52() {
+  printf "%b" "\033]52;c;$(base64 | tr -d '\n')\a\n"
 }
 
 # This function base64's the entire source, wraps it in a single OSC 52,
@@ -36,37 +36,40 @@ function get_osc52() {
 # but will pass the contents of a DCS sequence to the outer terminal unmolested.
 # It imposes a small max length to DCS sequences, so we send in chunks.  Chunks
 # is my dog.
-function get_osc52_dsc() {
+get_osc52_dsc() {
   local b64="$(base64)"
-  local first_chunk=''
+  local chunk first_chunk=''
 
-  for chunk in $b64; do
-    if [ -z "$first_chunk" ]; then
-      echo -ne "\eP\e]52;c;$chunk"
+  for chunk in ${b64}; do
+    if [ -z "${first_chunk}" ]; then
+      printf "%b" "\033P\033]52;c;${chunk}"
       first_chunk="1"
     else
-      echo -ne "\e\x5c\eP$chunk"
+      printf "%b" "\033\0134\033P${chunk}"
     fi
   done
 
-  echo -ne "\x07\e\\"
+  printf "%b" "\a\033\0134"
 }
 
-function main() {
+main() {
   local str=''
 
-  if [ $(expr "$TERM" : '.*screen') == 0 ]; then
-    # Not in screen.
-    str="$(get_osc52)"
-  else
+  case ${TERM} in
+  *screen*)
     str="$(get_osc52_dsc)"
-  fi
+    ;;
+  *)
+    str="$(get_osc52)"
+    ;;
+  esac
 
   local len=${#str}
-  if (("$len" < "$OSC_52_MAX_SEQUENCE")); then
-    echo -n "$str"
+  if [ "${len}" -lt "${OSC_52_MAX_SEQUENCE}" ]; then
+    printf '%s' "${str}"
   else
-    echo "Selection too long to send to terminal: $len" >&2
+    echo "ERROR: selection too long to send to terminal: ${len}" >&2
+    exit 1
   fi
 }
 
