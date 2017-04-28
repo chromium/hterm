@@ -3167,7 +3167,7 @@ hterm.Terminal.prototype.setScrollbarVisible = function(state) {
 
 /**
  * Set the scroll wheel move multiplier.  This will affect how fast the page
- * scrolls on mousewheel events.
+ * scrolls on wheel events.
  *
  * Defaults to 1.
  *

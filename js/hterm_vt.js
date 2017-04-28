@@ -364,9 +364,9 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
   var y = String.fromCharCode(lib.f.clamp(e.terminalRow + 32, 32, 255));
 
   switch (e.type) {
-    case 'mousewheel':
+    case 'wheel':
       // Mouse wheel is treated as button 1 or 2 plus an additional 64.
-      b = ((e.wheelDeltaY > 0) ? 0 : 1) + 96;
+      b = (((e.deltaY * -1) > 0) ? 0 : 1) + 96;
       b |= mod;
       response = '\x1b[M' + String.fromCharCode(b) + x + y;
 

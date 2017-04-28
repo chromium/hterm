@@ -380,7 +380,7 @@ hterm.PreferenceManager.defaultPreferences = {
 
   'scroll-wheel-move-multiplier':
   [hterm.PreferenceManager.categories.Scrolling, 1, 'int',
-   'The multiplier for the pixel delta in mousewheel event caused by the ' +
+   'The multiplier for the pixel delta in wheel events caused by the ' +
    'scroll wheel. Alters how fast the page scrolls.'],
 
   'send-encoding':
