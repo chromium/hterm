@@ -68,6 +68,10 @@ hterm.ScrollPort = function(rowProvider) {
   // the scroll speed of mouse wheel events. See: https://goo.gl/sXelnq
   this.scrollWheelMultiplier_ = 1;
 
+  // The last touch events we saw to support touch based scrolling.  Indexed
+  // by touch identifier since we can have more than one touch active.
+  this.lastTouch_ = {};
+
   /**
    * True if the last scroll caused the scrollport to show the final row.
    */
@@ -332,6 +336,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   this.screen_.addEventListener('scroll', this.onScroll_.bind(this));
   this.screen_.addEventListener('wheel', this.onScrollWheel_.bind(this));
+  this.screen_.addEventListener('touchstart', this.onTouch_.bind(this));
+  this.screen_.addEventListener('touchmove', this.onTouch_.bind(this));
+  this.screen_.addEventListener('touchend', this.onTouch_.bind(this));
+  this.screen_.addEventListener('touchcancel', this.onTouch_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
 
@@ -1285,6 +1293,81 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
     // overscroll.
     e.preventDefault();
   }
+};
+
+/**
+ * Clients can override this if they want to hear touch events.
+ *
+ * Clients may call event.preventDefault() if they want to keep the scrollport
+ * from also handling the events.
+ */
+hterm.ScrollPort.prototype.onTouch = function(e) {};
+
+/**
+ * Handler for touch events.
+ */
+hterm.ScrollPort.prototype.onTouch_ = function(e) {
+  this.onTouch(e);
+
+  if (e.defaultPrevented)
+    return;
+
+  // Extract the fields from the Touch event that we need.  If we saved the
+  // event directly, it has references to other objects (like x-row) that
+  // might stick around for a long time.  This way we only have small objects
+  // in our lastTouch_ state.
+  var scrubTouch = function(t) {
+    return {
+      id: t.identifier,
+      y: t.clientY,
+      x: t.clientX,
+    };
+  };
+
+  var i, touch;
+  switch (e.type) {
+    case 'touchstart':
+      // Save the current set of touches.
+      for (i = 0; i < e.changedTouches.length; ++i) {
+        touch = scrubTouch(e.changedTouches[i]);
+        this.lastTouch_[touch.id] = touch;
+      }
+      break;
+
+    case 'touchcancel':
+    case 'touchend':
+      // Throw away existing touches that we're finished with.
+      for (i = 0; i < e.changedTouches.length; ++i)
+        delete this.lastTouch_[e.changedTouches[i].identifier];
+      break;
+
+    case 'touchmove':
+      var delta = 0;
+      var currTouch;
+
+      for (i = 0; i < e.changedTouches.length; ++i) {
+        currTouch = scrubTouch(e.changedTouches[i]);
+        delta += (this.lastTouch_[currTouch.id].y - currTouch.y);
+        this.lastTouch_[currTouch.id] = currTouch;
+      }
+
+      var top = this.screen_.scrollTop - delta;
+      if (top < 0)
+        top = 0;
+
+      var scrollMax = this.getScrollMax_();
+      if (top > scrollMax)
+        top = scrollMax;
+
+      if (top != this.screen_.scrollTop) {
+        // Moving scrollTop causes a scroll event, which triggers the redraw.
+        this.screen_.scrollTop = top;
+      }
+      break;
+  }
+
+  // To disable gestures or anything else interfering with our scrolling.
+  e.preventDefault();
 };
 
 /**
