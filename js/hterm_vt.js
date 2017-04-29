@@ -2277,6 +2277,12 @@ hterm.VT.CSI[' q'] = function(parseState) {
   } else if (arg == 4) {
     this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
     this.terminal.setCursorBlink(false);
+  } else if (arg == 5) {
+    this.terminal.setCursorShape(hterm.Terminal.cursorShape.BEAM);
+    this.terminal.setCursorBlink(true);
+  } else if (arg == 6) {
+    this.terminal.setCursorShape(hterm.Terminal.cursorShape.BEAM);
+    this.terminal.setCursorBlink(false);
   } else {
     console.warn('Unknown cursor style: ' + arg);
   }
