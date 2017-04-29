@@ -1342,13 +1342,13 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
       break;
 
     case 'touchmove':
+      // Walk all of the touches in this one event and merge all of their
+      // changes into one delta.  This lets multiple fingers scroll faster.
       var delta = 0;
-      var currTouch;
-
       for (i = 0; i < e.changedTouches.length; ++i) {
-        currTouch = scrubTouch(e.changedTouches[i]);
-        delta += (this.lastTouch_[currTouch.id].y - currTouch.y);
-        this.lastTouch_[currTouch.id] = currTouch;
+        touch = scrubTouch(e.changedTouches[i]);
+        delta += (this.lastTouch_[touch.id].y - touch.y);
+        this.lastTouch_[touch.id] = touch;
       }
 
       var top = this.screen_.scrollTop - delta;
