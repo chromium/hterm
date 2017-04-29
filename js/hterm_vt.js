@@ -690,9 +690,9 @@ hterm.VT.prototype.dispatch = function(type, code, parseState) {
  * Unexpected and unimplemented values are silently ignored.
  */
 hterm.VT.prototype.setANSIMode = function(code, state) {
-  if (code == '4') {
+  if (code == 4) {
     this.terminal.setInsertMode(state);
-  } else if (code == '20') {
+  } else if (code == 20) {
     this.terminal.setAutoCarriageReturn(state);
   } else if (this.warnUnimplemented) {
     console.warn('Unimplemented ANSI Mode: ' + code);
@@ -767,12 +767,12 @@ hterm.VT.prototype.setANSIMode = function(code, state) {
  * [x] - Will not implement.
  */
 hterm.VT.prototype.setDECMode = function(code, state) {
-  switch (code) {
-    case '1':  // DECCKM
+  switch (parseInt(code, 10)) {
+    case 1:  // DECCKM
       this.terminal.keyboard.applicationCursor = state;
       break;
 
-    case '3':  // DECCOLM
+    case 3:  // DECCOLM
       if (this.allowColumnWidthChanges_) {
         this.terminal.setWidth(state ? 132 : 80);
 
@@ -781,62 +781,62 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       }
       break;
 
-    case '5':  // DECSCNM
+    case 5:  // DECSCNM
       this.terminal.setReverseVideo(state);
       break;
 
-    case '6':  // DECOM
+    case 6:  // DECOM
       this.terminal.setOriginMode(state);
       break;
 
-    case '7':  // DECAWM
+    case 7:  // DECAWM
       this.terminal.setWraparound(state);
       break;
 
-    case '12':  // att610
+    case 12:  // att610
       if (this.enableDec12)
         this.terminal.setCursorBlink(state);
       break;
 
-    case '25':  // DECTCEM
+    case 25:  // DECTCEM
       this.terminal.setCursorVisible(state);
       break;
 
-    case '40':  // no-spec
+    case 40:  // no-spec
       this.terminal.allowColumnWidthChanges_ = state;
       break;
 
-    case '45':  // no-spec
+    case 45:  // no-spec
       this.terminal.setReverseWraparound(state);
       break;
 
-    case '67':  // DECBKM
+    case 67:  // DECBKM
       this.terminal.keyboard.backspaceSendsBackspace = state;
       break;
 
-    case '1000':  // Report on mouse clicks only.
+    case 1000:  // Report on mouse clicks only.
       this.mouseReport = (
           state ? this.MOUSE_REPORT_CLICK : this.MOUSE_REPORT_DISABLED);
       break;
 
-    case '1002':  // Report on mouse clicks and drags
+    case 1002:  // Report on mouse clicks and drags
       this.mouseReport = (
           state ? this.MOUSE_REPORT_DRAG : this.MOUSE_REPORT_DISABLED);
       break;
 
-    case '1010':  // rxvt
+    case 1010:  // rxvt
       this.terminal.scrollOnOutput = state;
       break;
 
-    case '1011':  // rxvt
+    case 1011:  // rxvt
       this.terminal.scrollOnKeystroke = state;
       break;
 
-    case '1036':  // no-spec
+    case 1036:  // no-spec
       this.terminal.keyboard.metaSendsEscape = state;
       break;
 
-    case '1039':  // no-spec
+    case 1039:  // no-spec
       if (state) {
         if (!this.terminal.keyboard.previousAltSendsWhat_) {
           this.terminal.keyboard.previousAltSendsWhat_ =
@@ -850,15 +850,15 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       }
       break;
 
-    case '47':
-    case '1047':  // no-spec
+    case 47:
+    case 1047:  // no-spec
       this.terminal.setAlternateMode(state);
       break;
 
-    case '1048':  // Save cursor as in DECSC.
+    case 1048:  // Save cursor as in DECSC.
       this.savedState_.save();
 
-    case '1049':  // 1047 + 1048 + clear.
+    case 1049:  // 1047 + 1048 + clear.
       if (state) {
         this.savedState_.save();
         this.terminal.setAlternateMode(state);
@@ -870,7 +870,7 @@ hterm.VT.prototype.setDECMode = function(code, state) {
 
       break;
 
-    case '2004':  // Bracketed paste mode.
+    case 2004:  // Bracketed paste mode.
       this.terminal.setBracketedPaste(state);
       break;
 
@@ -1720,13 +1720,13 @@ hterm.VT.CSI['J'] =
 hterm.VT.CSI['?J'] = function(parseState, code) {
   var arg = parseState.args[0];
 
-  if (!arg || arg == '0') {
+  if (!arg || arg == 0) {
       this.terminal.eraseBelow();
-  } else if (arg == '1') {
+  } else if (arg == 1) {
     this.terminal.eraseAbove();
-  } else if (arg == '2') {
+  } else if (arg == 2) {
     this.terminal.clear();
-  } else if (arg == '3') {
+  } else if (arg == 3) {
     // The xterm docs say this means "Erase saved lines", but we'll just clear
     // the display since killing the scrollback seems rude.
     this.terminal.clear();
@@ -1740,11 +1740,11 @@ hterm.VT.CSI['K'] =
 hterm.VT.CSI['?K'] = function(parseState, code) {
   var arg = parseState.args[0];
 
-  if (!arg || arg == '0') {
+  if (!arg || arg == 0) {
     this.terminal.eraseToRight();
-  } else if (arg == '1'){
+  } else if (arg == 1) {
     this.terminal.eraseToLeft();
-  } else if (arg == '2') {
+  } else if (arg == 2) {
     this.terminal.eraseLine();
   }
 };
@@ -1847,7 +1847,7 @@ hterm.VT.CSI['b'] = hterm.VT.ignore;
  * we fill out the 'Not currently implemented' parts.
  */
 hterm.VT.CSI['c'] = function(parseState) {
-  if (!parseState.args[0] || parseState.args[0] == '0') {
+  if (!parseState.args[0] || parseState.args[0] == 0) {
     this.terminal.io.sendString('\x1b[?1;2c');
   }
 };
@@ -1881,10 +1881,10 @@ hterm.VT.CSI['f'] = hterm.VT.CSI['H'];
  * Tab Clear (TBC).
  */
 hterm.VT.CSI['g'] = function(parseState) {
-  if (!parseState.args[0] || parseState.args[0] == '0') {
+  if (!parseState.args[0] || parseState.args[0] == 0) {
     // Clear tab stop at cursor.
     this.terminal.clearTabStopAtCursor(false);
-  } else if (parseState.args[0] == '3') {
+  } else if (parseState.args[0] == 3) {
     // Clear all tab stops.
     this.terminal.clearAllTabStops();
   }
@@ -2014,14 +2014,14 @@ hterm.VT.CSI['?l'] = function(parseState) {
  */
 hterm.VT.CSI['m'] = function(parseState) {
   function get256(i) {
-    if (parseState.args.length < i + 2 || parseState.args[i + 1] != '5')
+    if (parseState.args.length < i + 2 || parseState.args[i + 1] != 5)
       return null;
 
     return parseState.iarg(i + 2, 0);
   }
 
   function getTrueColor(i) {
-    if (parseState.args.length < i + 5 || parseState.args[i + 1] != '2')
+    if (parseState.args.length < i + 5 || parseState.args[i + 1] != 2)
       return null;
     var r = parseState.iarg(i + 2, 0);
     var g = parseState.iarg(i + 3, 0);
@@ -2162,9 +2162,9 @@ hterm.VT.CSI['>m'] = hterm.VT.ignore;
  * 6 - Report Cursor Position (CPR) [row;column]. Result is CSI r ; c R
  */
 hterm.VT.CSI['n'] = function(parseState) {
-  if (parseState.args[0] == '5') {
+  if (parseState.args[0] == 5) {
     this.terminal.io.sendString('\x1b0n');
-  } else if (parseState.args[0] == '6') {
+  } else if (parseState.args[0] == 6) {
     var row = this.terminal.getCursorRow() + 1;
     var col = this.terminal.getCursorColumn() + 1;
     this.terminal.io.sendString('\x1b[' + row + ';' + col + 'R');
@@ -2192,17 +2192,17 @@ hterm.VT.CSI['>n'] = hterm.VT.ignore;
  *      or CSI ? 5 0 n No Locator, if not.
  */
 hterm.VT.CSI['?n'] = function(parseState) {
-  if (parseState.args[0] == '6') {
+  if (parseState.args[0] == 6) {
     var row = this.terminal.getCursorRow() + 1;
     var col = this.terminal.getCursorColumn() + 1;
     this.terminal.io.sendString('\x1b[' + row + ';' + col + 'R');
-  } else if (parseState.args[0] == '15') {
+  } else if (parseState.args[0] == 15) {
     this.terminal.io.sendString('\x1b[?11n');
-  } else if (parseState.args[0] == '25') {
+  } else if (parseState.args[0] == 25) {
     this.terminal.io.sendString('\x1b[?21n');
-  } else if (parseState.args[0] == '26') {
+  } else if (parseState.args[0] == 26) {
     this.terminal.io.sendString('\x1b[?12;1;0;0n');
-  } else if (parseState.args[0] == '53') {
+  } else if (parseState.args[0] == 53) {
     this.terminal.io.sendString('\x1b[?50n');
   }
 };
@@ -2265,16 +2265,16 @@ hterm.VT.CSI['q'] = hterm.VT.ignore;
 hterm.VT.CSI[' q'] = function(parseState) {
   var arg = parseState.args[0];
 
-  if (arg == '0' || arg == '1') {
+  if (arg == 0 || arg == 1) {
     this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
     this.terminal.setCursorBlink(true);
-  } else if (arg == '2') {
+  } else if (arg == 2) {
     this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
     this.terminal.setCursorBlink(false);
-  } else if (arg == '3') {
+  } else if (arg == 3) {
     this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
     this.terminal.setCursorBlink(true);
-  } else if (arg == '4') {
+  } else if (arg == 4) {
     this.terminal.setCursorShape(hterm.Terminal.cursorShape.UNDERLINE);
     this.terminal.setCursorBlink(false);
   } else {
@@ -2415,12 +2415,12 @@ hterm.VT.CSI['z'] = function(parseState) {
   if (parseState.args.length < 1)
     return;
   var arg = parseState.args[0];
-  if (arg == '0') {
+  if (arg == 0) {
     // Start a glyph (one parameter, the glyph number).
     if (parseState.args.length < 2)
       return;
     this.terminal.getTextAttributes().tileData = parseState.args[1];
-  } else if (arg == '1') {
+  } else if (arg == 1) {
     // End a glyph.
     this.terminal.getTextAttributes().tileData = null;
   }
