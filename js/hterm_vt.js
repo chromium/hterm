@@ -802,6 +802,10 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.setCursorVisible(state);
       break;
 
+    case 30:  // Show scrollbar
+      this.terminal.setScrollbarVisible(state);
+      break;
+
     case 40:  // no-spec
       this.terminal.allowColumnWidthChanges_ = state;
       break;
