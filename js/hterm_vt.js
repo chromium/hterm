@@ -1879,6 +1879,14 @@ hterm.VT.CSI['Z'] = function(parseState) {
 hterm.VT.CSI['`'] = hterm.VT.CSI['G'];
 
 /**
+ * Character Position Relative (HPR).
+ */
+hterm.VT.CSI['a'] = function(parseState) {
+  this.terminal.setCursorColumn(this.terminal.getCursorColumn() +
+                                parseState.iarg(0, 1));
+};
+
+/**
  * Repeat the preceding graphic character.
  *
  * Not currently implemented.
