@@ -997,9 +997,7 @@ hterm.VT.CC1['\x0b'] = hterm.VT.CC1['\x0a'];
  *
  * Interpreted as LF.
  */
-hterm.VT.CC1['\x0c'] = function() {
-  this.terminal.formFeed();
-};
+hterm.VT.CC1['\x0c'] = hterm.VT.CC1['\x0a'];
 
 /**
  * Carriage Return (CR).
