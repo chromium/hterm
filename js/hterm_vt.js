@@ -1873,10 +1873,10 @@ hterm.VT.CSI['Z'] = function(parseState) {
 
 /**
  * Character Position Absolute (HPA).
+ *
+ * Same as Cursor Character Absolute (CHA).
  */
-hterm.VT.CSI['`'] = function(parseState) {
-  this.terminal.setCursorColumn(parseState.iarg(0, 1) - 1);
-};
+hterm.VT.CSI['`'] = hterm.VT.CSI['G'];
 
 /**
  * Repeat the preceding graphic character.
