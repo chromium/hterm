@@ -2511,11 +2511,11 @@ hterm.VT.CSI['\'|'] = hterm.VT.ignore;
  *
  * Will not implement.
  */
-hterm.VT.CSI[' }'] = hterm.VT.ignore;
+hterm.VT.CSI['\'}'] = hterm.VT.ignore;
 
 /**
  * Delete P s Columns (DECDC), VT420 and up.
  *
  * Will not implement.
  */
-hterm.VT.CSI[' ~'] = hterm.VT.ignore;
+hterm.VT.CSI['\'~'] = hterm.VT.ignore;
