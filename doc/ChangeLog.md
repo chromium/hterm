@@ -1,3 +1,21 @@
+# 1.63, 2017-05-03, New features & standards polish.
+
+* Update the test UI by showing progress in the title bar.
+* Fix hterm.terminal.getCursorRow API.
+* Add a user-css-text preference for injecting custom CSS directly.
+* Update ocs52.sh helper to POSIX shell.
+* Convert to standard 'wheel' event and drop support for non-standard
+  'mousewheel' and 'DOMMouseScroll' events.  This also brings support for
+  line & page scrolling in addition to existing pixel based.
+* Add support for scrolling via touch.  Only scrolling is supported currently.
+* Improve standards conformance by ignoring leading zeros in CSI commands.
+* Add support for xterm beam cursor control (CSI+ q 5 & 6).
+* Add support for xterm fg/bg color control (OSC+10 & OSC+11).
+* Add support for rxvt scrollbar toggle (DECSET/DECRST 30).
+* Simplify handling of FF/HPA/NUL (should only be an internal cleanup).
+* Fix typos in DECIC & DECDC CSI sequences.
+* Add support for HPR (Character Position Relative).
+
 # 1.62, 2017-04-17, Test improvements, and a few fixes/features.
 
 * Fix hterm_all.js to include all of hterm source files.
