@@ -24,6 +24,9 @@ them in the future, but currently we just print it.
 However, for entries marked "won't support", it means we don't consider them
 relevant and will probably never be implemented.
 
+If you come across missing features or have other requests, feel free to file
+a bug at <https://goo.gl/vb94JY>.
+
 ## General Guidelines
 
 We aim to be compliant with:
