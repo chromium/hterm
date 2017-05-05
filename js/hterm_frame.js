@@ -169,19 +169,19 @@ hterm.Frame.prototype.show = function() {
       'box-shadow: 0 0 2px ' + this.terminal_.getForegroundColor() + ';' +
       'border: 2px ' + this.terminal_.getForegroundColor() + ' solid;');
 
-  var header = document.createElement('div');
-  header.style.cssText = (
-      'display: -webkit-flex;' +
-      '-webkit-justify-content: flex-end;' +
-      'height: ' + headerHeight + ';' +
-      'background-color: ' + this.terminal_.getForegroundColor() + ';' +
-      'color: ' + this.terminal_.getBackgroundColor() + ';' +
-      'font-size: 16px;' +
-      'font-family: ' + this.terminal_.getFontFamily());
-  container.appendChild(header);
-
   if (false) {
-    // No use for the close button.
+    // No use for the close button, so no use for the window header either.
+    var header = document.createElement('div');
+    header.style.cssText = (
+        'display: -webkit-flex;' +
+        '-webkit-justify-content: flex-end;' +
+        'height: ' + headerHeight + ';' +
+        'background-color: ' + this.terminal_.getForegroundColor() + ';' +
+        'color: ' + this.terminal_.getBackgroundColor() + ';' +
+        'font-size: 16px;' +
+        'font-family: ' + this.terminal_.getFontFamily());
+    container.appendChild(header);
+
     var button = document.createElement('div');
     button.setAttribute('role', 'button');
     button.style.cssText = (
