@@ -1085,6 +1085,22 @@ hterm.Terminal.prototype.scrollPageDown = function() {
 };
 
 /**
+ * Scroll the terminal one line up relative to the current position.
+ */
+hterm.Terminal.prototype.scrollLineUp = function() {
+  var i = this.scrollPort_.getTopRowIndex();
+  this.scrollPort_.scrollRowToTop(i - 1);
+};
+
+/**
+ * Scroll the terminal one line down relative to the current position.
+ */
+hterm.Terminal.prototype.scrollLineDown = function() {
+  var i = this.scrollPort_.getTopRowIndex();
+  this.scrollPort_.scrollRowToTop(i + 1);
+};
+
+/**
  * Clear primary screen, secondary screen, and the scrollback buffer.
  */
 hterm.Terminal.prototype.wipeContents = function() {

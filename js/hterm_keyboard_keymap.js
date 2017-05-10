@@ -312,8 +312,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
 
     // Arrow keys.  When unmodified they respect the application cursor state,
     // otherwise they always send the CSI codes.
-    [38, '[UP]',    ac(CSI + 'A', SS3 + 'A'), DEFAULT, DEFAULT, DEFAULT],
-    [40, '[DOWN]',  ac(CSI + 'B', SS3 + 'B'), DEFAULT, DEFAULT, DEFAULT],
+    [38, '[UP]',    c('onKeyArrowUp_'), DEFAULT, DEFAULT, DEFAULT],
+    [40, '[DOWN]',  c('onKeyArrowDown_'), DEFAULT, DEFAULT, DEFAULT],
     [39, '[RIGHT]', ac(CSI + 'C', SS3 + 'C'), DEFAULT, DEFAULT, DEFAULT],
     [37, '[LEFT]',  ac(CSI + 'D', SS3 + 'D'), DEFAULT, DEFAULT, DEFAULT],
 
@@ -433,6 +433,32 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
 
   this.keyboard.terminal.scrollPageDown();
   return hterm.Keyboard.KeyActions.CANCEL;
+};
+
+/**
+ * Either scroll the scrollback buffer or send a key sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onKeyArrowUp_ = function(e) {
+  if (!this.keyboard.applicationCursor && e.shiftKey) {
+    this.keyboard.terminal.scrollLineUp();
+    return hterm.Keyboard.KeyActions.CANCEL;
+  }
+
+  return (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
+          !this.keyboard.applicationCursor) ? '\x1b[A' : '\x1bOA';
+};
+
+/**
+ * Either scroll the scrollback buffer or send a key sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onKeyArrowDown_ = function(e) {
+  if (!this.keyboard.applicationCursor && e.shiftKey) {
+    this.keyboard.terminal.scrollLineDown();
+    return hterm.Keyboard.KeyActions.CANCEL;
+  }
+
+  return (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
+          !this.keyboard.applicationCursor) ? '\x1b[B' : '\x1bOB';
 };
 
 /**
