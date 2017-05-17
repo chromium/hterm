@@ -616,7 +616,7 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
       str = self[self.GL].GL(str);
 
     self.terminal.print(str);
-  };
+  }
 
   // Search for the next contiguous block of plain text.
   var buf = parseState.peekRemainingBuf();
@@ -1210,7 +1210,7 @@ hterm.VT.CC1['\x1b'] = function(parseState) {
 
     if (parseState.func == parseESC)
       parseState.resetParseFunction();
-  };
+  }
 
   parseState.func = parseESC;
 };
@@ -1386,7 +1386,7 @@ hterm.VT.ESC[']'] = function(parseState) {
     // less confusing (otherwise args will stick around until the next sequence
     // that needs arguments).
     parseState.resetArguments();
-  };
+  }
 
   parseState.func = parseOSC;
 };

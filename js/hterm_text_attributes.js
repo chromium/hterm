@@ -435,7 +435,7 @@ hterm.TextAttributes.nodeWidth = function(node) {
   } else {
     return node.textContent.length;
   }
-}
+};
 
 /**
  * Static method to get the substr of a node's textContent.  The start index
@@ -453,7 +453,7 @@ hterm.TextAttributes.nodeSubstr = function(node, start, width) {
   } else {
     return node.textContent.substr(start, width);
   }
-}
+};
 
 /**
  * Static method to get the substring based of a node's textContent.  The

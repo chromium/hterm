@@ -747,14 +747,14 @@ hterm.Terminal.prototype.isPrimaryScreen = function() {
  */
 hterm.Terminal.prototype.installKeyboard = function() {
   this.keyboard.installKeyboard(this.scrollPort_.getDocument().body);
-}
+};
 
 /**
  * Uninstall the keyboard handler for this terminal.
  */
 hterm.Terminal.prototype.uninstallKeyboard = function() {
   this.keyboard.installKeyboard(null);
-}
+};
 
 /**
  * Set a CSS variable.
@@ -1003,7 +1003,7 @@ hterm.Terminal.prototype.restoreCursorAndState = function(both) {
 hterm.Terminal.prototype.setCursorShape = function(shape) {
   this.cursorShape_ = shape;
   this.restyleCursor_();
-}
+};
 
 /**
  * Get the cursor shape
@@ -1012,7 +1012,7 @@ hterm.Terminal.prototype.setCursorShape = function(shape) {
  */
 hterm.Terminal.prototype.getCursorShape = function() {
   return this.cursorShape_;
-}
+};
 
 /**
  * Set the width of the terminal, resizing the UI to match.
@@ -1880,7 +1880,7 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
     return this.vtScrollBottom_;
 
   return this.screenSize.height - 1;
-}
+};
 
 /**
  * Process a '\n' character.
@@ -3272,7 +3272,7 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
   }
 
   hterm.openUrl(str);
-}
+};
 
 
 /**
@@ -3437,9 +3437,8 @@ hterm.Terminal.prototype.onFocusChange_ = function(focused) {
   this.cursorNode_.setAttribute('focus', focused);
   this.restyleCursor_();
 
-  if (this.reportFocus) {
-    this.io.sendString(focused === true ? '\x1b[I' : '\x1b[O')
-  }
+  if (this.reportFocus)
+    this.io.sendString(focused === true ? '\x1b[I' : '\x1b[O');
 
   if (focused === true)
     this.closeBellNotifications_();

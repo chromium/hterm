@@ -169,10 +169,10 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   }
 
   // Compute a control character for a given character.
-  function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64) }
+  function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64); }
 
   // Call a method on the keymap instance.
-  function c(m) { return function (e, k) { return this[m](e, k) } }
+  function c(m) { return function(e, k) { return this[m](e, k); }; }
 
   // Ignore if not trapping media keys.
   function med(fn) {
@@ -545,7 +545,7 @@ hterm.Keyboard.KeyMap.prototype.onF11_ = function(e, keyDef) {
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
   // Compute a control character for a given character.
-  function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64) }
+  function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64); }
 
   if (this.keyboard.terminal.passCtrlNumber && !e.shiftKey)
     return hterm.Keyboard.KeyActions.PASS;
@@ -692,7 +692,7 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
 
   // Otherwise let the browser handle it as a copy command.
   if (this.keyboard.terminal.clearSelectionAfterCopy) {
-    setTimeout(function() { document.getSelection().collapseToEnd() }, 50);
+    setTimeout(function() { document.getSelection().collapseToEnd(); }, 50);
   }
   return hterm.Keyboard.KeyActions.PASS;
 };

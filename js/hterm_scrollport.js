@@ -96,7 +96,7 @@ hterm.ScrollPort = function(rowProvider) {
   this.observers_ = {};
 
   this.DEBUG_ = false;
-}
+};
 
 /**
  * Proxy for the native selection object which understands how to walk up the

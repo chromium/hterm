@@ -161,7 +161,7 @@ hterm.Terminal.IO.Tests.addTest('buffer-background', function(result, cx) {
   result.assertEQ('Fore', this.mockTerm.buffer);
 
   // Try to display something with the background IO.
-  this.io.print('Back')
+  this.io.print('Back');
   result.assertEQ('Fore', this.mockTerm.buffer);
 
   // Unload the foreground IO at which point the background should flush.

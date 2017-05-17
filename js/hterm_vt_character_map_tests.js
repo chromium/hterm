@@ -62,14 +62,14 @@ hterm.VT.CharacterMap.Tests.addTest('overrides', function(result, cx) {
   result.assertEQ(map.GL('d'), 'd');
 
   // The override will update existing mappings.
-  map.setOverrides({'a': 'A', 'c': 'C'})
+  map.setOverrides({'a': 'A', 'c': 'C'});
   result.assertEQ(map.GL('a'), 'A');
   result.assertEQ(map.GL('b'), 'B');
   result.assertEQ(map.GL('c'), 'C');
   result.assertEQ(map.GL('d'), 'd');
 
   // Do the same thing again!
-  map.setOverrides({'a': 'Z', 'd': 'D'})
+  map.setOverrides({'a': 'Z', 'd': 'D'});
   result.assertEQ(map.GL('a'), 'Z');
   result.assertEQ(map.GL('b'), 'B');
   result.assertEQ(map.GL('c'), 'c');
@@ -91,7 +91,7 @@ hterm.VT.CharacterMap.Tests.addTest('resets', function(result, cx) {
   result.assert(map.glmap_ === map.glmapBase_);
 
   // The override will generate a new internal mapping.
-  map.setOverrides({'a': 'A', 'c': 'C'})
+  map.setOverrides({'a': 'A', 'c': 'C'});
   result.assertEQ(map.GL('a'), 'A');
   result.assertEQ(map.GL('b'), 'B');
   result.assertEQ(map.GL('c'), 'C');

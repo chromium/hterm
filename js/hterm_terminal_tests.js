@@ -225,22 +225,22 @@ hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
  */
 hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
   var resultString = '';
-  this.terminal.io.sendString = function(str) { resultString = str };
+  this.terminal.io.sendString = (str) => resultString = str;
 
   this.terminal.interpret('\x1b[?1004h');
 
   this.terminal.onFocusChange_(false);
-  result.assertEQ(resultString, '\x1b[O')
+  result.assertEQ(resultString, '\x1b[O');
   this.terminal.onFocusChange_(true);
-  result.assertEQ(resultString, '\x1b[I')
+  result.assertEQ(resultString, '\x1b[I');
 
   resultString = '';
   this.terminal.interpret('\x1b[?1004l');
 
   this.terminal.onFocusChange_(false);
-  result.assertEQ(resultString, '')
+  result.assertEQ(resultString, '');
   this.terminal.onFocusChange_(true);
-  result.assertEQ(resultString, '')
+  result.assertEQ(resultString, '');
 
   result.pass();
 });

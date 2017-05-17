@@ -946,7 +946,7 @@ hterm.Screen.prototype.expandSelection = function(selection) {
       this.wordBreakMatchLeft,
       this.wordBreakMatchRight,
       this.wordBreakMatchMiddle);
-}
+};
 
 /**
  * Expands selection to surrounding URL using a set of fixed match settings.

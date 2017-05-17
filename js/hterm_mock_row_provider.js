@@ -60,7 +60,7 @@ MockRowProvider.prototype.getRowRecord_ = function(index) {
       '<x-state data-fg=6 data-bg=0> cyan</x-state>',
       text:
       'This is line ' + index + ' red green yellow blue magenta cyan'
-    }
+    };
   }
 
   return this.rows_[index];
@@ -71,7 +71,7 @@ MockRowProvider.prototype.getRowsText = function(start, end) {
     throw 'Index out of bounds.';
 
   var text = this.rows_.slice(start, end);
-  return text.map(function (e) { return e.text }).join('\n');
+  return text.map(function (e) { return e.text; }).join('\n');
 };
 
 MockRowProvider.prototype.getRowText = function(index) {

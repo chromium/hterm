@@ -175,7 +175,7 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
   // Make sure we got some data.
   result.assert(!!data, 'canned data is not empty');
 
-  var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/)
+  var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/);
   // And that it has optional lead-in comments followed by a header.
   result.assert(!!m, 'data has a header');
 

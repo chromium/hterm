@@ -29,10 +29,10 @@ hterm.PubSub.Tests.addTest('methods', function(result, cx) {
 hterm.PubSub.Tests.addTest('publish-order', function(result, cx) {
     var callbackCount = 0;
 
-    function one() { result.assertEQ(1, ++callbackCount) }
-    function two() { result.assertEQ(2, ++callbackCount) }
-    function three() { result.assertEQ(3, ++callbackCount) }
-    function last() { result.assertEQ(4, ++callbackCount); result.pass() }
+    function one() { result.assertEQ(1, ++callbackCount); }
+    function two() { result.assertEQ(2, ++callbackCount); }
+    function three() { result.assertEQ(3, ++callbackCount); }
+    function last() { result.assertEQ(4, ++callbackCount); result.pass(); }
 
     var obj = {};
     hterm.PubSub.addBehavior(obj);
@@ -52,10 +52,10 @@ hterm.PubSub.Tests.addTest('publish-order', function(result, cx) {
 hterm.PubSub.Tests.addTest('parameter', function(result, cx) {
     var expected = {};
 
-    function one(param) { result.assertEQ(expected, param) }
-    function two(param) { result.assertEQ(expected, param) }
-    function three(param) { result.assertEQ(expected, param) }
-    function last(param) { result.assertEQ(expected, param); result.pass() }
+    function one(param) { result.assertEQ(expected, param); }
+    function two(param) { result.assertEQ(expected, param); }
+    function three(param) { result.assertEQ(expected, param); }
+    function last(param) { result.assertEQ(expected, param); result.pass(); }
 
     var obj = {};
     hterm.PubSub.addBehavior(obj);
@@ -78,7 +78,7 @@ hterm.PubSub.Tests.addTest('forever-alone', function(result, cx) {
 
     var calledLast = false;
 
-    function last(param) { calledLast = true }
+    function last(param) { calledLast = true; }
 
     var obj = {};
     hterm.PubSub.addBehavior(obj);
@@ -103,9 +103,9 @@ hterm.PubSub.Tests.addTest('exception', function(result, cx) {
     var calledBar = false;
     var calledLast = false;
 
-    function foo() { throw 'EXPECTED_EXCEPTION' }
-    function bar() { calledBar = true }
-    function last() { calledLast = true }
+    function foo() { throw 'EXPECTED_EXCEPTION'; }
+    function bar() { calledBar = true; }
+    function last() { calledLast = true; }
 
     var obj = {};
     hterm.PubSub.addBehavior(obj);

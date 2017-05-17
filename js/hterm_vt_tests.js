@@ -114,7 +114,7 @@ hterm.VT.Tests.addTest('utf8', function(result, cx) {
     // Interpret some invalid UTF-8. xterm and gnome-terminal are
     // inconsistent about the number of replacement characters. We
     // match xterm.
-    this.terminal.interpret('a\xf1\x80\x80\xe1\x80\xc2b\x80c\x80\xbfd\r\n')
+    this.terminal.interpret('a\xf1\x80\x80\xe1\x80\xc2b\x80c\x80\xbfd\r\n');
 
     // Surrogate pairs turn into replacements.
     this.terminal.interpret('\xed\xa0\x80' +  // D800
@@ -844,7 +844,7 @@ hterm.VT.Tests.addTest('line-position-absolute', function(result, cx) {
  */
 hterm.VT.Tests.addTest('device-attributes', function(result, cx) {
     var resultString;
-    this.terminal.io.sendString = function(str) { resultString = str };
+    this.terminal.io.sendString = (str) => resultString = str;
 
     this.terminal.interpret('\x1b[c');
 
@@ -1032,7 +1032,7 @@ hterm.VT.Tests.addTest('disable-bold-as-bright', function(result, cx) {
  */
 hterm.VT.Tests.addTest('status-report', function(result, cx) {
     var resultString;
-    terminal.io.sendString = function (str) { resultString = str };
+    terminal.io.sendString = (str) => resultString = str;
 
     this.terminal.interpret('\x1b[5n');
     result.assertEQ(resultString, '\x1b0n');
@@ -2080,7 +2080,7 @@ hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
 hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
     var resultString;
 
-    this.terminal.io.sendString = function(str) { resultString = str };
+    this.terminal.io.sendString = (str) => resultString = str;
     // Change the terminal palette, then read it back.
     this.terminal.interpret('\x1b]4;1;rgb:0100/0100/0100;' +
                             '2;rgb:beef/beef/beef\x07');
@@ -2399,7 +2399,7 @@ hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {
 
 hterm.VT.Tests.addTest('bracketed-paste', function(result, cx) {
     var resultString;
-    terminal.io.sendString = function (str) { resultString = str };
+    terminal.io.sendString = (str) => resultString = str;
 
     result.assertEQ(this.terminal.options_.bracketedPaste, false);
 
@@ -2499,41 +2499,41 @@ hterm.VT.Tests.addTest('docs', function(result, cx) {
 
     // Switch to UTF-8 encoding.  The graphics map should not translate.
     this.terminal.clearHome();
-    this.terminal.interpret('\x1b%G' + line)
+    this.terminal.interpret('\x1b%G' + line);
     result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
     result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
     result.assertEQ(this.terminal.getRowText(0), line);
 
     // Switch to ECMA-35 encoding.  The graphics map should translate.
     this.terminal.clearHome();
-    this.terminal.interpret('\x1b%@' + line)
+    this.terminal.interpret('\x1b%@' + line);
     result.assertEQ(this.terminal.vt.codingSystemUtf8_, false);
     result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
     result.assertEQ(this.terminal.getRowText(0), graphicsLine);
 
     // Switch to UTF-8 encoding (and lock).
     this.terminal.clearHome();
-    this.terminal.interpret('\x1b%/G' + line)
+    this.terminal.interpret('\x1b%/G' + line);
     result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
     result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
     result.assertEQ(this.terminal.getRowText(0), line);
 
     // Switching back to ECMA-35 should not work now.
     this.terminal.clearHome();
-    this.terminal.interpret('\x1b%@' + line)
+    this.terminal.interpret('\x1b%@' + line);
     result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
     result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
     result.assertEQ(this.terminal.getRowText(0), line);
 
     // Try other UTF-8 modes (although they're the same as /G).
     this.terminal.clearHome();
-    this.terminal.interpret('\x1b%/H' + line)
+    this.terminal.interpret('\x1b%/H' + line);
     result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
     result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
     result.assertEQ(this.terminal.getRowText(0), line);
 
     this.terminal.clearHome();
-    this.terminal.interpret('\x1b%/I' + line)
+    this.terminal.interpret('\x1b%/I' + line);
     result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
     result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
     result.assertEQ(this.terminal.getRowText(0), line);

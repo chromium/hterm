@@ -221,7 +221,7 @@ hterm.notify = function(params) {
   var options = {
       'body': params.body,
       'icon': def(params.icon, lib.resource.getDataUrl('hterm/images/icon-96')),
-  }
+  };
 
   var title = def(params.title, window.document.title);
   if (!title)
@@ -249,7 +249,7 @@ hterm.openUrl = function(url) {
     const win = window.open(url, '_blank');
     win.focus();
   }
-}
+};
 
 /**
  * Constructor for a hterm.Size record.
