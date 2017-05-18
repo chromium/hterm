@@ -70,7 +70,7 @@ hterm.TextAttributes.prototype.enableBoldAsBright = true;
 /**
  * A sentinel constant meaning "whatever the default color is in this context".
  */
-hterm.TextAttributes.prototype.DEFAULT_COLOR = new String('');
+hterm.TextAttributes.prototype.DEFAULT_COLOR = lib.f.createEnum('');
 
 /**
  * A constant string used to specify that source color is context default.

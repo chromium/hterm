@@ -185,7 +185,7 @@ hterm.Keyboard.KeyActions = {
    * Call preventDefault and stopPropagation for this key event and nothing
    * else.
    */
-  CANCEL: new String('CANCEL'),
+  CANCEL: lib.f.createEnum('CANCEL'),
 
   /**
    * This performs the default terminal action for the key.  If used in the
@@ -211,13 +211,13 @@ hterm.Keyboard.KeyActions = {
    *  - If meta is down and configured to send an escape, '\x1b' will be sent
    *    before the normal action is performed.
    */
-  DEFAULT: new String('DEFAULT'),
+  DEFAULT: lib.f.createEnum('DEFAULT'),
 
   /**
    * Causes the terminal to opt out of handling the key event, instead letting
    * the browser deal with it.
    */
-  PASS: new String('PASS'),
+  PASS: lib.f.createEnum('PASS'),
 
   /**
    * Insert the first or second character of the keyCap, based on e.shiftKey.
@@ -227,7 +227,7 @@ hterm.Keyboard.KeyActions = {
    * It is useful for a modified key action, where it essentially strips the
    * modifier while preventing the browser from reacting to the key.
    */
-  STRIP: new String('STRIP')
+  STRIP: lib.f.createEnum('STRIP')
 };
 
 /**
