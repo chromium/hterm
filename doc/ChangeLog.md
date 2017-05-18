@@ -1,3 +1,9 @@
+# 1.64, 2017-05-18, Arrow key scroll.
+
+* Start documenting all supported control sequences.
+* Shift+up/down arrow keys now scroll the terminal by one line.
+* Disable the "window header" bar since it's been empty for a while.
+
 # 1.63, 2017-05-03, New features & standards polish.
 
 * Update the test UI by showing progress in the title bar.
