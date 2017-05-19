@@ -771,7 +771,7 @@ hterm.Terminal.prototype.syncMousePasteButton = function() {
   }
 
   var ary = navigator.userAgent.match(/\(X11;\s+(\S+)/);
-  if (!ary || ary[2] == 'CrOS') {
+  if (!ary || ary[1] == 'CrOS') {
     this.mousePasteButton = 2;
   } else {
     this.mousePasteButton = 3;
