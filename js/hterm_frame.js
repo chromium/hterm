@@ -160,8 +160,8 @@ hterm.Frame.prototype.show = function() {
   var container = this.container_ = document.createElement('div');
   container.style.cssText = (
       'position: absolute;' +
-      'display: -webkit-flex;' +
-      '-webkit-flex-direction: column;' +
+      'display: flex;' +
+      'flex-direction: column;' +
       'top: 10%;' +
       'left: 4%;' +
       'width: 90%;' +
@@ -173,8 +173,8 @@ hterm.Frame.prototype.show = function() {
     // No use for the close button, so no use for the window header either.
     var header = document.createElement('div');
     header.style.cssText = (
-        'display: -webkit-flex;' +
-        '-webkit-justify-content: flex-end;' +
+        'display: flex;' +
+        'justify-content: flex-end;' +
         'height: ' + headerHeight + ';' +
         'background-color: ' + this.terminal_.getForegroundColor() + ';' +
         'color: ' + this.terminal_.getBackgroundColor() + ';' +
@@ -196,8 +196,8 @@ hterm.Frame.prototype.show = function() {
   var iframe = this.iframe_ = document.createElement('iframe');
   iframe.onload = this.onLoad_.bind(this);
   iframe.style.cssText = (
-      'display: -webkit-flex;' +
-      '-webkit-flex: 1;' +
+      'display: flex;' +
+      'flex: 1;' +
       'width: 100%');
   iframe.setAttribute('src', this.url);
   iframe.setAttribute('seamless', true);
