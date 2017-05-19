@@ -539,6 +539,21 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     'user-css-text': function(v) {
       terminal.scrollPort_.setUserCssText(v);
     },
+
+    'word-break-match-left': function(v) {
+      terminal.primaryScreen_.wordBreakMatchLeft = v;
+      terminal.alternateScreen_.wordBreakMatchLeft = v;
+    },
+
+    'word-break-match-right': function(v) {
+      terminal.primaryScreen_.wordBreakMatchRight = v;
+      terminal.alternateScreen_.wordBreakMatchRight = v;
+    },
+
+    'word-break-match-middle': function(v) {
+      terminal.primaryScreen_.wordBreakMatchMiddle = v;
+      terminal.alternateScreen_.wordBreakMatchMiddle = v;
+    },
   });
 
   this.prefs_.readStorage(function() {

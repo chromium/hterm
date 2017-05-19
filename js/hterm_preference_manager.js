@@ -311,6 +311,30 @@ hterm.PreferenceManager.defaultPreferences = {
    'For autodetect, we\'ll try to enable middle button paste for non-X11 ' +
    'platforms.  On X11 we move it to button 3.'],
 
+  'word-break-match-left':
+  [hterm.PreferenceManager.categories.CopyPaste,
+   '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:`]', 'string',
+   'Regular expression to halt matching to the left (start) of a selection.\n' +
+   '\n' +
+   'Normally this is a character class to reject specific characters.\n' +
+   'We allow "~" and "." by default as paths frequently start with those.'],
+
+  'word-break-match-right':
+  [hterm.PreferenceManager.categories.CopyPaste,
+   '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:~.`]', 'string',
+   'Regular expression to halt matching to the right (end) of a selection.\n' +
+   '\n' +
+   'Normally this is a character class to reject specific characters.'],
+
+  'word-break-match-middle':
+  [hterm.PreferenceManager.categories.CopyPaste,
+   '[^\\s\\[\\](){}<>"\'\\^]*', 'string',
+   'Regular expression to match all the characters in the middle.\n' +
+   '\n' +
+   'Normally this is a character class to reject specific characters.\n' +
+   '\n' +
+   'Used to expand the selection surrounding the starting point.'],
+
   'page-keys-scroll':
   [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
    'If true, page up/down will control the terminal scrollbar and shift ' +

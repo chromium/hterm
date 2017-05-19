@@ -70,6 +70,11 @@ hterm.Screen = function(opt_columnCount) {
 
   // The offset in column width into cursorNode_ where the cursor is positioned.
   this.cursorOffset_ = null;
+
+  // Regexes for expanding word selections.
+  this.wordBreakMatchLeft = null;
+  this.wordBreakMatchRight = null;
+  this.wordBreakMatchMiddle = null;
 };
 
 /**
@@ -874,10 +879,10 @@ hterm.Screen.prototype.expandSelection = function(selection) {
   if (endPosition == -1)
     return;
 
-  // Matches can start with '~' or '.', since paths frequently do.
-  var leftMatch   = '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:`]';
-  var rightMatch  = '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:~.`]';
-  var insideMatch = '[^\\s\\[\\](){}<>"\'\\^]*';
+  // Use the user configurable match settings.
+  var leftMatch   = this.wordBreakMatchLeft;
+  var rightMatch  = this.wordBreakMatchRight;
+  var insideMatch = this.wordBreakMatchMiddle;
 
   //Move start to the left.
   var rowText = this.getLineText_(row);
