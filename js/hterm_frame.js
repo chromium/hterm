@@ -37,14 +37,23 @@ hterm.Frame = function(terminal, url, opt_options) {
  * Handle messages from the iframe.
  */
 hterm.Frame.prototype.onMessage_ = function(e) {
-  if (e.data.name != 'ipc-init-ok') {
-    console.log('Unknown message from frame:', e.data);
-    return;
+  switch (e.data.name) {
+    case 'ipc-init-ok':
+      // We get this response after we send them ipc-init and they finish.
+      this.sendTerminalInfo_();
+      return;
+    case 'terminal-info-ok':
+      // We get this response after we send them terminal-info and they finish.
+      // Show the finished frame, and then rebind our message handler to the
+      // callback below.
+      this.container_.style.display = 'flex';
+      this.messageChannel_.port1.onmessage = this.onMessage.bind(this);
+      this.onLoad();
+      return;
+    default:
+      console.log('Unknown message from frame:', e.data);
+      return;
   }
-
-  this.sendTerminalInfo_();
-  this.messageChannel_.port1.onmessage = this.onMessage.bind(this);
-  this.onLoad();
 };
 
 /**
@@ -160,7 +169,7 @@ hterm.Frame.prototype.show = function() {
   var container = this.container_ = document.createElement('div');
   container.style.cssText = (
       'position: absolute;' +
-      'display: flex;' +
+      'display: none;' +
       'flex-direction: column;' +
       'top: 10%;' +
       'left: 4%;' +
