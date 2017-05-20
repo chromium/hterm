@@ -424,6 +424,6 @@ hterm.PreferenceManager.defaultPreferences = {
    'Custom CSS text for styling the terminal.'],
 };
 
-hterm.PreferenceManager.prototype = {
-  __proto__: lib.PreferenceManager.prototype
-};
+hterm.PreferenceManager.prototype =
+    Object.create(lib.PreferenceManager.prototype);
+hterm.PreferenceManager.constructor = hterm.PreferenceManager;
