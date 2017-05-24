@@ -135,6 +135,7 @@ hterm.Terminal = function(opt_profileId) {
   this.enableMouseDragScroll = true;
 
   this.copyOnSelect = null;
+  this.mouseRightClickPaste = null;
   this.mousePasteButton = null;
 
   // Whether to use the default window copy behavior.
@@ -444,6 +445,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'meta-sends-escape': function(v) {
       terminal.keyboard.metaSendsEscape = v;
+    },
+
+    'mouse-right-click-paste': function(v) {
+      terminal.mouseRightClickPaste = v;
     },
 
     'mouse-paste-button': function(v) {
@@ -3026,8 +3031,12 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       return;
     }
 
-    if (e.type == 'mousedown' && e.which == this.mousePasteButton)
-      this.paste();
+    if (e.type == 'mousedown') {
+      if ((this.mouseRightClickPaste && e.button == 2 /* right button */) ||
+          e.which == this.mousePasteButton) {
+        this.paste();
+      }
+    }
 
     if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
         !this.document_.getSelection().isCollapsed) {

@@ -303,13 +303,29 @@ hterm.PreferenceManager.defaultPreferences = {
   [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
    'Set whether the meta key sends a leading escape or not.'],
 
+  'mouse-right-click-paste':
+  [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
+   'Paste on right mouse button clicks.\n' +
+   '\n' +
+   'This option is activate independent of the "mouse-paste-button" ' +
+   'setting.\n' +
+   '\n' +
+   'Note: This will handle left & right handed mice correctly.'],
+
   'mouse-paste-button':
   [hterm.PreferenceManager.categories.CopyPaste, null,
    [null, 0, 1, 2, 3, 4, 5, 6],
    'Mouse paste button, or null to autodetect.\n' +
    '\n' +
-   'For autodetect, we\'ll try to enable middle button paste for non-X11 ' +
-   'platforms.  On X11 we move it to button 3.'],
+   'For autodetect, we\'ll use the middle mouse button for non-X11 ' +
+   'platforms (including Chrome OS).  On X11, we\'ll use the right mouse ' +
+   'button (since the native window manager should paste via the middle ' +
+   'mouse button).\n' +
+   '\n' +
+   'This option is activate independent of the "mouse-right-click-paste" ' +
+   'setting.\n' +
+   '\n' +
+   'Note: This will handle left & right handed mice correctly.'],
 
   'word-break-match-left':
   [hterm.PreferenceManager.categories.CopyPaste,
