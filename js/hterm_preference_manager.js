@@ -322,6 +322,10 @@ hterm.PreferenceManager.defaultPreferences = {
    'button (since the native window manager should paste via the middle ' +
    'mouse button).\n' +
    '\n' +
+   '0 == left (primary) button.\n' +
+   '1 == middle (auxiliary) button.\n' +
+   '2 == right (secondary) button.\n' +
+   '\n' +
    'This option is activate independent of the "mouse-right-click-paste" ' +
    'setting.\n' +
    '\n' +

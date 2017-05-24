@@ -359,7 +359,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
 
     case 'mousedown':
       // Buttons are encoded as button number plus 32.
-      var b = Math.min(e.which - 1, 2) + 32;
+      var b = Math.min(e.button, 2) + 32;
 
       // And mix in the modifier keys.
       b |= mod;
@@ -373,9 +373,9 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       break;
 
     case 'mousemove':
-      if (this.mouseReport == this.MOUSE_REPORT_DRAG && e.which) {
+      if (this.mouseReport == this.MOUSE_REPORT_DRAG) {
         // Standard button bits.
-        b = 32 + Math.min(e.which - 1, 2);
+        b = 32 + Math.min(e.button, 2);
 
         // Add 32 to indicate mouse motion.
         b += 32;

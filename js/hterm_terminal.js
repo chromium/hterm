@@ -792,9 +792,9 @@ hterm.Terminal.prototype.syncMousePasteButton = function() {
 
   var ary = navigator.userAgent.match(/\(X11;\s+(\S+)/);
   if (!ary || ary[1] == 'CrOS') {
-    this.mousePasteButton = 2;
+    this.mousePasteButton = 1;  // Middle mouse button.
   } else {
-    this.mousePasteButton = 3;
+    this.mousePasteButton = 2;  // Right mouse button.
   }
 };
 
@@ -3033,12 +3033,12 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
     if (e.type == 'mousedown') {
       if ((this.mouseRightClickPaste && e.button == 2 /* right button */) ||
-          e.which == this.mousePasteButton) {
+          e.button == this.mousePasteButton) {
         this.paste();
       }
     }
 
-    if (e.type == 'mouseup' && e.which == 1 && this.copyOnSelect &&
+    if (e.type == 'mouseup' && e.button == 0 && this.copyOnSelect &&
         !this.document_.getSelection().isCollapsed) {
       this.copySelectionToClipboard(this.document_);
     }
