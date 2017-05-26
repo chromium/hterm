@@ -16,6 +16,7 @@ can be used to contact other users and developers for questions.
 
 * [ChangeLog](./doc/ChangeLog.md) -- List of interesting changes in each release
 * [FAQ](../nassh/doc/FAQ.md) -- Frequently Asked Questions
+* [Keyboard Bindings](./doc/KeyboardBindings.md) -- All keyboard related details
 * [Control Sequences](./doc/ControlSequences.md) -- Supported control sequences
 * [Embedding](./doc/embed.md) -- Using hterm in your project
 * [Hacking](./doc/hack.md) -- Developing the hterm source

@@ -280,11 +280,11 @@ hterm.PreferenceManager.defaultPreferences = {
    'more modifier keys followed by a key code.  Key codes can be decimal or ' +
    'hexadecimal numbers, or a key identifier.  Key actions can be specified ' +
    'a string to send to the host, or an action identifier.  For a full ' +
-   'list of key code and action identifiers, see https://goo.gl/8AoD09.' +
-   '\n' +
+   'explanation of the format, see https://goo.gl/LWRndr.\n' +
    '\n' +
    'Sample keybindings:\n' +
-   '{ "Ctrl-Alt-K": "clearScrollback",\n' +
+   '{\n' +
+   '  "Ctrl-Alt-K": "clearScrollback",\n' +
    '  "Ctrl-Shift-L": "PASS",\n' +
    '  "Ctrl-H": "\'HELLO\\n\'"\n' +
    '}'],
