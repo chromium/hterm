@@ -83,6 +83,7 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   this.negKeySeq(result, 'Ctrl-Alt"', /Missing target key$/);
   this.negKeySeq(result, 'Ctrl-', /Missing target key$/);
   this.negKeySeq(result, 'Ctrl-X-Alt', /Extra definition after target key$/);
+  this.negKeySeq(result, 'toString-X', /Unknown key: toString$/);
 
   result.pass();
 });

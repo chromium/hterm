@@ -84,13 +84,15 @@ hterm.Parser.prototype.parseKeySequence = function() {
       rv.keyCode = token.value;
 
     } else if (token.type == 'identifier') {
-      if (token.value in hterm.Parser.identifiers.modifierKeys) {
+      if (token.value in hterm.Parser.identifiers.modifierKeys &&
+          hterm.Parser.identifiers.modifierKeys.hasOwnProperty(token.value)) {
         var mod = hterm.Parser.identifiers.modifierKeys[token.value];
         if (rv[mod] && rv[mod] != '*')
           throw this.error('Duplicate modifier: ' + token.value);
         rv[mod] = true;
 
-      } else if (token.value in hterm.Parser.identifiers.keyCodes) {
+      } else if (token.value in hterm.Parser.identifiers.keyCodes &&
+                 hterm.Parser.identifiers.keyCodes.hasOwnProperty(token.value)) {
         rv.keyCode = hterm.Parser.identifiers.keyCodes[token.value];
 
       } else {
@@ -137,7 +139,8 @@ hterm.Parser.prototype.parseKeyAction = function() {
     return token.value;
 
   if (token.type == 'identifier') {
-    if (token.value in hterm.Parser.identifiers.actions)
+    if (token.value in hterm.Parser.identifiers.actions &&
+        hterm.Parser.identifiers.actions.hasOwnProperty(token.value))
       return hterm.Parser.identifiers.actions[token.value];
 
     throw this.error('Unknown key action: ' + token.value);
@@ -280,7 +283,7 @@ hterm.Parser.prototype.parseEscape = function() {
     }
   };
 
-  if (!(this.ch in map))
+  if (!(this.ch in map && map.hasOwnProperty(this.ch)))
     throw this.error('Unknown escape: ' + this.ch);
 
   var value = map[this.ch];
