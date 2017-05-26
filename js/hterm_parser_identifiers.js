@@ -9,11 +9,21 @@
  */
 hterm.Parser.identifiers = {};
 
+/**
+ * Modifier key names used when defining key sequences.
+ *
+ * These are upper case so we can normalize the user input and be forgiving.
+ * "CTRL-A" and "Ctrl-A" and "ctrl-a" are all accepted.
+ *
+ * Note: Names here cannot overlap with hterm.Parser.identifiers.keyCodes.
+ */
 hterm.Parser.identifiers.modifierKeys = {
-  Shift: 'shift',
-  Ctrl: 'ctrl',
-  Alt: 'alt',
-  Meta: 'meta'
+  SHIFT: 'shift',
+  CTRL: 'ctrl',
+  // Common alias.
+  CONTROL: 'ctrl',
+  ALT: 'alt',
+  META: 'meta'
 };
 
 /**
@@ -24,9 +34,18 @@ hterm.Parser.identifiers.modifierKeys = {
  *
  * In a key sequence like "Ctrl-ESC", the ESC comes from this list of
  * identifiers.  It is equivalent to "Ctrl-27" and "Ctrl-0x1b".
+ *
+ * These are upper case so we can normalize the user input and be forgiving.
+ * "Ctrl-ESC" and "Ctrl-Esc" an "Ctrl-esc" are all accepted.
+ *
+ * We also include common aliases for the same key.  "Esc" and "Escape" are the
+ * same key.
+ *
+ * Note: Names here cannot overlap with hterm.Parser.identifiers.modifierKeys.
  */
 hterm.Parser.identifiers.keyCodes = {
   // Top row.
+  ESCAPE: 27,
   ESC: 27,
   F1: 112,
   F2: 113,
@@ -53,6 +72,8 @@ hterm.Parser.identifiers.keyCodes = {
   NINE: 57,
   ZERO: 48,
   BACKSPACE: 8,
+  BKSP: 8,
+  BS: 8,
 
   // Row three.
   TAB: 9,
@@ -68,7 +89,9 @@ hterm.Parser.identifiers.keyCodes = {
   P: 80,
 
   // Row four.
+  CAPS_LOCK: 20,
   CAPSLOCK: 20,
+  CAPS: 20,
   A: 65,
   S: 83,
   D: 68,
@@ -78,7 +101,14 @@ hterm.Parser.identifiers.keyCodes = {
   J: 74,
   K: 75,
   L: 76,
+  // We map enter and return together even though enter should really be 10
+  // because most people don't know or care about the history here.  Plus,
+  // most keyboards/programs map them together already.  If they really want
+  // to bind them differently, they can also use the numeric value.
   ENTER: 13,
+  ENT: 13,
+  RETURN: 13,
+  RET: 13,
 
   // Row five.
   Z: 90,
@@ -91,15 +121,24 @@ hterm.Parser.identifiers.keyCodes = {
 
   // Etc.
   SPACE: 32,
+  SP: 32,
   PRINT_SCREEN: 42,
+  PRTSC: 42,
   SCROLL_LOCK: 145,
+  SCRLK: 145,
   BREAK: 19,
+  BRK: 19,
   INSERT: 45,
+  INS: 45,
   HOME: 36,
+  PAGE_UP: 33,
   PGUP: 33,
+  DELETE: 46,
   DEL: 46,
   END: 35,
+  PAGE_DOWN: 34,
   PGDOWN: 34,
+  PGDN: 34,
   UP: 38,
   DOWN: 40,
   RIGHT: 39,
@@ -118,10 +157,14 @@ hterm.Parser.identifiers.keyCodes = {
   KP8: 104,
   KP9: 105,
   KP_PLUS: 107,
+  KP_ADD: 107,
   KP_MINUS: 109,
+  KP_SUBTRACT: 109,
   KP_STAR: 106,
+  KP_MULTIPLY: 106,
   KP_DIVIDE: 111,
   KP_DECIMAL: 110,
+  KP_PERIOD: 110,
 
   // Chrome OS media keys
   NAVIGATE_BACK: 166,

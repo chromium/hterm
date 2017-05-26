@@ -39,7 +39,10 @@ hterm.Parser.Tests.addTest('sequence-identifiers', function(result) {
   };
 
   checkResult('X', 88);
+  checkResult('x', 88);
   checkResult('ENTER', 13);
+  checkResult('Ent', 13);
+  checkResult('esc', 27);
 
   this.negKeySeq(result, 'FOO', /Unknown key: FOO/);
 
@@ -61,10 +64,18 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
 
   checkResult('Shift-X', true, false, false, false);
   checkResult('Ctrl-X', false, true, false, false);
+  checkResult('Control-X', false, true, false, false);
   checkResult('Alt-X', false, false, true, false);
   checkResult('Meta-X', false, false, false, true);
 
+  checkResult('SHIFT-X', true, false, false, false);
+  checkResult('CTRL-X', false, true, false, false);
+  checkResult('CONTROL-X', false, true, false, false);
+  checkResult('ALT-X', false, false, true, false);
+  checkResult('META-X', false, false, false, true);
+
   checkResult('Shift-Ctrl-X', true, true, false, false);
+  checkResult('ShIfT-cTrL-x', true, true, false, false);
   checkResult('Shift-Alt-X', true, false, true, false);
   checkResult('Shift-Meta-X', true, false, false, true);
   checkResult('Shift-Ctrl-Alt-Meta-X', true, true, true, true);
@@ -74,11 +85,12 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   checkResult('Shift-Ctrl-Alt-*-X', true, true, true, '*');
   checkResult('Shift-Ctrl-Alt-Meta-*-X', true, true, true, true);
 
-  this.negKeySeq(result, 'shift-X', /Unknown key: shift$/);
-  this.negKeySeq(result, 'SHIFT-X', /Unknown key: SHIFT$/);
+  this.negKeySeq(result, 'shft-X', /Unknown key: shft$/);
+  this.negKeySeq(result, 'SHFT-X', /Unknown key: SHFT$/);
   this.negKeySeq(result, 'Foo-X', /Unknown key: Foo$/);
   this.negKeySeq(result, 'Ctrl-Foo-X', /Unknown key: Foo$/);
   this.negKeySeq(result, 'Ctrl-Ctrl-X', /Duplicate modifier: Ctrl$/);
+  this.negKeySeq(result, 'Control-Ctrl-X', /Duplicate modifier: Ctrl$/);
   this.negKeySeq(result, 'Ctrl', /Missing target key$/);
   this.negKeySeq(result, 'Ctrl-Alt"', /Missing target key$/);
   this.negKeySeq(result, 'Ctrl-', /Missing target key$/);

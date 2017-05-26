@@ -84,16 +84,17 @@ hterm.Parser.prototype.parseKeySequence = function() {
       rv.keyCode = token.value;
 
     } else if (token.type == 'identifier') {
-      if (token.value in hterm.Parser.identifiers.modifierKeys &&
-          hterm.Parser.identifiers.modifierKeys.hasOwnProperty(token.value)) {
-        var mod = hterm.Parser.identifiers.modifierKeys[token.value];
+      var ucValue = token.value.toUpperCase();
+      if (ucValue in hterm.Parser.identifiers.modifierKeys &&
+          hterm.Parser.identifiers.modifierKeys.hasOwnProperty(ucValue)) {
+        var mod = hterm.Parser.identifiers.modifierKeys[ucValue];
         if (rv[mod] && rv[mod] != '*')
           throw this.error('Duplicate modifier: ' + token.value);
         rv[mod] = true;
 
-      } else if (token.value in hterm.Parser.identifiers.keyCodes &&
-                 hterm.Parser.identifiers.keyCodes.hasOwnProperty(token.value)) {
-        rv.keyCode = hterm.Parser.identifiers.keyCodes[token.value];
+      } else if (ucValue in hterm.Parser.identifiers.keyCodes &&
+                 hterm.Parser.identifiers.keyCodes.hasOwnProperty(ucValue)) {
+        rv.keyCode = hterm.Parser.identifiers.keyCodes[ucValue];
 
       } else {
         throw this.error('Unknown key: ' + token.value);

@@ -29,11 +29,8 @@ followed by a key code.  Key codes can be a number or an identifier.  Modifiers
 and key codes should be joined by dashes.  An asterisk can be used to indicate
 that the unspecified modifiers are optional.
 
-A note on capitalization.  The modifier keys must have the first letter in
-upper case while the rest of the word is lower case.  e.g. `Ctrl` is valid,
-but `ctrl`, `CTRL`, and `ctRL` are all invalid.  For key codes, the name must
-be in all caps.  e.g. `A` and `TAB` are valid, but `a`, `Tab`, and `TaB` are
-all invalid.
+Capitalization of keys is not important.  e.g. `Ctrl`, `CTRL`, `ctrl`, and
+`cTRl` are all equivalent.  This applies to modifiers and key codes.
 
 ### Modifiers
 
