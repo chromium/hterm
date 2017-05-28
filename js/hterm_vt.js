@@ -736,11 +736,13 @@ hterm.VT.prototype.setDECMode = function(code, state) {
     case 1000:  // Report on mouse clicks only.
       this.mouseReport = (
           state ? this.MOUSE_REPORT_CLICK : this.MOUSE_REPORT_DISABLED);
+      this.terminal.syncMouseStyle();
       break;
 
     case 1002:  // Report on mouse clicks and drags
       this.mouseReport = (
           state ? this.MOUSE_REPORT_DRAG : this.MOUSE_REPORT_DISABLED);
+      this.terminal.syncMouseStyle();
       break;
 
     case 1010:  // Scroll to bottom on tty output

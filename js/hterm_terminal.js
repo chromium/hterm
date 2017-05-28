@@ -834,6 +834,17 @@ hterm.Terminal.prototype.syncBlinkState = function() {
 };
 
 /**
+ * Set the mouse cursor style based on the current terminal mode.
+ */
+hterm.Terminal.prototype.syncMouseStyle = function() {
+  this.document_.documentElement.style.setProperty(
+      '--hterm-mouse-cursor-style',
+      this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED ?
+          'var(--hterm-mouse-cursor-text)' :
+          'var(--hterm-mouse-cursor-pointer)');
+};
+
+/**
  * Return a copy of the current cursor position.
  *
  * @return {hterm.RowCol} The RowCol object representing the current position.
@@ -1363,6 +1374,9 @@ hterm.Terminal.prototype.decorate = function(div) {
        '}' +
        ':root {' +
        '  --hterm-blink-node-duration: 0.7s;' +
+       '  --hterm-mouse-cursor-text: text;' +
+       '  --hterm-mouse-cursor-pointer: default;' +
+       '  --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);' +
        '}' +
        '@keyframes blink {' +
        '  from { opacity: 1.0; }' +
