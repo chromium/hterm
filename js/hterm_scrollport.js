@@ -1261,20 +1261,8 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   if (e.defaultPrevented)
     return;
 
-  var delta;
-  switch (e.deltaMode) {
-    case WheelEvent.DOM_DELTA_PIXEL:
-      delta = e.deltaY * this.scrollWheelMultiplier_;
-      break;
-    case WheelEvent.DOM_DELTA_LINE:
-      delta = e.deltaY * this.characterSize.height;
-      break;
-    case WheelEvent.DOM_DELTA_PAGE:
-      delta = e.deltaY * this.characterSize.height * this.screen_.getHeight();
-      break;
-  }
-  // The sign is inverted from what we would expect.
-  delta *= -1;
+  // Figure out how far this event wants us to scroll.
+  var delta = this.scrollWheelDelta(e);
 
   var top = this.screen_.scrollTop - delta;
   if (top < 0)
@@ -1294,6 +1282,32 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
     e.preventDefault();
   }
 };
+
+/**
+ * Calculate how far a wheel event should scroll.
+ *
+ * @param {WheelEvent} e The mouse wheel event to process.
+ * @return {number} How far (in pixels) to scroll.
+ */
+hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
+  var delta;
+
+  switch (e.deltaMode) {
+    case WheelEvent.DOM_DELTA_PIXEL:
+      delta = e.deltaY * this.scrollWheelMultiplier_;
+      break;
+    case WheelEvent.DOM_DELTA_LINE:
+      delta = e.deltaY * this.characterSize.height;
+      break;
+    case WheelEvent.DOM_DELTA_PAGE:
+      delta = e.deltaY * this.characterSize.height * this.screen_.getHeight();
+      break;
+  }
+
+  // The sign is inverted from what we would expect.
+  return delta * -1;
+};
+
 
 /**
  * Clients can override this if they want to hear touch events.

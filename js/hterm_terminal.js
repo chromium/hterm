@@ -3064,6 +3064,18 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.scrollBlockerNode_.style.top = '-99px';
     }
 
+    if (this.keyboard.applicationCursor) {
+      if (e.type == 'wheel') {
+        var delta = this.scrollPort_.scrollWheelDelta(e);
+        var lines = lib.f.smartFloorDivide(
+            Math.abs(delta), this.scrollPort_.characterSize.height);
+
+        var data = '\x1bO' + (delta < 0 ? 'B' : 'A');
+        this.io.sendString(data.repeat(lines));
+
+        e.preventDefault();
+      }
+    }
   } else /* if (this.reportMouseEvents) */ {
     if (!this.scrollBlockerNode_.engaged) {
       if (e.type == 'mousedown') {
