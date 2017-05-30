@@ -1,3 +1,24 @@
+# 1.65, 2017-05-30, New features & standards polish.
+
+* Use new lib.f.createEnum helper.
+* Move from non-standard -webkit-flex CSS to standard flex names.
+* Delay display of iframe dialog until it's finished loading.
+  API breakage warning: Your app needs to transmit a terminal-info-ok message
+  back after it has received & finished processing the terminal-info message.
+* Fix CrOS OS detection with middle mouse pasting.
+* Make word break selections into a user preference.
+* Move from non-standard __proto__ to standard Object.create/prototype.
+* Add a sep option for pasting on mouse right click events.
+* Move from non-standard MouseEvent.which to standard MouseEvent.button.
+  API breakage warning: The mouse-paste-button option needs to be updated if
+  it has been changed from the "auto" setting.
+* Document keyboard bindings API & user settings.
+* Make keyboard binding parsing more robust to bad inputs.
+* Make keyboard bindings more flexible (mixed case and more button aliases).
+* Change the mouse cursor based on mouse reporting mode (cursor<->text bar).
+* Support mouse wheel scrolling when DECCKM is active by emitting up/down arrow
+  key presses automatically.
+
 # 1.64, 2017-05-18, Arrow key scroll.
 
 * Start documenting all supported control sequences.
