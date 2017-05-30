@@ -746,10 +746,10 @@ hterm.Terminal.prototype.setFontSize = function(px) {
     px = this.prefs_.get('font-size');
 
   this.scrollPort_.setFontSize(px);
-  if (this.wcCssRule_) {
-    this.wcCssRule_.style.width = this.scrollPort_.characterSize.width * 2 +
-        'px';
-  }
+  this.document_.documentElement.style.setProperty(
+      '--hterm-charsize-width', this.scrollPort_.characterSize.width + 'px');
+  this.document_.documentElement.style.setProperty(
+      '--hterm-charsize-height', this.scrollPort_.characterSize.height + 'px');
 };
 
 /**
@@ -1370,9 +1370,11 @@ hterm.Terminal.prototype.decorate = function(div) {
        '.wc-node {' +
        '  display: inline-block;' +
        '  text-align: center;' +
-       '  width: ' + this.scrollPort_.characterSize.width * 2 + 'px;' +
+       '  width: calc(var(--hterm-charsize-width) * 2);' +
        '}' +
        ':root {' +
+       '  --hterm-charsize-width: ' + this.scrollPort_.characterSize.width + 'px;' +
+       '  --hterm-charsize-height: ' + this.scrollPort_.characterSize.height + 'px;' +
        '  --hterm-blink-node-duration: 0.7s;' +
        '  --hterm-mouse-cursor-text: text;' +
        '  --hterm-mouse-cursor-pointer: default;' +
@@ -1391,18 +1393,14 @@ hterm.Terminal.prototype.decorate = function(div) {
        '}');
   this.document_.head.appendChild(style);
 
-  var styleSheets = this.document_.styleSheets;
-  var cssRules = styleSheets[styleSheets.length - 1].cssRules;
-  this.wcCssRule_ = cssRules[cssRules.length - 1];
-
   this.cursorNode_ = this.document_.createElement('div');
   this.cursorNode_.className = 'cursor-node';
   this.cursorNode_.style.cssText =
       ('position: absolute;' +
        'top: -99px;' +
        'display: block;' +
-       'width: ' + this.scrollPort_.characterSize.width + 'px;' +
-       'height: ' + this.scrollPort_.characterSize.height + 'px;' +
+       'width: var(--hterm-charsize-width);' +
+       'height: var(--hterm-charsize-height);' +
        '-webkit-transition: opacity, background-color 100ms linear;' +
        '-moz-transition: opacity, background-color 100ms linear;');
 
@@ -2632,11 +2630,9 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
 
   var style = this.cursorNode_.style;
 
-  style.width = this.scrollPort_.characterSize.width + 'px';
-
   switch (shape) {
     case hterm.Terminal.cursorShape.BEAM:
-      style.height = this.scrollPort_.characterSize.height + 'px';
+      style.height = 'var(--hterm-charsize-height)';
       style.backgroundColor = 'transparent';
       style.borderBottomStyle = null;
       style.borderLeftStyle = 'solid';
@@ -2651,7 +2647,7 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
       break;
 
     default:
-      style.height = this.scrollPort_.characterSize.height + 'px';
+      style.height = 'var(--hterm-charsize-height)';
       style.backgroundColor = this.cursorColor_;
       style.borderBottomStyle = null;
       style.borderLeftStyle = null;

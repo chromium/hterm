@@ -77,9 +77,6 @@ hterm.ScrollPort = function(rowProvider) {
    */
   this.isScrolledEnd = true;
 
-  // The css rule that we use to control the height of a row.
-  this.xrowCssRule_ = null;
-
   /**
    * A guess at the current scrollbar width, fixed in resize().
    */
@@ -302,12 +299,21 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       '-webkit-user-select: none;' +
       '-moz-user-select: none;');
 
-  var style = doc.createElement('style');
-  style.textContent = 'x-row {}';
-  doc.head.appendChild(style);
+  if (this.DEBUG_) {
+    // When we're debugging we add padding to the body so that the offscreen
+    // elements are visible.
+    this.document_.body.style.paddingTop =
+        this.document_.body.style.paddingBottom =
+        'calc(var(--hterm-charsize-height) * 3)';
+  }
 
-  this.xrowCssRule_ = doc.styleSheets[0].cssRules[0];
-  this.xrowCssRule_.style.display = 'block';
+  var style = doc.createElement('style');
+  style.textContent = (
+      'x-row {' +
+      '  display: block;' +
+      '  height: var(--hterm-charsize-height);' +
+      '}');
+  doc.head.appendChild(style);
 
   this.userCssLink_ = doc.createElement('link');
   this.userCssLink_.setAttribute('rel', 'stylesheet');
@@ -360,6 +366,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.topSelectBag_.style.cssText = (
       'display: block;' +
       'overflow: hidden;' +
+      'height: var(--hterm-charsize-height);' +
       'white-space: pre;');
 
   this.bottomSelectBag_ = this.topSelectBag_.cloneNode();
@@ -694,20 +701,7 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
 hterm.ScrollPort.prototype.syncCharacterSize = function() {
   this.characterSize = this.measureCharacterSize();
 
-  var lineHeight = this.characterSize.height + 'px';
-  this.xrowCssRule_.style.height = lineHeight;
-  this.topSelectBag_.style.height = lineHeight;
-  this.bottomSelectBag_.style.height = lineHeight;
-
   this.resize();
-
-  if (this.DEBUG_) {
-    // When we're debugging we add padding to the body so that the offscreen
-    // elements are visible.
-    this.document_.body.style.paddingTop =
-        this.document_.body.style.paddingBottom =
-        3 * this.characterSize.height + 'px';
-  }
 };
 
 /**
