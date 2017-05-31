@@ -1371,6 +1371,7 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  display: inline-block;' +
        '  text-align: center;' +
        '  width: calc(var(--hterm-charsize-width) * 2);' +
+       '  line-height: var(--hterm-charsize-height);' +
        '}' +
        ':root {' +
        '  --hterm-charsize-width: ' + this.scrollPort_.characterSize.width + 'px;' +
