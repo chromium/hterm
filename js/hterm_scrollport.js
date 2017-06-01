@@ -312,6 +312,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'x-row {' +
       '  display: block;' +
       '  height: var(--hterm-charsize-height);' +
+      '  line-height: var(--hterm-charsize-height);' +
       '}');
   doc.head.appendChild(style);
 
