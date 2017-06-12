@@ -13,11 +13,11 @@ lib.rtdep('lib.f');
  *
  * @param {object} The GL mapping from input characters to output characters.
  */
-hterm.VT.CharacterMap = function(name, glmap) {
+hterm.VT.CharacterMap = function(description, glmap) {
   /**
-   * Short name for this character set, useful for debugging.
+   * Short description for this character set, useful for debugging.
    */
-  this.name = name;
+  this.description = description;
 
   /**
    * The function to call to when this map is installed in GL.

@@ -18,7 +18,7 @@ hterm.VT.CharacterMap.Tests =
 hterm.VT.CharacterMap.Tests.addTest('null-map', function(result, cx) {
   var map = new hterm.VT.CharacterMap('foo', null);
 
-  result.assertEQ(map.name, 'foo');
+  result.assertEQ(map.description, 'foo');
   result.assertEQ(map.GL, null);
 
   result.pass();
@@ -30,7 +30,7 @@ hterm.VT.CharacterMap.Tests.addTest('null-map', function(result, cx) {
 hterm.VT.CharacterMap.Tests.addTest('empty-map', function(result, cx) {
   var map = new hterm.VT.CharacterMap('foo bar', {});
 
-  result.assertEQ(map.name, 'foo bar');
+  result.assertEQ(map.description, 'foo bar');
   result.assertEQ(typeof map.GL, 'function');
 
   result.pass();
