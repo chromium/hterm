@@ -33,13 +33,13 @@ hterm.VT.CharacterMap = function(description, glmap) {
  */
 hterm.VT.CharacterMap.prototype.reset = function(glmap) {
   // Set the the GL mapping.
-  this.glmap = glmap;
+  this.glmap_ = glmap;
 
-  var glchars = Object.keys(this.glmap).map((key) =>
+  var glchars = Object.keys(this.glmap_).map((key) =>
       '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16)));
-  this.glre = new RegExp('[' + glchars.join('') + ']', 'g');
+  this.glre_ = new RegExp('[' + glchars.join('') + ']', 'g');
 
-  this.GL = (str) => str.replace(this.glre, (ch) => this.glmap[ch]);
+  this.GL = (str) => str.replace(this.glre_, (ch) => this.glmap_[ch]);
 };
 
 /**
