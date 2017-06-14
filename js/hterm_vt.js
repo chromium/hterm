@@ -105,12 +105,17 @@ hterm.VT = function(terminal) {
   this.warnUnimplemented = true;
 
   /**
+   * The set of available character maps (used by G0...G3 below).
+   */
+  this.characterMaps = new hterm.VT.CharacterMaps();
+
+  /**
    * The default G0...G3 character maps.
    */
-  this.G0 = hterm.VT.CharacterMap.maps['B'];
-  this.G1 = hterm.VT.CharacterMap.maps['0'];
-  this.G2 = hterm.VT.CharacterMap.maps['B'];
-  this.G3 = hterm.VT.CharacterMap.maps['B'];
+  this.G0 = this.characterMaps.getMap('B');
+  this.G1 = this.characterMaps.getMap('0');
+  this.G2 = this.characterMaps.getMap('B');
+  this.G3 = this.characterMaps.getMap('B');
 
   /**
    * The 7-bit visible character set.
@@ -306,10 +311,10 @@ hterm.VT.CursorState.prototype.restore = function() {
 };
 
 hterm.VT.prototype.reset = function() {
-  this.G0 = hterm.VT.CharacterMap.maps['B'];
-  this.G1 = hterm.VT.CharacterMap.maps['0'];
-  this.G2 = hterm.VT.CharacterMap.maps['B'];
-  this.G3 = hterm.VT.CharacterMap.maps['B'];
+  this.G0 = this.characterMaps.getMap('B');
+  this.G1 = this.characterMaps.getMap('0');
+  this.G2 = this.characterMaps.getMap('B');
+  this.G3 = this.characterMaps.getMap('B');
 
   this.GL = 'G0';
   this.GR = 'G0';
@@ -1296,15 +1301,16 @@ hterm.VT.ESC['/'] = function(parseState, code) {
       return;
     }
 
-    if (ch in hterm.VT.CharacterMap.maps) {
+    var map = this.characterMaps.getMap(ch);
+    if (map !== undefined) {
       if (code == '(') {
-        this.G0 = hterm.VT.CharacterMap.maps[ch];
+        this.G0 = map;
       } else if (code == ')' || code == '-') {
-        this.G1 = hterm.VT.CharacterMap.maps[ch];
+        this.G1 = map;
       } else if (code == '*' || code == '.') {
-        this.G2 = hterm.VT.CharacterMap.maps[ch];
+        this.G2 = map;
       } else if (code == '+' || code == '/') {
-        this.G3 = hterm.VT.CharacterMap.maps[ch];
+        this.G3 = map;
       }
     } else if (this.warnUnimplemented) {
       console.log('Invalid character set for "' + code + '": ' + ch);

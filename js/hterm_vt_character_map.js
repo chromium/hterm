@@ -92,16 +92,92 @@ hterm.VT.CharacterMap.prototype.setOverrides = function(glmap) {
 };
 
 /**
- * Mapping from received to display character, used depending on the active
- * VT character set.
+ * Return a copy of this mapping.
+ *
+ * @return {hterm.VT.CharacterMap} A new hterm.VT.CharacterMap instance.
  */
-hterm.VT.CharacterMap.maps = {};
+hterm.VT.CharacterMap.prototype.clone = function() {
+  var map = new hterm.VT.CharacterMap(this.description, this.glmapBase_);
+  if (this.glmap_ !== this.glmapBase_)
+    map.setOverrides(this.glmap_);
+  return map;
+};
+
+/**
+ * Table of character maps.
+ */
+hterm.VT.CharacterMaps = function() {
+  this.maps_ = hterm.VT.CharacterMaps.DefaultMaps;
+
+  // Always keep an unmodified reference to the map.
+  // This allows us to sanely reset back to the original state.
+  this.mapsBase_ = this.maps_;
+};
+
+/**
+ * Look up a previously registered map.
+ *
+ * @param {String} name The name of the map to lookup.
+ * @return {hterm.VT.CharacterMap} The map, if it's been registered.
+ */
+hterm.VT.CharacterMaps.prototype.getMap = function(name) {
+  if (this.maps_.hasOwnProperty(name))
+    return this.maps_[name];
+  else
+    return undefined;
+};
+
+/**
+ * Register a new map.
+ *
+ * Any previously registered maps by this name will be discarded.
+ *
+ * @param {String} name The name of the map.
+ * @param {hterm.VT.CharacterMap} map The map to register.
+ */
+hterm.VT.CharacterMaps.prototype.addMap = function(name, map) {
+  if (this.maps_ === this.mapsBase_)
+    this.maps_ = Object.assign({}, this.mapsBase_);
+  this.maps_[name] = map;
+};
+
+/**
+ * Reset the table and all its maps back to original state.
+ */
+hterm.VT.CharacterMaps.prototype.reset = function() {
+  if (this.maps_ !== hterm.VT.CharacterMaps.DefaultMaps)
+    this.maps_ = hterm.VT.CharacterMaps.DefaultMaps;
+};
+
+/**
+ * Merge custom changes to this table.
+ *
+ * @param {Object} maps A set of hterm.VT.CharacterMap objects.
+ */
+hterm.VT.CharacterMaps.prototype.setOverrides = function(maps) {
+  if (this.maps_ === this.mapsBase_)
+    this.maps_ = Object.assign({}, this.mapsBase_);
+
+  for (var name in maps) {
+    var map = this.getMap(name);
+    if (map !== undefined) {
+      this.maps_[name] = map.clone();
+      this.maps_[name].setOverrides(maps[name]);
+    } else
+      this.addMap(name, new hterm.VT.CharacterMap('user ' + name, maps[name]));
+  }
+};
+
+/**
+ * The default set of supported character maps.
+ */
+hterm.VT.CharacterMaps.DefaultMaps = {};
 
 /**
  * VT100 Graphic character map.
  * http://vt100.net/docs/vt220-rm/table2-4.html
  */
-hterm.VT.CharacterMap.maps['0'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['0'] = new hterm.VT.CharacterMap(
     'graphic', {
       '\x60':'\u25c6',  // ` -> diamond
       '\x61':'\u2592',  // a -> grey-box
@@ -140,7 +216,7 @@ hterm.VT.CharacterMap.maps['0'] = new hterm.VT.CharacterMap(
  * British character map.
  * http://vt100.net/docs/vt220-rm/table2-5.html
  */
-hterm.VT.CharacterMap.maps['A'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['A'] = new hterm.VT.CharacterMap(
     'british', {
       '\x23': '\u00a3',  // # -> british-pound
     });
@@ -148,14 +224,14 @@ hterm.VT.CharacterMap.maps['A'] = new hterm.VT.CharacterMap(
 /**
  * US ASCII map, no changes.
  */
-hterm.VT.CharacterMap.maps['B'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['B'] = new hterm.VT.CharacterMap(
     'us', null);
 
 /**
  * Dutch character map.
  * http://vt100.net/docs/vt220-rm/table2-6.html
  */
-hterm.VT.CharacterMap.maps['4'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['4'] = new hterm.VT.CharacterMap(
     'dutch', {
       '\x23': '\u00a3',  // # -> british-pound
 
@@ -175,8 +251,8 @@ hterm.VT.CharacterMap.maps['4'] = new hterm.VT.CharacterMap(
  * Finnish character map.
  * http://vt100.net/docs/vt220-rm/table2-7.html
  */
-hterm.VT.CharacterMap.maps['C'] =
-hterm.VT.CharacterMap.maps['5'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['C'] =
+hterm.VT.CharacterMaps.DefaultMaps['5'] = new hterm.VT.CharacterMap(
     'finnish', {
       '\x5b': '\u00c4',  // [ -> 'A' umlaut
       '\x5c': '\u00d6',  // \ -> 'O' umlaut
@@ -195,7 +271,7 @@ hterm.VT.CharacterMap.maps['5'] = new hterm.VT.CharacterMap(
  * French character map.
  * http://vt100.net/docs/vt220-rm/table2-8.html
  */
-hterm.VT.CharacterMap.maps['R'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['R'] = new hterm.VT.CharacterMap(
     'french', {
       '\x23': '\u00a3',  // # -> british-pound
 
@@ -215,7 +291,7 @@ hterm.VT.CharacterMap.maps['R'] = new hterm.VT.CharacterMap(
  * French Canadian character map.
  * http://vt100.net/docs/vt220-rm/table2-9.html
  */
-hterm.VT.CharacterMap.maps['Q'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['Q'] = new hterm.VT.CharacterMap(
     'french canadian', {
       '\x40': '\u00e0',  // @ -> 'a' grave
 
@@ -236,7 +312,7 @@ hterm.VT.CharacterMap.maps['Q'] = new hterm.VT.CharacterMap(
  * German character map.
  * http://vt100.net/docs/vt220-rm/table2-10.html
  */
-hterm.VT.CharacterMap.maps['K'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['K'] = new hterm.VT.CharacterMap(
     'german', {
       '\x40': '\u00a7',  // @ -> section symbol (double s)
 
@@ -254,7 +330,7 @@ hterm.VT.CharacterMap.maps['K'] = new hterm.VT.CharacterMap(
  * Italian character map.
  * http://vt100.net/docs/vt220-rm/table2-11.html
  */
-hterm.VT.CharacterMap.maps['Y'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['Y'] = new hterm.VT.CharacterMap(
     'italian', {
       '\x23': '\u00a3',  // # -> british-pound
 
@@ -276,8 +352,8 @@ hterm.VT.CharacterMap.maps['Y'] = new hterm.VT.CharacterMap(
  * Norwegian/Danish character map.
  * http://vt100.net/docs/vt220-rm/table2-12.html
  */
-hterm.VT.CharacterMap.maps['E'] =
-hterm.VT.CharacterMap.maps['6'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['E'] =
+hterm.VT.CharacterMaps.DefaultMaps['6'] = new hterm.VT.CharacterMap(
     'norwegian/danish', {
       '\x40': '\u00c4',  // @ -> 'A' umlaut
 
@@ -298,7 +374,7 @@ hterm.VT.CharacterMap.maps['6'] = new hterm.VT.CharacterMap(
  * Spanish character map.
  * http://vt100.net/docs/vt220-rm/table2-13.html
  */
-hterm.VT.CharacterMap.maps['Z'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['Z'] = new hterm.VT.CharacterMap(
     'spanish', {
       '\x23': '\u00a3',  // # -> british-pound
 
@@ -317,8 +393,8 @@ hterm.VT.CharacterMap.maps['Z'] = new hterm.VT.CharacterMap(
  * Swedish character map.
  * http://vt100.net/docs/vt220-rm/table2-14.html
  */
-hterm.VT.CharacterMap.maps['7'] =
-hterm.VT.CharacterMap.maps['H'] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['7'] =
+hterm.VT.CharacterMaps.DefaultMaps['H'] = new hterm.VT.CharacterMap(
     'swedish', {
       '\x40': '\u00c9',  // @ -> 'E' acute
 
@@ -339,7 +415,7 @@ hterm.VT.CharacterMap.maps['H'] = new hterm.VT.CharacterMap(
  * Swiss character map.
  * http://vt100.net/docs/vt220-rm/table2-15.html
  */
-hterm.VT.CharacterMap.maps['='] = new hterm.VT.CharacterMap(
+hterm.VT.CharacterMaps.DefaultMaps['='] = new hterm.VT.CharacterMap(
     'swiss', {
       '\x23': '\u00f9',  // # -> 'u' grave
 
