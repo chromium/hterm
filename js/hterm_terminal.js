@@ -284,12 +284,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
         return;
       }
 
-      for (var code in v) {
-        var glmap = hterm.VT.CharacterMap.maps[code].glmap;
-        for (var received in v[code]) {
-          glmap[received] = v[code][received];
-        }
-        hterm.VT.CharacterMap.maps[code].reset(glmap);
+      for (var name in v) {
+        var map = hterm.VT.CharacterMap.maps[name];
+        map.setOverrides(v[name]);
       }
     },
 

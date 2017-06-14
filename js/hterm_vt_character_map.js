@@ -9,9 +9,13 @@ lib.rtdep('lib.f');
 /**
  * Character map object.
  *
+ * Mapping from received to display character, used depending on the active
+ * VT character set.
+ *
  * GR maps are not currently supported.
  *
- * @param {object} The GL mapping from input characters to output characters.
+ * @param {string} description A human readable description of this map.
+ * @param {Object} glmap The GL mapping from input to output characters.
  */
 hterm.VT.CharacterMap = function(description, glmap) {
   /**
@@ -24,22 +28,67 @@ hterm.VT.CharacterMap = function(description, glmap) {
    */
   this.GL = null;
 
-  if (glmap)
-    this.reset(glmap);
+  // Always keep an unmodified reference to the map.
+  // This allows us to sanely reset back to the original state.
+  this.glmapBase_ = glmap;
+
+  // Now sync the internal state as needed.
+  this.sync_();
 };
 
 /**
- * @param {object} The GL mapping from input characters to output characters.
+ * Internal helper for resyncing internal state.
+ *
+ * Used when the mappings change.
+ *
+ * @param {Object?} opt_glmap Additional mappings to overlay on top of the
+ *     base mapping.
  */
-hterm.VT.CharacterMap.prototype.reset = function(glmap) {
-  // Set the the GL mapping.
-  this.glmap_ = glmap;
+hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
+  // If there are no maps, then reset the state back.
+  if (!this.glmapBase_ && !opt_glmap) {
+    this.GL = null;
+    delete this.glmap_;
+    delete this.glre_;
+    return;
+  }
+
+  // Set the the GL mapping.  If we're given a custom mapping, then create a
+  // new object to hold the merged map.  This way we can cleanly reset back.
+  if (opt_glmap)
+    this.glmap_ = Object.assign({}, this.glmapBase_, opt_glmap);
+  else
+    this.glmap_ = this.glmapBase_;
 
   var glchars = Object.keys(this.glmap_).map((key) =>
       '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16)));
   this.glre_ = new RegExp('[' + glchars.join('') + ']', 'g');
 
   this.GL = (str) => str.replace(this.glre_, (ch) => this.glmap_[ch]);
+};
+
+/**
+ * Reset map back to original mappings (discarding runtime updates).
+ *
+ * Specifically, any calls to setOverrides will be discarded.
+ */
+hterm.VT.CharacterMap.prototype.reset = function() {
+  // If we haven't been given a custom mapping, then there's nothing to reset.
+  if (this.glmap_ !== this.glmapBase_)
+    this.sync_();
+};
+
+/**
+ * Merge custom changes to this map.
+ *
+ * The input map need not duplicate the existing mappings as it is merged with
+ * the existing base map (what was created with).  Subsequent calls to this
+ * will throw away previous override settings.
+ *
+ * @param {Object} glmap The custom map to override existing mappings.
+ */
+hterm.VT.CharacterMap.prototype.setOverrides = function(glmap) {
+  this.sync_(glmap);
 };
 
 /**
