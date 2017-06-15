@@ -373,9 +373,27 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       break;
 
     case 'mousemove':
-      if (this.mouseReport == this.MOUSE_REPORT_DRAG) {
-        // Standard button bits.
-        b = 32 + Math.min(e.button, 2);
+      if (this.mouseReport == this.MOUSE_REPORT_DRAG && e.buttons) {
+        // Standard button bits.  The XTerm protocol only reports the first
+        // button press (e.g. if left & right are pressed, right is ignored),
+        // and it only supports the first three buttons.  If none of them are
+        // pressed, then XTerm flags it as a release.  We'll do the same.
+        b = 32;
+
+        // Priority here matches XTerm: left, middle, right.
+        if (e.buttons & 0x1) {
+          // Report left button.
+          b += 0;
+        } else if (e.buttons & 0x4) {
+          // Report middle button.
+          b += 1;
+        } else if (e.buttons & 0x2) {
+          // Report right button.
+          b += 2;
+        } else {
+          // Release higher buttons.
+          b += 3;
+        }
 
         // Add 32 to indicate mouse motion.
         b += 32;
