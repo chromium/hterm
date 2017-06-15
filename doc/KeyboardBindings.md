@@ -45,6 +45,9 @@ Order does not matter, so `Ctrl-Shift-A` is equiavlent to `Shift-Ctrl-A`.
   ⊞ Windows key on Windows keyboards).
 * `*`: The asterisk can be used to match unspecified modifiers.
 
+If the key is not listed here, then it cannot be used as a modifier.
+e.g. You cannot bind `Escape-K` or `Capslock-D` to something else.
+
 ### Key Codes
 
 The key codes should be the name of the key, or the ASCII value for that key
