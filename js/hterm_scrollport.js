@@ -1355,6 +1355,9 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
         this.lastTouch_[touch.id] = touch;
       }
 
+      // Invert to match the touchscreen scrolling direction of browser windows.
+      delta *= -1;
+
       var top = this.screen_.scrollTop - delta;
       if (top < 0)
         top = 0;
