@@ -5,6 +5,7 @@
 # This file lists the hterm dependencies on libdot.
 
 libdot/js/lib.js
+libdot/js/lib_polyfill.js
 libdot/js/lib_colors.js
 libdot/js/lib_f.js
 libdot/js/lib_message_manager.js
