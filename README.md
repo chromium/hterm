@@ -9,8 +9,27 @@ terminal output and accepting keyboard input.
 
 # Contact
 
-The [chromium-hterm mailing list](https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm)
-can be used to contact other users and developers for questions.
+The [chromium-hterm mailing list] can be used to contact other users and
+developers for questions.
+
+Our existing set of bugs/feature requests can be found at
+<https://goo.gl/VkasRC>.
+
+To file an actual report, you can use <https://goo.gl/vb94JY>.  This will route
+to the right people.
+
+# Requirements
+
+We require ECMAScript 6 (ES6), aka ES2015.  If you're using an older runtime,
+then sorry, you're not supported.  Fortunately, all modern browsers today have
+full ES6 support!
+
+We might use some ES2016+ features as we deem useful, but only ones that can be
+polyfilled (and we'll include those polyfills by way of [libdot]).  We'll avoid
+language features (such as `await` and `async`) that can't be polyfilled.
+
+Of course, we might slip up and use something that violates these stated goals.
+Feel free to let us know via the Contact section above! :)
 
 # Documentation
 
@@ -20,3 +39,6 @@ can be used to contact other users and developers for questions.
 * [Control Sequences](./doc/ControlSequences.md) -- Supported control sequences
 * [Embedding](./doc/embed.md) -- Using hterm in your project
 * [Hacking](./doc/hack.md) -- Developing the hterm source
+
+[chromium-hterm mailing list]: https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm
+[libdot]: ../libdot
