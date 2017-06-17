@@ -482,9 +482,6 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
     if (self[self.GL].GL)
       str = self[self.GL].GL(str);
 
-    if (self[self.GR].GR)
-      str = self[self.GR].GR(str);
-
     self.terminal.print(str);
   };
 

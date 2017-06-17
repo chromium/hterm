@@ -98,7 +98,7 @@ While DEL (0x7F) isn't actually part of C0, we list it here for convenience.
 These are some extended characters in the 0x80 - 0x9F range.
 
 Since these don't play well with UTF-8 encoding, they're typically accessed via
-an escape sequence.  e.g. ESC+@ (0x27 0x40) instead of 0x80.
+an escape sequence.  e.g. ESC+@ (0x1b 0x40) instead of 0x80.
 
 | ESC | Dec | Hex | Name | Description                                 | Action |
 |:---:|:---:|:---:|:----:|---------------------------------------------|--------|
@@ -143,7 +143,7 @@ an escape sequence.  e.g. ESC+@ (0x27 0x40) instead of 0x80.
 ## G0/G1/G2/G3 Graphic Codesets for GL/GR (SCS) {#SCS}
 
 With the rise of UTF-8 encoding, graphic codesets have fallen out of favor.
-Although we still support them :).
+Although we still support a limited number for legacy systems.
 
 Basically, instead of seeing things like "w" or "#", you'll see "&#x252c;" or
 "&#xa3;".  These were used to get basic graphics (like border lines), or to
@@ -154,8 +154,12 @@ pointers (GL and GR) to those slots.  The active display then uses those
 pointers to determine what is shown.  Both the slots and pointers can be
 updated at any time.
 
+The GR pointer, while tracked, does not actually get processed.  When running
+in a UTF8 environment, it's easy to corrupt codeunits in a codepoint leading
+to bad output.
+
 We don't currently differentiate between 94-character sets and 96-character
-sets.
+sets.  Although all of the maps we support are within the 94-char range.
 
 As for the character sets that you can actually load, we support some hard
 character sets, but not all of them.  We do not support soft character sets.
@@ -184,7 +188,7 @@ Here's the list of national replacement character sets (NRCS) we support:
 ## Escape Sequences {#ESC}
 
 These are other escape sequences we support.  This is similar to the C1 Control
-Codes space, but there is only a two byte sequence.  e.g. ESC+# (0x27 0x23).
+Codes space, but there is only a two byte sequence.  e.g. ESC+# (0x1b 0x23).
 
 Some of these may have subcommands, so it might end up being a three byte
 sequence where the 3rd byte is further interpreted.  We refer to that as `arg1`
@@ -255,9 +259,9 @@ in the Action column below.
 |  y  |          |                                             | *Ignored (TBD)* |
 |  z  |          |                                             | *Ignored (TBD)* |
 |  {  |          |                                             | *Ignored (TBD)* |
-|&#124;|LS3R     | Locking Shift Three Right                   | Point [GR] to [G3] |
-|  }  | LS2R     | Locking Shift Two Right                     | Point [GR] to [G2] |
-|  ~  | LS1R     | Locking Shift One Right                     | Point [GR] to [G1] |
+|&#124;|LS3R     | Locking Shift Three Right                   | *Ignored* (Point [GR] to [G3]) |
+|  }  | LS2R     | Locking Shift Two Right                     | *Ignored* (Point [GR] to [G2]) |
+|  ~  | LS1R     | Locking Shift One Right                     | *Ignored* (Point [GR] to [G1]) |
 
 ### ESC+&#35; (DEC) {#DEC}
 

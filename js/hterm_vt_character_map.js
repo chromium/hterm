@@ -9,8 +9,9 @@ lib.rtdep('lib.f');
 /**
  * Character map object.
  *
+ * GR maps are not currently supported.
+ *
  * @param {object} The GL mapping from input characters to output characters.
- *     The GR mapping will be automatically created.
  */
 hterm.VT.CharacterMap = function(name, glmap) {
   /**
@@ -23,18 +24,12 @@ hterm.VT.CharacterMap = function(name, glmap) {
    */
   this.GL = null;
 
-  /**
-   * The function to call to when this map is installed in GR.
-   */
-  this.GR = null;
-
   if (glmap)
     this.reset(glmap);
 };
 
 /**
  * @param {object} The GL mapping from input characters to output characters.
- *     The GR mapping will be automatically created.
  */
 hterm.VT.CharacterMap.prototype.reset = function(glmap) {
   // Set the the GL mapping.
@@ -43,32 +38,11 @@ hterm.VT.CharacterMap.prototype.reset = function(glmap) {
   var glkeys = Object.keys(this.glmap).map(function(key) {
       return '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16));
     });
-
   this.glre = new RegExp('[' + glkeys.join('') + ']', 'g');
-
-  // Compute the GR mapping.
-  // This is the same as GL except all keys have their MSB set.
-  this.grmap = {};
-
-  glkeys.forEach(function(glkey) {
-      var grkey = String.fromCharCode(glkey.charCodeAt(0) & 0x80);
-      this.grmap[grkey] = this.glmap[glkey];
-    }.bind(this));
-
-  var grkeys = Object.keys(this.grmap).map(function(key) {
-      return '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16), 2);
-    });
-
-  this.grre = new RegExp('[' + grkeys.join('') + ']', 'g');
 
   this.GL = function(str) {
     return str.replace(this.glre,
                        function(ch) { return this.glmap[ch] }.bind(this));
-  }.bind(this);
-
-  this.GR = function(str) {
-    return str.replace(this.grre,
-                       function(ch) { return this.grmap[ch] }.bind(this));
   }.bind(this);
 };
 
