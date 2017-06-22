@@ -2388,9 +2388,7 @@ hterm.Terminal.prototype.ringBell = function() {
   }
 
   if (this.desktopNotificationBell_ && !this.document_.hasFocus()) {
-    var n = new Notification(
-        lib.f.replaceVars(hterm.desktopNotificationTitle,
-                          {'title': window.document.title || 'hterm'}));
+    var n = hterm.notify();
     this.bellNotificationList_.push(n);
     // TODO: Should we try to raise the window here?
     n.onclick = function() { self.closeBellNotifications_(); };

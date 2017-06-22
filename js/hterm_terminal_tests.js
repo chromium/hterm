@@ -41,8 +41,7 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
   this.terminal.setHeight(this.visibleRowCount);
   this.terminal.setWidth(this.visibleColumnCount);
 
-  this.origNotification_ = Notification;
-  Notification = MockNotification;
+  MockNotification.start();
 };
 
 /**
@@ -51,7 +50,7 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
  * Called after each test case in this suite.
  */
 hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
-  Notification = this.origNotification_;
+  MockNotification.stop();
 };
 
 /**
@@ -177,30 +176,45 @@ hterm.Terminal.Tests.addTest('plaintext-stress-insert',
  */
 hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
                              function(result, cx) {
-    this.terminal.document_.hasFocus = function(){ return false; }
     this.terminal.desktopNotificationBell_ = true;
+
+    // If we have focus, then no notifications should show.
+    this.terminal.document_.hasFocus = function() { return true; };
+
+    // Ring the bell, but nothing shows up.
+    result.assertEQ(0, this.terminal.bellNotificationList_.length);
+    result.assertEQ(0, Notification.count);
+    this.terminal.ringBell();
+    this.terminal.ringBell();
+    this.terminal.ringBell();
+    this.terminal.ringBell();
+    result.assertEQ(0, this.terminal.bellNotificationList_.length);
+    result.assertEQ(0, Notification.count);
+
+    // If we don't have focus, then notifications should show.
+    this.terminal.document_.hasFocus = function() { return false; };
 
     // Gaining focus closes all desktop notifications.
     result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, MockNotification.count);
+    result.assertEQ(0, Notification.count);
     this.terminal.ringBell();
     result.assertEQ(1, this.terminal.bellNotificationList_.length);
-    result.assertEQ(1, MockNotification.count);
+    result.assertEQ(1, Notification.count);
     this.terminal.ringBell();
     result.assertEQ(2, this.terminal.bellNotificationList_.length);
-    result.assertEQ(2, MockNotification.count);
+    result.assertEQ(2, Notification.count);
     this.terminal.onFocusChange_(true);
     result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, MockNotification.count);
+    result.assertEQ(0, Notification.count);
 
     // A user click closes all desktop notifications.
     this.terminal.ringBell();
     this.terminal.ringBell();
     result.assertEQ(2, this.terminal.bellNotificationList_.length);
-    result.assertEQ(2, MockNotification.count);
+    result.assertEQ(2, Notification.count);
     this.terminal.bellNotificationList_[0].onclick(null);
     result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, MockNotification.count);
+    result.assertEQ(0, Notification.count);
 
     result.pass();
   });

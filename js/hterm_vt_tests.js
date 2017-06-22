@@ -47,6 +47,8 @@ hterm.VT.Tests.prototype.preamble = function(result, cx) {
   this.terminal.decorate(div);
   this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.setHeight(this.visibleRowCount);
+
+  MockNotification.start();
 };
 
 /**
@@ -56,6 +58,8 @@ hterm.VT.Tests.prototype.preamble = function(result, cx) {
  */
 hterm.VT.Tests.prototype.postamble = function(result, cx) {
   this.terminal.setCursorBlink(false);
+
+  MockNotification.stop();
 };
 
 /**
@@ -1441,6 +1445,28 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
   });
 
 /**
+ * Test iTerm2 growl notifications.
+ */
+hterm.VT.Tests.addTest('OSC-9', function(result, cx) {
+    result.assertEQ(0, Notification.count);
+
+    // We don't test the title as it's generated, and the iTerm2 API doesn't
+    // support changing it.
+
+    // An empty notification.
+    this.terminal.interpret('\x1b]9;\x07');
+    result.assertEQ(1, Notification.count);
+    result.assertEQ('', Notification.call.body);
+
+    // A random notification.
+    this.terminal.interpret('\x1b]9;this is a title\x07');
+    result.assertEQ(2, Notification.count);
+    result.assertEQ('this is a title', Notification.call.body);
+
+    result.pass();
+  });
+
+/**
  * Test that we can use OSC 52 to copy to the system clipboard.
  */
 hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
@@ -1541,6 +1567,45 @@ hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
     this.terminal.syncCursorPosition_();
     result.assertEQ(this.terminal.getCursorShape(),
                     hterm.Terminal.cursorShape.BLOCK);
+
+    result.pass();
+  });
+
+/**
+ * Test URxvt notify module.
+ */
+hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {
+    result.assertEQ(0, Notification.count);
+
+    // An empty notification.  We don't test the title as it's generated.
+    this.terminal.interpret('\x1b]777;notify\x07');
+    result.assertEQ(1, Notification.count);
+    result.assert(Notification.call.title != '');
+    result.assertEQ(undefined, Notification.call.body);
+
+    // Same as above, but covers slightly different parsing.
+    this.terminal.interpret('\x1b]777;notify;\x07');
+    result.assertEQ(2, Notification.count);
+    result.assert(Notification.call.title != '');
+    result.assertEQ(undefined, Notification.call.body);
+
+    // A notification with a title.
+    this.terminal.interpret('\x1b]777;notify;my title\x07');
+    result.assertEQ(3, Notification.count);
+    result.assert(Notification.call.title.includes('my title'));
+    result.assertEQ(undefined, Notification.call.body);
+
+    // A notification with a title & body.
+    this.terminal.interpret('\x1b]777;notify;my title;my body\x07');
+    result.assertEQ(4, Notification.count);
+    result.assert(Notification.call.title.includes('my title'));
+    result.assert(Notification.call.body.includes('my body'));
+
+    // A notification with a title & body, covering more parsing.
+    this.terminal.interpret('\x1b]777;notify;my title;my body;and a semi\x07');
+    result.assertEQ(5, Notification.count);
+    result.assert(Notification.call.title.includes('my title'));
+    result.assert(Notification.call.body.includes('my body;and a semi'));
 
     result.pass();
   });

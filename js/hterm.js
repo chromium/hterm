@@ -163,6 +163,37 @@ hterm.pasteFromClipboard = function(document) {
 };
 
 /**
+ * Create a new notification.
+ *
+ * @param {Object} params Various parameters for the notification.
+ * @param {string} params.title The title (defaults to the window's title).
+ * @param {string} params.body The message body (main text).
+ */
+hterm.notify = function(params) {
+  var def = (curr, fallback) => curr !== undefined ? curr : fallback;
+  if (params === undefined || params === null)
+    params = {};
+
+  // Merge the user's choices with the default settings.  We don't take it
+  // directly in case it was stuffed with excess junk.
+  var options = {
+      'body': params.body,
+  }
+
+  var title = def(params.title, window.document.title);
+  if (!title)
+    title = 'hterm';
+  title = lib.f.replaceVars(hterm.desktopNotificationTitle, {'title': title});
+
+  var n = new Notification(title, options);
+  n.onclick = function() {
+    window.focus();
+    this.close();
+  };
+  return n;
+};
+
+/**
  * Constructor for a hterm.Size record.
  *
  * Instances of this class have public read/write members for width and height.

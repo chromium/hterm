@@ -1485,6 +1485,14 @@ hterm.VT.OSC['4'] = function(parseState) {
 };
 
 /**
+ * iTerm2 growl notifications.
+ */
+hterm.VT.OSC['9'] = function(parseState) {
+  // This just dumps the entire string as the message.
+  hterm.notify({'body': parseState.args[0]});
+};
+
+/**
  * Change VT100 text foreground color.
  */
 hterm.VT.OSC['10'] = function(parseState) {
@@ -1585,6 +1593,39 @@ hterm.VT.OSC['52'] = function(parseState) {
   var data = window.atob(args[1]);
   if (data)
     this.terminal.copyStringToClipboard(this.decode(data));
+};
+
+/**
+ * URxvt perl modules.
+ *
+ * This is the escape system used by rxvt-unicode and its perl modules.
+ * Obviously we don't support perl or custom modules, so we list a few common
+ * ones that we find useful.
+ *
+ * Technically there is no format here, but most modules obey:
+ * <module name>;<module args, usually ; delimited>
+ */
+hterm.VT.OSC['777'] = function(parseState) {
+  var ary;
+  var urxvtMod = parseState.args[0].split(';', 1)[0];
+
+  switch (urxvtMod) {
+    case 'notify':
+      // Format:
+      // notify;title;message
+      var title, message;
+      ary = parseState.args[0].match(/^[^;]+;([^;]*)(;([\s\S]*))?$/);
+      if (ary) {
+        title = ary[1];
+        message = ary[3];
+      }
+      hterm.notify({'title': title, 'body': message});
+      break;
+
+    default:
+      console.warn('Unknown urxvt module: ' + parseState.args[0]);
+      break;
+  }
 };
 
 /**
