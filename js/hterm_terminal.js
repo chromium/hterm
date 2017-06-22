@@ -3056,7 +3056,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.scrollBlockerNode_.style.top = '-99px';
     }
 
-    if (this.keyboard.applicationCursor) {
+    if (this.keyboard.applicationCursor && !this.isPrimaryScreen()) {
       if (e.type == 'wheel') {
         var delta = this.scrollPort_.scrollWheelDelta(e);
         var lines = lib.f.smartFloorDivide(
