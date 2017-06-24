@@ -325,10 +325,22 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // TODO(rginda): Sorry, this 'screen_' isn't the same thing as hterm.Screen
   // from screen.js.  I need to pick a better name for one of them to avoid
   // the collision.
+  // We make this field editable even though we don't actually allow anything
+  // to be edited here so that Chrome will do the right thing with virtual
+  // keyboards and IMEs.  But make sure we turn off all the input helper logic
+  // that doesn't make sense here, and might inadvertently mung or save input.
+  // Some of these attributes are standard while others are browser specific,
+  // but should be safely ignored by other browsers.
   this.screen_ = doc.createElement('x-screen');
+  this.screen_.setAttribute('contenteditable', 'true');
+  this.screen_.setAttribute('spellcheck', 'false');
+  this.screen_.setAttribute('autocomplete', 'off');
+  this.screen_.setAttribute('autocorrect', 'off');
+  this.screen_.setAttribute('autocaptalize', 'none');
   this.screen_.setAttribute('role', 'textbox');
   this.screen_.setAttribute('tabindex', '-1');
   this.screen_.style.cssText = (
+      'caret-color: transparent;' +
       'display: block;' +
       'font-family: monospace;' +
       'font-size: 15px;' +
