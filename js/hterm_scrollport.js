@@ -426,6 +426,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // We send focus to this element just before a paste happens, so we can
   // capture the pasted text and forward it on to someone who cares.
   this.pasteTarget_ = doc.createElement('textarea');
+  this.pasteTarget_.id = 'ctrl-v-paste-target';
   this.pasteTarget_.setAttribute('tabindex', '-1');
   this.pasteTarget_.style.cssText = (
     'position: absolute;' +
