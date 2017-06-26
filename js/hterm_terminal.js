@@ -2940,6 +2940,10 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
   if (str == null) {
     this.screen_.expandSelection(this.document_.getSelection());
     str = this.getSelectionText();
+
+    // If clicking in empty space, return.
+    if (str == null)
+      return;
   }
 
   // Make sure URL is valid before opening.

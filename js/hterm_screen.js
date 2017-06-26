@@ -773,6 +773,10 @@ hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
  **/
 hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
   if (node.parentNode != row) {
+    // If we traversed to the top node, then there's nothing to find here.
+    if (node.parentNode == null)
+      return -1;
+
     return this.getPositionWithinRow_(node.parentNode, node, offset) +
            this.getPositionWithinRow_(row, node.parentNode, 0);
   }
