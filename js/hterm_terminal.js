@@ -2945,10 +2945,20 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
   // Make sure URL is valid before opening.
   if (str.length > 2048 || str.search(/[\s\[\](){}<>"'\\^`]/) >= 0)
     return;
-  // If the URL isn't anchored, it'll open relative to the extension.
+
+  // If the URI isn't anchored, it'll open relative to the extension.
   // We have no way of knowing the correct schema, so assume http.
-  if (str.search('^[a-zA-Z][a-zA-Z0-9+.-]*://') < 0)
-    str = 'http://' + str;
+  if (str.search('^[a-zA-Z][a-zA-Z0-9+.-]*://') < 0) {
+    // We have to whitelist a few protocols that lack authorities and thus
+    // never use the //.  Like mailto.
+    switch (str.split(':', 1)[0]) {
+      case 'mailto':
+        break;
+      default:
+        str = 'http://' + str;
+        break;
+    }
+  }
 
   this.openUrl(str);
 }
