@@ -178,6 +178,7 @@ hterm.notify = function(params) {
   // directly in case it was stuffed with excess junk.
   var options = {
       'body': params.body,
+      'icon': def(params.icon, lib.resource.getDataUrl('hterm/images/icon-96')),
   }
 
   var title = def(params.title, window.document.title);
