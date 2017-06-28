@@ -35,6 +35,10 @@ which contains the hterm library source concatenated into
 `./dist/js/hterm_all.js`.  This is the file you should copy into your own
 projects.
 
+# Coding Style
+
+See the [libapps hacking document](../../HACK.md) for details.
+
 # Tests
 
 The `./bin/load_tests.sh` script can be used to launch a new instance of Chrome
