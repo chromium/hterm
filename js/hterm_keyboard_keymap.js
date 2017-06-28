@@ -565,17 +565,20 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
 };
 
 /**
- * Either send a ^V or allow the browser to interpret the keystroke as a paste
- * command.
+ * Either send a ^V or issue a paste command.
  *
  * The default behavior is to paste if the user presses Ctrl-Shift-V, and send
  * a ^V if the user presses Ctrl-V. This can be flipped with the
  * 'ctrl-v-paste' preference.
+ *
+ * We have to do the pasting ourselves as not all browsers/OSs bind Ctrl-V to
+ * pasting.  Notably, on macOS, Ctrl-V/Ctrl-Shift-V do nothing.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
   if ((!e.shiftKey && this.keyboard.ctrlVPaste) ||
       (e.shiftKey && !this.keyboard.ctrlVPaste)) {
-    return hterm.Keyboard.KeyActions.PASS;
+    this.keyboard.terminal.paste();
+    return hterm.Keyboard.KeyActions.CANCEL;
   }
 
   return '\x16';
