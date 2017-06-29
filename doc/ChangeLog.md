@@ -1,3 +1,31 @@
+# 1.66, 2017-06-29, New features & charater map improvements.
+
+* Fix wide char width handling and simplify in general via CSS vars.
+* Use ES6 String.repeat to simplify char size measurements.
+* Force height of all lines/chars to match to avoid glyphs drawing lines too
+  high or low and making rendering overall inconsistent.
+* Fix mouse move reporting (regression in hterm-1.65).
+* Clarify modifiers in keyboard bindings.
+* Invert touchscreen scrolling to match OS direction.
+* Document hterm JS language (browser/runtime) requirements.
+* Drop support for GR character maps (which have never actually worked).
+* Add tests for hterm.VT.CharacterMap code.
+* Clean up the hterm.VT.CharacterMap classes.
+* Add reset & setOverrides helpers to hterm.VT.CharacterMap for customization.
+* Add a new hterm.VT.CharacterMaps container class.
+  API breakage warning: hterm.VT.CharacterMap.maps no longer exists.  Any users
+  of it will need to instantiate hterm.VT.CharacterMaps and use that API.
+* Change mouse wheel scrolling when DECCKM is active to run only on the alt
+  screen (and never the primary screen).
+* Add support for custom notifications (iTerm2's OSC-9 and URxvt's
+  OSC-777:notify module).
+* Initial support for making virtual keyboards show up (for phones/tablets).
+* Fix clicking of mailto: links.
+* Fix ctrl+clicking in empty space (caused internal errors).
+* Change Ctrl+V and Ctrl+Shift+V to invoke pasting directly instead of relying
+  on the OS/browser to do so (makes macOS consistent).
+* Include a terminal icon in all notifications.
+
 # 1.65, 2017-05-30, New features & standards polish.
 
 * Use new lib.f.createEnum helper.
