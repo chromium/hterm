@@ -197,16 +197,18 @@ in the Action column below.
 | ESC | Name     | Description                                 | Action |
 |:---:|:--------:|---------------------------------------------|--------|
 |  ␠  | SP       |                                             | Ignored (TBD) |
+|  !  |          |                                             | *Ignored (TBD)* |
 |  "  |          |                                             | *Ignored (TBD)* |
 |  #  |[DEC]     |                                             | Semi-supported |
 |  $  |          |                                             | *Ignored (TBD)* |
 |  %  |          | Character set control                       | Ignored (TBD) |
 |  &  |          |                                             | *Ignored (TBD)* |
-|  `  |          |                                             | *Ignored (TBD)* |
+|  '  |          |                                             | *Ignored (TBD)* |
 |  (  |[SCS]     | Set G0 character set (VT100)                | Set [G0] to NRCS `arg1` |
 |  )  |[SCS]     | Set G1 character set (VT220)                | Set [G1] to NRCS `arg1` |
 |  *  |[SCS]     | Set G2 character set (VT220)                | Set [G2] to NRCS `arg1` |
 |  +  |[SCS]     | Set G3 character set (VT220)                | Set [G3] to NRCS `arg1` |
+|  ,  |          |                                             | *Ignored (TBD)* |
 |  -  |[SCS]     | Set G1 character set (VT300)                | Set [G1] to NRCS `arg1` |
 |  .  |[SCS]     | Set G2 character set (VT300)                | Set [G2] to NRCS `arg1` |
 |  /  |[SCS]     | Set G3 character set (VT300)                | Set [G3] to NRCS `arg1` |
@@ -226,11 +228,38 @@ in the Action column below.
 |  =  | DECKPAM  | Keypad Application Mode                     | Supported |
 |  >  | DECKPNM  | Keypad Numeric Mode                         | Supported |
 |  ?  |          |                                             | *Ignored (TBD)* |
-|  [  |          |                                             | *Ignored (TBD)* |
-|  \  |          |                                             | *Ignored (TBD)* |
-|  ]  |          |                                             | *Ignored (TBD)* |
-|  ^  |          |                                             | *Ignored (TBD)* |
-|  _  |          |                                             | *Ignored (TBD)* |
+|  @  || [See C1 Control Codes](#C1) ||
+|  A  || [See C1 Control Codes](#C1) ||
+|  B  || [See C1 Control Codes](#C1) ||
+|  C  || [See C1 Control Codes](#C1) ||
+|  D  || [See C1 Control Codes](#C1) ||
+|  E  || [See C1 Control Codes](#C1) ||
+|  F  || [See C1 Control Codes](#C1) ||
+|  G  || [See C1 Control Codes](#C1) ||
+|  H  || [See C1 Control Codes](#C1) ||
+|  I  || [See C1 Control Codes](#C1) ||
+|  J  || [See C1 Control Codes](#C1) ||
+|  K  || [See C1 Control Codes](#C1) ||
+|  L  || [See C1 Control Codes](#C1) ||
+|  M  || [See C1 Control Codes](#C1) ||
+|  N  || [See C1 Control Codes](#C1) ||
+|  O  || [See C1 Control Codes](#C1) ||
+|  P  || [See C1 Control Codes](#C1) ||
+|  Q  || [See C1 Control Codes](#C1) ||
+|  R  || [See C1 Control Codes](#C1) ||
+|  S  || [See C1 Control Codes](#C1) ||
+|  T  || [See C1 Control Codes](#C1) ||
+|  U  || [See C1 Control Codes](#C1) ||
+|  V  || [See C1 Control Codes](#C1) ||
+|  W  || [See C1 Control Codes](#C1) ||
+|  X  || [See C1 Control Codes](#C1) ||
+|  Y  || [See C1 Control Codes](#C1) ||
+|  Z  || [See C1 Control Codes](#C1) ||
+|  [  || [See C1 Control Codes](#C1) ||
+|  \  || [See C1 Control Codes](#C1) ||
+|  ]  || [See C1 Control Codes](#C1) ||
+|  ^  || [See C1 Control Codes](#C1) ||
+|  _  || [See C1 Control Codes](#C1) ||
 |  `  | DMI      | Disable Manual Input                        | *Ignored (TBD)* |
 |  a  | INT      | Interrupt                                   | *Ignored (TBD)* |
 |  b  | EMI      | Enable Manual Input                         | *Ignored (TBD)* |
