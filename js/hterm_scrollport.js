@@ -366,6 +366,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
+  this.rowNodes_.id = 'hterm:row-nodes';
   this.rowNodes_.style.cssText = (
       'display: block;' +
       'position: fixed;' +
@@ -388,10 +389,12 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // only used to hold rows that are part of the selection but are currently
   // scrolled off the top or bottom of the visible range.
   this.topFold_ = doc.createElement('x-fold');
+  this.topFold_.id = 'hterm:top-fold-for-row-selection';
   this.topFold_.style.cssText = 'display: block;';
   this.rowNodes_.appendChild(this.topFold_);
 
   this.bottomFold_ = this.topFold_.cloneNode();
+  this.bottomFold_.id = 'hterm:bottom-fold-for-row-selection';
   this.rowNodes_.appendChild(this.bottomFold_);
 
   // This hidden div accounts for the vertical space that would be consumed by
@@ -404,6 +407,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // select and scroll at the same time).  Without this, the selection gets
   // out of whack.
   this.scrollArea_ = doc.createElement('div');
+  this.scrollArea_.id = 'hterm:scrollarea';
   this.scrollArea_.style.cssText = 'visibility: hidden';
   this.screen_.appendChild(this.scrollArea_);
 
@@ -414,6 +418,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // Note: This must be http:// else Chrome cannot create the element correctly.
   var xmlns = 'http://www.w3.org/2000/svg';
   this.svg_ = this.div_.ownerDocument.createElementNS(xmlns, 'svg');
+  this.svg_.id = 'hterm:zoom-detector';
   this.svg_.setAttribute('xmlns', xmlns);
   this.svg_.setAttribute('version', '1.1');
   this.svg_.style.cssText = (
@@ -426,7 +431,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   // We send focus to this element just before a paste happens, so we can
   // capture the pasted text and forward it on to someone who cares.
   this.pasteTarget_ = doc.createElement('textarea');
-  this.pasteTarget_.id = 'ctrl-v-paste-target';
+  this.pasteTarget_.id = 'hterm:ctrl-v-paste-target';
   this.pasteTarget_.setAttribute('tabindex', '-1');
   this.pasteTarget_.style.cssText = (
     'position: absolute;' +
@@ -659,6 +664,7 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
 
   if (!this.ruler_) {
     this.ruler_ = this.document_.createElement('div');
+    this.ruler_.id = 'hterm:ruler-character-size';
     this.ruler_.style.cssText = (
         'position: absolute;' +
         'top: 0;' +
@@ -670,11 +676,13 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
     // We need to put the text in a span to make the size calculation
     // work properly in Firefox
     this.rulerSpan_ = this.document_.createElement('span');
+    this.rulerSpan_.id = 'hterm:ruler-span-workaround';
     this.rulerSpan_.innerHTML =
         ('X'.repeat(lineLength) + '\r').repeat(numberOfLines);
     this.ruler_.appendChild(this.rulerSpan_);
 
     this.rulerBaseline_ = this.document_.createElement('span');
+    this.rulerSpan_.id = 'hterm:ruler-baseline';
     // We want to collapse it on the baseline
     this.rulerBaseline_.style.fontSize = '0px';
     this.rulerBaseline_.textContent = 'X';

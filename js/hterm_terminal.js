@@ -104,6 +104,7 @@ hterm.Terminal = function(opt_profileId) {
 
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
+  this.bellAudio_.id = 'hterm:bell-audio';
   this.bellAudio_.setAttribute('preload', 'auto');
 
   // All terminal bell notifications that have been generated (not necessarily
@@ -1429,6 +1430,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.document_.head.appendChild(style);
 
   this.cursorNode_ = this.document_.createElement('div');
+  this.cursorNode_.id = 'hterm:terminal-cursor';
   this.cursorNode_.className = 'cursor-node';
   this.cursorNode_.style.cssText =
       ('position: absolute;' +
@@ -1454,6 +1456,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   //
   // It's a hack, but it's the cleanest way I could find.
   this.scrollBlockerNode_ = this.document_.createElement('div');
+  this.scrollBlockerNode_.id = 'hterm:mouse-drag-scroll-blocker';
   this.scrollBlockerNode_.style.cssText =
       ('position: absolute;' +
        'top: -99px;' +
@@ -2722,6 +2725,7 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
       return;
 
     this.zoomWarningNode_ = this.document_.createElement('div');
+    this.zoomWarningNode_.id = 'hterm:zoom-warning';
     this.zoomWarningNode_.style.cssText = (
         'color: black;' +
         'background-color: #ff2222;' +
@@ -2848,6 +2852,7 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
     setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
 
   var copySource = this.document_.createElement('pre');
+  copySource.id = 'hterm:copy-to-clipboard-source';
   copySource.textContent = str;
   copySource.style.cssText = (
       '-webkit-user-select: text;' +
