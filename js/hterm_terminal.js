@@ -3039,7 +3039,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.copySelectionToClipboard(this.document_);
     }
 
-    if (e.type == 'click' && !e.shiftKey && e.ctrlKey) {
+    if (e.type == 'click' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
       // Debounce this event with the dblclick event.  If you try to doubleclick
       // a URL to open it, Chrome will fire click then dblclick, but we won't
       // have expanded the selection text at the first click event.
