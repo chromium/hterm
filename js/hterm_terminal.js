@@ -97,6 +97,7 @@ hterm.Terminal = function(opt_profileId) {
   this.foregroundColor_ = null;
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
+  this.scrollWheelArrowKeys_ = null;
 
   // True if we should override mouse event reporting to allow local selection.
   this.defeatMouseReports_ = false;
@@ -513,6 +514,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'scrollbar-visible': function(v) {
       terminal.setScrollbarVisible(v);
+    },
+
+    'scroll-wheel-may-send-arrow-keys': function(v) {
+      terminal.scrollWheelArrowKeys_ = v;
     },
 
     'scroll-wheel-move-multiplier': function(v) {
@@ -3073,7 +3078,9 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.scrollBlockerNode_.style.top = '-99px';
     }
 
-    if (this.keyboard.applicationCursor && !this.isPrimaryScreen()) {
+    // Emulate arrow key presses via scroll wheel events.
+    if (this.scrollWheelArrowKeys_ && !e.shiftKey &&
+        this.keyboard.applicationCursor && !this.isPrimaryScreen()) {
       if (e.type == 'wheel') {
         var delta = this.scrollPort_.scrollWheelDelta(e);
         var lines = lib.f.smartFloorDivide(

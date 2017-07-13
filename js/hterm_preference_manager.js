@@ -422,6 +422,16 @@ hterm.PreferenceManager.defaultPreferences = {
   [hterm.PreferenceManager.categories.Scrolling, true, 'bool',
    'The vertical scrollbar mode.'],
 
+  'scroll-wheel-may-send-arrow-keys':
+  [hterm.PreferenceManager.categories.Scrolling, true, 'bool',
+   'When using the alternative screen buffer, and DECCKM (Application Cursor ' +
+   'Keys) is active, mouse wheel scroll events will emulate arrow keys.\n' +
+   '\n' +
+   'It can be temporarily disabled by holding the shift key.\n' +
+   '\n' +
+   'This frequently comes up when using pagers (less) or reading man pages ' +
+   'or text editors (vi/nano) or using screen/tmux.'],
+
   'scroll-wheel-move-multiplier':
   [hterm.PreferenceManager.categories.Scrolling, 1, 'int',
    'The multiplier for the pixel delta in wheel events caused by the ' +
