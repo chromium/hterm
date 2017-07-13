@@ -2926,8 +2926,13 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
  * @param {string} url URL to launch in a new tab.
  */
 hterm.Terminal.prototype.openUrl = function(url) {
-  var win = window.open(url, '_blank');
-  win.focus();
+  if (window.chrome && window.chrome.browser) {
+    // For Chrome v2 apps, we need to use this API to properly open windows.
+    chrome.browser.openTab({'url': url});
+  } else {
+    var win = window.open(url, '_blank');
+    win.focus();
+  }
 }
 
 /**
