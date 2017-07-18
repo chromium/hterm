@@ -1,4 +1,10 @@
-# 1.66, 2017-06-29, New features & charater map improvements.
+# 1.67, 2017-07-17, New feature polish.
+
+* Open links on macOS via cmd+click.
+* Fix URL opening for Chrome v2 apps.
+* Support disabling DECCKM mouse wheel events.
+
+# 1.66, 2017-06-29, New features & character map improvements.
 
 * Fix wide char width handling and simplify in general via CSS vars.
 * Use ES6 String.repeat to simplify char size measurements.
