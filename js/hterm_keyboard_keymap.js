@@ -571,14 +571,18 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
  * a ^V if the user presses Ctrl-V. This can be flipped with the
  * 'ctrl-v-paste' preference.
  *
- * We have to do the pasting ourselves as not all browsers/OSs bind Ctrl-V to
- * pasting.  Notably, on macOS, Ctrl-V/Ctrl-Shift-V do nothing.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
   if ((!e.shiftKey && this.keyboard.ctrlVPaste) ||
       (e.shiftKey && !this.keyboard.ctrlVPaste)) {
-    this.keyboard.terminal.paste();
-    return hterm.Keyboard.KeyActions.CANCEL;
+    // We try to do the pasting ourselves as not all browsers/OSs bind Ctrl-V to
+    // pasting.  Notably, on macOS, Ctrl-V/Ctrl-Shift-V do nothing.
+    // However, this might run into web restrictions, so if it fails, we still
+    // fallback to the letting the native behavior (hopefully) save us.
+    if (this.keyboard.terminal.paste())
+      return hterm.Keyboard.KeyActions.CANCEL;
+    else
+      return hterm.Keyboard.KeyActions.PASS;
   }
 
   return '\x16';

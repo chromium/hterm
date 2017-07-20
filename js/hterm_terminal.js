@@ -2796,7 +2796,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
  * Paste from the system clipboard to the terminal.
  */
 hterm.Terminal.prototype.paste = function() {
-  hterm.pasteFromClipboard(this.document_);
+  return hterm.pasteFromClipboard(this.document_);
 };
 
 /**
@@ -3062,7 +3062,8 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     if (e.type == 'mousedown') {
       if ((this.mouseRightClickPaste && e.button == 2 /* right button */) ||
           e.button == this.mousePasteButton) {
-        this.paste();
+        if (!this.paste())
+          console.warning('Could not paste manually due to web restrictions');;
       }
     }
 
