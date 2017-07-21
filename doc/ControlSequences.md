@@ -142,6 +142,10 @@ an escape sequence.  e.g. ESC+@ (0x1b 0x40) instead of 0x80.
 
 ## G0/G1/G2/G3 Graphic Codesets for GL/GR (SCS) {#SCS}
 
+***note
+Support for character maps may be disabled at runtime via [DOCS].
+***
+
 With the rise of UTF-8 encoding, graphic codesets have fallen out of favor.
 Although we still support a limited number for legacy systems.
 
@@ -185,6 +189,31 @@ Here's the list of national replacement character sets (NRCS) we support:
 |  Y  | [Italian](http://vt100.net/docs/vt220-rm/table2-11.html) |
 |  Z  | [Spanish](http://vt100.net/docs/vt220-rm/table2-13.html) |
 
+## Designate Other Coding System (DOCS) {#DOCS}
+
+[ECMA-35] supports changing the encoding system of terminal.  Since hterm is
+natively UTF-8, we use this to control support for character maps (see [SCS]
+for more details).
+
+This escape sequence has a one or two byte form.  If the first byte is `/`,
+then it is a one way transition.  i.e. Any further attempts to change the
+encoding will simply be ignored.  This is useful for putting the terminal into
+UTF-8 mode permanently and not worrying about binary data switching character
+maps to graphics mode.
+
+To invoke these, use ESC+%+DOCS.  e.g. ESC+%/G (0x1b 0x25 0x2f 0x47).
+
+Any sequence not documented below is simply ignored.  The only two byte sequence
+supported currently is where the first byte is `/`.
+
+| DOCS | Description                                  | Character Maps ([SCS]) |
+|:----:|----------------------------------------------|------------------------|
+|    @ | Switch to ECMA-35 encoding (default)         | Supported              |
+|    G | Switch to UTF-8 encoding                     | Supported              |
+|   /G | Permanently switch to UTF-8 encoding Level 1 | Treated as `/I`        |
+|   /H | Permanently switch to UTF-8 encoding Level 2 | Treated as `/I`        |
+|   /I | Permanently switch to UTF-8 encoding Level 3 | Supported              |
+
 ## Escape Sequences {#ESC}
 
 These are other escape sequences we support.  This is similar to the C1 Control
@@ -201,7 +230,7 @@ in the Action column below.
 |  "  |          |                                             | *Ignored (TBD)* |
 |  #  |[DEC]     |                                             | Semi-supported |
 |  $  |          |                                             | *Ignored (TBD)* |
-|  %  |          | Character set control                       | Ignored (TBD) |
+|  %  |[DOCS]    | Designate Other Coding System               | Supported |
 |  &  |          |                                             | *Ignored (TBD)* |
 |  '  |          |                                             | *Ignored (TBD)* |
 |  (  |[SCS]     | Set G0 character set (VT100)                | Set [G0] to NRCS `arg1` |
@@ -672,6 +701,7 @@ color selection.
 [CSI]: #CSI
 [DCS]: #DCS
 [DEC]: #DEC
+[DOCS]: #DOCS
 [ESC]: #ESC
 [OSC]: #OSC
 [RM]: #SM

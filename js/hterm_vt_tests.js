@@ -1693,3 +1693,143 @@ hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
 
     result.requestTime(200);
   });
+
+/**
+ * Verify switching character maps works.
+ */
+hterm.VT.Tests.addTest('character-maps', function(result, cx) {
+    // Create a line with all the printable characters.
+    var i, line = '';
+    for (i = 0x20; i < 0x7f; ++i)
+      line += String.fromCharCode(i);
+
+    this.terminal.setWidth(line.length);
+
+    // Start with sanity check -- no translations are active.
+    this.terminal.clearHome();
+    this.terminal.interpret(line);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    // Loop through all the maps.
+    var map, gl;
+    for (map in hterm.VT.CharacterMaps.DefaultMaps) {
+      // If this map doesn't do any translations, skip it.
+      gl = hterm.VT.CharacterMaps.DefaultMaps[map].GL;
+      if (!gl)
+        continue;
+
+      // Point G0 to the specified map (and assume GL points to G0).
+      this.terminal.clearHome();
+      this.terminal.interpret('\x1b(' + map + line);
+      result.assertEQ(this.terminal.getRowText(0), gl(line));
+    }
+
+    result.pass();
+  });
+
+/**
+ * Verify DOCS (encoding) switching behavior.
+ */
+hterm.VT.Tests.addTest('docs', function(result, cx) {
+    // Create a line with all the printable characters.
+    var i, graphicsLine, line = '';
+    for (i = 0x20; i < 0x7f; ++i)
+      line += String.fromCharCode(i);
+    graphicsLine = hterm.VT.CharacterMaps.DefaultMaps['0'].GL(line);
+
+    this.terminal.setWidth(line.length);
+
+    // Check the default encoding (ECMA-35).
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, false);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+    this.terminal.clearHome();
+    this.terminal.interpret(line);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    // Switch to the graphics map and make sure it translates.
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b(0' + line);
+    result.assertEQ(this.terminal.getRowText(0), graphicsLine);
+
+    // Switch to UTF-8 encoding.  The graphics map should not translate.
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b%G' + line)
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    // Switch to ECMA-35 encoding.  The graphics map should translate.
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b%@' + line)
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, false);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+    result.assertEQ(this.terminal.getRowText(0), graphicsLine);
+
+    // Switch to UTF-8 encoding (and lock).
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b%/G' + line)
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, true);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    // Switching back to ECMA-35 should not work now.
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b%@' + line)
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, true);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    // Try other UTF-8 modes (although they're the same as /G).
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b%/H' + line)
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, true);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    this.terminal.clearHome();
+    this.terminal.interpret('\x1b%/I' + line)
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, true);
+    result.assertEQ(this.terminal.getRowText(0), line);
+
+    result.pass();
+  });
+
+/**
+ * Verify DOCS (encoding) invalid escapes don't mess things up.
+ */
+hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
+    // Check the default encoding (ECMA-35).
+    result.assertEQ(this.terminal.vt.codingSystemUtf8, false);
+    result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+
+    // Try switching to a random set of invalid escapes.
+    var ch;
+    ['a', '9', 'X', '(', '}'].forEach((ch) => {
+      // First in ECMA-35 encoding.
+      this.terminal.interpret('\x1b%@');
+      this.terminal.interpret('\x1b%' + ch);
+      result.assertEQ(this.terminal.vt.codingSystemUtf8, false);
+      result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+      result.assertEQ(this.terminal.getRowText(0), '');
+
+      this.terminal.interpret('\x1b%/' + ch);
+      result.assertEQ(this.terminal.vt.codingSystemUtf8, false);
+      result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+      result.assertEQ(this.terminal.getRowText(0), '');
+
+      // Then in UTF-8 encoding.
+      this.terminal.interpret('\x1b%G');
+      this.terminal.interpret('\x1b%' + ch);
+      result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+      result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+      result.assertEQ(this.terminal.getRowText(0), '');
+
+      this.terminal.interpret('\x1b%/' + ch);
+      result.assertEQ(this.terminal.vt.codingSystemUtf8, true);
+      result.assertEQ(this.terminal.vt.codingSystemLocked, false);
+      result.assertEQ(this.terminal.getRowText(0), '');
+    });
+
+    result.pass();
+  });

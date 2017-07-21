@@ -138,6 +138,15 @@ hterm.VT = function(terminal) {
    */
   this.GR = 'G0';
 
+  /**
+   * The current encoding of the terminal.
+   *
+   * We only support ECMA-35 and UTF-8, so go with a boolean here.
+   * The encoding can be locked too.
+   */
+  this.codingSystemUtf8 = false;
+  this.codingSystemLocked = false;
+
   // Saved state used in DECSC.
   //
   // This is a place to store a copy VT state, it is *not* the active state.
@@ -487,7 +496,7 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
   var self = this;
 
   function print(str) {
-    if (self[self.GL].GL)
+    if (!self.codingSystemUtf8 && self[self.GL].GL)
       str = self[self.GL].GL(str);
 
     self.terminal.print(str);
@@ -1257,21 +1266,57 @@ hterm.VT.ESC['#'] = function(parseState) {
 };
 
 /**
- * 'ESC %' sequences, character set control.  Not currently implemented.
- *
- * To be implemented (currently ignored):
- *   ESC % @ - Set ISO 8859-1 character set.
- *   ESC % G - Set UTF-8 character set.
- *
- * All other ESC % sequences are echoed to the terminal.
- *
- * TODO(rginda): Implement.
+ * Designate Other Coding System (DOCS).
  */
 hterm.VT.ESC['%'] = function(parseState) {
   parseState.func = function(parseState) {
     var ch = parseState.consumeChar();
-    if (ch != '@' && ch != 'G' && this.warnUnimplemented)
-      console.warn('Unknown ESC % argument: ' + JSON.stringify(ch));
+
+    // If we've locked the encoding, then just eat the bytes and return.
+    if (this.codingSystemLocked) {
+      if (ch == '/')
+        parseState.consumeChar();
+      parseState.resetParseFunction();
+      return;
+    }
+
+    // Process the encoding requests.
+    switch (ch) {
+      case '@':
+        // Switch to ECMA 35.
+        this.codingSystemUtf8 = false;
+        break;
+
+      case 'G':
+        // Switch to UTF-8.
+        this.codingSystemUtf8 = true;
+        break;
+
+      case '/':
+        // One way transition to something else.
+        ch = parseState.consumeChar();
+        switch (ch) {
+          case 'G':  // UTF-8 Level 1.
+          case 'H':  // UTF-8 Level 2.
+          case 'I':  // UTF-8 Level 3.
+            // We treat all UTF-8 levels the same.
+            this.codingSystemUtf8 = true;
+            this.codingSystemLocked = true;
+            break;
+
+          default:
+            if (this.warnUnimplemented)
+              console.warn('Unknown ESC % / argument: ' + JSON.stringify(ch));
+            break;
+        }
+        break;
+
+      default:
+        if (this.warnUnimplemented)
+          console.warn('Unknown ESC % argument: ' + JSON.stringify(ch));
+        break;
+    }
+
     parseState.resetParseFunction();
   };
 };
