@@ -111,11 +111,14 @@ hterm.VT = function(terminal) {
 
   /**
    * The default G0...G3 character maps.
+   * We default to the US/ASCII map everywhere as that aligns with other
+   * terminals, and it makes it harder to accidentally switch to the graphics
+   * character map (Ctrl-N).  Any program that wants to use the graphics map
+   * will usually select it anyways since there's no guarantee what state any
+   * of the maps are in at any particular time.
    */
-  this.G0 = this.characterMaps.getMap('B');
-  this.G1 = this.characterMaps.getMap('0');
-  this.G2 = this.characterMaps.getMap('B');
-  this.G3 = this.characterMaps.getMap('B');
+  this.G0 = this.G1 = this.G2 = this.G3 =
+      this.characterMaps.getMap('B');
 
   /**
    * The 7-bit visible character set.
