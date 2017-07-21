@@ -423,7 +423,7 @@ hterm.PreferenceManager.defaultPreferences = {
    'The vertical scrollbar mode.'],
 
   'scroll-wheel-may-send-arrow-keys':
-  [hterm.PreferenceManager.categories.Scrolling, true, 'bool',
+  [hterm.PreferenceManager.categories.Scrolling, false, 'bool',
    'When using the alternative screen buffer, and DECCKM (Application Cursor ' +
    'Keys) is active, mouse wheel scroll events will emulate arrow keys.\n' +
    '\n' +
