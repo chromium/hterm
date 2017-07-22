@@ -175,6 +175,8 @@ hterm.Frame.prototype.show = function() {
       'left: 4%;' +
       'width: 90%;' +
       'height: 80%;' +
+      'min-height: 20%;' +
+      'max-height: 80%;' +
       'box-shadow: 0 0 2px ' + this.terminal_.getForegroundColor() + ';' +
       'border: 2px ' + this.terminal_.getForegroundColor() + ' solid;');
 
