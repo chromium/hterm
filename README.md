@@ -33,6 +33,7 @@ Feel free to let us know via the Contact section above! :)
 
 # Documentation
 
+* [Authors](./doc/AUTHORS.md) -- List of people who have contributed
 * [ChangeLog](./doc/ChangeLog.md) -- List of interesting changes in each release
 * [FAQ](../nassh/doc/FAQ.md) -- Frequently Asked Questions
 * [Keyboard Bindings](./doc/KeyboardBindings.md) -- All keyboard related details
