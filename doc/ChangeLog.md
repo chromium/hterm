@@ -1,3 +1,10 @@
+# 1.68, 2017-07-26, New feature polish, and robustify character maps.
+
+* Restore native pasting as a fallback for the open web.
+* Change default G1 character map to US/ASCII.
+* Change DECCKM mouse wheel events to default to off.
+* Add support for DOCS for transitioning to UTF-8 (ESC+%).
+
 # 1.67, 2017-07-17, New feature polish.
 
 * Open links on macOS via cmd+click.
