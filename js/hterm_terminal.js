@@ -537,6 +537,26 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.keyboard.shiftInsertPaste = v;
     },
 
+    'terminal-encoding': function(v) {
+      switch (v) {
+        default:
+          console.warn('Invalid value for "terminal-encoding": ' + v);
+          // Fall through.
+        case 'iso-2022':
+          terminal.vt.codingSystemUtf8 = false;
+          terminal.vt.codingSystemLocked = false;
+          break;
+        case 'utf-8-locked':
+          terminal.vt.codingSystemUtf8 = true;
+          terminal.vt.codingSystemLocked = true;
+          break;
+        case 'utf-8':
+          terminal.vt.codingSystemUtf8 = true;
+          terminal.vt.codingSystemLocked = false;
+          break;
+      }
+    },
+
     'user-css': function(v) {
       terminal.scrollPort_.setUserCssUrl(v);
     },

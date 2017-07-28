@@ -441,6 +441,20 @@ hterm.PreferenceManager.defaultPreferences = {
   [hterm.PreferenceManager.categories.Encoding, 'utf-8', ['utf-8', 'raw'],
    'Set the encoding for data sent to host.'],
 
+  'terminal-encoding':
+  [hterm.PreferenceManager.categories.Encoding, 'iso-2022',
+   ['iso-2022', 'utf-8', 'utf-8-locked'],
+   'The default terminal encoding (DOCS).\n' +
+   '\n' +
+   'ISO-2022 enables character map translations (like graphics maps).\n' +
+   'UTF-8 disables support for those.\n' +
+   '\n' +
+   'The locked variant means the encoding cannot be changed at runtime ' +
+   'via terminal escape sequences.\n' +
+   '\n' +
+   'You should stick with UTF-8 unless you notice broken rendering with ' +
+   'legacy applications.'],
+
   'shift-insert-paste':
   [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
    'Shift + Insert pastes if true, sent to host if false.'],
