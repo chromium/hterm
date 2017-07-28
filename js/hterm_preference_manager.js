@@ -249,7 +249,14 @@ hterm.PreferenceManager.defaultPreferences = {
    'DEC Private Mode 12.'],
 
   'environment':
-  [hterm.PreferenceManager.categories.Miscellaneous, {'TERM': 'xterm-256color'},
+  [hterm.PreferenceManager.categories.Miscellaneous,
+   {
+     // Signal ncurses based apps to use UTF-8 output instead of legacy drawing
+     // modes (which only work in ISO-2022 mode).  Since hterm is always UTF-8,
+     // this shouldn't cause problems.
+     'NCURSES_NO_UTF8_ACS': '1',
+     'TERM': 'xterm-256color',
+   },
    'value',
    'The default environment variables, as an object.'],
 
@@ -445,7 +452,7 @@ hterm.PreferenceManager.defaultPreferences = {
    'Set the encoding for data sent to host.'],
 
   'terminal-encoding':
-  [hterm.PreferenceManager.categories.Encoding, 'iso-2022',
+  [hterm.PreferenceManager.categories.Encoding, 'utf-8',
    ['iso-2022', 'utf-8', 'utf-8-locked'],
    'The default terminal encoding (DOCS).\n' +
    '\n' +
