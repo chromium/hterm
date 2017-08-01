@@ -81,10 +81,7 @@ lib.registerInit('hterm', function(onInit) {
   }
 
   if (!hterm.defaultStorage) {
-    var ary = navigator.userAgent.match(/\sChrome\/(\d\d)/);
-    var version = ary ? parseInt(ary[1]) : -1;
-    if (window.chrome && chrome.storage && chrome.storage.sync &&
-        version > 21) {
+    if (window.chrome && chrome.storage && chrome.storage.sync) {
       hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
     } else {
       hterm.defaultStorage = new lib.Storage.Local();
