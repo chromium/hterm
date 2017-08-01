@@ -2584,11 +2584,11 @@ hterm.Terminal.prototype.cursorRight = function(count) {
 hterm.Terminal.prototype.setReverseVideo = function(state) {
   this.options_.reverseVideo = state;
   if (state) {
-    this.scrollPort_.setForegroundColor(this.prefs_.get('background-color'));
-    this.scrollPort_.setBackgroundColor(this.prefs_.get('foreground-color'));
+    this.scrollPort_.setForegroundColor(this.backgroundColor_);
+    this.scrollPort_.setBackgroundColor(this.foregroundColor_);
   } else {
-    this.scrollPort_.setForegroundColor(this.prefs_.get('foreground-color'));
-    this.scrollPort_.setBackgroundColor(this.prefs_.get('background-color'));
+    this.scrollPort_.setForegroundColor(this.foregroundColor_);
+    this.scrollPort_.setBackgroundColor(this.backgroundColor_);
   }
 };
 
