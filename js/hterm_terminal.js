@@ -3249,6 +3249,8 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
 
     this.overlayNode_ = this.document_.createElement('div');
     this.overlayNode_.style.cssText = (
+        'color: var(--hterm-background-color);' +
+        'background-color: var(--hterm-foreground-color);' +
         'border-radius: 12px;' +
         'font: 500 1em "Noto Sans", sans-serif;' +
         'opacity: 0.75;' +
@@ -3265,8 +3267,6 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
     }, true);
   }
 
-  this.overlayNode_.style.color = this.prefs_.get('background-color');
-  this.overlayNode_.style.backgroundColor = this.prefs_.get('foreground-color');
   this.overlayNode_.style.fontSize = this.prefs_.get('font-size');
 
   this.overlayNode_.textContent = msg;
