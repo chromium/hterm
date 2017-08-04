@@ -28,6 +28,14 @@ get_osc52() {
   printf "%b" "\033]52;c;$(base64 | tr -d '\n')\a\n"
 }
 
+# This function base64's the entire source as a single blob and wraps it in a
+# single OSC 52 sequence for tmux.
+#
+# This is for `tmux` sessions which filters OSC 52 locally.
+get_osc52_tmux() {
+  printf "%b" "\ePtmux;\e\e]52;c;$(base64 | tr -d '\n')\a\e\\"
+}
+
 # This function base64's the entire source, wraps it in a single OSC 52,
 # and then breaks the result into small chunks which are each wrapped in a
 # DCS sequence.
@@ -56,8 +64,17 @@ main() {
   local str=''
 
   case ${TERM} in
-  *screen*)
-    str="$(get_osc52_dsc)"
+  screen*)
+    # Since tmux defaults to setting TERM=screen (ugh), we need to detect
+    # it here specially.
+    if [ -n "${TMUX-}" ]; then
+      str="$(get_osc52_tmux)"
+    else
+      str="$(get_osc52_dsc)"
+    fi
+    ;;
+  tmux*)
+    str="$(get_osc52_tmux)"
     ;;
   *)
     str="$(get_osc52)"
