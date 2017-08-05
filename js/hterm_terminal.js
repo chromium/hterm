@@ -1408,6 +1408,8 @@ hterm.Terminal.prototype.decorate = function(div) {
        ':root {' +
        '  --hterm-charsize-width: ' + this.scrollPort_.characterSize.width + 'px;' +
        '  --hterm-charsize-height: ' + this.scrollPort_.characterSize.height + 'px;' +
+       '  --hterm-cursor-offset-col: 0;' +
+       '  --hterm-cursor-offset-row: 0;' +
        '  --hterm-blink-node-duration: 0.7s;' +
        '  --hterm-mouse-cursor-text: text;' +
        '  --hterm-mouse-cursor-pointer: default;' +
@@ -1430,7 +1432,8 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.cursorNode_.className = 'cursor-node';
   this.cursorNode_.style.cssText =
       ('position: absolute;' +
-       'top: -99px;' +
+       'left: calc(var(--hterm-charsize-width) * var(--hterm-cursor-offset-col));' +
+       'top: calc(var(--hterm-charsize-height) * var(--hterm-cursor-offset-row));' +
        'display: block;' +
        'width: var(--hterm-charsize-width);' +
        'height: var(--hterm-charsize-height);' +
@@ -2619,7 +2622,7 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
 
   if (cursorRowIndex > bottomRowIndex) {
     // Cursor is scrolled off screen, move it outside of the visible area.
-    this.cursorNode_.style.top = -this.scrollPort_.characterSize.height + 'px';
+    this.setCssVar('cursor-offset-row', '-1');
     return;
   }
 
@@ -2629,16 +2632,18 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
     this.cursorNode_.style.display = '';
   }
 
-
-  this.cursorNode_.style.top = this.scrollPort_.visibleRowTopMargin +
-      this.scrollPort_.characterSize.height * (cursorRowIndex - topRowIndex) +
-      'px';
-  this.cursorNode_.style.left = this.scrollPort_.characterSize.width *
-      this.screen_.cursorPosition.column + 'px';
+  // Position the cursor using CSS variable math.  If we do the math in JS,
+  // the float math will end up being more precise than the CSS which will
+  // cause the cursor tracking to be off.
+  this.setCssVar(
+      'cursor-offset-row',
+      `${cursorRowIndex - topRowIndex} + ` +
+      `${this.scrollPort_.visibleRowTopMargin}px`);
+  this.setCssVar('cursor-offset-col', this.screen_.cursorPosition.column);
 
   this.cursorNode_.setAttribute('title',
-                                '(' + this.screen_.cursorPosition.row +
-                                ', ' + this.screen_.cursorPosition.column +
+                                '(' + this.screen_.cursorPosition.column +
+                                ', ' + this.screen_.cursorPosition.row +
                                 ')');
 
   // Update the caret for a11y purposes.
