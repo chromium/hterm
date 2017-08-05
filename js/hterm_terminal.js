@@ -753,6 +753,21 @@ hterm.Terminal.prototype.uninstallKeyboard = function() {
 }
 
 /**
+ * Set a CSS variable.
+ *
+ * Normally this is used to set variables in the hterm namespace.
+ *
+ * @param {string} name The variable to set.
+ * @param {string} value The value to assign to the variable.
+ * @param {string?} opt_prefix The variable namespace/prefix to use.
+ */
+hterm.Terminal.prototype.setCssVar = function(name, value,
+                                              opt_prefix='--hterm-') {
+  this.document_.documentElement.style.setProperty(
+      `${opt_prefix}${name}`, value);
+};
+
+/**
  * Set the font size for this terminal.
  *
  * Call setFontSize(0) to reset to the default font size.
@@ -766,10 +781,9 @@ hterm.Terminal.prototype.setFontSize = function(px) {
     px = this.prefs_.get('font-size');
 
   this.scrollPort_.setFontSize(px);
-  this.document_.documentElement.style.setProperty(
-      '--hterm-charsize-width', this.scrollPort_.characterSize.width + 'px');
-  this.document_.documentElement.style.setProperty(
-      '--hterm-charsize-height', this.scrollPort_.characterSize.height + 'px');
+  this.setCssVar('charsize-width', this.scrollPort_.characterSize.width + 'px');
+  this.setCssVar('charsize-height',
+                 this.scrollPort_.characterSize.height + 'px');
 };
 
 /**
@@ -848,20 +862,18 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
  * Enable or disable blink based on the enable-blink pref.
  */
 hterm.Terminal.prototype.syncBlinkState = function() {
-  this.document_.documentElement.style.setProperty(
-      '--hterm-blink-node-duration',
-      this.prefs_.get('enable-blink') ? '0.7s' : '0');
+  this.setCssVar('node-duration',
+                 this.prefs_.get('enable-blink') ? '0.7s' : '0');
 };
 
 /**
  * Set the mouse cursor style based on the current terminal mode.
  */
 hterm.Terminal.prototype.syncMouseStyle = function() {
-  this.document_.documentElement.style.setProperty(
-      '--hterm-mouse-cursor-style',
-      this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED ?
-          'var(--hterm-mouse-cursor-text)' :
-          'var(--hterm-mouse-cursor-pointer)');
+  this.setCssVar('mouse-cursor-style',
+                 this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED ?
+                     'var(--hterm-mouse-cursor-text)' :
+                     'var(--hterm-mouse-cursor-pointer)');
 };
 
 /**
