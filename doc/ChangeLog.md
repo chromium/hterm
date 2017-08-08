@@ -1,3 +1,9 @@
+# 1.69, 2017-08-08, Improve cursor positioning.
+
+* Add a pref for default terminal encoding.
+* Add a helper/document for the new notification position.
+* Switch cursor positioning to use CSS vars.
+
 # 1.68, 2017-07-26, New feature polish, and robustify character maps.
 
 * Restore native pasting as a fallback for the open web.
