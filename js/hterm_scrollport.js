@@ -1413,7 +1413,6 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
 hterm.ScrollPort.prototype.onResize_ = function(e) {
   // Re-measure, since onResize also happens for browser zoom changes.
   this.syncCharacterSize();
-  this.resize();
 };
 
 /**
