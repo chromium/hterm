@@ -361,6 +361,12 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.addEventListener('touchcancel', this.onTouch_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
+  // Disable drag & drop of text/content.  We don't handle it at all (yet?),
+  // and the default behavior just confuses hterm.
+  this.screen_.addEventListener('drop', function(e) {
+    e.preventDefault();
+    return false;
+  });
 
   doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
 
