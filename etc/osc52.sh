@@ -33,7 +33,7 @@ get_osc52() {
 #
 # This is for `tmux` sessions which filters OSC 52 locally.
 get_osc52_tmux() {
-  printf "%b" "\ePtmux;\e\e]52;c;$(base64 | tr -d '\n')\a\e\\"
+  printf "%b" "\033Ptmux;\033\033]52;c;$(base64 | tr -d '\n')\a\033\\"
 }
 
 # This function base64's the entire source, wraps it in a single OSC 52,

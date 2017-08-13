@@ -14,7 +14,7 @@ die() {
 # Usage: [title] [body]
 notify_tmux() {
   local title="${1-}" body="${2-}"
-  printf '\ePtmux;\e\e]777;notify;%s;%s\a\e\\' "${title}" "${body}"
+  printf '\033Ptmux;\033\033]777;notify;%s;%s\a\033\\' "${title}" "${body}"
 }
 
 # Send a notification.
@@ -29,14 +29,14 @@ notify() {
     if [ -n "${TMUX-}" ]; then
       notify_tmux "${title}" "${body}"
     else
-      printf '\eP\e\e]777;notify;%s;%s\a\e\\' "${title}" "${body}"
+      printf '\033P\033\033]777;notify;%s;%s\a\033\\' "${title}" "${body}"
     fi
     ;;
   tmux*)
     notify_tmux "${title}" "${body}"
     ;;
   *)
-    printf '\e]777;notify;%s;%s\a' "${title}" "${body}"
+    printf '\033]777;notify;%s;%s\a' "${title}" "${body}"
     ;;
   esac
 }
