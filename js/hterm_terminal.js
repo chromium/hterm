@@ -1716,8 +1716,8 @@ hterm.Terminal.prototype.print = function(str) {
 
     var tokens = hterm.TextAttributes.splitWidecharString(substr);
     for (var i = 0; i < tokens.length; i++) {
-      if (tokens[i].wcNode)
-        this.screen_.textAttributes.wcNode = true;
+      this.screen_.textAttributes.wcNode = tokens[i].wcNode;
+      this.screen_.textAttributes.asciiNode = tokens[i].asciiNode;
 
       if (this.options_.insertMode) {
           this.screen_.insertString(tokens[i].str);
@@ -1725,6 +1725,7 @@ hterm.Terminal.prototype.print = function(str) {
         this.screen_.overwriteString(tokens[i].str);
       }
       this.screen_.textAttributes.wcNode = false;
+      this.screen_.textAttributes.asciiNode = true;
     }
 
     this.screen_.maybeClipCurrentRow();

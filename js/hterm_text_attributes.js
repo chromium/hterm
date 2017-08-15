@@ -46,6 +46,7 @@ hterm.TextAttributes = function(document) {
   this.inverse = false;
   this.invisible = false;
   this.wcNode = false;
+  this.asciiNode = true;
   this.tileData = null;
 
   this.colorPalette = null;
@@ -129,6 +130,7 @@ hterm.TextAttributes.prototype.reset = function() {
   this.inverse = false;
   this.invisible = false;
   this.wcNode = false;
+  this.asciiNode = true;
 };
 
 /**
@@ -156,6 +158,7 @@ hterm.TextAttributes.prototype.isDefault = function() {
           !this.inverse &&
           !this.invisible &&
           !this.wcNode &&
+          this.asciiNode &&
           this.tileData == null);
 };
 
@@ -218,6 +221,7 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (this.wcNode) {
     classes.push('wc-node');
     span.wcNode = true;
+    span.asciiNode = false;
   }
 
   if (this.tileData != null) {
@@ -257,6 +261,7 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
   // We don't want to put multiple characters in a wcNode or a tile.
   // See the comments in createContainer.
   return (!(this.wcNode || obj.wcNode) &&
+          this.asciiNode == this.asciiNode &&
           !(this.tileData != null || obj.tileNode) &&
           this.foreground == style.color &&
           this.background == style.backgroundColor &&
@@ -389,7 +394,7 @@ hterm.TextAttributes.containerIsDefault = function(obj) {
  * @return {integer} The column width of the node's textContent.
  */
 hterm.TextAttributes.nodeWidth = function(node) {
-  if (node.wcNode) {
+  if (!node.asciiNode) {
     return lib.wc.strWidth(node.textContent);
   } else {
     return node.textContent.length;
@@ -407,7 +412,7 @@ hterm.TextAttributes.nodeWidth = function(node) {
  * @return {integer} The extracted substr of the node's textContent.
  */
 hterm.TextAttributes.nodeSubstr = function(node, start, width) {
-  if (node.wcNode) {
+  if (!node.asciiNode) {
     return lib.wc.substr(node.textContent, start, width);
   } else {
     return node.textContent.substr(start, width);
@@ -425,7 +430,7 @@ hterm.TextAttributes.nodeSubstr = function(node, start, width) {
  * @return {integer} The extracted substring of the node's textContent.
  */
 hterm.TextAttributes.nodeSubstring = function(node, start, end) {
-  if (node.wcNode) {
+  if (!node.asciiNode) {
     return lib.wc.substring(node.textContent, start, end);
   } else {
     return node.textContent.substring(start, end);
@@ -439,31 +444,48 @@ hterm.TextAttributes.nodeSubstring = function(node, start, end) {
  * @param {string} str The string to split.
  * @return {Array} An array of objects that contain substrings of str, where
  *     each substring is either a contiguous runs of single-width characters
- *     or a double-width character.  For object that contains a double-width
- *     character, its wcNode property is set to true.
+ *     or a double-width character.  For objects that contain a double-width
+ *     character, its wcNode property is set to true.  For objects that contain
+ *     only ASCII content, its asciiNode property is set to true.
  */
 hterm.TextAttributes.splitWidecharString = function(str) {
   var rv = [];
   var base = 0, length = 0;
+  var asciiNode = true;
 
   for (var i = 0; i < str.length;) {
     var c = str.codePointAt(i);
     var increment = (c <= 0xffff) ? 1 : 2;
-    if (c < 128 || lib.wc.charWidth(c) == 1) {
+    if (c < 128) {
       length += increment;
+    } else if (lib.wc.charWidth(c) <= 1) {
+      length += increment;
+      asciiNode = false;
     } else {
       if (length) {
-        rv.push({str: str.substr(base, length)});
+        rv.push({
+          str: str.substr(base, length),
+          asciiNode: asciiNode,
+        });
+        asciiNode = true;
       }
-      rv.push({str: str.substr(i, increment), wcNode: true});
+      rv.push({
+        str: str.substr(i, increment),
+        wcNode: true,
+        asciiNode: false,
+      });
       base = i + increment;
       length = 0;
     }
     i += increment;
   }
 
-  if (length)
-    rv.push({str: str.substr(base, length)});
+  if (length) {
+    rv.push({
+      str: str.substr(base, length),
+      asciiNode: asciiNode,
+    });
+  }
 
   return rv;
 };

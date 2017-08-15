@@ -497,12 +497,14 @@ hterm.Screen.prototype.insertString = function(str) {
           this.textAttributes.strikethrough ||
           this.textAttributes.background ||
           this.textAttributes.wcNode ||
+          !this.textAttributes.asciiNode ||
           this.textAttributes.tileData != null)) {
       // Best case scenario, we can just pretend the spaces were part of the
       // original string.
       str = ws + str;
     } else if (cursorNode.nodeType == 3 ||
                !(cursorNode.wcNode ||
+                 !cursorNode.asciiNode ||
                  cursorNode.tileNode ||
                  cursorNode.style.textDecoration ||
                  cursorNode.style.backgroundColor)) {

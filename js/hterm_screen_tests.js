@@ -226,6 +226,7 @@ hterm.Screen.Tests.addTest('delete-chars', function(result, cx) {
       span.textContent = c;
       span.className = 'wc-node';
       span.wcNode = true;
+      span.asciiNode = false;
       return span;
     };
 
@@ -299,10 +300,12 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
     this.screen.setCursorPosition(2, 0);
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     result.assertEQ(ary[2].innerHTML, '<span class="wc-node">\u4E2D</span>' +
                     '<span class="wc-node">\u6587</span>' +
                     '<span class="wc-node">\u5B57</span>' +
@@ -311,10 +314,12 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     this.screen.clearCursorRow();
     this.screen.setCursorPosition(2, 3);
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     result.assertEQ(ary[2].innerHTML, '   <span class="wc-node">\u4E2D</span>' +
                     '<span class="wc-node">\u6587</span>' +
                     '<span class="wc-node">\u5B57</span>' +
@@ -331,10 +336,12 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
     this.screen.insertString('XXXXX');
     this.screen.setCursorPosition(2, 3);
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     result.assertEQ(ary[2].innerHTML, 'XXX<span class="wc-node">\u4E2D</span>' +
                     '<span class="wc-node">\u6587</span>' +
                     '<span class="wc-node">\u5B57</span>' +
@@ -368,10 +375,12 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
     var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
     this.screen.setCursorPosition(2, 0);
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.overwriteString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     result.assertEQ(ary[2].innerHTML, '<span class="wc-node">\u4E2D</span>' +
                     '<span class="wc-node">\u6587</span>' +
                     '<span class="wc-node">\u5B57</span>' +
@@ -381,10 +390,12 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
     this.screen.insertString('XXXXX');
     this.screen.setCursorPosition(2, 3);
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.overwriteString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     result.assertEQ(ary[2].innerHTML, 'XXX<span class="wc-node">\u4E2D</span>' +
                     '<span class="wc-node">\u6587</span>' +
                     '<span class="wc-node">\u5B57</span>' +
@@ -398,16 +409,20 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
 
     this.screen.clearCursorRow();
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     this.screen.setCursorPosition(2, 4);
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.overwriteString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     result.assertEQ(ary[2].innerHTML, '<span class="wc-node">\u4E2D</span>' +
                     '<span class="wc-node">\u6587</span>' +
                     '<span class="wc-node">\u4E2D</span>' +
@@ -417,10 +432,12 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
 
     this.screen.clearCursorRow();
     this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
     for (var i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
     this.screen.setCursorPosition(2, 0);
     this.screen.overwriteString('    ');
     result.assertEQ(ary[2].innerHTML, '    ' +
