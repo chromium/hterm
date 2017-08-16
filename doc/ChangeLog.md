@@ -1,3 +1,13 @@
+# 1.70, 2017-08-16, Improve Unicode handling.
+
+* Add ids to more internal elements for debugging.
+* Disable drag & drop of text/content.
+* Fix helper scripts/docs to use POSIX portable \033 instead of \e with printf.
+* Drop support for old Chrome <21 versions with storage setup.
+* Rewrite Unicode processing to avoid stripping combining characters.
+* Make encoding state internal and add setEncoding callback to the API.
+* Stop matching 8-bit control codes in utf8 mode.
+
 # 1.69, 2017-08-08, Improve cursor positioning.
 
 * Add a pref for default terminal encoding.
