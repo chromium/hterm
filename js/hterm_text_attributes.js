@@ -503,53 +503,52 @@ hterm.TextAttributes.nodeSubstring = function(node, start, end) {
  *     only ASCII content, its asciiNode property is set to true.
  */
 hterm.TextAttributes.splitWidecharString = function(str) {
-  var rv = [];
-  var base = 0, length = 0, wcStrWidth = 0, wcCharWidth;
-  var asciiNode = true;
+  const asciiRegex = new RegExp('^[\u0020-\u007f]*$');
 
-  for (var i = 0; i < str.length;) {
-    var c = str.codePointAt(i);
-    var increment;
-    if (c < 128) {
-      wcStrWidth += 1;
-      length += 1;
-      increment = 1;
-    } else {
-      increment = (c <= 0xffff) ? 1 : 2;
-      wcCharWidth = lib.wc.charWidth(c);
-      if (wcCharWidth <= 1) {
-        wcStrWidth += wcCharWidth;
-        length += increment;
-        asciiNode = false;
-      } else {
-        if (length) {
-          rv.push({
-            str: str.substr(base, length),
-            asciiNode: asciiNode,
-            wcStrWidth: wcStrWidth,
-          });
-          asciiNode = true;
-          wcStrWidth = 0;
-        }
-        rv.push({
-          str: str.substr(i, increment),
-          wcNode: true,
-          asciiNode: false,
-          wcStrWidth: 2,
-        });
-        base = i + increment;
-        length = 0;
-      }
-    }
-    i += increment;
+  // Optimize for printable ASCII.  This should only take ~1ms/MB, but cuts out
+  // 40ms+/MB when true.  If we're dealing with UTF8, then it's already slow.
+  if (asciiRegex.test(str)) {
+    return [{
+      str: str,
+      wcNode: false,
+      asciiNode: true,
+      wcStrWidth: str.length,
+    }];
   }
 
-  if (length) {
-    rv.push({
-      str: str.substr(base, length),
-      asciiNode: asciiNode,
-      wcStrWidth: wcStrWidth,
-    });
+  // Iterate over each grapheme and merge them together in runs of similar
+  // strings.  We want to keep narrow and wide characters separate, and the
+  // fewer overall segments we have, the faster we'll be as processing each
+  // segment in the terminal print code is a bit slow.
+  const segmenter = new Intl.Segmenter(undefined, {type: 'grapheme'});
+  const it = segmenter.segment(str);
+
+  const rv = [];
+  let segment = it.next();
+  while (!segment.done) {
+    const grapheme = segment.value.segment;
+    const isAscii = asciiRegex.test(grapheme);
+    const strWidth = isAscii ? 1 : lib.wc.strWidth(grapheme);
+    const isWideChar =
+        isAscii ? false : (lib.wc.charWidth(grapheme.codePointAt(0)) == 2);
+
+    // Only merge non-wide characters together.  Every wide character needs to
+    // be separate so it can get a unique container.
+    const prev = rv[rv.length - 1];
+    if (prev && !isWideChar && !prev.wcNode) {
+      prev.str += grapheme;
+      prev.wcStrWidth += strWidth;
+      prev.asciiNode = prev.asciiNode && isAscii;
+    } else {
+      rv.push({
+        str: grapheme,
+        wcNode: isWideChar,
+        asciiNode: isAscii,
+        wcStrWidth: strWidth,
+      });
+    }
+
+    segment = it.next();
   }
 
   return rv;
