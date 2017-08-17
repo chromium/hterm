@@ -144,8 +144,8 @@ hterm.VT = function(terminal) {
    * We only support ECMA-35 and UTF-8, so go with a boolean here.
    * The encoding can be locked too.
    */
-  this.codingSystemUtf8 = false;
-  this.codingSystemLocked = false;
+  this.codingSystemUtf8_ = false;
+  this.codingSystemLocked_ = false;
 
   // Saved state used in DECSC.
   //
@@ -486,6 +486,31 @@ hterm.VT.prototype.decodeUTF8 = function(str) {
 };
 
 /**
+ * Set the encoding of the terminal.
+ *
+ * @param {string} encoding The name of the encoding to set.
+ */
+hterm.VT.prototype.setEncoding = function(encoding) {
+  switch (encoding) {
+    default:
+      console.warn('Invalid value for "terminal-encoding": ' + encoding);
+      // Fall through.
+    case 'iso-2022':
+      this.codingSystemUtf8_ = false;
+      this.codingSystemLocked_ = false;
+      break;
+    case 'utf-8-locked':
+      this.codingSystemUtf8_ = true;
+      this.codingSystemLocked_ = true;
+      break;
+    case 'utf-8':
+      this.codingSystemUtf8_ = true;
+      this.codingSystemLocked_ = false;
+      break;
+  }
+};
+
+/**
  * The default parse function.
  *
  * This will scan the string for the first 1-byte control character (C0/C1
@@ -496,7 +521,7 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
   var self = this;
 
   function print(str) {
-    if (!self.codingSystemUtf8 && self[self.GL].GL)
+    if (!self.codingSystemUtf8_ && self[self.GL].GL)
       str = self[self.GL].GL(str);
 
     self.terminal.print(str);
@@ -1273,7 +1298,7 @@ hterm.VT.ESC['%'] = function(parseState) {
     var ch = parseState.consumeChar();
 
     // If we've locked the encoding, then just eat the bytes and return.
-    if (this.codingSystemLocked) {
+    if (this.codingSystemLocked_) {
       if (ch == '/')
         parseState.consumeChar();
       parseState.resetParseFunction();
@@ -1284,12 +1309,12 @@ hterm.VT.ESC['%'] = function(parseState) {
     switch (ch) {
       case '@':
         // Switch to ECMA 35.
-        this.codingSystemUtf8 = false;
+        this.setEncoding('iso-2022');
         break;
 
       case 'G':
         // Switch to UTF-8.
-        this.codingSystemUtf8 = true;
+        this.setEncoding('utf-8');
         break;
 
       case '/':
@@ -1300,8 +1325,7 @@ hterm.VT.ESC['%'] = function(parseState) {
           case 'H':  // UTF-8 Level 2.
           case 'I':  // UTF-8 Level 3.
             // We treat all UTF-8 levels the same.
-            this.codingSystemUtf8 = true;
-            this.codingSystemLocked = true;
+            this.setEncoding('utf-8-locked');
             break;
 
           default:
