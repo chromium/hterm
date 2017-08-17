@@ -48,15 +48,6 @@ hterm.VT = function(terminal) {
   // The amount of time we're willing to wait for the end of an OSC sequence.
   this.oscTimeLimit_ = 20000;
 
-  // Construct a regular expression to match the known one-byte control chars.
-  // This is used in parseUnknown_ to quickly scan a string for the next
-  // control character.
-  var cc1 = Object.keys(hterm.VT.CC1).map(
-      function(e) {
-        return '\\x' + lib.f.zpad(e.charCodeAt().toString(16), 2)
-      }).join('');
-  this.cc1Pattern_ = new RegExp('[' + cc1 + ']');
-
   // Decoder to maintain UTF-8 decode state.
   this.utf8Decoder_ = new lib.UTF8Decoder();
 
@@ -146,6 +137,12 @@ hterm.VT = function(terminal) {
    */
   this.codingSystemUtf8_ = false;
   this.codingSystemLocked_ = false;
+
+  // Construct a regular expression to match the known one-byte control chars.
+  // This is used in parseUnknown_ to quickly scan a string for the next
+  // control character.
+  this.cc1Pattern_ = null;
+  this.updateEncodingState_();
 
   // Saved state used in DECSC.
   //
@@ -508,6 +505,21 @@ hterm.VT.prototype.setEncoding = function(encoding) {
       this.codingSystemLocked_ = false;
       break;
   }
+
+  this.updateEncodingState_();
+};
+
+/**
+ * Refresh internal state when the encoding changes.
+ */
+hterm.VT.prototype.updateEncodingState_ = function() {
+  // If we're in UTF8 mode, don't suport 8-bit escape sequences as we'll never
+  // see those -- everything should be UTF8!
+  var cc1 = Object.keys(hterm.VT.CC1)
+      .filter((e) => !this.codingSystemUtf8_ || e.charCodeAt() < 0x80)
+      .map((e) => '\\x' + lib.f.zpad(e.charCodeAt().toString(16), 2))
+      .join('');
+  this.cc1Pattern_ = new RegExp(`[${cc1}]`);
 };
 
 /**
