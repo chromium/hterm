@@ -154,6 +154,24 @@ hterm.VT.Tests.addTest('utf8', function(result, cx) {
   });
 
 /**
+ * Verify we don't drop combining characters.
+ *
+ * Note: The exact output here is somewhat debatable.  Combining characters
+ * should follow "real" characters, not escape sequences that we filter out.
+ * So you could argue that this should be âbc or abĉ.  We happen to (almost)
+ * produce âbc currently, but if logic changes in hterm that makes it more
+ * difficult to pull off, that's OK.  This test is partially a sanity check
+ * to make sure we don't significantly regress (like we have in the past) by
+ * producing something like "âc".
+ */
+hterm.VT.Tests.addTest('utf8-combining', function(result, cx) {
+    this.terminal.interpret('abc\b\b\xcc\x82\n');
+    var text = this.terminal.getRowsText(0, 1);
+    result.assertEQ(text, 'a\u{302}bc');
+    result.pass();
+  });
+
+/**
  * Basic cursor positioning tests.
  *
  * TODO(rginda): Test the VT52 variants too.

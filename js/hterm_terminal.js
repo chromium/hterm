@@ -1671,6 +1671,10 @@ hterm.Terminal.prototype.print = function(str) {
   var startOffset = 0;
 
   var strWidth = lib.wc.strWidth(str);
+  // Fun edge case: If the string only contains zero width codepoints (like
+  // combining characters), we make sure to iterate at least once below.
+  if (strWidth == 0 && str)
+    strWidth = 1;
 
   while (startOffset < strWidth) {
     if (this.options_.wraparound && this.screen_.cursorPosition.overflow) {
