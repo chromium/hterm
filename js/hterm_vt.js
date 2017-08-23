@@ -644,15 +644,37 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
  */
 hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
   var buf = parseState.peekRemainingBuf();
-  var nextTerminator = buf.search(/(\x1b\\|\x07)/);
   var args = parseState.args;
+  // Since we might modify parse state buffer locally, if we want to advance
+  // the parse state buffer later on, we need to know how many chars we added.
+  let bufInserted = 0;
 
   if (!args.length) {
     args[0] = '';
     args[1] = new Date();
+  } else {
+    // If our saved buffer ends with an escape, it's because we were hoping
+    // it's an ST split across two buffers.  Move it from our saved buffer
+    // to the start of our current buffer for processing anew.
+    if (args[0].slice(-1) == '\x1b') {
+      args[0] = args[0].slice(0, -1);
+      buf = '\x1b' + buf;
+      bufInserted = 1;
+    }
   }
 
-  if (nextTerminator == -1) {
+  const nextTerminator = buf.search(/[\x1b\x07]/);
+  const terminator = buf[nextTerminator];
+  let foundTerminator;
+
+  // If the next escape we see is not a start of a ST, fall through.  This will
+  // either be invalid (embedded escape), or we'll queue it up (wait for \\).
+  if (terminator == '\x1b' && buf[nextTerminator + 1] != '\\')
+    foundTerminator = false;
+  else
+    foundTerminator = (nextTerminator != -1);
+
+  if (!foundTerminator) {
     // No terminator here, have to wait for the next string.
 
     args[0] += buf;
@@ -662,20 +684,24 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
     if (args[0].length > this.maxStringSequence)
       abortReason = 'too long: ' + args[0].length;
 
-    if (args[0].indexOf('\x1b') != -1)
-      abortReason = 'embedded escape: ' + args[0].indexOf('\x1b');
+    // Special case: If our buffering happens to split the ST (\e\\), we have to
+    // buffer the content temporarily.  So don't reject a trailing escape here,
+    // instead we let it timeout or be rejected in the next pass.
+    if (terminator == '\x1b' && nextTerminator != buf.length - 1)
+      abortReason = 'embedded escape: ' + nextTerminator;
 
     if (new Date() - args[1] > this.oscTimeLimit_)
-      abortReason = 'timeout expired: ' + new Date() - args[1];
+      abortReason = 'timeout expired: ' + (new Date() - args[1]);
 
     if (abortReason) {
-      console.log('parseUntilStringTerminator_: aborting: ' + abortReason,
-                  args[0]);
+      if (this.warnUnimplemented)
+        console.log('parseUntilStringTerminator_: aborting: ' + abortReason,
+                    args[0]);
       parseState.reset(args[0]);
       return false;
     }
 
-    parseState.advance(buf.length);
+    parseState.advance(buf.length - bufInserted);
     return true;
   }
 
@@ -689,7 +715,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
 
   parseState.resetParseFunction();
   parseState.advance(nextTerminator +
-                     (buf.substr(nextTerminator, 1) == '\x1b' ? 2 : 1));
+                     (terminator == '\x1b' ? 2 : 1) - bufInserted);
 
   return true;
 };

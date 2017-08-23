@@ -334,6 +334,71 @@ hterm.VT.Tests.addTest('unterminated-sequence', function(result, cx) {
     result.pass();
   });
 
+/**
+ * If we see embedded escape sequences, we should reject them.
+ */
+hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
+    var title = null;
+    this.terminal.setWindowTitle = function(t) {
+      // Set a default title so we can catch the potential for this function
+      // to be called on accident with no parameter.
+      title = t || 'XXX';
+    };
+
+    // We know we're going to cause chokes, so silence the warnings.
+    this.terminal.vt.warnUnimplemented = false;
+
+    ['\a', '\x1b\\'].forEach((seq) => {
+      // We get all the data at once with a terminated sequence.
+      terminal.reset();
+      this.terminal.interpret('\x1b]0;asdf\x1b x ' + seq);
+      result.assertEQ(title, null);
+
+      // We get the data in pieces w/a terminated sequence.
+      terminal.reset();
+      this.terminal.interpret('\x1b]0;asdf');
+      this.terminal.interpret('\x1b');
+      this.terminal.interpret(' x ' + seq);
+      result.assertEQ(title, null);
+    });
+
+    // We get the data in pieces but no terminating sequence.
+    terminal.reset();
+    this.terminal.interpret('\x1b]0;asdf');
+    this.terminal.interpret('\x1b');
+    this.terminal.interpret(' ');
+    result.assertEQ(title, null);
+
+    result.pass();
+  });
+
+/**
+ * Verify that split ST sequences are buffered/handled correctly.
+ */
+hterm.VT.Tests.addTest('split-ST-sequence', function(result, cx) {
+    var title = null;
+    this.terminal.setWindowTitle = function(t) {
+      // Set a default title so we can catch the potential for this function
+      // to be called on accident with no parameter.
+      title = t || 'XXX';
+    };
+
+    // We get the first half of the ST with the base.
+    this.terminal.interpret('\x1b]0;asdf\x1b');
+    this.terminal.interpret('\\');
+    result.assertEQ(title, 'asdf');
+
+    // We get the first half of the ST one byte at a time.
+    title = null;
+    terminal.reset();
+    this.terminal.interpret('\x1b]0;asdf');
+    this.terminal.interpret('\x1b');
+    this.terminal.interpret('\\');
+    result.assertEQ(title, 'asdf');
+
+    result.pass();
+  });
+
 hterm.VT.Tests.addTest('dec-screen-test', function(result, cx) {
     this.terminal.interpret('\x1b#8');
 
