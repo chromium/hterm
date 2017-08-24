@@ -1393,8 +1393,9 @@ hterm.Terminal.prototype.decorate = function(div) {
        ':root {' +
        '  --hterm-charsize-width: ' + this.scrollPort_.characterSize.width + 'px;' +
        '  --hterm-charsize-height: ' + this.scrollPort_.characterSize.height + 'px;' +
-       '  --hterm-cursor-offset-col: 0;' +
-       '  --hterm-cursor-offset-row: 0;' +
+       // Default position hides the cursor for when the window is initializing.
+       '  --hterm-cursor-offset-col: -1;' +
+       '  --hterm-cursor-offset-row: -1;' +
        '  --hterm-blink-node-duration: 0.7s;' +
        '  --hterm-mouse-cursor-text: text;' +
        '  --hterm-mouse-cursor-pointer: default;' +
