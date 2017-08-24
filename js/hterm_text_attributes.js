@@ -450,32 +450,42 @@ hterm.TextAttributes.nodeSubstring = function(node, start, end) {
  */
 hterm.TextAttributes.splitWidecharString = function(str) {
   var rv = [];
-  var base = 0, length = 0;
+  var base = 0, length = 0, wcStrWidth = 0, wcCharWidth;
   var asciiNode = true;
 
   for (var i = 0; i < str.length;) {
     var c = str.codePointAt(i);
-    var increment = (c <= 0xffff) ? 1 : 2;
+    var increment;
     if (c < 128) {
-      length += increment;
-    } else if (lib.wc.charWidth(c) <= 1) {
-      length += increment;
-      asciiNode = false;
+      wcStrWidth += 1;
+      length += 1;
+      increment = 1;
     } else {
-      if (length) {
+      increment = (c <= 0xffff) ? 1 : 2;
+      wcCharWidth = lib.wc.charWidth(c);
+      if (wcCharWidth <= 1) {
+        wcStrWidth += wcCharWidth;
+        length += increment;
+        asciiNode = false;
+      } else {
+        if (length) {
+          rv.push({
+            str: str.substr(base, length),
+            asciiNode: asciiNode,
+            wcStrWidth: wcStrWidth,
+          });
+          asciiNode = true;
+          wcStrWidth = 0;
+        }
         rv.push({
-          str: str.substr(base, length),
-          asciiNode: asciiNode,
+          str: str.substr(i, increment),
+          wcNode: true,
+          asciiNode: false,
+          wcStrWidth: 2,
         });
-        asciiNode = true;
+        base = i + increment;
+        length = 0;
       }
-      rv.push({
-        str: str.substr(i, increment),
-        wcNode: true,
-        asciiNode: false,
-      });
-      base = i + increment;
-      length = 0;
     }
     i += increment;
   }
@@ -484,6 +494,7 @@ hterm.TextAttributes.splitWidecharString = function(str) {
     rv.push({
       str: str.substr(base, length),
       asciiNode: asciiNode,
+      wcStrWidth: wcStrWidth,
     });
   }
 

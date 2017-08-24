@@ -1709,9 +1709,9 @@ hterm.Terminal.prototype.print = function(str) {
       this.screen_.textAttributes.asciiNode = tokens[i].asciiNode;
 
       if (this.options_.insertMode) {
-          this.screen_.insertString(tokens[i].str);
+        this.screen_.insertString(tokens[i].str, tokens[i].wcStrWidth);
       } else {
-        this.screen_.overwriteString(tokens[i].str);
+        this.screen_.overwriteString(tokens[i].str, tokens[i].wcStrWidth);
       }
       this.screen_.textAttributes.wcNode = false;
       this.screen_.textAttributes.asciiNode = true;
@@ -1869,7 +1869,8 @@ hterm.Terminal.prototype.reverseLineFeed = function() {
 hterm.Terminal.prototype.eraseToLeft = function() {
   var cursor = this.saveCursor();
   this.setCursorColumn(0);
-  this.screen_.overwriteString(lib.f.getWhitespace(cursor.column + 1));
+  const count = cursor.column + 1;
+  this.screen_.overwriteString(lib.f.getWhitespace(count), count);
   this.restoreCursor(cursor);
 };
 
@@ -1909,7 +1910,7 @@ hterm.Terminal.prototype.eraseToRight = function(opt_count) {
   }
 
   var cursor = this.saveCursor();
-  this.screen_.overwriteString(lib.f.getWhitespace(count));
+  this.screen_.overwriteString(lib.f.getWhitespace(count), count);
   this.restoreCursor(cursor);
   this.clearCursorOverflow();
 };
@@ -1981,7 +1982,7 @@ hterm.Terminal.prototype.fill = function(ch) {
   for (var row = 0; row < this.screenSize.height; row++) {
     for (var col = 0; col < this.screenSize.width; col++) {
       this.setAbsoluteCursorPosition(row, col);
-      this.screen_.overwriteString(ch);
+      this.screen_.overwriteString(ch, 1);
     }
   }
 
@@ -2096,7 +2097,7 @@ hterm.Terminal.prototype.insertSpace = function(count) {
   var cursor = this.saveCursor();
 
   var ws = lib.f.getWhitespace(count || 1);
-  this.screen_.insertString(ws);
+  this.screen_.insertString(ws, ws.length);
   this.screen_.maybeClipCurrentRow();
 
   this.restoreCursor(cursor);

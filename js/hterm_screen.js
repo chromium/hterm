@@ -463,7 +463,7 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
  * It is also up to the caller to properly maintain the line overflow state
  * using hterm.Screen..commitLineOverflow().
  */
-hterm.Screen.prototype.insertString = function(str) {
+hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
   var cursorNode = this.cursorNode_;
   var cursorNodeText = cursorNode.textContent;
 
@@ -471,11 +471,12 @@ hterm.Screen.prototype.insertString = function(str) {
 
   // We may alter the width of the string by prepending some missing
   // whitespaces, so we need to record the string width ahead of time.
-  var strWidth = lib.wc.strWidth(str);
+  if (wcwidth === undefined)
+    wcwidth = lib.wc.strWidth(str);
 
   // No matter what, before this function exits the cursor column will have
   // moved this much.
-  this.cursorPosition.column += strWidth;
+  this.cursorPosition.column += wcwidth;
 
   // Local cache of the cursor offset.
   var offset = this.cursorOffset_;
@@ -535,7 +536,7 @@ hterm.Screen.prototype.insertString = function(str) {
           str + hterm.TextAttributes.nodeSubstr(cursorNode, offset);
     }
 
-    this.cursorOffset_ += strWidth;
+    this.cursorOffset_ += wcwidth;
     return;
   }
 
@@ -557,7 +558,7 @@ hterm.Screen.prototype.insertString = function(str) {
     var newNode = this.textAttributes.createContainer(str);
     this.cursorRowNode_.insertBefore(newNode, cursorNode);
     this.cursorNode_ = newNode;
-    this.cursorOffset_ = strWidth;
+    this.cursorOffset_ = wcwidth;
     return;
   }
 
@@ -587,7 +588,7 @@ hterm.Screen.prototype.insertString = function(str) {
   var newNode = this.textAttributes.createContainer(str);
   this.cursorRowNode_.insertBefore(newNode, cursorNode.nextSibling);
   this.cursorNode_ = newNode;
-  this.cursorOffset_ = strWidth;
+  this.cursorOffset_ = wcwidth;
 };
 
 /**
@@ -599,22 +600,24 @@ hterm.Screen.prototype.insertString = function(str) {
  * It is also up to the caller to properly maintain the line overflow state
  * using hterm.Screen..commitLineOverflow().
  */
-hterm.Screen.prototype.overwriteString = function(str) {
+hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;
   if (!maxLength)
     return [str];
 
-  var width = lib.wc.strWidth(str);
+  if (wcwidth === undefined)
+    wcwidth = lib.wc.strWidth(str);
+
   if (this.textAttributes.matchesContainer(this.cursorNode_) &&
       this.cursorNode_.textContent.substr(this.cursorOffset_) == str) {
     // This overwrite would be a no-op, just move the cursor and return.
-    this.cursorOffset_ += width;
-    this.cursorPosition.column += width;
+    this.cursorOffset_ += wcwidth;
+    this.cursorPosition.column += wcwidth;
     return;
   }
 
-  this.deleteChars(Math.min(width, maxLength));
-  this.insertString(str);
+  this.deleteChars(Math.min(wcwidth, maxLength));
+  this.insertString(str, wcwidth);
 };
 
 /**
