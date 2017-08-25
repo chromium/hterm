@@ -92,8 +92,12 @@ hterm.VT = function(terminal) {
   /**
    * If true, emit warnings when we encounter a control character or escape
    * sequence that we don't recognize or explicitly ignore.
+   *
+   * We disable this by default as the console logging can be expensive when
+   * dumping binary files (e.g. `cat /dev/zero`) to the point where you can't
+   * recover w/out restarting.
    */
-  this.warnUnimplemented = true;
+  this.warnUnimplemented = false;
 
   /**
    * The set of available character maps (used by G0...G3 below).
