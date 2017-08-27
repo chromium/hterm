@@ -3096,7 +3096,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       if ((this.mouseRightClickPaste && e.button == 2 /* right button */) ||
           e.button == this.mousePasteButton) {
         if (!this.paste())
-          console.warning('Could not paste manually due to web restrictions');;
+          console.warn('Could not paste manually due to web restrictions');
       }
     }
 
