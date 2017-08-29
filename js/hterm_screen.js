@@ -643,21 +643,34 @@ hterm.Screen.prototype.deleteChars = function(count) {
   var startLength, endLength;
 
   while (node && count) {
+    // Sanity check so we don't loop forever, but we don't also go quietly.
+    if (count < 0) {
+      console.error(`Deleting ${rv} chars went negative: ${count}`);
+      break;
+    }
+
     startLength = hterm.TextAttributes.nodeWidth(node);
     node.textContent = hterm.TextAttributes.nodeSubstr(node, 0, offset) +
         hterm.TextAttributes.nodeSubstr(node, offset + count);
     endLength = hterm.TextAttributes.nodeWidth(node);
-    count -= startLength - endLength;
-    if (offset < startLength && endLength && startLength == endLength) {
+
+    // Deal with splitting wide characters.  There are two ways: we could delete
+    // the first column or the second column.  In both cases, we delete the wide
+    // character and replace one of the columns with a space (since the other
+    // was deleted).  If there are more chars to delete, the next loop will pick
+    // up the slack.
+    if (node.wcNode && offset < startLength &&
+        ((endLength && startLength == endLength) || (!endLength && offset == 1))) {
       // No characters were deleted when there should be.  We're probably trying
       // to delete one column width from a wide character node.  We remove the
       // wide character node here and replace it with a single space.
       var spaceNode = this.textAttributes.createContainer(' ');
-      node.parentNode.insertBefore(spaceNode, node.nextSibling);
+      node.parentNode.insertBefore(spaceNode, offset ? node : node.nextSibling);
       node.textContent = '';
       endLength = 0;
       count -= 1;
-    }
+    } else
+      count -= startLength - endLength;
 
     var nextNode = node.nextSibling;
     if (endLength == 0 && node != this.cursorNode_) {

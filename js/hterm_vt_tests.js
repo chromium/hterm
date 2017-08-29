@@ -593,7 +593,7 @@ hterm.VT.Tests.addTest('erase-right-widechar', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ('\u7b2c\u4e00\u884c\n' +
-                    'OO\n' +
+                    ' OO\n' +
                     '\u7b2c\u4e09\u884c',
                     text);
     result.pass();

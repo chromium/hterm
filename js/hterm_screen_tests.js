@@ -253,6 +253,60 @@ hterm.Screen.Tests.addTest('delete-chars', function(result, cx) {
   });
 
 /**
+ * Test replacing the start of a wide character with a narrow char.
+ * https://crbug.com/577691
+ */
+hterm.Screen.Tests.addTest('wide-to-narrow-char-start', function(result, cx) {
+    const row = document.createElement('div');
+    this.screen.pushRow(row);
+
+    this.screen.setCursorPosition(0, 0);
+    this.screen.overwriteString('abcdef');
+    result.assertEQ('abcdef', row.textContent);
+
+    this.screen.setCursorPosition(0, 2);
+    this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
+    this.screen.overwriteString('\u{30c0}');
+    this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
+    result.assertEQ('ab\u{30c0}ef', row.textContent);
+
+    this.screen.setCursorPosition(0, 2);
+    this.screen.overwriteString('x');
+    result.assertEQ('abx ef', row.textContent);
+
+    result.pass();
+  });
+
+/**
+ * Test replacing the end of a wide character with a narrow char.
+ * https://crbug.com/577691
+ */
+hterm.Screen.Tests.addTest('wide-to-narrow-char-end', function(result, cx) {
+    const row = document.createElement('div');
+    this.screen.pushRow(row);
+
+    this.screen.setCursorPosition(0, 0);
+    this.screen.overwriteString('abcdef');
+    result.assertEQ('abcdef', row.textContent);
+
+    this.screen.setCursorPosition(0, 2);
+    this.screen.textAttributes.wcNode = true;
+    this.screen.textAttributes.asciiNode = false;
+    this.screen.overwriteString('\u{30c0}');
+    this.screen.textAttributes.wcNode = false;
+    this.screen.textAttributes.asciiNode = true;
+    result.assertEQ('ab\u{30c0}ef', row.textContent);
+
+    this.screen.setCursorPosition(0, 3);
+    this.screen.overwriteString('x');
+    result.assertEQ('ab xef', row.textContent);
+
+    result.pass();
+  });
+
+/**
  * Test the ability to insert text in a line.
  */
 hterm.Screen.Tests.addTest('insert', function(result, cx) {
