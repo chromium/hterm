@@ -37,6 +37,9 @@ hterm.TextAttributes = function(document) {
   this.defaultForeground = 'rgb(255, 255, 255)';
   this.defaultBackground = 'rgb(0, 0, 0)';
 
+  // Any attributes added here that do not default to falsey (e.g. undefined or
+  // null) require a bit more care.  createContainer has to always attach the
+  // attribute so matchesContainer can work correctly.
   this.bold = false;
   this.faint = false;
   this.italic = false;
@@ -178,8 +181,13 @@ hterm.TextAttributes.prototype.isDefault = function() {
  *     attributes.
  */
 hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
-  if (this.isDefault())
-    return this.document_.createTextNode(opt_textContent);
+  if (this.isDefault()) {
+    // Only attach attributes where we need an explicit default for the
+    // matchContainer logic below.
+    const node = this.document_.createTextNode(opt_textContent);
+    node.asciiNode = true;
+    return node;
+  }
 
   var span = this.document_.createElement('span');
   var style = span.style;
@@ -221,8 +229,8 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (this.wcNode) {
     classes.push('wc-node');
     span.wcNode = true;
-    span.asciiNode = false;
   }
+  span.asciiNode = this.asciiNode;
 
   if (this.tileData != null) {
     classes.push('tile');
@@ -260,13 +268,16 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
 
   // We don't want to put multiple characters in a wcNode or a tile.
   // See the comments in createContainer.
+  // For attributes that default to false, we do not require that obj have them
+  // declared, so always normalize them using !! (to turn undefined into false)
+  // in the compares below.
   return (!(this.wcNode || obj.wcNode) &&
-          this.asciiNode == this.asciiNode &&
+          this.asciiNode == obj.asciiNode &&
           !(this.tileData != null || obj.tileNode) &&
           this.foreground == style.color &&
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
-          this.blink == obj.blinkNode &&
+          this.blink == !!obj.blinkNode &&
           this.italic == !!style.fontStyle &&
           !!this.underline == !!obj.underline &&
           !!this.strikethrough == !!obj.strikethrough);
