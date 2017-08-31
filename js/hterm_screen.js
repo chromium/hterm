@@ -503,7 +503,7 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
       // Best case scenario, we can just pretend the spaces were part of the
       // original string.
       str = ws + str;
-    } else if (cursorNode.nodeType == 3 ||
+    } else if (cursorNode.nodeType == Node.TEXT_NODE ||
                !(cursorNode.wcNode ||
                  !cursorNode.asciiNode ||
                  cursorNode.tileNode ||
@@ -681,7 +681,8 @@ hterm.Screen.prototype.deleteChars = function(count) {
   }
 
   // Remove this.cursorNode_ if it is an empty non-text node.
-  if (this.cursorNode_.nodeType != 3 && !this.cursorNode_.textContent) {
+  if (this.cursorNode_.nodeType != Node.TEXT_NODE &&
+      !this.cursorNode_.textContent) {
     var cursorNode = this.cursorNode_;
     if (cursorNode.previousSibling) {
       this.cursorNode_ = cursorNode.previousSibling;

@@ -261,7 +261,7 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
  *     this attributes instance.
  */
 hterm.TextAttributes.prototype.matchesContainer = function(obj) {
-  if (typeof obj == 'string' || obj.nodeType == 3)
+  if (typeof obj == 'string' || obj.nodeType == Node.TEXT_NODE)
     return this.isDefault();
 
   var style = obj.style;
@@ -372,7 +372,7 @@ hterm.TextAttributes.containersMatch = function(obj1, obj2) {
   if (obj1.nodeType != obj2.nodeType)
     return false;
 
-  if (obj1.nodeType == 3)
+  if (obj1.nodeType == Node.TEXT_NODE)
     return true;
 
   var style1 = obj1.style;
@@ -394,7 +394,7 @@ hterm.TextAttributes.containersMatch = function(obj1, obj2) {
  * @return {boolean} True if the object is unstyled.
  */
 hterm.TextAttributes.containerIsDefault = function(obj) {
-  return typeof obj == 'string'  || obj.nodeType == 3;
+  return typeof obj == 'string'  || obj.nodeType == Node.TEXT_NODE;
 };
 
 /**

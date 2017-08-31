@@ -931,7 +931,7 @@ hterm.VT.Tests.addTest('color-change', function(result, cx) {
     for (var i = 0; i < 6; i++) {
       var row = this.terminal.getRowNode(i);
       result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
-      result.assertEQ(row.childNodes[0].nodeType, 3, 'i: ' + i);
+      result.assertEQ(row.childNodes[0].nodeType, Node.TEXT_NODE, 'i: ' + i);
       result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
       result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
       result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
@@ -964,7 +964,7 @@ hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
     for (var i = 0; i < 6; i++) {
       var row = this.terminal.getRowNode(i);
       result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
-      result.assertEQ(row.childNodes[0].nodeType, 3, 'i: ' + i);
+      result.assertEQ(row.childNodes[0].nodeType, Node.TEXT_NODE, 'i: ' + i);
       result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
       result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
       result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
