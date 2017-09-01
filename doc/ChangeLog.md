@@ -1,3 +1,12 @@
+# 1.71, 2017-09-01, Bugfixes galore.
+
+* Fix replacing wide chars with narrow chars.
+* Do not warn about unknown sequences by default.
+* Avoid recalculating string display widths when possible.
+* Move initial cursor location off screen again during startup.
+* Fix processing of split ST sequences across buffers.
+* Fix overlaying/inserting combining characters.
+
 # 1.70, 2017-08-16, Improve Unicode handling.
 
 * Add ids to more internal elements for debugging.
