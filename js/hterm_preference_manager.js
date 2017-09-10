@@ -347,7 +347,7 @@ hterm.PreferenceManager.defaultPreferences = {
    '\n' +
    'Sample keybindings:\n' +
    '{\n' +
-   '  "Ctrl-Alt-K": "clearScrollback",\n' +
+   '  "Ctrl-Alt-K": "clearTerminal",\n' +
    '  "Ctrl-Shift-L": "PASS",\n' +
    '  "Ctrl-H": "\'Hello World\'"\n' +
    '}'],

@@ -111,10 +111,17 @@ else, please file a [feature request] with us.
 * `DEFAULT`: Have hterm handle the standard key code for this key sequence.
 * `PASS`: Pass the key sequence along to the browser or OS, and have hterm
   ignore it.
+* `scrollLineUp`: Scroll up one line in the terminal buffer.
+* `scrollLineDown`: Scroll down one line in the terminal buffer.
 * `scrollPageUp`: Scroll up one page in the terminal buffer.
 * `scrollPageDown`: Scroll down one page in the terminal buffer.
 * `scrollToTop`: Scroll to the top of the terminal buffer.
 * `scrollToBottom`: Scroll to the bottom of the terminal buffer.
+* `clearScreen`: Clear the screen and move the cursor to (0,0).
+* `clearTerminal`: Clear the terminal and scrollback, and move the cursor to
+  (0,0).
+* `fullReset`: Perform a full terminal reset (like running `reset`).
+* `softReset`: Perform a soft terminal reset (mostly color/etc... attributes).
 
 ## `keybindings` User Preference
 
