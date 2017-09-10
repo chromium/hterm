@@ -1,10 +1,17 @@
+[TOC]
+
 # Embedding hterm
 
-This is a quick overview describing how to use hterm in your own application.  Please direct any questions to the [chromium-hterm mailing list](https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm).
+This is a quick overview describing how to use hterm in your own application.
+Please direct any questions to the [chromium-hterm mailing list].
 
-## Step 1, Get the code
+[chromium-hterm mailing list]: https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm
 
-The "libapps" git repository contains hterm and its dependency.  Clone this repo into a parent directory of your choice.  In this example we'll create `~/src/libapps/`:
+## Get the code
+
+The "libapps" git repository contains hterm and its dependencies.
+Clone this repo into a parent directory of your choice.
+In this example we'll create `~/src/libapps/`:
 
 ```sh
 $ mkdir ~/src
@@ -12,25 +19,30 @@ $ cd ~/src
 $ git clone https://chromium.googlesource.com/apps/libapps
 ```
 
-## Step 2, Build hterm
+## Build hterm
 
-The build process for hterm bundles some resources as JavaScript source and concatenates the JavaScript into a single file.  It only works on Linux and BSD based systems (yes, OS X should work).  To build hterm, run...
+The build process bundles some resources as JavaScript source and concatenates
+the JavaScript into a single file (`hterm_all.js`).
 
 ```sh
 $ cd ~/src/libapps
-$ LIBDOT_SEARCH_PATH=$(pwd) ./libdot/bin/concat.sh -i \
-   ./hterm/concat/hterm_all.concat -o /path/to/hterm_all.js
+$ ./hterm/bin/mkdist.sh
 ```
 
-Replace `/path/to/hterm_all.js` with a path to where you'd like the resulting JavaScript file to live.
+The files are all written to `./hterm/dist/js/`.  Copy the `hterm_all.js` file
+into your project.
 
-## Step 3, Include hterm in your app
+## Include hterm in your app
 
-Include the generated `hterm_all.js` file in your app in an appropriate manner.  This step should be self evident.
+Include the generated `hterm_all.js` file in your app in an appropriate manner.
+This step should be self evident.
 
-## Step 4, Initialize hterm
+## Initialize hterm
 
-You'll want a sacrificial DOM node which will become the terminal widget.  It should be a div which is either `position: relative` or `position: absolute`.
+### Terminal node
+
+You'll want a sacrificial DOM node which will become the terminal widget.
+It should be a div which is either `position: relative` or `position: absolute`.
 
 In our example, we'll assume this DOM:
 
@@ -44,54 +56,60 @@ In our example, we'll assume this DOM:
 </html>
 ```
 
-You'll also need to choose a storage implementation.  This is the backing store that hterm will use to read and write preferences.  This should be one of:
+### Runtime storage
+
+You'll need to choose a storage implementation.
+This is the backing store that hterm will use to read and write preferences.
+This should be one of:
 
 ```js
-// If you are a cross-browser web app and want to use window.localStorage
-hterm.defaultStorage = new lib.Storage.Local()
+// If you are a cross-browser web app and want to use window.localStorage.
+hterm.defaultStorage = new lib.Storage.Local();
 
-// If you are a cross-browser web app and want in-memory storage only
-hterm.defaultStorage = new lib.Storage.Memory()
+// If you are a cross-browser web app and want in-memory storage only.
+hterm.defaultStorage = new lib.Storage.Memory();
 
-// If you are a Chrome app and want sync storage
-hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync)
+// If you are a Chrome app and want sync storage.
+hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
 
-// If you are a Chrome app and want local storage
-hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.local)
+// If you are a Chrome app and want local storage.
+hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.local);
 ```
 
-Now create an instance of `hterm.Terminal`:
+### Terminal initialization
+
+Create an instance of `hterm.Terminal`:
 
 ```js
 // opt_profileName is the name of the terminal profile to load, or "default" if
 // not specified.  If you're using one of the persistent storage
 // implementations then this will scope all preferences read/writes to this
 // name.
-var t = new hterm.Terminal(opt_profileName)
+const t = new hterm.Terminal(opt_profileName);
 ```
 
-Now write an onTerminalReady handler.  This will fire once, when the terminal is initialized and ready for use.
+Now write an `onTerminalReady` handler.
+This will fire once, when the terminal is initialized and ready for use.
 
-```
+```js
 t.onTerminalReady = function() {
-
   // Create a new terminal IO object and give it the foreground.
   // (The default IO object just prints warning messages about unhandled
   // things to the the JS console.)
-  var io = t.io.push();
+  const io = t.io.push();
 
-  io.onVTKeystroke = function(str) {
+  io.onVTKeystroke = (str) => {
     // Do something useful with str here.
     // For example, Secure Shell forwards the string onto the NaCl plugin.
   };
 
-  io.sendString = function(str) {
-    // Just like a keystroke, except str was generated by the
-    // terminal itself.
-    // Most likely you'll do the same this as onVTKeystroke.
+  io.sendString = (str) => {
+    // Just like a keystroke, except str was generated by the terminal itself.
+    // For example, when the user pastes a string.
+    // Most likely you'll do the same thing as onVTKeystroke.
   };
 
-  io.onTerminalResize = function(columns, rows) {
+  io.onTerminalResize = (columns, rows) => {
     // React to size changes here.
     // Secure Shell pokes at NaCl, which eventually results in
     // some ioctls on the host.
@@ -104,20 +122,36 @@ t.onTerminalReady = function() {
 };
 ```
 
-Once you've registered your onTerminalReady handler you can connect the terminal
-to sacrificial DOM node.
+After you've registered your onTerminalReady handler you can connect the
+terminal to the sacrificial DOM node.
 
-```
+```js
 t.decorate(document.querySelector('#terminal'));
 ```
 
-## Step 5, Write to the terminal.
+### Keyboard setup
 
-Once onTerminalReady fires, you're free to start outputting text to the terminal!
+After you call the `decorate` helper, you'll usually call `installKeyboard`
+to capture all keyboard input when the terminal is focused.
+This allows us to react to keyboard shortcuts and such.
+
+```js
+t.installKeyboard();
+```
+
+## Write to the terminal
+
+Once `onTerminalReady` finishes, you're free to start writing content!
+This is the process or connection that wants to display content to the user
+(rather than the user sending content).
 
 ```js
 t.io.print('Print a string without a newline');
 t.io.println('Print a string and add CRLF');
 ```
 
-You can also call `t.installKeyboard()` to capture all keyboard input at this point.
+You usually want to go through the `io` object to display content rather than
+going directly through the terminal.  It will take care of encoding UTF-16 to
+UTF-8 and then sending it via `t.interpret` (which processes escape sequences).
+If you use the `t.print` function directly, it won't do either of those things,
+which might be what you want.
