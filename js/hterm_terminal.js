@@ -2405,7 +2405,7 @@ hterm.Terminal.prototype.ringBell = function() {
 
   var self = this;
   setTimeout(function() {
-      self.cursorNode_.style.backgroundColor = self.prefs_.get('cursor-color');
+      self.restyleCursor_();
     }, 200);
 
   // bellSquelchTimeout_ affects both audio and notification bells.
