@@ -113,6 +113,9 @@ hterm.Terminal = function(opt_profileId) {
   // The AccessibilityReader object for announcing command output.
   this.accessibilityReader_ = null;
 
+  // The context menu object.
+  this.contextMenu = new hterm.ContextMenu();
+
   // All terminal bell notifications that have been generated (not necessarily
   // shown).
   this.bellNotificationList_ = [];
@@ -1459,6 +1462,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   this.accessibilityReader_.decorate(this.document_);
 
   this.document_.body.oncontextmenu = function() { return false; };
+  this.contextMenu.setDocument(this.document_);
 
   var onMouse = this.onMouse_.bind(this);
   var screenNode = this.scrollPort_.getScreenNode();
@@ -1487,6 +1491,25 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  background-color: transparent !important;' +
        '  border-width: 2px;' +
        '  border-style: solid;' +
+       '}' +
+       'menu {' +
+       '  margin: 0;' +
+       '  padding: 0;' +
+       '  cursor: var(--hterm-mouse-cursor-pointer);' +
+       '}' +
+       'menuitem {' +
+       '  white-space: nowrap;' +
+       '  border-bottom: 1px dashed;' +
+       '  display: block;' +
+       '  padding: 0.3em 0.3em 0 0.3em;' +
+       '}' +
+       'menuitem.separator {' +
+       '  border-bottom: none;' +
+       '  height: 0.5em;' +
+       '  padding: 0;' +
+       '}' +
+       'menuitem:hover {' +
+       '  color: var(--hterm-cursor-color);' +
        '}' +
        '.wc-node {' +
        '  display: inline-block;' +
@@ -3461,6 +3484,8 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   if (e.type == 'mousedown') {
+    this.contextMenu.hide(e);
+
     if (e.altKey || !reportMouseEvents) {
       // If VT mouse reporting is disabled, or has been defeated with
       // alt-mousedown, then the mouse will act on the local selection.
@@ -3493,8 +3518,11 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     }
 
     if (e.type == 'mousedown') {
-      if ((this.mouseRightClickPaste && e.button == 2 /* right button */) ||
-          e.button == this.mousePasteButton) {
+      if (e.ctrlKey && e.button == 2 /* right button */) {
+        e.preventDefault();
+        this.contextMenu.show(e, this);
+      } else if (e.button == this.mousePasteButton ||
+          (this.mouseRightClickPaste && e.button == 2 /* right button */)) {
         if (!this.paste())
           console.warn('Could not paste manually due to web restrictions');
       }

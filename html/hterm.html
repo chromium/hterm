@@ -11,6 +11,7 @@
 <!-- Live version. -->
 <script src='../js/hterm.js'></script>
 <script src='../js/hterm_accessibility_reader.js'></script>
+<script src='../js/hterm_contextmenu.js'></script>
 <script src='../js/hterm_frame.js'></script>
 <script src='../js/hterm_keyboard.js'></script>
 <script src='../js/hterm_keyboard_bindings.js'></script>
@@ -118,6 +119,16 @@ function setupHterm() {
   };
   term.decorate(document.querySelector('#terminal'));
   term.installKeyboard();
+
+  term.contextMenu.setItems([
+    ['Terminal Reset', () => term.reset()],
+    ['Terminal Clear', () => term.clear()],
+    [hterm.ContextMenu.SEPARATOR],
+    ['Homepage', function() {
+      window.open('https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm/README.md', '_blank');
+    }],
+    ['FAQ', function() { window.open('https://goo.gl/muppJj', '_blank'); }],
+  ]);
 
   // Useful for console debugging.
   window.term_ = term;

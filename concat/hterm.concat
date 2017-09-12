@@ -10,6 +10,7 @@
 
 hterm/js/hterm.js
 hterm/js/hterm_accessibility_reader.js
+hterm/js/hterm_contextmenu.js
 hterm/js/hterm_frame.js
 hterm/js/hterm_keyboard.js
 hterm/js/hterm_keyboard_bindings.js
