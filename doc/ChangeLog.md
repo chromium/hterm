@@ -1,3 +1,12 @@
+# 1.72, 2017-09-12, More bugfixes.
+
+* Drop duplicate resize call.
+* Fix console warning.
+* Fix container matching logic wrt ascii & blink settings.
+* Switch to Node constants.
+* Update the embedding document.
+* Restore cursor style after ringing the bell.
+
 # 1.71, 2017-09-01, Bugfixes galore.
 
 * Fix replacing wide chars with narrow chars.
