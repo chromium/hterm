@@ -187,3 +187,109 @@ hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
 
     result.pass();
   });
+
+hterm.ScrollPort.DragAndDropTests =
+    new lib.TestManager.Suite('hterm.ScrollPort.DragAndDrop.Tests');
+
+/**
+ * We can't generate useful DragEvents as the dataTransfer member is forced
+ * read-only, so create a fake object and call the drag handler directly.
+ * This is a bit ugly, but the web makes us do it.
+ */
+const MockDragEvent = function(shift) {
+  this.dataTransfer = new DataTransfer();
+  this.shiftKey = !!shift;
+  this.preventDefault = () => {};
+};
+
+hterm.ScrollPort.DragAndDropTests.prototype.preamble = function(cx) {
+  // Create a new port since so the subscribe event doesn't stick to
+  // this.scrollPort across multiple tests.
+  this.scrollPort = new hterm.ScrollPort();
+};
+
+/**
+ * A single text/plain element.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text', function(result, cx) {
+  const e = new MockDragEvent();
+  e.dataTransfer.setData('text/plain', 'plain');
+
+  this.scrollPort.subscribe('paste', (e) => {
+    result.assertEQ('plain', e.text);
+    result.pass();
+  });
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(200);
+});
+
+/**
+ * Pick between text & html based on shift key not pressed.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-no-shift', function(result, cx) {
+  const e = new MockDragEvent();
+  e.dataTransfer.setData('text/html', 'html');
+  e.dataTransfer.setData('text/plain', 'plain');
+
+  this.scrollPort.subscribe('paste', (e) => {
+    result.assertEQ('html', e.text);
+    result.pass();
+  });
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(200);
+});
+
+/**
+ * Pick between text & html based on shift key pressed.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-shift', function(result, cx) {
+  const e = new MockDragEvent(true /* shift */);
+  e.dataTransfer.setData('text/html', 'html');
+  e.dataTransfer.setData('text/plain', 'plain');
+
+  this.scrollPort.subscribe('paste', (e) => {
+    result.assertEQ('plain', e.text);
+    result.pass();
+  });
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(200);
+});
+
+/**
+ * Verify fallback when first source is empty.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback', function(result, cx) {
+  const e = new MockDragEvent();
+  e.dataTransfer.setData('text/html', '');
+  e.dataTransfer.setData('text/plain', 'plain');
+
+  this.scrollPort.subscribe('paste', (e) => {
+    result.assertEQ('plain', e.text);
+    result.pass();
+  });
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(200);
+});
+
+/**
+ * Verify bad sources don't trigger paste events.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-unusable', function(result, cx) {
+  const e = new MockDragEvent();
+  this.scrollPort.subscribe('paste', () => result.fail());
+
+  // Binary only data shouldn't trigger an event.
+  e.dataTransfer.setData('application/x-executable', 'plain');
+  this.scrollPort.onDragAndDrop_(e);
+
+  // Neither should empty text.
+  e.dataTransfer.setData('text/plain', '');
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(1000);
+  setTimeout(() => result.pass(), 100);
+});

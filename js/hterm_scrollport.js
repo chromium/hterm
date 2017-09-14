@@ -361,12 +361,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.addEventListener('touchcancel', this.onTouch_.bind(this));
   this.screen_.addEventListener('copy', this.onCopy_.bind(this));
   this.screen_.addEventListener('paste', this.onPaste_.bind(this));
-  // Disable drag & drop of text/content.  We don't handle it at all (yet?),
-  // and the default behavior just confuses hterm.
-  this.screen_.addEventListener('drop', function(e) {
-    e.preventDefault();
-    return false;
-  });
+  this.screen_.addEventListener('drop', this.onDragAndDrop_.bind(this));
 
   doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
 
@@ -1501,6 +1496,8 @@ hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
 
 /**
  * Handle a paste event on the the ScrollPort's screen element.
+ *
+ * TODO: Handle ClipboardData.files transfers.  https://crbug.com/433581.
  */
 hterm.ScrollPort.prototype.onPaste_ = function(e) {
   this.pasteTarget_.focus();
@@ -1519,6 +1516,43 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
  */
 hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
   e.stopPropagation();
+};
+
+/**
+ * Handle a drop event on the the ScrollPort's screen element.
+ *
+ * By default we try to copy in the structured format (HTML/whatever).
+ * The shift key can select plain text though.
+ *
+ * TODO: Handle DataTransfer.files transfers.  https://crbug.com/433581.
+ *
+ * @param {DragEvent} e The drag event that fired us.
+ */
+hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
+  e.preventDefault();
+
+  let data;
+  let format;
+
+  // If the shift key isn't active, try to find a text source (but not plain
+  // text).  e.g. text/html is OK.
+  if (!e.shiftKey) {
+    e.dataTransfer.types.forEach((t) => {
+      if (!format && t != 'text/plain' && t.startsWith('text/'))
+        format = t;
+    });
+
+    // If we found a non-plain text source, try it out first.
+    if (format)
+      data = e.dataTransfer.getData(format);
+  }
+
+  // If we haven't loaded anything useful, fall back to plain text.
+  if (!data)
+    data = e.dataTransfer.getData('text/plain');
+
+  if (data)
+    this.publish('paste', {text: data});
 };
 
 /**
