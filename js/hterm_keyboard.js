@@ -282,14 +282,16 @@ hterm.Keyboard.prototype.uninstallKeyboard = function() {
 /**
  * Handle onTextInput events.
  *
- * We're not actually supposed to get these, but we do on the Mac in the case
- * where a third party app sends synthetic keystrokes to Chrome.
+ * These are generated when using IMEs, Virtual Keyboards (VKs), compose keys,
+ * Unicode input, etc...
  */
 hterm.Keyboard.prototype.onTextInput_ = function(e) {
   if (!e.data)
     return;
 
-  e.data.split('').forEach(this.terminal.onVTKeystroke.bind(this.terminal));
+  // Just pass the generated buffer straight down.  No need for us to split it
+  // up or otherwise parse it ahead of times.
+  this.terminal.onVTKeystroke(e.data);
 };
 
 /**
