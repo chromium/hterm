@@ -526,28 +526,22 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     meta = false;
   }
 
-  if (action.substr(0, 2) == '\x1b[' && (alt || control || shift)) {
+  if (action.substr(0, 2) == '\x1b[' && (alt || control || shift || meta)) {
     // The action is an escape sequence that and it was triggered in the
     // presence of a keyboard modifier, we may need to alter the action to
     // include the modifier before sending it.
 
-    var mod;
-
-    if (shift && !(alt || control)) {
-      mod = ';2';
-    } else if (alt && !(shift || control)) {
-      mod = ';3';
-    } else if (shift && alt && !control) {
-      mod = ';4';
-    } else if (control && !(shift || alt)) {
-      mod = ';5';
-    } else if (shift && control && !alt) {
-      mod = ';6';
-    } else if (alt && control && !shift) {
-      mod = ';7';
-    } else if (shift && alt && control) {
-      mod = ';8';
-    }
+    // The math is funky but aligns w/xterm.
+    let imod = 1;
+    if (shift)
+      imod += 1;
+    if (alt)
+      imod += 2;
+    if (control)
+      imod += 4;
+    if (meta)
+      imod += 8;
+    let mod = ';' + imod;
 
     if (action.length == 3) {
       // Some of the CSI sequences have zero parameters unless modified.
