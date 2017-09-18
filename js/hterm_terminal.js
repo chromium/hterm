@@ -2805,23 +2805,31 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   this.overlayNode_.style.left = (divSize.width - overlaySize.width -
       this.scrollPort_.currentScrollbarWidthPx) / 2 + 'px';
 
-  var self = this;
-
   if (this.overlayTimeout_)
     clearTimeout(this.overlayTimeout_);
 
   if (opt_timeout === null)
     return;
 
-  this.overlayTimeout_ = setTimeout(function() {
-      self.overlayNode_.style.opacity = '0';
-      self.overlayTimeout_ = setTimeout(function() {
-          if (self.overlayNode_.parentNode)
-            self.overlayNode_.parentNode.removeChild(self.overlayNode_);
-          self.overlayTimeout_ = null;
-          self.overlayNode_.style.opacity = '0.75';
-        }, 200);
-    }, opt_timeout || 1500);
+  this.overlayTimeout_ = setTimeout(() => {
+    this.overlayNode_.style.opacity = '0';
+    this.overlayTimeout_ = setTimeout(() => this.hideOverlay(), 200);
+  }, opt_timeout || 1500);
+};
+
+/**
+ * Hide the terminal overlay immediately.
+ *
+ * Useful when we show an overlay for an event with an unknown end time.
+ */
+hterm.Terminal.prototype.hideOverlay = function() {
+  if (this.overlayTimeout_)
+    clearTimeout(this.overlayTimeout_);
+  this.overlayTimeout_ = null;
+
+  if (this.overlayNode_.parentNode)
+    this.overlayNode_.parentNode.removeChild(this.overlayNode_);
+  this.overlayNode_.style.opacity = '0.75';
 };
 
 /**

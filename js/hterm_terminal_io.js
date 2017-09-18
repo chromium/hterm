@@ -52,6 +52,15 @@ hterm.Terminal.IO.prototype.showOverlay = function(message, opt_timeout) {
 };
 
 /**
+ * Hide the current overlay immediately.
+ *
+ * Useful when we show an overlay for an event with an unknown end time.
+ */
+hterm.Terminal.IO.prototype.hideOverlay = function() {
+  this.terminal_.hideOverlay();
+};
+
+/**
  * Open an frame in the current terminal window, pointed to the specified
  * url.
  *
