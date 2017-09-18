@@ -32,6 +32,9 @@ hterm.Terminal.IO = function(terminal) {
 
   // The IO object to restore on IO.pop().
   this.previousIO_ = null;
+
+  // Any data this object accumulated while not active.
+  this.buffered_ = '';
 };
 
 /**
@@ -105,9 +108,25 @@ hterm.Terminal.IO.prototype.push = function() {
 
 /**
  * Restore the Terminal's previous IO object.
+ *
+ * We'll flush out any queued data.
  */
 hterm.Terminal.IO.prototype.pop = function() {
   this.terminal_.io = this.previousIO_;
+  this.previousIO_.flush();
+};
+
+/**
+ * Flush accumulated data.
+ *
+ * If we're not the active IO, the connected process might still be writing
+ * data to us, but we won't be displaying it.  Flush any buffered data now.
+ */
+hterm.Terminal.IO.prototype.flush = function() {
+  if (this.buffered_) {
+    this.terminal_.interpret(this.buffered_);
+    this.buffered_ = '';
+  }
 };
 
 /**
@@ -166,8 +185,13 @@ hterm.Terminal.IO.prototype.onTerminalResize = function(width, height) {
  * @param {string} string The UTF-8 encoded string to print.
  */
 hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
-  if (this.terminal_.io != this)
-    throw 'Attempt to print from inactive IO object.';
+  // If another process has the foreground IO, buffer new data sent to this IO
+  // (since it's in the background).  When we're made the foreground IO again,
+  // we'll flush everything.
+  if (this.terminal_.io != this) {
+    this.buffered_ += string;
+    return;
+  }
 
   this.terminal_.interpret(string);
 };
@@ -178,10 +202,7 @@ hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
  * @param {string} string The UTF-8 encoded string to print.
  */
 hterm.Terminal.IO.prototype.writelnUTF8 = function(string) {
-  if (this.terminal_.io != this)
-    throw 'Attempt to print from inactive IO object.';
-
-  this.terminal_.interpret(string + '\r\n');
+  this.writeUTF8(string + '\r\n');
 };
 
 /**

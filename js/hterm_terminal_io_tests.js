@@ -150,3 +150,27 @@ hterm.Terminal.IO.Tests.addTest('overlay', function(result, cx) {
 
   result.pass();
 });
+
+/**
+ * Check background IO objects.
+ */
+hterm.Terminal.IO.Tests.addTest('buffer-background', function(result, cx) {
+  // Create a new foreground IO and show some stuff.
+  const io = this.io.push();
+  io.print('Fore');
+  result.assertEQ('Fore', this.mockTerm.buffer);
+
+  // Try to display something with the background IO.
+  this.io.print('Back')
+  result.assertEQ('Fore', this.mockTerm.buffer);
+
+  // Unload the foreground IO at which point the background should flush.
+  io.pop();
+  result.assertEQ('ForeBack', this.mockTerm.buffer);
+
+  // And we should resume OK.
+  this.io.print('Done');
+  result.assertEQ('ForeBackDone', this.mockTerm.buffer);
+
+  result.pass();
+});
