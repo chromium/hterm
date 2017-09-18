@@ -1642,10 +1642,31 @@ hterm.VT.OSC['11'] = function(parseState) {
   if (colorX11)
     this.terminal.setBackgroundColor(colorX11);
 
-  /* Note: If we support OSC 12+, we'd chain it here.
   if (args.length > 0) {
     parseState.args[0] = args.join(';');
     hterm.VT.OSC['12'].apply(this, [parseState]);
+  }
+};
+
+/**
+ * Change text cursor color.
+ */
+hterm.VT.OSC['12'] = function(parseState) {
+  // Args come in as a single string, but extra args will chain to the following
+  // OSC sequences.
+  var args = parseState.args[0].split(';');
+  if (!args)
+    return;
+
+  var colorArg;
+  var colorX11 = lib.colors.x11ToCSS(args.shift());
+  if (colorX11)
+    this.terminal.setCursorColor(colorX11);
+
+  /* Note: If we support OSC 13+, we'd chain it here.
+  if (args.length > 0) {
+    parseState.args[0] = args.join(';');
+    hterm.VT.OSC['13'].apply(this, [parseState]);
   }
   */
 };

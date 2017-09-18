@@ -1550,6 +1550,88 @@ hterm.VT.Tests.addTest('OSC-9', function(result, cx) {
   });
 
 /**
+ * Verify setting text foreground color.
+ */
+hterm.VT.Tests.addTest('OSC-10', function(result, cx) {
+    // Make sure other colors aren't changed by accident.
+    const backColor = this.terminal.getBackgroundColor();
+    const cursorColor = this.terminal.getCursorColor();
+
+    this.terminal.interpret('\x1b]10;red\x07');
+    result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+
+    this.terminal.interpret('\x1b]10;white\x07');
+    result.assertEQ('rgb(255, 255, 255)', this.terminal.getForegroundColor());
+
+    // Make sure other colors aren't changed by accident.
+    result.assertEQ(backColor, this.terminal.getBackgroundColor());
+    result.assertEQ(cursorColor, this.terminal.getCursorColor());
+
+    result.pass();
+  });
+
+/**
+ * Verify setting text background color.
+ */
+hterm.VT.Tests.addTest('OSC-11', function(result, cx) {
+    // Make sure other colors aren't changed by accident.
+    const foreColor = this.terminal.getForegroundColor();
+    const cursorColor = this.terminal.getCursorColor();
+
+    this.terminal.interpret('\x1b]11;red\x07');
+    result.assertEQ('rgb(255, 0, 0)', this.terminal.getBackgroundColor());
+
+    this.terminal.interpret('\x1b]11;white\x07');
+    result.assertEQ('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
+
+    // Make sure other colors aren't changed by accident.
+    result.assertEQ(foreColor, this.terminal.getForegroundColor());
+    result.assertEQ(cursorColor, this.terminal.getCursorColor());
+
+    result.pass();
+  });
+
+/**
+ * Verify setting text cursor color (not the mouse cursor).
+ */
+hterm.VT.Tests.addTest('OSC-12', function(result, cx) {
+    // Make sure other colors aren't changed by accident.
+    const foreColor = this.terminal.getForegroundColor();
+    const backColor = this.terminal.getBackgroundColor();
+
+    this.terminal.interpret('\x1b]12;red\x07');
+    result.assertEQ('rgb(255, 0, 0)', this.terminal.getCursorColor());
+
+    this.terminal.interpret('\x1b]12;white\x07');
+    result.assertEQ('rgb(255, 255, 255)', this.terminal.getCursorColor());
+
+    // Make sure other colors aren't changed by accident.
+    result.assertEQ(foreColor, this.terminal.getForegroundColor());
+    result.assertEQ(backColor, this.terminal.getBackgroundColor());
+
+    result.pass();
+  });
+
+/**
+ * Verify chaining color change requests.
+ */
+hterm.VT.Tests.addTest('OSC-10-11-12', function(result, cx) {
+    // Set 10-11-12 at once.
+    this.terminal.interpret('\x1b]10;red;green;blue\x07');
+    result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+    result.assertEQ('rgb(0, 255, 0)', this.terminal.getBackgroundColor());
+    result.assertEQ('rgb(0, 0, 255)', this.terminal.getCursorColor());
+
+    // Set 11-12 at once (and 10 stays the same).
+    this.terminal.interpret('\x1b]11;white;black\x07');
+    result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+    result.assertEQ('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
+    result.assertEQ('rgb(0, 0, 0)', this.terminal.getCursorColor());
+
+    result.pass();
+  });
+
+/**
  * Test that we can use OSC 52 to copy to the system clipboard.
  */
 hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
