@@ -1,0 +1,38 @@
+{
+  "name": "hterm",
+  "version": "1.86.0",
+  "description": "A reasonably correct & fast terminal emulator.",
+  "main": "js/hterm_all.js",
+  "unpkg": "js/hterm_all.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://chromium.googlesource.com/apps/libapps.git"
+  },
+  "author": "Chromium OS Authors",
+  "license": "BSD-3-Clause",
+  "files": [
+    "doc",
+    "html/hterm.html",
+    "js/hterm_all.js",
+    "js/hterm_all.min.js",
+    "js/hterm_all.min.js.map",
+    "README.md"
+  ],
+  "bugs": {
+    "url": "https://goo.gl/vb94JY",
+    "email": "chromium-hterm@chromium.org"
+  },
+  "homepage": "https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm",
+  "scripts": {
+    "prepare": "./bin/mkdist -o js concat/hterm_all.concat && cd js && terser hterm_all.js --compress --mangle --output hterm_all.min.js --source-map url=hterm_all.min.js.map,includeSources",
+    "test": "./bin/load_tests"
+  },
+  "devDependencies": {
+    "chai": "~4",
+    "eslint": "~6",
+    "mocha": "~6",
+    "mocha-headless-chrome": "~2",
+    "terser": "~4"
+  },
+  "dependencies": {}
+}
