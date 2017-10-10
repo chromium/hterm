@@ -844,6 +844,10 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.syncMouseStyle();
       break;
 
+    case 1004:  // Report on window focus change.
+      this.terminal.reportFocus = state;
+      break;
+
     case 1010:  // Scroll to bottom on tty output
       this.terminal.scrollOnOutput = state;
       break;

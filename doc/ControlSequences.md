@@ -540,7 +540,7 @@ we support some of them.
 | 1001 |         |        | Use Hilite Mouse Tracking                   | *Ignored (TBD)* |
 | 1002 | MOUSE_REPORT_DRAG | | Use Cell Motion Mouse Tracking           | Supported |
 | 1003 |         |        | Use All Motion Mouse Tracking               | *Ignored (TBD)* |
-| 1004 |         |        | Send FocusIn/FocusOut events                | *Ignored (TBD)* |
+| 1004 |         |        | Send FocusIn/FocusOut events                | Supported |
 | 1005 |         |        | Enable Extended Mouse Mode                  | *Ignored (TBD)* |
 | 1010 |         | rxvt   | Scroll to bottom on tty output              | Supported |
 | 1011 |         | rxvt   | Scroll to bottom on key press               | Supported |

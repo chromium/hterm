@@ -1181,6 +1181,12 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?67l');
     result.assertEQ(this.terminal.keyboard.backspaceSendsBackspace, false);
 
+    this.terminal.interpret('\x1b[?1004h]');
+    result.assertEQ(this.terminal.reportFocus, true);
+
+    this.terminal.interpret('\x1b[?1004l]');
+    result.assertEQ(this.terminal.reportFocus, false);
+
     this.terminal.interpret('\x1b[?1036h');
     result.assertEQ(this.terminal.keyboard.metaSendsEscape, true);
 

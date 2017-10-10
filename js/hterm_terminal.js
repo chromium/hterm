@@ -148,6 +148,8 @@ hterm.Terminal = function(opt_profileId) {
   this.realizeSize_(80, 24);
   this.setDefaultTabStops();
 
+  this.reportFocus = false;
+
   this.setProfile(opt_profileId || 'default',
                   function() { this.onTerminalReady(); }.bind(this));
 };
@@ -3179,6 +3181,11 @@ hterm.Terminal.prototype.onMouse = function(e) { };
 hterm.Terminal.prototype.onFocusChange_ = function(focused) {
   this.cursorNode_.setAttribute('focus', focused);
   this.restyleCursor_();
+
+  if (this.reportFocus) {
+    this.io.sendString(focused === true ? '\x1b[I' : '\x1b[O')
+  }
+
   if (focused === true)
     this.closeBellNotifications_();
 };
