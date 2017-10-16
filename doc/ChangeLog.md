@@ -1,3 +1,13 @@
+# 1.73, 2017-10-16, Various bugfixes and minor features.
+
+* Document source code.
+* Implement OSC 12 (text cursor color).
+* io: buffer data when in background.
+* io: add a hideOverlay helper.
+* Report meta key too with CSI sequences.
+* Handle drag & drop nicely.
+* Stop mangling input from IMEs/etc...
+
 # 1.72, 2017-09-12, More bugfixes.
 
 * Drop duplicate resize call.
