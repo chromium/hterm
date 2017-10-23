@@ -357,7 +357,7 @@ For example:
 |    6 | Enable special color number        | Ignored                 | |
 |    6 | Set current file path              | Ignored                 | |
 |    7 | Set current directory              | Ignored                 | ESC ] 7 ; directory \a |
-|    8 | Set hyperlink                      | Ignored                 | ESC ] 8 ; id=foo ; uri \a text ESC ] 8 ;; \a |
+|    8 | Set hyperlink                      | Supported               | ESC ] 8 ; id=foo ; uri \a text ESC ] 8 ;; \a |
 |    9 | iTerm2 Growl notifications         | Supported               | ESC ] 9 ; [message] \a |
 |   10 | Set foreground color               | Supported               | ESC ] 10 ; [X11 color spec] \a |
 |   11 | Set background color               | Supported               | ESC ] 11 ; [X11 color spec] \a |

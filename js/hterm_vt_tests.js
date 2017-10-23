@@ -1694,6 +1694,90 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
   });
 
 /**
+ * Test basic hyperlinks.
+ */
+hterm.VT.Tests.addTest('OSC-8', function(result, cx) {
+  const tattrs = this.terminal.getTextAttributes();
+
+  // Start with links off.
+  result.assertEQ(null, tattrs.uriId);
+  result.assertEQ(null, tattrs.uri);
+
+  // Start to linkify some text.
+  this.terminal.interpret('\x1b]8;id=foo;http://foo\x07');
+  result.assertEQ('foo', tattrs.uriId);
+  result.assertEQ('http://foo', tattrs.uri);
+
+  // Add the actual text.
+  this.terminal.interpret('click me');
+
+  // Stop the link.
+  this.terminal.interpret('\x1b]8;\x07');
+  result.assertEQ(null, tattrs.uriId);
+  result.assertEQ(null, tattrs.uri);
+
+  // Check the link.
+  // XXX: Can't check the URI target due to binding via event listener.
+  const row = this.terminal.getRowNode(0);
+  const span = row.childNodes[0];
+  result.assertEQ('foo', span.uriId);
+  result.assertEQ('click me', span.textContent);
+  result.assertEQ('uri-node', span.className);
+
+  result.pass();
+});
+
+/**
+ * Test hyperlinks with blank ids.
+ */
+hterm.VT.Tests.addTest('OSC-8-blank-id', function(result, cx) {
+  const tattrs = this.terminal.getTextAttributes();
+
+  // Create a link with a blank id.
+  this.terminal.interpret('\x1b]8;;http://foo\x07click\x1b]8;\x07');
+  result.assertEQ(null, tattrs.uriId);
+  result.assertEQ(null, tattrs.uri);
+
+  // Check the link.
+  // XXX: Can't check the URI target due to binding via event listener.
+  const row = this.terminal.getRowNode(0);
+  const span = row.childNodes[0];
+  result.assertEQ('', span.uriId);
+  result.assertEQ('click', span.textContent);
+  result.assertEQ('uri-node', span.className);
+
+  result.pass();
+});
+
+/**
+ * Test changing hyperlinks midstream.
+ */
+hterm.VT.Tests.addTest('OSC-8-switch-uri', function(result, cx) {
+  const tattrs = this.terminal.getTextAttributes();
+
+  // Create a link then change it.
+  this.terminal.interpret(
+      '\x1b]8;id=foo;http://foo\x07click\x1b]8;;http://bar\x07bat\x1b]8;\x07');
+  result.assertEQ(null, tattrs.uriId);
+  result.assertEQ(null, tattrs.uri);
+
+  // Check the links.
+  // XXX: Can't check the URI target due to binding via event listener.
+  const row = this.terminal.getRowNode(0);
+  let span = row.childNodes[0];
+  result.assertEQ('foo', span.uriId);
+  result.assertEQ('click', span.textContent);
+  result.assertEQ('uri-node', span.className);
+
+  span = row.childNodes[1];
+  result.assertEQ('', span.uriId);
+  result.assertEQ('bat', span.textContent);
+  result.assertEQ('uri-node', span.className);
+
+  result.pass();
+});
+
+/**
  * Test iTerm2 growl notifications.
  */
 hterm.VT.Tests.addTest('OSC-9', function(result, cx) {

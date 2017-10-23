@@ -1735,6 +1735,54 @@ hterm.VT.OSC['4'] = function(parseState) {
 };
 
 /**
+ * Hyperlinks.
+ *
+ * The first argument is optional and colon separated:
+ *   id=<id>
+ * The second argument is the link itself.
+ *
+ * Calling with a non-blank URI starts it.  A blank URI stops it.
+ *
+ * https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+ */
+hterm.VT.OSC['8'] = function(parseState) {
+  const args = parseState.args[0].split(';');
+  let id = null;
+  let uri = null;
+
+  if (args.length != 2 || args[1].length == 0) {
+    // Reset link.
+  } else {
+    // Pull out any colon separated parameters in the first argument.
+    const params = args[0].split(':');
+    id = '';
+    params.forEach((param) => {
+      const idx = param.indexOf('=');
+      if (idx == -1)
+        return;
+
+      const key = param.slice(0, idx);
+      const value = param.slice(idx + 1);
+      switch (key) {
+        case 'id':
+          id = value;
+          break;
+        default:
+          // Ignore unknown keys.
+          break;
+      }
+    });
+
+    // The URI is in the second argument.
+    uri = args[1];
+  }
+
+  const attrs = this.terminal.getTextAttributes();
+  attrs.uri = uri;
+  attrs.uriId = id;
+};
+
+/**
  * iTerm2 growl notifications.
  */
 hterm.VT.OSC['9'] = function(parseState) {

@@ -52,6 +52,8 @@ hterm.TextAttributes = function(document) {
   this.wcNode = false;
   this.asciiNode = true;
   this.tileData = null;
+  this.uri = null;
+  this.uriId = null;
 
   this.colorPalette = null;
   this.resetColorPalette();
@@ -129,6 +131,8 @@ hterm.TextAttributes.prototype.reset = function() {
   this.invisible = false;
   this.wcNode = false;
   this.asciiNode = true;
+  this.uri = null;
+  this.uriId = null;
 };
 
 /**
@@ -158,7 +162,8 @@ hterm.TextAttributes.prototype.isDefault = function() {
           !this.invisible &&
           !this.wcNode &&
           this.asciiNode &&
-          this.tileData == null);
+          this.tileData == null &&
+          this.uri == null);
 };
 
 /**
@@ -246,6 +251,13 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   if (opt_textContent)
     span.textContent = opt_textContent;
 
+  if (this.uri) {
+    classes.push('uri-node');
+    span.uriId = this.uriId;
+    span.title = this.uri;
+    span.addEventListener('click', hterm.openUrl.bind(this, this.uri));
+  }
+
   if (classes.length)
     span.className = classes.join(' ');
 
@@ -279,6 +291,7 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
   return (!(this.wcNode || obj.wcNode) &&
           this.asciiNode == obj.asciiNode &&
           !(this.tileData != null || obj.tileNode) &&
+          this.uriId == obj.uriId &&
           this.foreground == style.color &&
           this.background == style.backgroundColor &&
           (this.enableBold && this.bold) == !!style.fontWeight &&

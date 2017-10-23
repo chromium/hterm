@@ -1456,6 +1456,10 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  --hterm-mouse-cursor-pointer: default;' +
        '  --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);' +
        '}' +
+       '.uri-node:hover {' +
+       '  text-decoration: underline;' +
+       '  cursor: pointer;' +
+       '}' +
        '@keyframes blink {' +
        '  from { opacity: 1.0; }' +
        '  to { opacity: 0.0; }' +
