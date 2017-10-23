@@ -346,18 +346,49 @@ terminated with BEL.  e.g. ESC+] 0 ; title BEL (0x1b 0x5d 0x30 0x3b ... 0x07).
 
 For example:
 
-| OSC | Description                  | Status                  | Format |
-|:---:|------------------------------|-------------------------|--------|
-|   0 | Set window title             | Only window title       | ESC ] 0 ; [title] \a |
-|   2 | Set window title             | Converted to 0          | |
-|   4 | Set/read color palette       | Supported               | ESC ] 4 ; index1;rgb1;...;indexN;rgbN \a |
-|   9 | iTerm2 Growl notifications   | Supported               | ESC ] 9 ; [message] \a |
-|  10 | Set foreground color         | Supported               | ESC ] 10 ; [X11 color spec] \a |
-|  11 | Set background color         | Supported               | ESC ] 11 ; [X11 color spec] \a |
-|  12 | Set text cursor color        | Supported               | ESC ] 12 ; [X11 color spec] \a |
-|  50 | Set the cursor shape         | Supported               | ESC ] 50 ; CursorShape=[0&#124;1&#124;2] \a |
-|  52 | Clipboard operations         | Only "c" supported      | ESC ] 52 ; c ; [base64 data] \a |
-| 777 | rxvt-unicode (urxvt) modules | Only "notify" supported | ESC ] 777 ; notify ; [title] ; [body] \a |
+| OSC  | Description                        | Status                  | Format |
+|:----:|------------------------------------|-------------------------|--------|
+|    0 | Set window title & icon name       | Only window title       | ESC ] 0 ; [title] \a |
+|    1 | Change icon name                   | Ignored                 | ESC ] 1 ; [icon] \a |
+|    2 | Set window title                   | Converted to 0          | ESC ] 2 ; [title] \a |
+|    3 | Set X property                     | Ignored                 | |
+|    4 | Set/read color palette             | Supported               | ESC ] 4 ; index1;rgb1;...;indexN;rgbN \a |
+|    5 | Change special color number        | Ignored                 | |
+|    6 | Enable special color number        | Ignored                 | |
+|    6 | Set current file path              | Ignored                 | |
+|    7 | Set current directory              | Ignored                 | ESC ] 7 ; directory \a |
+|    8 | Set hyperlink                      | Ignored                 | ESC ] 8 ; id=foo ; uri \a text ESC ] 8 ;; \a |
+|    9 | iTerm2 Growl notifications         | Supported               | ESC ] 9 ; [message] \a |
+|   10 | Set foreground color               | Supported               | ESC ] 10 ; [X11 color spec] \a |
+|   11 | Set background color               | Supported               | ESC ] 11 ; [X11 color spec] \a |
+|   12 | Set text cursor color              | Supported               | ESC ] 12 ; [X11 color spec] \a |
+|   13 | Set mouse foreground color         | Ignored                 | ESC ] 13 ; [X11 color spec] \a |
+|   14 | Set mouse background color         | Ignored                 | ESC ] 14 ; [X11 color spec] \a |
+|   15 | Set Tektronix foreground color     | Ignored                 | ESC ] 15 ; [X11 color spec] \a |
+|   16 | Set Tektronix background color     | Ignored                 | ESC ] 16 ; [X11 color spec] \a |
+|   17 | Set highlight background color     | Ignored                 | ESC ] 17 ; [X11 color spec] \a |
+|   18 | Set Tektronix cursor color         | Ignored                 | ESC ] 18 ; [X11 color spec] \a |
+|   19 | Set highlight foreground color     | Ignored                 | ESC ] 19 ; [X11 color spec] \a |
+|   46 | Set logfile path                   | Ignored                 | ESC ] 46 ; path \a |
+|   50 | Change font number/name            | Ignored                 | ESC ] 50 ; [number | name] \a |
+|   50 | Set the cursor shape               | Supported               | ESC ] 50 ; CursorShape=[0&#124;1&#124;2] \a |
+|   51 | Reserved for Emacs                 | Ignored                 | |
+|   52 | Clipboard operations               | Only "c" supported      | ESC ] 52 ; c ; [base64 data] \a |
+|  104 | Reset color number                 | Ignored                 | |
+|  105 | Reset special color number         | Ignored                 | |
+|  106 | Enable special color number        | Ignored                 | |
+|  110 | Reset foreground color             | Ignored                 | ESC ] 110 ; \a |
+|  111 | Reset background color             | Ignored                 | ESC ] 111 ; \a |
+|  112 | Reset text cursor color            | Ignored                 | ESC ] 112 ; \a |
+|  113 | Reset mouse foreground color       | Ignored                 | ESC ] 113 ; \a |
+|  114 | Reset mouse background color       | Ignored                 | ESC ] 114 ; \a |
+|  115 | Reset Tektronix foreground color   | Ignored                 | ESC ] 115 ; \a |
+|  116 | Reset Tektronix background color   | Ignored                 | ESC ] 116 ; \a |
+|  117 | Reset highlight background color   | Ignored                 | ESC ] 117 ; \a |
+|  118 | Reset Tektronix cursor color       | Ignored                 | ESC ] 118 ; \a |
+|  119 | Reset highlight foreground color   | Ignored                 | ESC ] 119 ; \a |
+|  777 | rxvt-unicode (urxvt) modules       | Only "notify" supported | ESC ] 777 ; notify ; [title] ; [body] \a |
+| 1337 | iTerm2 sequences                   | Ignored                 | |
 
 ## Control Sequence Introducer (CSI) {#CSI}
 
