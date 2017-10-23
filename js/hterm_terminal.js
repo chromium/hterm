@@ -3022,21 +3022,6 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
 };
 
 /**
- * Launches url in a new tab.
- *
- * @param {string} url URL to launch in a new tab.
- */
-hterm.Terminal.prototype.openUrl = function(url) {
-  if (window.chrome && window.chrome.browser) {
-    // For Chrome v2 apps, we need to use this API to properly open windows.
-    chrome.browser.openTab({'url': url});
-  } else {
-    var win = window.open(url, '_blank');
-    win.focus();
-  }
-}
-
-/**
  * Open the selected url.
  */
 hterm.Terminal.prototype.openSelectedUrl_ = function() {
@@ -3070,7 +3055,7 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
     }
   }
 
-  this.openUrl(str);
+  hterm.openUrl(str);
 }
 
 

@@ -198,6 +198,21 @@ hterm.notify = function(params) {
 };
 
 /**
+ * Launches url in a new tab.
+ *
+ * @param {string} url URL to launch in a new tab.
+ */
+hterm.openUrl = function(url) {
+  if (window.chrome && chrome.browser && chrome.browser.openTab) {
+    // For Chrome v2 apps, we need to use this API to properly open windows.
+    chrome.browser.openTab({'url': url});
+  } else {
+    const win = window.open(url, '_blank');
+    win.focus();
+  }
+}
+
+/**
  * Constructor for a hterm.Size record.
  *
  * Instances of this class have public read/write members for width and height.
