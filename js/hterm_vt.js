@@ -1722,6 +1722,9 @@ hterm.VT.OSC['50'] = function(parseState) {
  * preference.
  */
 hterm.VT.OSC['52'] = function(parseState) {
+  if (!this.enableClipboardWrite)
+    return;
+
   // Args come in as a single 'clipboard;b64-data' string.  The clipboard
   // parameter is used to select which of the X clipboards to address.  Since
   // we're not integrating with X, we treat them all the same.

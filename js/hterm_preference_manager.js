@@ -238,7 +238,10 @@ hterm.PreferenceManager.defaultPreferences = {
 
   'enable-clipboard-write':
   [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
-   'Allow the host to write directly to the system clipboard.'],
+   'Allow the remote host to write directly to the local system clipboard.\n' +
+   'Read access is never granted regardless of this setting.\n' +
+   '\n' +
+   'This is used to control access to features like OSC-52.'],
 
   'enable-dec12':
   [hterm.PreferenceManager.categories.Miscellaneous, false, 'bool',
