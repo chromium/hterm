@@ -1,3 +1,9 @@
+# 1.74, 2017-10-27, Minor improvements.
+
+* Implement FocusIn/Out events.
+* Finish implementing enable-clipboard-write.
+* Document more OSC sequences.
+
 # 1.73, 2017-10-16, Various bugfixes and minor features.
 
 * Document source code.
