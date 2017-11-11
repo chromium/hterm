@@ -2167,7 +2167,7 @@ hterm.VT.CSI['m'] = function(parseState) {
           attrs.foregroundSource = attrs.SRC_RGB;
           attrs.foreground = trueColor;
 
-          i += 5;
+          i += 4;
         } else {
           // Check for 256 color
           var c = get256(i);
@@ -2195,7 +2195,7 @@ hterm.VT.CSI['m'] = function(parseState) {
           attrs.backgroundSource = attrs.SRC_RGB;
           attrs.background = trueColor;
 
-          i += 5;
+          i += 4;
         } else {
           // Check for 256 color
           var c = get256(i);

@@ -1265,6 +1265,76 @@ hterm.VT.Tests.addTest('true-color-mode', function(result, cx) {
     result.pass();
   });
 
+/**
+ * Check chained SGR sequences.
+ */
+hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
+  let text;
+  let style;
+  const ta = this.terminal.getTextAttributes();
+
+  // Check true color parsing.
+  this.terminal.interpret('\x1b[' +
+                          // Reset everything.
+                          '0;' +
+                          // Enable bold.
+                          '1;' +
+                          // Set foreground via true color.
+                          '38;2;11;22;33;' +
+                          // Enable italic.
+                          '3;' +
+                          // Set background via true color.
+                          '48;2;33;22;11;' +
+                          // Enable underline.
+                          '4' +
+                          'mHI1');
+  result.assertEQ(true, ta.bold);
+  result.assertEQ(true, ta.italic);
+  result.assertEQ(true, ta.underline);
+  result.assertEQ(false, ta.faint);
+  result.assertEQ(false, ta.strikethrough);
+  style = this.terminal.getRowNode(0, 0).childNodes[0].style;
+  result.assertEQ('rgb(11, 22, 33)', style.color);
+  result.assertEQ('rgb(33, 22, 11)', style.backgroundColor);
+  text = this.terminal.getRowText(0, 0);
+  result.assertEQ('HI1', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+  result.assertEQ(false, ta.bold);
+  result.assertEQ(false, ta.italic);
+  result.assertEQ(false, ta.underline);
+  result.assertEQ(false, ta.faint);
+  result.assertEQ(false, ta.strikethrough);
+
+  // Check 256 color parsing.
+  this.terminal.interpret('\x1b[' +
+                          // Reset everything.
+                          '0;' +
+                          // Enable bold.
+                          '1;' +
+                          // Set foreground via true color.
+                          '38;5;11;' +
+                          // Enable italic.
+                          '3;' +
+                          // Set background via true color.
+                          '48;5;22;' +
+                          // Enable underline.
+                          '4' +
+                          'mHI2');
+  result.assertEQ(true, ta.bold);
+  result.assertEQ(true, ta.italic);
+  result.assertEQ(true, ta.underline);
+  result.assertEQ(false, ta.faint);
+  result.assertEQ(false, ta.strikethrough);
+  style = this.terminal.getRowNode(0, 0).childNodes[0].style;
+  result.assertEQ('rgb(252, 233, 79)', style.color);
+  result.assertEQ('rgb(0, 95, 0)', style.backgroundColor);
+  text = this.terminal.getRowText(0, 0);
+  result.assertEQ('HI2', text);
+
+  result.pass();
+});
 
 /**
  * TODO(rginda): Test origin mode.
