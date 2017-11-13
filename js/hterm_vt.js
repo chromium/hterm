@@ -2167,8 +2167,7 @@ hterm.VT.CSI['m'] = function(parseState) {
         // First check for true color definition
         var trueColor = getTrueColor(i);
         if (trueColor != null) {
-          attrs.foregroundSource = attrs.SRC_RGB;
-          attrs.foreground = trueColor;
+          attrs.foregroundSource = trueColor;
 
           i += 4;
         } else {
@@ -2195,8 +2194,7 @@ hterm.VT.CSI['m'] = function(parseState) {
         // First check for true color definition
         var trueColor = getTrueColor(i);
         if (trueColor != null) {
-          attrs.backgroundSource = attrs.SRC_RGB;
-          attrs.background = trueColor;
+          attrs.backgroundSource = trueColor;
 
           i += 4;
         } else {

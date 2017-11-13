@@ -24,7 +24,7 @@ hterm.TextAttributes = function(document) {
   this.document_ = document;
   // These variables contain the source of the color as either:
   // SRC_DEFAULT  (use context default)
-  // SRC_RGB      (specified in 'rgb( r, g, b)' form)
+  // rgb(...)     (true color form)
   // number       (representing the index from color palette to use)
   this.foregroundSource = this.SRC_DEFAULT;
   this.backgroundSource = this.SRC_DEFAULT;
@@ -81,13 +81,6 @@ hterm.TextAttributes.prototype.DEFAULT_COLOR = lib.f.createEnum('');
  * A constant string used to specify that source color is context default.
  */
 hterm.TextAttributes.prototype.SRC_DEFAULT = 'default';
-
-
-/**
- * A constant string used to specify that the source of a color is a valid
- * rgb( r, g, b) specifier.
- */
-hterm.TextAttributes.prototype.SRC_RGB = 'rgb';
 
 /**
  * The document object which should own the DOM nodes created by this instance.
@@ -339,8 +332,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
   }
 
   if (this.enableBoldAsBright && this.bold) {
-    if (foregroundSource != this.SRC_DEFAULT &&
-        foregroundSource != this.SRC_RGB) {
+    if (Number.isInteger(foregroundSource)) {
       foregroundSource = getBrightIndex(foregroundSource);
     }
   }
@@ -350,11 +342,12 @@ hterm.TextAttributes.prototype.syncColors = function() {
     defaultForeground = this.defaultBackground;
   }
 
-  // Set fore/background colors unless already specified in rgb(r, g, b) form.
-  if (foregroundSource != this.SRC_RGB) {
-    this.foreground = ((foregroundSource == this.SRC_DEFAULT) ?
-                       defaultForeground : this.colorPalette[foregroundSource]);
-  }
+  if (foregroundSource == this.SRC_DEFAULT)
+    this.foreground = defaultForeground;
+  else if (Number.isInteger(foregroundSource))
+    this.foreground = this.colorPalette[foregroundSource];
+  else
+    this.foreground = foregroundSource;
 
   if (this.faint && !this.invisible) {
     var colorToMakeFaint = ((this.foreground == this.DEFAULT_COLOR) ?
@@ -362,10 +355,12 @@ hterm.TextAttributes.prototype.syncColors = function() {
     this.foreground = lib.colors.mix(colorToMakeFaint, 'rgb(0, 0, 0)', 0.3333);
   }
 
-  if (backgroundSource != this.SRC_RGB) {
-    this.background = ((backgroundSource == this.SRC_DEFAULT) ?
-                       defaultBackground : this.colorPalette[backgroundSource]);
-  }
+  if (backgroundSource == this.SRC_DEFAULT)
+    this.background = defaultBackground;
+  else if (Number.isInteger(backgroundSource))
+    this.background = this.colorPalette[backgroundSource];
+  else
+    this.background = backgroundSource;
 };
 
 /**

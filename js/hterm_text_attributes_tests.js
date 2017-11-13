@@ -150,6 +150,64 @@ hterm.TextAttributes.Tests.addTest('decoration-combos', function(result, cx) {
   result.pass();
 });
 
+/**
+ * Inverse color processing.
+ */
+hterm.TextAttributes.Tests.addTest('inverse-colors', function(result, cx) {
+  const tattrs = new hterm.TextAttributes(cx.window.document);
+  let node;
+
+  // Set an attribute to force a container (rather than a text node),
+  // but doesn't affect the color behavior in syncColors.
+  tattrs.underline = true;
+  tattrs.setDefaults('rgb(1, 2, 3)', 'rgb(3, 2, 1)');
+
+  // Test with default colors.
+  tattrs.inverse = false;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('', node.style.color);
+  result.assertEQ('', node.style.backgroundColor);
+
+  tattrs.inverse = true;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ(tattrs.defaultBackground, node.style.color);
+  result.assertEQ(tattrs.defaultForeground, node.style.backgroundColor);
+
+  // Test with indexed colors.
+  tattrs.foregroundSource = 0;
+  tattrs.backgroundSource = 1;
+  tattrs.inverse = false;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ(tattrs.colorPalette[0], node.style.color);
+  result.assertEQ(tattrs.colorPalette[1], node.style.backgroundColor);
+
+  tattrs.inverse = true;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ(tattrs.colorPalette[1], node.style.color);
+  result.assertEQ(tattrs.colorPalette[0], node.style.backgroundColor);
+
+  // Test with true colors.
+  tattrs.foregroundSource = 'rgb(1, 1, 1)';
+  tattrs.backgroundSource = 'rgb(2, 2, 2)';
+  tattrs.inverse = false;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ(tattrs.foregroundSource, node.style.color);
+  result.assertEQ(tattrs.backgroundSource, node.style.backgroundColor);
+
+  tattrs.inverse = true;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ(tattrs.backgroundSource, node.style.color);
+  result.assertEQ(tattrs.foregroundSource, node.style.backgroundColor);
+
+  result.pass();
+});
+
 hterm.TextAttributes.Tests.addTest('splitWidecharString-ascii', function(result, cx) {
   var text = 'abcdefghijklmn';
 
