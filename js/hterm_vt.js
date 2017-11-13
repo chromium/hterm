@@ -377,7 +377,10 @@ hterm.VT.prototype.reset = function() {
  * See the "Mouse Tracking" section of [xterm].
  */
 hterm.VT.prototype.onTerminalMouse_ = function(e) {
+  // Short circuit a few events to avoid unnecessary processing.
   if (this.mouseReport == this.MOUSE_REPORT_DISABLED)
+    return;
+  else if (this.mouseReport != this.MOUSE_REPORT_DRAG && e.type == 'mousemove')
     return;
 
   // Temporary storage for our response.
