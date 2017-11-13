@@ -337,11 +337,6 @@ hterm.TextAttributes.prototype.syncColors = function() {
     }
   }
 
-  if (this.invisible) {
-    foregroundSource = backgroundSource;
-    defaultForeground = this.defaultBackground;
-  }
-
   if (foregroundSource == this.SRC_DEFAULT)
     this.foreground = defaultForeground;
   else if (Number.isInteger(foregroundSource))
@@ -349,7 +344,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
   else
     this.foreground = foregroundSource;
 
-  if (this.faint && !this.invisible) {
+  if (this.faint) {
     var colorToMakeFaint = ((this.foreground == this.DEFAULT_COLOR) ?
                             this.defaultForeground : this.foreground);
     this.foreground = lib.colors.mix(colorToMakeFaint, 'rgb(0, 0, 0)', 0.3333);
@@ -361,6 +356,10 @@ hterm.TextAttributes.prototype.syncColors = function() {
     this.background = this.colorPalette[backgroundSource];
   else
     this.background = backgroundSource;
+
+  // Process invisible settings last to keep it simple.
+  if (this.invisible)
+    this.foreground = this.background;
 };
 
 /**

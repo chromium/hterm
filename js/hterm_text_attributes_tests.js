@@ -208,6 +208,32 @@ hterm.TextAttributes.Tests.addTest('inverse-colors', function(result, cx) {
   result.pass();
 });
 
+/**
+ * Handling of invisible tags.
+ */
+hterm.TextAttributes.Tests.addTest('invisible', function(result, cx) {
+  const tattrs = new hterm.TextAttributes(cx.window.document);
+  let node;
+
+  // Set an attribute to force a container (rather than a text node),
+  // but doesn't affect the color behavior in syncColors.
+  tattrs.underline = true;
+  tattrs.setDefaults('rgb(1, 2, 3)', 'rgb(3, 2, 1)');
+
+  // Set colors to something other than the default.
+  tattrs.foregroundSource = 'rgb(1, 1, 1)';
+  tattrs.backgroundSource = 'rgb(2, 2, 2)';
+
+  // Invisible settings should have same colors.
+  tattrs.invisible = true;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ(tattrs.backgroundSource, node.style.color);
+  result.assertEQ(tattrs.backgroundSource, node.style.backgroundColor);
+
+  result.pass();
+});
+
 hterm.TextAttributes.Tests.addTest('splitWidecharString-ascii', function(result, cx) {
   var text = 'abcdefghijklmn';
 
