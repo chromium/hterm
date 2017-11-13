@@ -2136,6 +2136,8 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.invisible = true;
       } else if (arg == 9) {  // Crossed out.
         attrs.strikethrough = true;
+      } else if (arg == 21) {  // Double underlined.
+        attrs.doubleUnderline = true;
       } else if (arg == 22) {  // Not bold & not faint.
         attrs.bold = false;
         attrs.faint = false;
@@ -2143,6 +2145,7 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.italic = false;
       } else if (arg == 24) {  // Not underlined.
         attrs.underline = false;
+        attrs.doubleUnderline = false;
       } else if (arg == 25) {  // Not blink.
         attrs.blink = false;
       } else if (arg == 27) {  // Steady.

@@ -614,8 +614,8 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 |   7 | Inverse                                    | Supported |
 |   8 | Invisible                                  | Supported |
 |   9 | Crossed out                                | Supported |
+|  21 | Double underlined                          | Supported |
 |     | **Disable Attributes**                     | |
-|  21 | Double underlined                          | *Ignored (TBD)* |
 |  22 | Normal (decorations)                       | Supported |
 |  23 | Not italic                                 | Supported |
 |  24 | Not underlined                             | Supported |

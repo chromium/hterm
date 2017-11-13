@@ -84,6 +84,72 @@ hterm.TextAttributes.Tests.addTest('matchesContainer', function(result, cx) {
   result.pass();
 });
 
+/**
+ * Check combination of text decorations.
+ */
+hterm.TextAttributes.Tests.addTest('decoration-combos', function(result, cx) {
+  const tattrs = new hterm.TextAttributes(cx.window.document);
+  let node;
+
+  // Underline only.
+  tattrs.underline = true;
+  tattrs.doubleUnderline = false;
+  tattrs.strikethrough = false;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline', node.style.textDecorationLine);
+  result.assertEQ('', node.style.textDecorationStyle);
+
+  // Double underline only.
+  tattrs.underline = false;
+  tattrs.doubleUnderline = true;
+  tattrs.strikethrough = false;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline', node.style.textDecorationLine);
+  result.assertEQ('double', node.style.textDecorationStyle);
+
+  // Strikethrough only.
+  tattrs.underline = false;
+  tattrs.doubleUnderline = false;
+  tattrs.strikethrough = true;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('line-through', node.style.textDecorationLine);
+  result.assertEQ('', node.style.textDecorationStyle);
+
+  // Underline + double underline.
+  tattrs.underline = true;
+  tattrs.doubleUnderline = true;
+  tattrs.strikethrough = false;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline', node.style.textDecorationLine);
+  result.assertEQ('double', node.style.textDecorationStyle);
+
+  // Underline + strikethrough.
+  tattrs.underline = true;
+  tattrs.doubleUnderline = false;
+  tattrs.strikethrough = true;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline line-through', node.style.textDecorationLine);
+  result.assertEQ('', node.style.textDecorationStyle);
+
+  // Double underline + strikethrough.
+  tattrs.underline = false;
+  tattrs.doubleUnderline = true;
+  tattrs.strikethrough = true;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline line-through', node.style.textDecorationLine);
+  result.assertEQ('double', node.style.textDecorationStyle);
+
+  // Underline + double underline + strikethrough.
+  tattrs.underline = true;
+  tattrs.doubleUnderline = true;
+  tattrs.strikethrough = true;
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline line-through', node.style.textDecorationLine);
+  result.assertEQ('double', node.style.textDecorationStyle);
+
+  result.pass();
+});
+
 hterm.TextAttributes.Tests.addTest('splitWidecharString-ascii', function(result, cx) {
   var text = 'abcdefghijklmn';
 

@@ -45,6 +45,7 @@ hterm.TextAttributes = function(document) {
   this.italic = false;
   this.blink = false;
   this.underline = false;
+  this.doubleUnderline = false;
   this.strikethrough = false;
   this.inverse = false;
   this.invisible = false;
@@ -129,6 +130,7 @@ hterm.TextAttributes.prototype.reset = function() {
   this.italic = false;
   this.blink = false;
   this.underline = false;
+  this.doubleUnderline = false;
   this.strikethrough = false;
   this.inverse = false;
   this.invisible = false;
@@ -157,6 +159,7 @@ hterm.TextAttributes.prototype.isDefault = function() {
           !this.italic &&
           !this.blink &&
           !this.underline &&
+          !this.doubleUnderline &&
           !this.strikethrough &&
           !this.inverse &&
           !this.invisible &&
@@ -213,18 +216,27 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
     span.blinkNode = true;
   }
 
-  var textDecoration = '';
+  let textDecorationLine = '';
+  let textDecorationStyle = '';
   if (this.underline) {
-    textDecoration += ' underline';
+    textDecorationLine += ' underline';
     span.underline = true;
   }
+  if (this.doubleUnderline) {
+    // The web platform doesn't like the same keyword twice.
+    if (!this.underline)
+      textDecorationLine += ' underline';
+    textDecorationStyle = 'double';
+    span.doubleUnderline = true;
+  }
   if (this.strikethrough) {
-    textDecoration += ' line-through';
+    textDecorationLine += ' line-through';
     span.strikethrough = true;
   }
-  if (textDecoration) {
-    style.textDecoration = textDecoration;
-  }
+  if (textDecorationLine)
+    style.textDecorationLine = textDecorationLine;
+  if (textDecorationStyle)
+    style.textDecorationStyle = textDecorationStyle;
 
   if (this.wcNode) {
     classes.push('wc-node');
@@ -280,6 +292,7 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           this.blink == !!obj.blinkNode &&
           this.italic == !!style.fontStyle &&
           !!this.underline == !!obj.underline &&
+          !!this.doubleUnderline == !!obj.doubleUnderline &&
           !!this.strikethrough == !!obj.strikethrough);
 };
 
