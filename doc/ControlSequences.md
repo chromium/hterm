@@ -467,31 +467,33 @@ arg1 ; arg2 ; argN m.
 |  ␠q | DECSCUSR | Set Cursor Style                            | Supported |
 |  "q | DECSCA   | Select Character Protection Attribute       | Won't support |
 |   r | DECSTBM  | Set Top and Bottom Margins                  | Supported |
-|  ?r |          |                                             | Won't support |
-|  $r |          |                                             | Won't support |
+|  ?r |          | Restore DEC Private Mode Values             | Won't support |
+|  $r | DECCARA  | Change Attributes in Rectangular Area       | Won't support |
 |   s |          | Save cursor (ANSI.SYS)                      | Supported |
-|  ?s |          |                                             | Won't support |
-|   t |          |                                             | Won't support |
+|  ?s |          | Save DEC Private Mode Values                | Won't support |
+|   t |          | Window manipulation                         | Won't support |
 |  $t | DECRARA  | Reverse Attributes in Rectangular Area      | Won't support |
-|  >t |          |                                             | Won't support |
+|  >t |          | Set one or more features of the title modes | Won't support |
 |  ␠t | DECSWBV  | Set Warning Bell Volume                     | Won't support |
 |   u |          | Restore cursor (ANSI.SYS)                   | Supported |
 |  ␠u | DECSMBV  | Set Margin Bell Volume                      | Won't support |
 |   v |          |                                             | *Ignored (TBD)* |
 |  $v | DECCRA   | Copy Rectangular Area                       | Won't support |
 |   w |          |                                             | *Ignored (TBD)* |
-|  'w | DECEFR   |                                             | Won't support |
-|   x | DECREQTPARM |                                          | *Ignored (TBD)* |
+|  'w | DECEFR   | Enable Filter Rectangle                     | Won't support |
+|   x | DECREQTPARM | Request Terminal Parameters              | *Ignored (TBD)* |
 |  *x | DECSACE  | Select Attribute Change Extent              | Won't support |
 |  $x | DECFRA   | Fill Rectangular Area                       | Won't support |
 |   y |          |                                             | *Ignored (TBD)* |
-|   z |          |                                             | *Ignored (TBD)* |
-|  'z |          |                                             | *Ignored (TBD)* |
+|   z |[vt_tiledata]| Tile data                                | Semi-Supported |
+|  'z | DECELR   | Enable Locator Reporting                    | *Ignored (TBD)* |
 |  $z | DECERA   | Erase Rectangular Area                      | Won't support |
-|  '{ |          |                                             | *Ignored (TBD)* |
-|  '&#124; |     |                                             | *Ignored (TBD)* |
+|  '{ | DECSLE   | Select Locator Events                       | *Ignored (TBD)* |
+|  '&#124; | DECRQLP | Request Locator Position                | *Ignored (TBD)* |
 |  '} | DECIC    | Insert Column                               | Won't support |
 |  '~ | DECDC    | Delete Column                               | Won't support |
+
+[vt_tiledata]: https://nethackwiki.com/wiki/Vt_tiledata
 
 {#CSI-footer}
 1. [SM]/[RM] are multiplexed commands; see section below for more details.
