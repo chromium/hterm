@@ -30,6 +30,9 @@ hterm.VT = function(terminal) {
   this.mouseReport = this.MOUSE_REPORT_DISABLED;
   this.mouseCoordinates = this.MOUSE_COORDINATES_X10;
 
+  // We only want to report mouse moves between cells, not between pixels.
+  this.lastMouseDragResponse_ = null;
+
   // Parse state left over from the last parse.  You should use the parseState
   // instance passed into your parse routine, rather than reading
   // this.parseState_ directly.
@@ -365,6 +368,7 @@ hterm.VT.prototype.reset = function() {
 
   this.mouseReport = this.MOUSE_REPORT_DISABLED;
   this.mouseCoordinates = this.MOUSE_COORDINATES_X10;
+  this.lastMouseDragResponse_ = null;
 };
 
 /**
@@ -485,6 +489,14 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
           response = `\x1b[<${b};${x};${y}M`;
         else
           response = '\x1b[M' + String.fromCharCode(b) + x + y;
+
+        // If we were going to report the same cell because we moved pixels
+        // within, suppress the report.  This is what xterm does and cuts
+        // down on duplicate messages.
+        if (this.lastMouseDragResponse_ == response)
+          response = '';
+        else
+          this.lastMouseDragResponse_ = response;
       }
 
       break;
