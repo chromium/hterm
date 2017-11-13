@@ -2074,3 +2074,40 @@ hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
 
     result.pass();
   });
+
+/**
+ * Check cursor save/restore behavior.
+ */
+hterm.VT.Tests.addTest('cursor-save-restore', function(result, cx) {
+  let tattrs;
+
+  // Save the current cursor state.
+  this.terminal.interpret('\x1b[?1048h');
+
+  // Change cursor attributes.
+  this.terminal.interpret('\x1b[1;4m');
+  tattrs = this.terminal.getTextAttributes();
+  result.assertEQ(true, tattrs.bold);
+  result.assertEQ(true, tattrs.underline);
+
+  // Change color palette a bit.
+  result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
+  result.assertEQ('rgb(204, 0, 0)', tattrs.colorPalette[1]);
+  this.terminal.interpret('\x1b]4;1;#112233;\x07');
+  result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
+  result.assertEQ('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+
+  // Restore the saved cursor state.
+  this.terminal.interpret('\x1b[?1048l');
+
+  // Check attributes were restored correctly.
+  tattrs = this.terminal.getTextAttributes();
+  result.assertEQ(false, tattrs.bold);
+  result.assertEQ(false, tattrs.underline);
+
+  // Make sure color palette did not change.
+  result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
+  result.assertEQ('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+
+  result.pass();
+});

@@ -312,7 +312,13 @@ hterm.VT.CursorState.prototype.save = function() {
 hterm.VT.CursorState.prototype.restore = function() {
   this.vt_.terminal.restoreCursor(this.cursor);
 
-  this.vt_.terminal.setTextAttributes(this.textAttributes.clone());
+  // Cursor restore includes char attributes (bold/etc...), but does not change
+  // the color palette (which are a terminal setting).
+  const tattrs = this.textAttributes.clone();
+  tattrs.colorPalette = this.vt_.terminal.getTextAttributes().colorPalette;
+  tattrs.syncColors();
+
+  this.vt_.terminal.setTextAttributes(tattrs);
 
   this.vt_.GL = this.GL;
   this.vt_.GR = this.GR;
