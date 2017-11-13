@@ -28,6 +28,7 @@ hterm.VT = function(terminal) {
 
   terminal.onMouse = this.onTerminalMouse_.bind(this);
   this.mouseReport = this.MOUSE_REPORT_DISABLED;
+  this.mouseCoordinates = this.MOUSE_COORDINATES_X10;
 
   // Parse state left over from the last parse.  You should use the parseState
   // instance passed into your parse routine, rather than reading
@@ -179,6 +180,21 @@ hterm.VT.prototype.MOUSE_REPORT_CLICK = 2;
  * Report mouse down/up and movement while a button is down.
  */
 hterm.VT.prototype.MOUSE_REPORT_DRAG = 3;
+
+/**
+ * DEC mode for X10 coorindates (the default).
+ */
+hterm.VT.prototype.MOUSE_COORDINATES_X10 = 0;
+
+/**
+ * DEC mode 1005 for UTF-8 coorindates.
+ */
+hterm.VT.prototype.MOUSE_COORDINATES_UTF8 = 1;
+
+/**
+ * DEC mode 1006 for SGR coorindates.
+ */
+hterm.VT.prototype.MOUSE_COORDINATES_SGR = 2;
 
 /**
  * ParseState constructor.
@@ -348,6 +364,7 @@ hterm.VT.prototype.reset = function() {
   this.savedState_ = new hterm.VT.CursorState(this);
 
   this.mouseReport = this.MOUSE_REPORT_DISABLED;
+  this.mouseCoordinates = this.MOUSE_COORDINATES_X10;
 };
 
 /**
@@ -373,37 +390,65 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       mod |= 16;
   }
 
-  // TODO(rginda): We should also support mode 1005 and/or 1006 to extend the
-  // coordinate space.  Though, after poking around just a little, I wasn't
-  // able to get vi or emacs to use either of these modes.
-  var x = String.fromCharCode(lib.f.clamp(e.terminalColumn + 32, 32, 255));
-  var y = String.fromCharCode(lib.f.clamp(e.terminalRow + 32, 32, 255));
+  // X & Y coordinate reporting.
+  let x;
+  let y;
+  let limit = 255;
+  switch (this.mouseCoordinates) {
+    case this.MOUSE_COORDINATES_UTF8:
+      // UTF-8 mode is the same as X10 but with higher limits.
+      limit = 2047;
+    case this.MOUSE_COORDINATES_X10:
+      // X10 reports coordinates by encoding into strings.
+      x = String.fromCharCode(lib.f.clamp(e.terminalColumn + 32, 32, limit));
+      y = String.fromCharCode(lib.f.clamp(e.terminalRow + 32, 32, limit));
+      break;
+    case this.MOUSE_COORDINATES_SGR:
+      // SGR reports coordinates by transmitting the numbers directly.
+      x = e.terminalColumn;
+      y = e.terminalRow;
+      break;
+  }
 
   switch (e.type) {
     case 'wheel':
       // Mouse wheel is treated as button 1 or 2 plus an additional 64.
       b = (((e.deltaY * -1) > 0) ? 0 : 1) + 96;
       b |= mod;
-      response = '\x1b[M' + String.fromCharCode(b) + x + y;
+      if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR)
+        response = `\x1b[<${b};${x};${y}M`;
+      else
+        response = '\x1b[M' + String.fromCharCode(b) + x + y;
 
       // Keep the terminal from scrolling.
       e.preventDefault();
       break;
 
     case 'mousedown':
-      // Buttons are encoded as button number plus 32.
-      var b = Math.min(e.button, 2) + 32;
+      // Buttons are encoded as button number.
+      var b = Math.min(e.button, 2);
+      // In X10 mode, we also add 32 for legacy reasons.
+      if (this.mouseCoordinates != this.MOUSE_COORDINATES_SGR)
+        b += 32;
 
       // And mix in the modifier keys.
       b |= mod;
 
-      response = '\x1b[M' + String.fromCharCode(b) + x + y;
+      if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR)
+        response = `\x1b[<${b};${x};${y}M`;
+      else
+        response = '\x1b[M' + String.fromCharCode(b) + x + y;
       break;
 
     case 'mouseup':
       if (this.mouseReport != this.MOUSE_REPORT_PRESS) {
-        // Mouse up has no indication of which button was released.
-        response = '\x1b[M\x23' + x + y;
+        if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR) {
+          // SGR mode can report the released button.
+          response = `\x1b[<${e.button};${x};${y}m`;
+        } else {
+          // X10 mode has no indication of which button was released.
+          response = '\x1b[M\x23' + x + y;
+        }
       }
       break;
 
@@ -413,7 +458,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
         // button press (e.g. if left & right are pressed, right is ignored),
         // and it only supports the first three buttons.  If none of them are
         // pressed, then XTerm flags it as a release.  We'll do the same.
-        b = 32;
+        b = this.mouseCoordinates == this.MOUSE_COORDINATES_SGR ? 0 : 32;
 
         // Priority here matches XTerm: left, middle, right.
         if (e.buttons & 0x1) {
@@ -436,7 +481,10 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
         // And mix in the modifier keys.
         b |= mod;
 
-        response = '\x1b[M' + String.fromCharCode(b) + x + y;
+        if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR)
+          response = `\x1b[<${b};${x};${y}M`;
+        else
+          response = '\x1b[M' + String.fromCharCode(b) + x + y;
       }
 
       break;
@@ -869,6 +917,16 @@ hterm.VT.prototype.setDECMode = function(code, state) {
 
     case 1004:  // Report on window focus change.
       this.terminal.reportFocus = state;
+      break;
+
+    case 1005:  // Extended coordinates in UTF-8 mode.
+      this.mouseCoordinates = (
+          state ? this.MOUSE_COORDINATES_UTF8 : this.MOUSE_COORDINATES_X10);
+      break;
+
+    case 1006:  // Extended coordinates in SGR mode.
+      this.mouseCoordinates = (
+          state ? this.MOUSE_COORDINATES_SGR : this.MOUSE_COORDINATES_X10);
       break;
 
     case 1010:  // Scroll to bottom on tty output

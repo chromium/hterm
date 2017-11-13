@@ -574,9 +574,11 @@ we support some of them.
 | 1002 | MOUSE_REPORT_DRAG | | Use Cell Motion Mouse Tracking           | Supported |
 | 1003 |         |        | Use All Motion Mouse Tracking               | *Ignored (TBD)* |
 | 1004 |         |        | Send FocusIn/FocusOut events                | Supported |
-| 1005 |         |        | Enable Extended Mouse Mode                  | *Ignored (TBD)* |
+| 1005 |         |        | Enable Extended Mouse Mode (UTF-8)          | Supported |
+| 1006 |         |        | Enable Extended Mouse Mode (SGR)            | Supported |
 | 1010 |         | rxvt   | Scroll to bottom on tty output              | Supported |
 | 1011 |         | rxvt   | Scroll to bottom on key press               | Supported |
+| 1015 |         | rxvt   | Enable Extended Mouse Mode (urxvt)          | Won't support |
 | 1034 |         |        | Interpret "meta" key, sets eighth bit       | Won't support |
 | 1035 |         |        | Enable special modifiers for Alt and NumLock keys | Won't support |
 | 1036 |         |        | Send ESC when Meta modifies a key           | Supported |
