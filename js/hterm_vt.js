@@ -880,7 +880,11 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       break;
 
     case 1048:  // Save cursor as in DECSC.
-      this.savedState_.save();
+      if (state)
+        this.savedState_.save();
+      else
+        this.savedState_.restore();
+      break;
 
     case 1049:  // 1047 + 1048 + clear.
       if (state) {
