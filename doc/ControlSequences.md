@@ -551,7 +551,7 @@ we support some of them.
 |    6 | DECOM   | DEC    | Origin Mode                                 | Supported |
 |    7 | DECAWM  | DEC    | Wraparound Mode                             | Supported |
 |    8 | DECARM  | DEC    | Auto-repeat Keys                            | Won't support |
-|    9 |         |        | Send Mouse X & Y on button press            | *Ignored (TBD)* |
+|    9 |         |        | Send Mouse X & Y on button press            | Supported |
 |   10 |         | rxvt   | Show toolbar                                | Won't support |
 |   12 |         | att610 | Start blinking cursor                       | Supported |
 |   18 | DECPFF  | DEC    | Print form feed                             | *Ignored (TBD)* |

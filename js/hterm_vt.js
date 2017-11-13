@@ -160,11 +160,18 @@ hterm.VT = function(terminal) {
 hterm.VT.prototype.MOUSE_REPORT_DISABLED = 0;
 
 /**
+ * DECSET mode 9.
+ *
+ * Report mouse down events only.
+ */
+hterm.VT.prototype.MOUSE_REPORT_PRESS = 1;
+
+/**
  * DECSET mode 1000.
  *
  * Report mouse down/up events only.
  */
-hterm.VT.prototype.MOUSE_REPORT_CLICK = 1;
+hterm.VT.prototype.MOUSE_REPORT_CLICK = 2;
 
 /**
  * DECSET mode 1002.
@@ -357,12 +364,14 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
 
   // Modifier key state.
   var mod = 0;
-  if (e.shiftKey)
-    mod |= 4;
-  if (e.metaKey || (this.terminal.keyboard.altIsMeta && e.altKey))
-    mod |= 8;
-  if (e.ctrlKey)
-    mod |= 16;
+  if (this.mouseReport != this.MOUSE_REPORT_PRESS) {
+    if (e.shiftKey)
+      mod |= 4;
+    if (e.metaKey || (this.terminal.keyboard.altIsMeta && e.altKey))
+      mod |= 8;
+    if (e.ctrlKey)
+      mod |= 16;
+  }
 
   // TODO(rginda): We should also support mode 1005 and/or 1006 to extend the
   // coordinate space.  Though, after poking around just a little, I wasn't
@@ -392,8 +401,10 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       break;
 
     case 'mouseup':
-      // Mouse up has no indication of which button was released.
-      response = '\x1b[M\x23' + x + y;
+      if (this.mouseReport != this.MOUSE_REPORT_PRESS) {
+        // Mouse up has no indication of which button was released.
+        response = '\x1b[M\x23' + x + y;
+      }
       break;
 
     case 'mousemove':
@@ -813,6 +824,12 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.setWraparound(state);
       break;
 
+    case 9:  // Report on mouse down events only (X10).
+      this.mouseReport = (
+          state ? this.MOUSE_REPORT_PRESS : this.MOUSE_REPORT_DISABLED);
+      this.terminal.syncMouseStyle();
+      break;
+
     case 12:  // Start blinking cursor
       if (this.enableDec12)
         this.terminal.setCursorBlink(state);
@@ -838,7 +855,7 @@ hterm.VT.prototype.setDECMode = function(code, state) {
       this.terminal.keyboard.backspaceSendsBackspace = state;
       break;
 
-    case 1000:  // Report on mouse clicks only.
+    case 1000:  // Report on mouse clicks only (X11).
       this.mouseReport = (
           state ? this.MOUSE_REPORT_CLICK : this.MOUSE_REPORT_DISABLED);
       this.terminal.syncMouseStyle();
