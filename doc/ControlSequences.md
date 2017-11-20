@@ -397,6 +397,14 @@ as ANSI escape sequences.  They are initiated with ESC+[.  Arguments to the
 sequences are typically delimited by `;` and precede the command.  e.g. ESC+[
 arg1 ; arg2 ; argN m.
 
+The final command is a single character in the range 0x40 (`@`) through 0x7F
+(`~`).  That's a limited space, so the command can be further refined with
+characters immediately following the ESC+[ bytes.  Those may be in the range
+0x20 (`␠`) through 0x3F (`?`), excluding the range 0x30 (`0`) through 0x39
+(`9`) and 0x3A (`:`) and 0x3B (`;`).
+e.g. The CSI command ?$p command below takes the form ESC+[ ? $ arg1 ; arg2 ;
+argN p.
+
 | CSI | Name     | Description                                 | Action |
 |:---:|:--------:|---------------------------------------------|--------|
 |   @ | ICH      | Insert Blank Characters                     | Add space |
@@ -488,9 +496,13 @@ arg1 ; arg2 ; argN m.
 |   z |[vt_tiledata]| Tile data                                | Semi-Supported |
 |  'z | DECELR   | Enable Locator Reporting                    | *Ignored (TBD)* |
 |  $z | DECERA   | Erase Rectangular Area                      | Won't support |
+|   { |          |                                             | *Ignored (TBD)* |
 |  '{ | DECSLE   | Select Locator Events                       | *Ignored (TBD)* |
+|   &#124; |     |                                             | *Ignored (TBD)* |
 |  '&#124; | DECRQLP | Request Locator Position                | *Ignored (TBD)* |
+|   } |          |                                             | *Ignored (TBD)* |
 |  '} | DECIC    | Insert Column                               | Won't support |
+|   ~ |          |                                             | *Ignored (TBD)* |
 |  '~ | DECDC    | Delete Column                               | Won't support |
 
 [vt_tiledata]: https://nethackwiki.com/wiki/Vt_tiledata
@@ -696,6 +708,18 @@ For true color (24-bit) support, the following apply.
 
 * `38 ; 2 ; R ; G ; B` -- Set foreground color to rgb(R, G, B)
 * `48 ; 2 ; R ; G ; B` -- Set background color to rgb(R, G, B)
+
+For ISO-8613-3, the semi-colons can be replaced with colons in two forms.
+You should stick to the semi-colon versions above though for compatibility.
+
+* `38 ; 5 : P`
+* `48 ; 5 : P`
+* `38 ; 2 : R : G : B`
+* `48 ; 2 : R : G : B`
+* `38 : 5 : P`
+* `48 : 5 : P`
+* `38 : 2 : R : G : B`
+* `48 : 2 : R : G : B`
 
 Note that most terminals consider "bold" to be "bold and bright".  In some
 documents the bold state is even referred to as bright.  We interpret bold

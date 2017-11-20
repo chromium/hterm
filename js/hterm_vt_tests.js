@@ -1221,7 +1221,97 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     result.pass();
   });
 
-/*
+/**
+ * Test setting of true color mode in colon delimited formats.
+ *
+ * This also indirectly checks chaining SGR behavior.
+ */
+hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
+  let text;
+  let style;
+  const ta = this.terminal.getTextAttributes();
+
+  // Check fully semi-colon delimited: 38;2;R;G;Bm
+  this.terminal.interpret('\x1b[38;2;110;120;130;48;2;10;20;30;4mHI1');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(110, 120, 130)', style.color);
+  result.assertEQ('rgb(10, 20, 30)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI1', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+
+  // Check partial colon delimited: 38;2:R:G:Bm
+  this.terminal.interpret('\x1b[38;2:140:150:160;48;2:40:50:60;4mHI2');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(140, 150, 160)', style.color);
+  result.assertEQ('rgb(40, 50, 60)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI2', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+
+  // Check fully colon delimited: 38:2:R:G:Bm
+  this.terminal.interpret('\x1b[38:2:170:180:190;48:2:70:80:90;4mHI3');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(170, 180, 190)', style.color);
+  result.assertEQ('rgb(70, 80, 90)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI3', text);
+
+  result.pass();
+});
+
+/**
+ * Test setting of 256 color mode in colon delimited formats.
+ */
+hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
+  let text;
+  let style;
+  const ta = this.terminal.getTextAttributes();
+
+  // Check fully semi-colon delimited: 38;5;Pm
+  this.terminal.interpret('\x1b[38;5;10;48;5;20;4mHI1');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(0, 186, 19)', style.color);
+  result.assertEQ('rgb(0, 0, 215)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI1', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+
+  // Check partial colon delimited: 38;5:Pm
+  this.terminal.interpret('\x1b[38;5:30;48;5:40;4mHI2');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(0, 135, 135)', style.color);
+  result.assertEQ('rgb(0, 215, 0)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI2', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+
+  // Check fully colon delimited: 38:5:Pm
+  this.terminal.interpret('\x1b[38:5:50;48:5:60;4mHI3');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(0, 255, 215)', style.color);
+  result.assertEQ('rgb(95, 95, 135)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI3', text);
+
+  result.pass();
+});
+
+/**
  * Test setting of true color mode on text
  */
 hterm.VT.Tests.addTest('true-color-mode', function(result, cx) {
@@ -1293,10 +1383,10 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
   result.assertEQ(true, ta.underline);
   result.assertEQ(false, ta.faint);
   result.assertEQ(false, ta.strikethrough);
-  style = this.terminal.getRowNode(0, 0).childNodes[0].style;
+  style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(11, 22, 33)', style.color);
   result.assertEQ('rgb(33, 22, 11)', style.backgroundColor);
-  text = this.terminal.getRowText(0, 0);
+  text = this.terminal.getRowText(0);
   result.assertEQ('HI1', text);
 
   this.terminal.reset();
@@ -1327,10 +1417,10 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
   result.assertEQ(true, ta.underline);
   result.assertEQ(false, ta.faint);
   result.assertEQ(false, ta.strikethrough);
-  style = this.terminal.getRowNode(0, 0).childNodes[0].style;
+  style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(252, 233, 79)', style.color);
   result.assertEQ('rgb(0, 95, 0)', style.backgroundColor);
-  text = this.terminal.getRowText(0, 0);
+  text = this.terminal.getRowText(0);
   result.assertEQ('HI2', text);
 
   result.pass();

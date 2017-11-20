@@ -214,6 +214,10 @@ hterm.VT.ParseState = function(defaultFunction, opt_buf) {
   this.pos = 0;
   this.func = defaultFunction;
   this.args = [];
+  // Whether any of the arguments in the args array have subarguments.
+  // e.g. All CSI sequences are integer arguments separated by semi-colons,
+  // so subarguments are further colon separated.
+  this.subargs = null;
 };
 
 /**
@@ -245,6 +249,11 @@ hterm.VT.ParseState.prototype.resetBuf = function(opt_buf) {
 /**
  * Reset the arguments list only.
  *
+ * Typically we reset arguments before parsing a sequence that uses them rather
+ * than always trying to make sure they're in a good state.  This can lead to
+ * confusion during debugging where args from a previous sequence appear to be
+ * "sticking around" in other sequences (which in reality don't use args).
+ *
  * @param {string} opt_arg_zero Optional initial value for args[0].
  */
 hterm.VT.ParseState.prototype.resetArguments = function(opt_arg_zero) {
@@ -254,20 +263,60 @@ hterm.VT.ParseState.prototype.resetArguments = function(opt_arg_zero) {
 };
 
 /**
+ * Parse an argument as an integer.
+ *
+ * This assumes the inputs are already in the proper format.  e.g. This won't
+ * handle non-numeric arguments.
+ *
+ * An "0" argument is treated the same as "" which means the default value will
+ * be applied.  This is what most terminal sequences expect.
+ *
+ * @param {string} argstr The argument to parse directly.
+ * @param {number=} defaultValue Default value if argstr is empty.
+ * @return {number} The parsed value.
+ */
+hterm.VT.ParseState.prototype.parseInt = function(argstr, defaultValue) {
+  if (defaultValue === undefined)
+    defaultValue = 0;
+
+  if (argstr) {
+    const ret = parseInt(argstr, 10);
+    // An argument of zero is treated as the default value.
+    return ret == 0 ? defaultValue : ret;
+  }
+  return defaultValue;
+};
+
+/**
  * Get an argument as an integer.
  *
  * @param {number} argnum The argument number to retrieve.
+ * @param {number=} defaultValue Default value if the argument is empty.
+ * @return {number} The parsed value.
  */
 hterm.VT.ParseState.prototype.iarg = function(argnum, defaultValue) {
-  var str = this.args[argnum];
-  if (str) {
-    var ret = parseInt(str, 10);
-    // An argument of zero is treated as the default value.
-    if (ret == 0)
-      ret = defaultValue;
-    return ret;
-  }
-  return defaultValue;
+  return this.parseInt(this.args[argnum], defaultValue);
+};
+
+/**
+ * Check whether an argument has subarguments.
+ *
+ * @param {number} argnum The argument number to check.
+ * @return {number} Whether the argument has subarguments.
+ */
+hterm.VT.ParseState.prototype.argHasSubargs = function(argnum) {
+  return this.subargs && this.subargs[argnum];
+};
+
+/**
+ * Mark an argument as having subarguments.
+ *
+ * @param {number} argnum The argument number that has subarguments.
+ */
+hterm.VT.ParseState.prototype.argSetSubargs = function(argnum) {
+  if (this.subargs === null)
+    this.subargs = {};
+  this.subargs[argnum] = true;
 };
 
 /**
@@ -655,17 +704,27 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
   var ch = parseState.peekChar();
   var args = parseState.args;
 
+  const finishParsing = () => {
+    // Resetting the arguments isn't strictly necessary, but it makes debugging
+    // less confusing (otherwise args will stick around until the next sequence
+    // that needs arguments).
+    parseState.resetArguments();
+    // We need to clear subargs since we explicitly set it.
+    parseState.subargs = null;
+    parseState.resetParseFunction();
+  };
+
   if (ch >= '@' && ch <= '~') {
     // This is the final character.
     this.dispatch('CSI', this.leadingModifier_ + this.trailingModifier_ + ch,
                   parseState);
-    parseState.resetParseFunction();
+    finishParsing();
 
   } else if (ch == ';') {
     // Parameter delimiter.
     if (this.trailingModifier_) {
       // Parameter delimiter after the trailing modifier.  That's a paddlin'.
-      parseState.resetParseFunction();
+      finishParsing();
 
     } else {
       if (!args.length) {
@@ -676,21 +735,25 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
       args.push('');
     }
 
-  } else if (ch >= '0' && ch <= '9') {
+  } else if (ch >= '0' && ch <= '9' || ch == ':') {
     // Next byte in the current parameter.
 
     if (this.trailingModifier_) {
       // Numeric parameter after the trailing modifier.  That's a paddlin'.
-      parseState.resetParseFunction();
+      finishParsing();
     } else {
       if (!args.length) {
         args[0] = ch;
       } else {
         args[args.length - 1] += ch;
       }
+
+      // Possible sub-parameters.
+      if (ch == ':')
+        parseState.argSetSubargs(args.length - 1);
     }
 
-  } else if (ch >= ' ' && ch <= '?' && ch != ':') {
+  } else if (ch >= ' ' && ch <= '?') {
     // Modifier character.
     if (!args.length) {
       this.leadingModifier_ += ch;
@@ -704,7 +767,7 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
 
   } else {
     // Unexpected character in sequence, bail out.
-    parseState.resetParseFunction();
+    finishParsing();
   }
 
   parseState.advance(1);
@@ -818,6 +881,12 @@ hterm.VT.prototype.dispatch = function(type, code, parseState) {
   if (handler == hterm.VT.ignore) {
     if (this.warnUnimplemented)
       console.warn('Ignored ' + type + ' code: ' + JSON.stringify(code));
+    return;
+  }
+
+  if (parseState.subargs && !handler.supportsSubargs) {
+    if (this.warnUnimplemented)
+      console.warn('Ignored ' + type + ' code w/subargs: ' + JSON.stringify(code));
     return;
   }
 
@@ -1374,6 +1443,11 @@ hterm.VT.ESC[']'] = function(parseState) {
     } else {
       console.warn('Invalid OSC: ' + JSON.stringify(parseState.args[0]));
     }
+
+    // Resetting the arguments isn't strictly necessary, but it makes debugging
+    // less confusing (otherwise args will stick around until the next sequence
+    // that needs arguments).
+    parseState.resetArguments();
   };
 
   parseState.func = parseOSC;
@@ -2191,20 +2265,60 @@ hterm.VT.CSI['?l'] = function(parseState) {
  */
 hterm.VT.CSI['m'] = function(parseState) {
   function get256(i) {
-    if (parseState.args.length < i + 2 || parseState.args[i + 1] != 5)
+    let ary;
+    let skipCount;
+    if (parseState.argHasSubargs(i)) {
+      // Form: 38:5:P
+      ary = parseState.args[i].split(/:/);
+      ary.shift();  // Remove "38".
+      skipCount = 0;
+    } else if (parseState.argHasSubargs(i + 1)) {
+      // Form: 38;5:P
+      ary = parseState.args[i + 1].split(/:/);
+      skipCount = 1;
+    } else {
+      // Form: 38;5;P
+      ary = parseState.args.slice(i + 1, i + 3);
+      skipCount = 2;
+    }
+
+    if (ary.length != 2 || ary[0] != 5)
       return null;
 
-    return parseState.iarg(i + 2, 0);
+    return {
+        color: parseState.parseInt(ary[1]),
+        skipCount: skipCount,
+    };
   }
 
   function getTrueColor(i) {
-    if (parseState.args.length < i + 5 || parseState.args[i + 1] != 2)
-      return null;
-    var r = parseState.iarg(i + 2, 0);
-    var g = parseState.iarg(i + 3, 0);
-    var b = parseState.iarg(i + 4, 0);
+    let ary;
+    let skipCount;
+    if (parseState.argHasSubargs(i)) {
+      // Form: 38:2:R:G:B
+      ary = parseState.args[i].split(/:/);
+      ary.shift();  // Remove "38".
+      skipCount = 0;
+    } else if (parseState.argHasSubargs(i + 1)) {
+      // Form: 38;2:R:G:B
+      ary = parseState.args[i + 1].split(/:/);
+      skipCount = 1;
+    } else {
+      // Form: 38;2;R;G;B
+      ary = parseState.args.slice(i + 1, i + 5);
+      skipCount = 4;
+    }
 
-    return 'rgb(' + r + ' ,' + g + ' ,' + b + ')';
+    if (ary.length != 4 || ary[0] != 2)
+      return null;
+
+    let r = parseState.parseInt(ary[1]);
+    let g = parseState.parseInt(ary[2]);
+    let b = parseState.parseInt(ary[3]);
+    return {
+        color: `rgb(${r} ,${g} ,${b})`,
+        skipCount: skipCount,
+    };
   }
 
   var attrs = this.terminal.getTextAttributes();
@@ -2215,6 +2329,8 @@ hterm.VT.CSI['m'] = function(parseState) {
   }
 
   for (var i = 0; i < parseState.args.length; i++) {
+    // If this argument has subargs (i.e. it has args followed by colons),
+    // the iarg logic will implicitly truncate that off for us.
     var arg = parseState.iarg(i, 0);
 
     if (arg < 30) {
@@ -2267,21 +2383,21 @@ hterm.VT.CSI['m'] = function(parseState) {
         // First check for true color definition
         var trueColor = getTrueColor(i);
         if (trueColor != null) {
-          attrs.foregroundSource = trueColor;
+          attrs.foregroundSource = trueColor.color;
 
-          i += 4;
+          i += trueColor.skipCount;
         } else {
           // Check for 256 color
           var c = get256(i);
           if (c == null)
             break;
 
-          i += 2;
+          i += c.skipCount;
 
           if (c >= attrs.colorPalette.length)
             continue;
 
-          attrs.foregroundSource = c;
+          attrs.foregroundSource = c.color;
         }
 
       } else if (arg == 39) {
@@ -2294,21 +2410,21 @@ hterm.VT.CSI['m'] = function(parseState) {
         // First check for true color definition
         var trueColor = getTrueColor(i);
         if (trueColor != null) {
-          attrs.backgroundSource = trueColor;
+          attrs.backgroundSource = trueColor.color;
 
-          i += 4;
+          i += trueColor.skipCount;
         } else {
           // Check for 256 color
           var c = get256(i);
           if (c == null)
             break;
 
-          i += 2;
+          i += c.skipCount;
 
           if (c >= attrs.colorPalette.length)
             continue;
 
-          attrs.backgroundSource = c;
+          attrs.backgroundSource = c.color;
         }
       } else {
         attrs.backgroundSource = attrs.SRC_DEFAULT;
@@ -2325,6 +2441,9 @@ hterm.VT.CSI['m'] = function(parseState) {
   attrs.setDefaults(this.terminal.getForegroundColor(),
                     this.terminal.getBackgroundColor());
 };
+
+// SGR calls can handle subargs.
+hterm.VT.CSI['m'].supportsSubargs = true;
 
 /**
  * Set xterm-specific keyboard modes.
