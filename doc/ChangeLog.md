@@ -1,3 +1,17 @@
+# 1.75, 2017-11-20, Many color/style/mouse fixes & features.
+
+* Fix parsing multiple SGR true color sequences.
+* Add support for double underlining (SGR 21).
+* Document a few more CSI options.
+* Fix handling of inverse text with true colors.
+* Simplify invisible text processing.
+* Fix DECSET/DECRST 1048 handling.
+* Stop changing color palettes when restoring cursor state.
+* Handle X10 & X11 mouse reporting modes.
+* Support UTF-8 & SGR mouse reporting modes.
+* Optimize mouse move reporting.
+* Return early on mouse move events when possible.
+
 # 1.74, 2017-10-27, Minor improvements.
 
 * Implement FocusIn/Out events.
