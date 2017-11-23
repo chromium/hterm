@@ -1534,9 +1534,9 @@ hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
   let data;
   let format;
 
-  // If the shift key isn't active, try to find a text source (but not plain
+  // If the shift key active, try to find a "rich" text source (but not plain
   // text).  e.g. text/html is OK.
-  if (!e.shiftKey) {
+  if (e.shiftKey) {
     e.dataTransfer.types.forEach((t) => {
       if (!format && t != 'text/plain' && t.startsWith('text/'))
         format = t;

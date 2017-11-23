@@ -233,7 +233,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-no-shift', function(re
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
-    result.assertEQ('html', e.text);
+    result.assertEQ('plain', e.text);
     result.pass();
   });
   this.scrollPort.onDragAndDrop_(e);
@@ -250,6 +250,23 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-shift', function(resul
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
+    result.assertEQ('html', e.text);
+    result.pass();
+  });
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(200);
+});
+
+/**
+ * Verify fallback when first source is empty & shift key is not pressed.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-no-shift', function(result, cx) {
+  const e = new MockDragEvent();
+  e.dataTransfer.setData('text/html', '');
+  e.dataTransfer.setData('text/plain', 'plain');
+
+  this.scrollPort.subscribe('paste', (e) => {
     result.assertEQ('plain', e.text);
     result.pass();
   });
@@ -259,10 +276,10 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-shift', function(resul
 });
 
 /**
- * Verify fallback when first source is empty.
+ * Verify fallback when first source is empty & shift key is pressed.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback', function(result, cx) {
-  const e = new MockDragEvent();
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-shift', function(result, cx) {
+  const e = new MockDragEvent(true /* shift */);
   e.dataTransfer.setData('text/html', '');
   e.dataTransfer.setData('text/plain', 'plain');
 
