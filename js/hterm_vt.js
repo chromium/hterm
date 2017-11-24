@@ -405,10 +405,8 @@ hterm.VT.CursorState.prototype.restore = function() {
 };
 
 hterm.VT.prototype.reset = function() {
-  this.G0 = this.characterMaps.getMap('B');
-  this.G1 = this.characterMaps.getMap('0');
-  this.G2 = this.characterMaps.getMap('B');
-  this.G3 = this.characterMaps.getMap('B');
+  this.G0 = this.G1 = this.G2 = this.G3 =
+      this.characterMaps.getMap('B');
 
   this.GL = 'G0';
   this.GR = 'G0';
