@@ -94,6 +94,11 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
   this.terminal.decorate(div);
   this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.setHeight(this.visibleRowCount);
+  this.terminal.onTerminalReady = () => {
+    // The canned tests want access to graphics charsets, so make sure the
+    // encoding is not utf-8 (as we might default to).
+    this.terminal.vt.setEncoding('iso-2022');
+  };
 };
 
 /**
