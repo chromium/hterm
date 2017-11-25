@@ -1176,11 +1176,13 @@ hterm.Terminal.prototype.reset = function() {
   this.clearAllTabStops();
   this.setDefaultTabStops();
 
-  this.clearHome(this.primaryScreen_);
+  // We want to make sure to reset the attributes before we clear the screen.
+  // The attributes might be used to initialize default/empty rows.
   this.primaryScreen_.textAttributes.reset();
+  this.clearHome(this.primaryScreen_);
 
-  this.clearHome(this.alternateScreen_);
   this.alternateScreen_.textAttributes.reset();
+  this.clearHome(this.alternateScreen_);
 
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
 
