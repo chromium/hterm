@@ -227,7 +227,7 @@ hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
   var resultString = '';
   this.terminal.io.sendString = function(str) { resultString = str };
 
-  this.terminal.interpret('\x1b[?1004h]');
+  this.terminal.interpret('\x1b[?1004h');
 
   this.terminal.onFocusChange_(false);
   result.assertEQ(resultString, '\x1b[O')
@@ -235,7 +235,7 @@ hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
   result.assertEQ(resultString, '\x1b[I')
 
   resultString = '';
-  this.terminal.interpret('\x1b[?1004l]');
+  this.terminal.interpret('\x1b[?1004l');
 
   this.terminal.onFocusChange_(false);
   result.assertEQ(resultString, '')
