@@ -1171,6 +1171,9 @@ hterm.Terminal.prototype.wipeContents = function() {
 
 /**
  * Full terminal reset.
+ *
+ * Perform a full reset to the default values listed in
+ * https://vt100.net/docs/vt510-rm/RIS.html
  */
 hterm.Terminal.prototype.reset = function() {
   this.clearAllTabStops();
@@ -1179,16 +1182,22 @@ hterm.Terminal.prototype.reset = function() {
   // We want to make sure to reset the attributes before we clear the screen.
   // The attributes might be used to initialize default/empty rows.
   this.primaryScreen_.textAttributes.reset();
+  this.primaryScreen_.textAttributes.resetColorPalette();
   this.clearHome(this.primaryScreen_);
 
   this.alternateScreen_.textAttributes.reset();
+  this.alternateScreen_.textAttributes.resetColorPalette();
   this.clearHome(this.alternateScreen_);
 
+  // Reset terminal options to their default values.
+  this.options_ = new hterm.Options();
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
 
   this.vt.reset();
 
-  this.softReset();
+  this.setVTScrollRegion(null, null);
+
+  this.setCursorVisible(true);
 };
 
 /**
