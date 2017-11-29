@@ -1217,7 +1217,9 @@ hterm.Terminal.prototype.softReset = function() {
 
   // Xterm also resets the color palette on soft reset, even though it doesn't
   // seem to be documented anywhere.
+  this.primaryScreen_.textAttributes.reset();
   this.primaryScreen_.textAttributes.resetColorPalette();
+  this.alternateScreen_.textAttributes.reset();
   this.alternateScreen_.textAttributes.resetColorPalette();
 
   // The xterm man page explicitly says this will happen on soft reset.
