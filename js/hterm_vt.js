@@ -151,11 +151,6 @@ hterm.VT = function(terminal) {
   // control character.
   this.cc1Pattern_ = null;
   this.updateEncodingState_();
-
-  // Saved state used in DECSC.
-  //
-  // This is a place to store a copy VT state, it is *not* the active state.
-  this.savedState_ = new hterm.VT.CursorState(this);
 };
 
 /**
@@ -365,53 +360,15 @@ hterm.VT.ParseState.prototype.isComplete = function() {
   return this.buf == null || this.buf.length <= this.pos;
 };
 
-hterm.VT.CursorState = function(vt) {
-  this.vt_ = vt;
-  this.save();
-};
-
-hterm.VT.CursorState.prototype.save = function() {
-  this.cursor = this.vt_.terminal.saveCursor();
-
-  this.textAttributes = this.vt_.terminal.getTextAttributes().clone();
-
-  this.GL = this.vt_.GL;
-  this.GR = this.vt_.GR;
-
-  this.G0 = this.vt_.G0;
-  this.G1 = this.vt_.G1;
-  this.G2 = this.vt_.G2;
-  this.G3 = this.vt_.G3;
-};
-
-hterm.VT.CursorState.prototype.restore = function() {
-  this.vt_.terminal.restoreCursor(this.cursor);
-
-  // Cursor restore includes char attributes (bold/etc...), but does not change
-  // the color palette (which are a terminal setting).
-  const tattrs = this.textAttributes.clone();
-  tattrs.colorPalette = this.vt_.terminal.getTextAttributes().colorPalette;
-  tattrs.syncColors();
-
-  this.vt_.terminal.setTextAttributes(tattrs);
-
-  this.vt_.GL = this.GL;
-  this.vt_.GR = this.GR;
-
-  this.vt_.G0 = this.G0;
-  this.vt_.G1 = this.G1;
-  this.vt_.G2 = this.G2;
-  this.vt_.G3 = this.G3;
-};
-
+/**
+ * Reset the VT back to baseline state.
+ */
 hterm.VT.prototype.reset = function() {
   this.G0 = this.G1 = this.G2 = this.G3 =
       this.characterMaps.getMap('B');
 
   this.GL = 'G0';
   this.GR = 'G0';
-
-  this.savedState_ = new hterm.VT.CursorState(this);
 
   this.mouseReport = this.MOUSE_REPORT_DISABLED;
   this.mouseCoordinates = this.MOUSE_COORDINATES_X10;
@@ -1044,19 +1001,19 @@ hterm.VT.prototype.setDECMode = function(code, state) {
 
     case 1048:  // Save cursor as in DECSC.
       if (state)
-        this.savedState_.save();
+        this.terminal.saveCursorAndState();
       else
-        this.savedState_.restore();
+        this.terminal.restoreCursorAndState();
       break;
 
     case 1049:  // 1047 + 1048 + clear.
       if (state) {
-        this.savedState_.save();
+        this.terminal.saveCursorAndState();
         this.terminal.setAlternateMode(state);
         this.terminal.clear();
       } else {
         this.terminal.setAlternateMode(state);
-        this.savedState_.restore();
+        this.terminal.restoreCursorAndState();
       }
 
       break;
@@ -1621,14 +1578,14 @@ hterm.VT.ESC['6'] = hterm.VT.ignore;
  * Save Cursor (DECSC).
  */
 hterm.VT.ESC['7'] = function() {
-  this.savedState_.save();
+  this.terminal.saveCursorAndState();
 };
 
 /**
  * Restore Cursor (DECRC).
  */
 hterm.VT.ESC['8'] = function() {
-  this.savedState_.restore();
+  this.terminal.restoreCursorAndState();
 };
 
 /**
@@ -2611,7 +2568,7 @@ hterm.VT.CSI['$r'] = hterm.VT.ignore;
  * Save cursor (ANSI.SYS)
  */
 hterm.VT.CSI['s'] = function() {
-  this.savedState_.save();
+  this.terminal.saveCursorAndState();
 };
 
 /**
@@ -2653,7 +2610,7 @@ hterm.VT.CSI[' t'] = hterm.VT.ignore;
  * Restore cursor (ANSI.SYS).
  */
 hterm.VT.CSI['u'] = function() {
-  this.savedState_.restore();
+  this.terminal.restoreCursorAndState();
 };
 
 /**

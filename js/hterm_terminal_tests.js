@@ -244,3 +244,78 @@ hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
 
   result.pass();
 });
+
+/**
+ * Verify saved cursors have per-screen state.
+ */
+hterm.Terminal.Tests.addTest('per-screen-cursor-state', function(result, cx) {
+  const terminal = this.terminal;
+  const vt = terminal.vt;
+
+  // Start with the primary screen.
+  terminal.setAlternateMode(false);
+  // This should be the default cursor state.
+  terminal.restoreCursorAndState();
+  result.assertEQ(0, terminal.getCursorRow());
+  result.assertEQ(0, terminal.getCursorColumn());
+  result.assertEQ('G0', vt.GL);
+  result.assertEQ('G0', vt.GR);
+  // Change the primary cursor a bit and save it.
+  vt.GL = 'G1';
+  vt.GR = 'G2';
+  terminal.setAbsoluteCursorPosition(3, 4);
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(4, terminal.getCursorColumn());
+  terminal.saveCursorAndState();
+
+  // Switch to the alternative screen.
+  terminal.setAlternateMode(true);
+  // Cursor state should not be changed.
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(4, terminal.getCursorColumn());
+  result.assertEQ('G1', vt.GL);
+  result.assertEQ('G2', vt.GR);
+  // This should be the default cursor state.
+  terminal.restoreCursorAndState();
+  result.assertEQ(0, terminal.getCursorRow());
+  result.assertEQ(0, terminal.getCursorColumn());
+  result.assertEQ('G0', vt.GL);
+  result.assertEQ('G0', vt.GR);
+  // Change the alternate cursor a bit and save it.
+  vt.GL = 'G2';
+  vt.GR = 'G3';
+  terminal.setAbsoluteCursorPosition(7, 8);
+  result.assertEQ(7, terminal.getCursorRow());
+  result.assertEQ(8, terminal.getCursorColumn());
+  terminal.saveCursorAndState();
+
+  // Switch back to the primary scren.
+  terminal.setAlternateMode(false);
+  // Cursor state should not be changed.
+  result.assertEQ(7, terminal.getCursorRow());
+  result.assertEQ(8, terminal.getCursorColumn());
+  result.assertEQ('G2', vt.GL);
+  result.assertEQ('G3', vt.GR);
+  // This should be the primary cursor state we set up earlier.
+  terminal.restoreCursorAndState();
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(4, terminal.getCursorColumn());
+  result.assertEQ('G1', vt.GL);
+  result.assertEQ('G2', vt.GR);
+
+  // Finally back to the alternate scren.
+  terminal.setAlternateMode(true);
+  // Cursor state should not be changed.
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(4, terminal.getCursorColumn());
+  result.assertEQ('G1', vt.GL);
+  result.assertEQ('G2', vt.GR);
+  // This should be the alternate cursor state we set up earlier.
+  terminal.restoreCursorAndState();
+  result.assertEQ(7, terminal.getCursorRow());
+  result.assertEQ(8, terminal.getCursorColumn());
+  result.assertEQ('G2', vt.GL);
+  result.assertEQ('G3', vt.GR);
+
+  result.pass();
+});

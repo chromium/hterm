@@ -62,6 +62,10 @@ hterm.Screen = function(opt_columnCount) {
   // Current zero-based cursor coordinates.
   this.cursorPosition = new hterm.RowCol(0, 0);
 
+  // Saved state used by DECSC and related settings.  This is only for saving
+  // and restoring specific state, not for the current/active state.
+  this.cursorState_ = new hterm.Screen.CursorState(this);
+
   // The node containing the row that the cursor is positioned on.
   this.cursorRowNode_ = null;
 
@@ -928,4 +932,88 @@ hterm.Screen.prototype.expandSelection = function(selection) {
 
   this.setRange_(row, expandedStart, expandedEnd, range);
   selection.addRange(range);
+};
+
+/**
+ * Save the current cursor state to the corresponding screens.
+ *
+ * @param {hterm.VT} vt The VT object to read graphic codeset details from.
+ */
+hterm.Screen.prototype.saveCursorAndState = function(vt) {
+  this.cursorState_.save(vt);
+};
+
+/**
+ * Restore the saved cursor state in the corresponding screens.
+ *
+ * @param {hterm.VT} vt The VT object to write graphic codeset details to.
+ */
+hterm.Screen.prototype.restoreCursorAndState = function(vt) {
+  this.cursorState_.restore(vt);
+};
+
+/**
+ * Track all the things related to the current "cursor".
+ *
+ * The set of things saved & restored here is defined by DEC:
+ * https://vt100.net/docs/vt510-rm/DECSC.html
+ * - Cursor position
+ * - Character attributes set by the SGR command
+ * - Character sets (G0, G1, G2, or G3) currently in GL and GR
+ * - Wrap flag (autowrap or no autowrap)
+ * - State of origin mode (DECOM)
+ * - Selective erase attribute
+ * - Any single shift 2 (SS2) or single shift 3 (SS3) functions sent
+ *
+ * These are done on a per-screen basis.
+ */
+hterm.Screen.CursorState = function(screen) {
+  this.screen_ = screen;
+  this.cursor = null;
+  this.textAttributes = null;
+  this.GL = this.GR = this.G0 = this.G1 = this.G2 = this.G3 = null;
+};
+
+/**
+ * Save all the cursor state.
+ *
+ * @param {hterm.VT} vt The VT object to read graphic codeset details from.
+ */
+hterm.Screen.CursorState.prototype.save = function(vt) {
+  this.cursor = vt.terminal.saveCursor();
+
+  this.textAttributes = this.screen_.textAttributes.clone();
+
+  this.GL = vt.GL;
+  this.GR = vt.GR;
+
+  this.G0 = vt.G0;
+  this.G1 = vt.G1;
+  this.G2 = vt.G2;
+  this.G3 = vt.G3;
+};
+
+/**
+ * Restore the previously saved cursor state.
+ *
+ * @param {hterm.VT} vt The VT object to write graphic codeset details to.
+ */
+hterm.Screen.CursorState.prototype.restore = function(vt) {
+  vt.terminal.restoreCursor(this.cursor);
+
+  // Cursor restore includes char attributes (bold/etc...), but does not change
+  // the color palette (which are a terminal setting).
+  const tattrs = this.textAttributes.clone();
+  tattrs.colorPalette = this.screen_.textAttributes.colorPalette;
+  tattrs.syncColors();
+
+  this.screen_.textAttributes = tattrs;
+
+  vt.GL = this.GL;
+  vt.GR = this.GR;
+
+  vt.G0 = this.G0;
+  vt.G1 = this.G1;
+  vt.G2 = this.G2;
+  vt.G3 = this.G3;
 };

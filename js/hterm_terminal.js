@@ -126,6 +126,8 @@ hterm.Terminal = function(opt_profileId) {
   // The VT escape sequence interpreter.
   this.vt = new hterm.VT(this);
 
+  this.saveCursorAndState(true);
+
   // The keyboard handler.
   this.keyboard = new hterm.Keyboard(this);
 
@@ -931,6 +933,38 @@ hterm.Terminal.prototype.clearCursorOverflow = function() {
 };
 
 /**
+ * Save the current cursor state to the corresponding screens.
+ *
+ * See the hterm.Screen.CursorState class for more details.
+ *
+ * @param {boolean=} both If true, update both screens, else only update the
+ *     current screen.
+ */
+hterm.Terminal.prototype.saveCursorAndState = function(both) {
+  if (both) {
+    this.primaryScreen_.saveCursorAndState(this.vt);
+    this.alternateScreen_.saveCursorAndState(this.vt);
+  } else
+    this.screen_.saveCursorAndState(this.vt);
+};
+
+/**
+ * Restore the saved cursor state in the corresponding screens.
+ *
+ * See the hterm.Screen.CursorState class for more details.
+ *
+ * @param {boolean=} both If true, update both screens, else only update the
+ *     current screen.
+ */
+hterm.Terminal.prototype.restoreCursorAndState = function(both) {
+  if (both) {
+    this.primaryScreen_.restoreCursorAndState(this.vt);
+    this.alternateScreen_.restoreCursorAndState(this.vt);
+  } else
+    this.screen_.restoreCursorAndState(this.vt);
+};
+
+/**
  * Sets the cursor shape
  *
  * @param {string} shape The shape to set.
@@ -1181,15 +1215,16 @@ hterm.Terminal.prototype.reset = function() {
   this.clearAllTabStops();
   this.setDefaultTabStops();
 
-  // We want to make sure to reset the attributes before we clear the screen.
-  // The attributes might be used to initialize default/empty rows.
-  this.primaryScreen_.textAttributes.reset();
-  this.primaryScreen_.textAttributes.resetColorPalette();
-  this.clearHome(this.primaryScreen_);
-
-  this.alternateScreen_.textAttributes.reset();
-  this.alternateScreen_.textAttributes.resetColorPalette();
-  this.clearHome(this.alternateScreen_);
+  const resetScreen = (screen) => {
+    // We want to make sure to reset the attributes before we clear the screen.
+    // The attributes might be used to initialize default/empty rows.
+    screen.textAttributes.reset();
+    screen.textAttributes.resetColorPalette();
+    this.clearHome(screen);
+    screen.saveCursorAndState(this.vt);
+  };
+  resetScreen(this.primaryScreen_);
+  resetScreen(this.alternateScreen_);
 
   // Reset terminal options to their default values.
   this.options_ = new hterm.Options();
@@ -1215,12 +1250,15 @@ hterm.Terminal.prototype.softReset = function() {
   // We show the cursor on soft reset but do not alter the blink state.
   this.options_.cursorBlink = !!this.timeouts_.cursorBlink;
 
-  // Xterm also resets the color palette on soft reset, even though it doesn't
-  // seem to be documented anywhere.
-  this.primaryScreen_.textAttributes.reset();
-  this.primaryScreen_.textAttributes.resetColorPalette();
-  this.alternateScreen_.textAttributes.reset();
-  this.alternateScreen_.textAttributes.resetColorPalette();
+  const resetScreen = (screen) => {
+    // Xterm also resets the color palette on soft reset, even though it doesn't
+    // seem to be documented anywhere.
+    screen.textAttributes.reset();
+    screen.textAttributes.resetColorPalette();
+    screen.saveCursorAndState(this.vt);
+  };
+  resetScreen(this.primaryScreen_);
+  resetScreen(this.alternateScreen_);
 
   // The xterm man page explicitly says this will happen on soft reset.
   this.setVTScrollRegion(null, null);
