@@ -1666,7 +1666,6 @@ hterm.VT.ESC['F'] = hterm.VT.ignore;
  * Full Reset (RIS).
  */
 hterm.VT.ESC['c'] = function() {
-  this.reset();
   this.terminal.reset();
 };
 
@@ -2521,7 +2520,6 @@ hterm.VT.CSI['>p'] = hterm.VT.ignore;
  * Soft terminal reset (DECSTR).
  */
 hterm.VT.CSI['!p'] = function() {
-  this.reset();
   this.terminal.softReset();
 };
 

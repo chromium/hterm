@@ -1176,6 +1176,8 @@ hterm.Terminal.prototype.wipeContents = function() {
  * https://vt100.net/docs/vt510-rm/RIS.html
  */
 hterm.Terminal.prototype.reset = function() {
+  this.vt.reset();
+
   this.clearAllTabStops();
   this.setDefaultTabStops();
 
@@ -1193,8 +1195,6 @@ hterm.Terminal.prototype.reset = function() {
   this.options_ = new hterm.Options();
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
 
-  this.vt.reset();
-
   this.setVTScrollRegion(null, null);
 
   this.setCursorVisible(true);
@@ -1207,6 +1207,8 @@ hterm.Terminal.prototype.reset = function() {
  * http://www.vt100.net/docs/vt510-rm/DECSTR#T5-9
  */
 hterm.Terminal.prototype.softReset = function() {
+  this.vt.reset();
+
   // Reset terminal options to their default values.
   this.options_ = new hterm.Options();
 
