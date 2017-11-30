@@ -1956,7 +1956,9 @@ hterm.VT.CSI['F'] = function(parseState) {
 };
 
 /**
- * Cursor Character Absolute (CHA).
+ * Cursor Horizontal Absolute (CHA).
+ *
+ * Xterm calls this Cursor Character Absolute.
  */
 hterm.VT.CSI['G'] = function(parseState) {
   this.terminal.setCursorColumn(parseState.iarg(0, 1) - 1);
@@ -2096,7 +2098,7 @@ hterm.VT.CSI['Z'] = function(parseState) {
 /**
  * Character Position Absolute (HPA).
  *
- * Same as Cursor Character Absolute (CHA).
+ * Same as Cursor Horizontal Absolute (CHA).
  */
 hterm.VT.CSI['`'] = hterm.VT.CSI['G'];
 

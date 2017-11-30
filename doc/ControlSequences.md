@@ -414,7 +414,7 @@ argN p.
 |   D | CUB      | Cursor Backward                             | Move cursor back `arg1` columns |
 |   E | CNL      | Cursor Next Line                            | Move cursor down `arg1` rows and to first column |
 |   F | CPL      | Cursor Preceding Line                       | Move cursor up `arg1` rows and to first column |
-|   G | CHA      | Cursor Character Absolute                   | Move cursor to `arg1` column |
+|   G | CHA      | Cursor Horizontal Absolute                  | Move cursor to `arg1` column |
 |   H | CUP      | Cursor Position                             | Move cursor to `arg1` row and `arg2` column |
 |   I | CHT      | Cursor Forward Tabulation                   | Move cursor forward `arg1` tabs |
 |   J | ED       | Erase in Display                            | `!arg1` or `arg1 == 0`: Clear cursor to end of display<br> `arg1 == 1`: Clear start of display to cursor<br> `arg1 == 2`: Clear display |
