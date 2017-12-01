@@ -588,6 +588,7 @@ we support some of them.
 | 1004 |         |        | Send FocusIn/FocusOut events                | Supported |
 | 1005 |         |        | Enable Extended Mouse Mode (UTF-8)          | Supported |
 | 1006 |         |        | Enable Extended Mouse Mode (SGR)            | Supported |
+| 1007 |         | xterm  | Enable Alternate Scroll Mode                | Supported |
 | 1010 |         | rxvt   | Scroll to bottom on tty output              | Supported |
 | 1011 |         | rxvt   | Scroll to bottom on key press               | Supported |
 | 1015 |         | rxvt   | Enable Extended Mouse Mode (urxvt)          | Won't support |

@@ -968,6 +968,10 @@ hterm.VT.prototype.setDECMode = function(code, state) {
           state ? this.MOUSE_COORDINATES_SGR : this.MOUSE_COORDINATES_X10);
       break;
 
+    case 1007:  // Enable Alternate Scroll Mode.
+      this.terminal.scrollWheelArrowKeys_ = state;
+      break;
+
     case 1010:  // Scroll to bottom on tty output
       this.terminal.scrollOnOutput = state;
       break;
