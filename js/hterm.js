@@ -64,9 +64,18 @@ hterm.testDeps = ['hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
  *     initialization is complete.
  */
 lib.registerInit('hterm', function(onInit) {
+  function initMessageManager() {
+    lib.f.getAcceptLanguages((languages) => {
+      if (!hterm.messageManager)
+        hterm.messageManager = new lib.MessageManager(languages);
+
+      onInit();
+    });
+  }
+
   function onWindow(window) {
     hterm.windowType = window.type;
-    setTimeout(onInit, 0);
+    initMessageManager();
   }
 
   function onTab(tab) {
@@ -76,7 +85,7 @@ lib.registerInit('hterm', function(onInit) {
       // TODO(rginda): This is where we end up for a v1 app's background page.
       // Maybe windowType = 'none' would be more appropriate, or something.
       hterm.windowType = 'normal';
-      setTimeout(onInit, 0);
+      initMessageManager();
     }
   }
 
@@ -163,6 +172,18 @@ hterm.pasteFromClipboard = function(document) {
     // there was an error instead of returning false.
     return false;
   }
+};
+
+/**
+ * Return a formatted message in the current locale.
+ *
+ * @param {string} name The name of the message to return.
+ * @param {Array<string>=} args The message arguments, if required.
+ * @param {string=} string The default message text.
+ * @return {string} The localized message.
+ */
+hterm.msg = function(name, args = [], string) {
+  return hterm.messageManager.get('HTERM_' + name, args, string);
 };
 
 /**
