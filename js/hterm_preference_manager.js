@@ -61,7 +61,7 @@ hterm.PreferenceManager.defaultPreferences = {
    '\'none\': Disable any AltGr related munging.\n' +
    '\'ctrl-alt\': Assume Ctrl+Alt means AltGr.\n' +
    '\'left-alt\': Assume left Alt means AltGr.\n' +
-   '\'right-alt\': Assume right Alt means AltGr.\n'],
+   '\'right-alt\': Assume right Alt means AltGr.'],
 
   'alt-backspace-is-meta-backspace':
   [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
@@ -79,8 +79,8 @@ hterm.PreferenceManager.defaultPreferences = {
    '\n' +
    '  escape....... Send an ESC prefix.\n' +
    '  8-bit........ Add 128 to the unshifted character as in xterm.\n' +
-   '  browser-key.. Wait for the keypress event and see what the browser \n' +
-   '                says.  (This won\'t work well on platforms where the \n' +
+   '  browser-key.. Wait for the keypress event and see what the browser\n' +
+   '                says.  (This won\'t work well on platforms where the\n' +
    '                browser performs a default action for some alt sequences.)'
   ],
 
