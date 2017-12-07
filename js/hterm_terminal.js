@@ -436,10 +436,6 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       }
     },
 
-    'max-string-sequence': function(v) {
-      terminal.vt.maxStringSequence = v;
-    },
-
     'media-keys-are-fkeys': function(v) {
       terminal.keyboard.mediaKeysAreFKeys = v;
     },

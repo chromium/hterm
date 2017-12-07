@@ -85,15 +85,6 @@ hterm.VT = function(terminal) {
   this.characterEncoding = 'utf-8';
 
   /**
-   * Max length of an unterminated DCS, OSC, PM or APC sequence before we give
-   * up and ignore the code.
-   *
-   * These all end with a String Terminator (ST, '\x9c', ESC '\\') or
-   * (BEL, '\x07') character, hence the "string sequence" moniker.
-   */
-  this.maxStringSequence = 1024;
-
-  /**
    * If true, emit warnings when we encounter a control character or escape
    * sequence that we don't recognize or explicitly ignore.
    *
@@ -738,9 +729,6 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
  * You can detect that parsing in complete by checking that the parse
  * function has changed back to the default parse function.
  *
- * If we encounter more than maxStringSequence characters, we send back
- * the unterminated sequence to be re-parsed with the default parser function.
- *
  * @return {boolean} If true, parsing is ongoing or complete.  If false, we've
  *     exceeded the max string sequence.
  */
@@ -783,9 +771,6 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
 
     var abortReason;
 
-    if (args[0].length > this.maxStringSequence)
-      abortReason = 'too long: ' + args[0].length;
-
     // Special case: If our buffering happens to split the ST (\e\\), we have to
     // buffer the content temporarily.  So don't reject a trailing escape here,
     // instead we let it timeout or be rejected in the next pass.
@@ -805,12 +790,6 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
 
     parseState.advance(buf.length - bufInserted);
     return true;
-  }
-
-  if (args[0].length + nextTerminator > this.maxStringSequence) {
-    // We found the end of the sequence, but we still think it's too long.
-    parseState.reset(args[0] + buf);
-    return false;
   }
 
   args[0] += buf.substr(0, nextTerminator);

@@ -299,11 +299,6 @@ hterm.PreferenceManager.defaultPreferences = {
    '  "Ctrl-H": "\'HELLO\\n\'"\n' +
    '}'],
 
-  'max-string-sequence':
-  [hterm.PreferenceManager.categories.Encoding, 100000, 'int',
-   'Max length of a DCS, OSC, PM, or APS sequence before we give up and ' +
-   'ignore the code.'],
-
   'media-keys-are-fkeys':
   [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
    'If true, convert media keys to their Fkey equivalent. If false, let ' +

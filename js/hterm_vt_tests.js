@@ -293,48 +293,6 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
   });
 
 /**
- * Test that long unterminated sequences are properly ignored.
- */
-hterm.VT.Tests.addTest('unterminated-sequence', function(result, cx) {
-    var title = null;
-    this.terminal.setWindowTitle = function(t) {
-      // Set a default title so we can catch the potential for this function
-      // to be called on accident with no parameter.
-      title = t || 'XXX';
-    };
-
-    // Lower this threshold to make the test simpler.
-    this.terminal.vt.maxStringSequence = 10;
-
-    // The "0;" is part of the sequence, so we only have 8 bytes left.
-    this.terminal.interpret('\x1b]0;12345678\x07!!');
-    result.assertEQ(title, '12345678');
-    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
-
-    title = null;
-    terminal.reset();
-    this.terminal.interpret('\x1b]0;12345');
-    this.terminal.interpret('678\x07!!');
-    result.assertEQ(title, '12345678');
-    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
-
-    title = null;
-    terminal.reset();
-    this.terminal.interpret('\x1b]0;123456789\x07!!');
-    result.assertEQ(title, null);
-    result.assertEQ(this.terminal.getRowsText(0, 1), '0;123456789!!');
-
-    title = null;
-    terminal.reset();
-    this.terminal.interpret('\x1b]0;12345');
-    this.terminal.interpret('6789\x07!!');
-    result.assertEQ(title, null);
-    result.assertEQ(this.terminal.getRowsText(0, 1), '0;123456789!!');
-
-    result.pass();
-  });
-
-/**
  * If we see embedded escape sequences, we should reject them.
  */
 hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
@@ -1923,8 +1881,6 @@ hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
     for (var i = 0; i < expect.length / 6; i++) {
       encode += 'eHh4';
     }
-
-    this.terminal.vt.maxStringSequence = expect.length * 3;
 
     this.terminal.interpret('\x1b]52;c;');
     this.terminal.interpret(encode);
