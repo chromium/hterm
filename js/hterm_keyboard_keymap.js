@@ -319,6 +319,11 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
 
     [144, '[NUMLOCK]', PASS, PASS, PASS, PASS],
 
+    // On Apple keyboards, the NumLock key is a Clear key.  It also tends to be
+    // what KP5 sends when numlock is off.  Not clear if we could do anything
+    // useful with it, so just pass it along.
+    [12, '[CLEAR]', PASS, PASS, PASS, PASS],
+
     // With numlock off, the keypad generates the same key codes as the arrows
     // and 'block of six' for some keys, and null key codes for the rest.
 
