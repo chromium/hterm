@@ -370,8 +370,12 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
   var keyDef = this.keyMap.keyDefs[e.keyCode];
   if (!keyDef) {
-    console.warn('No definition for keyCode: ' + e.keyCode);
-    return;
+    // If this key hasn't been explicitly registered, fall back to the unknown
+    // key mapping (keyCode == 0), and then automatically register it to avoid
+    // any further warnings here.
+    console.warn(`No definition for key ${e.key} (keyCode ${e.keyCode})`);
+    keyDef = this.keyMap.keyDefs[0];
+    this.keyMap.addKeyDef(e.keyCode, keyDef);
   }
 
   // The type of action we're going to use.
