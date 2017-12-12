@@ -458,11 +458,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'pass-alt-number': function(v) {
       if (v == null) {
-        var osx = window.navigator.userAgent.match(/Mac OS X/);
-
         // Let Alt-1..9 pass to the browser (to control tab switching) on
         // non-OS X systems, or if hterm is not opened in an app window.
-        v = (!osx && hterm.windowType != 'popup');
+        v = (hterm.os != 'mac' && hterm.windowType != 'popup');
       }
 
       terminal.passAltNumber = v;
@@ -470,11 +468,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'pass-ctrl-number': function(v) {
       if (v == null) {
-        var osx = window.navigator.userAgent.match(/Mac OS X/);
-
         // Let Ctrl-1..9 pass to the browser (to control tab switching) on
         // non-OS X systems, or if hterm is not opened in an app window.
-        v = (!osx && hterm.windowType != 'popup');
+        v = (hterm.os != 'mac' && hterm.windowType != 'popup');
       }
 
       terminal.passCtrlNumber = v;
@@ -482,11 +478,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'pass-meta-number': function(v) {
       if (v == null) {
-        var osx = window.navigator.userAgent.match(/Mac OS X/);
-
         // Let Meta-1..9 pass to the browser (to control tab switching) on
         // OS X systems, or if hterm is not opened in an app window.
-        v = (osx && hterm.windowType != 'popup');
+        v = (hterm.os == 'mac' && hterm.windowType != 'popup');
       }
 
       terminal.passMetaNumber = v;
@@ -809,8 +803,7 @@ hterm.Terminal.prototype.syncMousePasteButton = function() {
     return;
   }
 
-  var ary = navigator.userAgent.match(/\(X11;\s+(\S+)/);
-  if (!ary || ary[1] == 'CrOS') {
+  if (hterm.os != 'linux') {
     this.mousePasteButton = 1;  // Middle mouse button.
   } else {
     this.mousePasteButton = 2;  // Right mouse button.

@@ -21,6 +21,16 @@ var hterm = {};
 hterm.windowType = null;
 
 /**
+ * The OS we're running under.
+ *
+ * Used when setting up OS-specific behaviors.
+ *
+ * This is set as part of hterm.init().  The value is invalid until
+ * initialization completes.
+ */
+hterm.os = null;
+
+/**
  * Warning message to display in the terminal when browser zoom is enabled.
  *
  * You can replace it with your own localized message.
@@ -64,12 +74,20 @@ hterm.testDeps = ['hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
  *     initialization is complete.
  */
 lib.registerInit('hterm', function(onInit) {
+  function initOs(os) {
+    hterm.os = os;
+
+    onInit();
+  }
+
   function initMessageManager() {
     lib.f.getAcceptLanguages((languages) => {
       if (!hterm.messageManager)
         hterm.messageManager = new lib.MessageManager(languages);
 
-      onInit();
+      // If OS detection fails, then we'll still set the value to something.
+      // The OS logic in hterm tends to be best effort anyways.
+      lib.f.getOs().then(initOs).catch(initOs);
     });
   }
 
