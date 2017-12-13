@@ -415,7 +415,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
   switch (e.type) {
     case 'wheel':
       // Mouse wheel is treated as button 1 or 2 plus an additional 64.
-      b = (((e.deltaY * -1) > 0) ? 0 : 1) + 96;
+      b = (((e.deltaY * -1) > 0) ? 0 : 1) + 64;
       b |= mod;
       if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR)
         response = `\x1b[<${b};${x};${y}M`;
