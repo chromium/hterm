@@ -13,11 +13,36 @@ lib.rtdep('lib.f', 'lib.Storage');
  */
 hterm.PreferenceManager = function(profileId) {
   lib.PreferenceManager.call(this, hterm.defaultStorage,
-                             '/hterm/profiles/' + profileId);
+                             hterm.PreferenceManager.prefix_ + profileId);
   var defs = hterm.PreferenceManager.defaultPreferences;
   Object.keys(defs).forEach(function(key) {
     this.definePreference(key, defs[key][1]);
   }.bind(this));
+};
+
+/**
+ * The storage key prefix to namespace the preferences.
+ */
+hterm.PreferenceManager.prefix_ = '/hterm/profiles/';
+
+/**
+ * List all the defined profiles.
+ *
+ * @param {function(Array<string>)} callback Called with the list of profiles.
+ */
+hterm.PreferenceManager.listProfiles = function(callback) {
+  hterm.defaultStorage.getItems(null, (items) => {
+    const profiles = {};
+    for (let key of Object.keys(items)) {
+      if (key.startsWith(hterm.PreferenceManager.prefix_)) {
+        // Turn "/hterm/profiles/foo/bar/cow" to "foo/bar/cow".
+        const subKey = key.slice(hterm.PreferenceManager.prefix_.length);
+        // Turn "foo/bar/cow" into "foo".
+        profiles[subKey.split('/', 1)[0]] = true;
+      }
+    }
+    callback(Object.keys(profiles));
+  });
 };
 
 hterm.PreferenceManager.categories = {};
