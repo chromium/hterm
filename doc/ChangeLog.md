@@ -1,3 +1,27 @@
+# 1.76, 2017-12-13, Standards/compatibility fixes & OSC-8 links & OSC-1337 image features.
+
+* change default terminal encoding to utf8
+* invert drag & drop format preferences
+* handle ISO-8613-6 SGR subparameters
+* default all character maps to US/ASCII when resetting
+* fix reset after custom text attributes
+* separate terminal full & soft reset code paths
+* move vt reset calls into the terminal layer
+* reset SGR attributes during soft resets
+* move cursor save/restore state from per-terminal to per-screen
+* rename CHA comments to match DEC docs
+* support DECSET 1007 for controlling alternate scroll mode
+* hoist openUrl to main namespace
+* support OSC 8 for hyperlinking text
+* add localization logic
+* drop max-string-sequence support
+* add a test to keep nassh translations in sync
+* allow keybindings for unknown keys
+* add a default PASS mapping for the Clear key
+* use new lib.f.getOs helper
+* include all profiles all the time when backing up
+* implement OSC 1337 file display/transfer
+
 # 1.75, 2017-11-20, Many color/style/mouse fixes & features.
 
 * Fix parsing multiple SGR true color sequences.
