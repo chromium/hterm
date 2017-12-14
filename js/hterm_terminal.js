@@ -406,6 +406,12 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'font-size': function(v) {
+      v = parseInt(v);
+      if (v <= 0) {
+        console.error(`Invalid font size: ${v}`);
+        return;
+      }
+
       terminal.setFontSize(v);
     },
 
@@ -763,7 +769,7 @@ hterm.Terminal.prototype.setCssVar = function(name, value,
  * @param {number} px The desired font size, in pixels.
  */
 hterm.Terminal.prototype.setFontSize = function(px) {
-  if (px === 0)
+  if (px <= 0)
     px = this.prefs_.get('font-size');
 
   this.scrollPort_.setFontSize(px);
