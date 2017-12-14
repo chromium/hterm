@@ -1180,6 +1180,131 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
   });
 
 /**
+ * Check parseInt behavior.
+ */
+hterm.VT.Tests.addTest('parsestate-parseint', function(result, cx) {
+  const parserState = new hterm.VT.ParseState();
+
+  // Check default arg handling.
+  result.assertEQ(0, parserState.parseInt(''));
+  result.assertEQ(0, parserState.parseInt('', 0));
+  result.assertEQ(1, parserState.parseInt('', 1));
+
+  // Check default arg handling when explicitly zero.
+  result.assertEQ(0, parserState.parseInt('0'));
+  result.assertEQ(0, parserState.parseInt('0', 0));
+  result.assertEQ(1, parserState.parseInt('0', 1));
+
+  // Check non-default args.
+  result.assertEQ(5, parserState.parseInt('5'));
+  result.assertEQ(5, parserState.parseInt('5', 0));
+  result.assertEQ(5, parserState.parseInt('5', 1));
+
+  result.pass();
+});
+
+/**
+ * Check iarg handling.
+ */
+hterm.VT.Tests.addTest('parsestate-iarg', function(result, cx) {
+  const parserState = new hterm.VT.ParseState();
+
+  // Check unset args.
+  result.assertEQ(0, parserState.iarg(10));
+  result.assertEQ(1, parserState.iarg(10, 1));
+
+  // Check set args.
+  parserState.args = [0, 5];
+  result.assertEQ(0, parserState.iarg(10));
+  result.assertEQ(1, parserState.iarg(10, 1));
+  result.assertEQ(0, parserState.iarg(0));
+  result.assertEQ(1, parserState.iarg(0, 1));
+  result.assertEQ(5, parserState.iarg(1));
+  result.assertEQ(5, parserState.iarg(1, 1));
+
+  result.pass();
+});
+
+/**
+ * Check handling of subargs.
+ */
+hterm.VT.Tests.addTest('parsestate-subargs', function(result, cx) {
+  const parserState = new hterm.VT.ParseState();
+
+  // Check initial/null state.
+  result.assert(!parserState.argHasSubargs(0));
+  result.assert(!parserState.argHasSubargs(1000));
+
+  // Mark one arg as having subargs.
+  parserState.argSetSubargs(1);
+  result.assert(!parserState.argHasSubargs(0));
+  result.assert(parserState.argHasSubargs(1));
+
+  result.pass();
+});
+
+/**
+ * Check handling of extended ISO 8613-6 colors.
+ */
+hterm.VT.Tests.addTest('sgr-extended-colors-parser', function(result, cx) {
+  const parserState = new hterm.VT.ParseState();
+  const ta = this.terminal.getTextAttributes();
+
+  [
+    // Fully semi-colon separated args.
+    [0, '38;2;10;20;30', 4, 'rgb(10, 20, 30)'],
+    [1, '4;38;2;10;20;30', 4, 'rgb(10, 20, 30)'],
+    [0, '38;5;1', 2, 1],
+    [1, '4;38;5;1', 2, 1],
+    // Fully colon delimited, but legacy xterm form.
+    [0, '38:2:10:20:30', 0, 'rgb(10, 20, 30)'],
+    [1, '4;38:2:10:20:30', 0, 'rgb(10, 20, 30)'],
+    // Fully colon delimited matching ISO 8613-6.
+    [0, '38:0', 0, undefined],
+    [0, '38:1', 0, 'rgba(0, 0, 0, 0)'],
+    [0, '38:2::10:20:30', 0, 'rgb(10, 20, 30)'],
+    [0, '38:2::10:20:30:', 0, 'rgb(10, 20, 30)'],
+    [0, '38:2::10:20:30::', 0, 'rgb(10, 20, 30)'],
+    // TODO: Add CMY & CMYK forms when we support them.
+    [0, '38:5:1', 0, 1],
+    [1, '4;38:5:1', 0, 1],
+    // Reject the xterm form that mixes semi-colons & colons.
+    [0, '38;2:10:20:30', 0, undefined],
+    [0, '38;5:1', 0, undefined],
+    // Reject too short forms.
+    [0, '38;2', 0, undefined],
+    [0, '38;2;10', 0, undefined],
+    [0, '38;2;10;20', 0, undefined],
+    [0, '38:2', 0, undefined],
+    [0, '38:2:10', 0, undefined],
+    [0, '38:2:10:20', 0, undefined],
+    [0, '38:3::10:20', 0, undefined],
+    [0, '38:4::10:20:30', 0, undefined],
+    [0, '38:5', 0, undefined],
+    // Reject non-true color & palete color forms -- require ISO 8613-6.
+    [0, '38;0', 0, undefined],
+    [0, '38;1', 0, undefined],
+    [0, '38;3;10;20;30', 0, undefined],
+    [0, '38;4;10;20;30;40', 0, undefined],
+    // Reject out of range color number.
+    [0, '38:5:100000', 0, undefined],
+  ].forEach(([i, input, expSkipCount, expColor]) => {
+    // Set up the parser state from the inputs.
+    const args = input.split(';');
+    parserState.args = args;
+    parserState.subargs = {};
+    for (let i = 0; i < args.length; ++i)
+      parserState.subargs[i] = args[i].includes(':');
+
+    const ret = this.terminal.vt.parseSgrExtendedColors(parserState, i, ta);
+    result.assertEQ(expSkipCount, ret.skipCount, input);
+    result.assertEQ(expColor, ret.color, input);
+  });
+
+  result.pass();
+});
+
+/**
  * Test setting of true color mode in colon delimited formats.
  *
  * This also indirectly checks chaining SGR behavior.
@@ -1201,26 +1326,50 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
   this.terminal.reset();
   this.terminal.clearHome();
 
-  // Check partial colon delimited: 38;2:R:G:Bm
-  this.terminal.interpret('\x1b[38;2:140:150:160;48;2:40:50:60;4mHI2');
+  // Check fully colon delimited (xterm-specific): 38:2:R:G:Bm
+  this.terminal.interpret('\x1b[38:2:170:180:190;48:2:70:80:90;4mHI2');
   result.assertEQ(true, ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(140, 150, 160)', style.color);
-  result.assertEQ('rgb(40, 50, 60)', style.backgroundColor);
+  result.assertEQ('rgb(170, 180, 190)', style.color);
+  result.assertEQ('rgb(70, 80, 90)', style.backgroundColor);
   text = this.terminal.getRowText(0);
   result.assertEQ('HI2', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
 
-  // Check fully colon delimited: 38:2:R:G:Bm
-  this.terminal.interpret('\x1b[38:2:170:180:190;48:2:70:80:90;4mHI3');
+  // Check fully colon delimited (ISO 8613-6): 38:2::R:G:Bm
+  this.terminal.interpret('\x1b[38:2::171:181:191;48:2::71:81:91;4mHI3');
   result.assertEQ(true, ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(170, 180, 190)', style.color);
-  result.assertEQ('rgb(70, 80, 90)', style.backgroundColor);
+  result.assertEQ('rgb(171, 181, 191)', style.color);
+  result.assertEQ('rgb(71, 81, 91)', style.backgroundColor);
   text = this.terminal.getRowText(0);
   result.assertEQ('HI3', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+
+  // Check fully colon delimited w/extra args (ISO 8613-6): 38:2::R:G:B::m
+  this.terminal.interpret('\x1b[38:2::172:182:192::;48:2::72:82:92::;4mHI4');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('rgb(172, 182, 192)', style.color);
+  result.assertEQ('rgb(72, 82, 92)', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI4', text);
+
+  this.terminal.reset();
+  this.terminal.clearHome();
+
+  // Check fully colon delimited w/too few args (ISO 8613-6): 38:2::R
+  this.terminal.interpret('\x1b[38:2::33;48:2::44;4mHI5');
+  result.assertEQ(true, ta.underline);
+  style = this.terminal.getRowNode(0).childNodes[0].style;
+  result.assertEQ('', style.color);
+  result.assertEQ('', style.backgroundColor);
+  text = this.terminal.getRowText(0);
+  result.assertEQ('HI5', text);
 
   result.pass();
 });
@@ -1245,26 +1394,14 @@ hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
   this.terminal.reset();
   this.terminal.clearHome();
 
-  // Check partial colon delimited: 38;5:Pm
-  this.terminal.interpret('\x1b[38;5:30;48;5:40;4mHI2');
-  result.assertEQ(true, ta.underline);
-  style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(0, 135, 135)', style.color);
-  result.assertEQ('rgb(0, 215, 0)', style.backgroundColor);
-  text = this.terminal.getRowText(0);
-  result.assertEQ('HI2', text);
-
-  this.terminal.reset();
-  this.terminal.clearHome();
-
   // Check fully colon delimited: 38:5:Pm
-  this.terminal.interpret('\x1b[38:5:50;48:5:60;4mHI3');
+  this.terminal.interpret('\x1b[38:5:50;48:5:60;4mHI2');
   result.assertEQ(true, ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(0, 255, 215)', style.color);
   result.assertEQ('rgb(95, 95, 135)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI3', text);
+  result.assertEQ('HI2', text);
 
   result.pass();
 });

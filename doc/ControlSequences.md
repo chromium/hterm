@@ -34,12 +34,16 @@ We aim to be compliant with:
 * [ECMA-35] (*Character Code Structure and Extension Techniques*): covers some
   fundamentals related to character sets, the notions of [C0], [C1], [G0],
   etc... (but not their contents), and how escape sequences work (but not what
-  they mean).
+  they mean).  This is equivalent to [ISO/IEC 2022].
 * [ECMA-43] (*8-bit Coded Character Set Structure and Rules*): Builds on top of
-  [ECMA-35] by defining the character sets (e.g. 0x40 == @).
+  [ECMA-35] by defining the character sets (e.g. 0x40 == @).  This is equivalent
+  to [ISO/IEC 4873].
 * [ECMA-48] (*Control Functions for Coded Character Sets*): Builds on top of
   [ECMA-35] by defining many of the common escape sequences.  Supersedes the
-  ANSI codes, and is equivalent to ISO/IEC 6429.
+  ANSI codes, and is equivalent to [ISO/IEC 6429].
+* [ISO/IEC 8613-6] (*Character content architectures*): Builds on top of
+  [ECMA-35] by defining fonts and graphic renditions (e.g. [SGR]).
+  This is equivalent to [ITU T.416].
 
 Going beyond those basics, we use these sites for guidance:
 
@@ -672,23 +676,34 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 |:---:|--------------------------------------------|--------|
 |     | **Enable Attributes**                      | |
 |   0 | Normal (default)                           | Supported |
-|   1 | Bold                                       | Supported |
-|   2 | Faint                                      | Supported |
+|   1 | Bold (increased intensity)                 | Supported |
+|   2 | Faint (decreased intensity)                | Supported |
 |   3 | Italic                                     | Supported |
 |   4 | Underlined                                 | Supported |
-|   5 | Blink                                      | Supported |
+|   5 | Blink (slowly)                             | Supported |
 |   6 | Rapid blink                                | *Ignored (TBD)* |
-|   7 | Inverse                                    | Supported |
+|   7 | Inverse (negative image)                   | Supported |
 |   8 | Invisible                                  | Supported |
 |   9 | Crossed out                                | Supported |
+|  10 | Primary font                               | *Ignored* |
+|  11 | First alternative font                     | *Ignored* |
+|  12 | Second alternative font                    | *Ignored* |
+|  13 | Third alternative font                     | *Ignored* |
+|  14 | Fourth alternative font                    | *Ignored* |
+|  15 | Fifth alternative font                     | *Ignored* |
+|  16 | Sixth alternative font                     | *Ignored* |
+|  17 | Seventh alternative font                   | *Ignored* |
+|  18 | Eighth alternative font                    | *Ignored* |
+|  19 | Ninth alternative font                     | *Ignored* |
+|  20 | *Reserved*                                 | *Ignored (TBD)* |
 |  21 | Double underlined                          | Supported |
 |     | **Disable Attributes**                     | |
 |  22 | Normal (decorations)                       | Supported |
 |  23 | Not italic                                 | Supported |
 |  24 | Not underlined                             | Supported |
 |  25 | Steady (not blink)                         | Supported |
-|  26 | *Reserved*                                 | *Ignored (TBD)* |
-|  27 | Positive (not inverse)                     | Supported |
+|  26 | Variable spacing                           | *Ignored (TBD)* |
+|  27 | Positive image (not inverse)               | Supported |
 |  28 | Visible (not invisible)                    | Supported |
 |  29 | Not crossed out                            | Supported |
 |     | **Foreground Color**                       | |
@@ -700,7 +715,7 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 |  35 | Set foreground color to Magenta            | Supported |
 |  36 | Set foreground color to Cyan               | Supported |
 |  37 | Set foreground color to White              | Supported |
-|  38 | Set foreground color to 8-bit/24-bit color | Supported [**(1)**](#SGR-footer) |
+|  38 | Set foreground color to extended color     | Supported [**(1)**](#SGR-extended-color) |
 |  39 | Set foreground color to default (original) | Supported |
 |     | **Background Color**                       | |
 |  40 | Set background color to Black              | Supported |
@@ -711,10 +726,10 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 |  45 | Set background color to Magenta            | Supported |
 |  46 | Set background color to Cyan               | Supported |
 |  47 | Set background color to White              | Supported |
-|  48 | Set background color to 8-bit/24-bit color | Supported [**(1)**](#SGR-footer) |
+|  48 | Set background color to extended color     | Supported [**(1)**](#SGR-extended-color) |
 |  49 | Set background color to default (original) | Supported |
 |     | **Misc**                                   | |
-|  50 | *Reserved for canceling SGR 26*            | *Ignored (TBD)* |
+|  50 | Not variable spacing                       | *Ignored (TBD)* |
 |  51 | Framed                                     | *Ignored (TBD)* |
 |  52 | Encircled                                  | *Ignored (TBD)* |
 |  53 | Overlined                                  | *Ignored (TBD)* |
@@ -749,39 +764,112 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 | 106 | Set background color to bright Cyan        | Supported |
 | 107 | Set background color to bright White       | Supported |
 
-{#SGR-footer}
-For 88- or 256-color support, the following apply:
-
-* `38 ; 5 ; P` -- Set foreground color to P.
-* `48 ; 5 ; P` -- Set background color to P.
-
-For true color (24-bit) support, the following apply.
-
-* `38 ; 2 ; R ; G ; B` -- Set foreground color to rgb(R, G, B)
-* `48 ; 2 ; R ; G ; B` -- Set background color to rgb(R, G, B)
-
-For ISO-8613-3, the semi-colons can be replaced with colons in two forms.
-You should stick to the semi-colon versions above though for compatibility.
-
-* `38 ; 5 : P`
-* `48 ; 5 : P`
-* `38 ; 2 : R : G : B`
-* `48 ; 2 : R : G : B`
-* `38 : 5 : P`
-* `48 : 5 : P`
-* `38 : 2 : R : G : B`
-* `48 : 2 : R : G : B`
-
 Note that most terminals consider "bold" to be "bold and bright".  In some
 documents the bold state is even referred to as bright.  We interpret bold
 as bold-bright here too, but only when the "bold" setting comes before the
 color selection.
 
+### SGR+38/SGR+48: Extended Colors {#SGR-extended-color}
+
+These color sequences support both the [ISO/IEC 8613-6] form (i.e. colon
+delimited) and, because of wide legacy usage, some xterm specific forms (i.e.
+semi-colon delimited).  It's likely that other emulators do not support the
+[ISO/IEC 8613-6] forms fully.
+
+There are multiple extended color choices available.
+
+* `0`: Implementation defined.  We ignore it.
+* `1`: Transparent color.
+* `2`: [RGB] color (a.k.a. true color or 24-bit color).
+* `3`: [CMY] color.  We don't support it yet.
+* `4`: [CMYK] color.  We don't support it yet.
+* `5`: Select color by palette index (a.k.a. 8-bit or 88-color or 256-color).
+
+#### Implementation & Transparent Colors
+
+For `0` and `1`, we require the [ISO/IEC 8613-6] form.
+
+* `38 : 0` -- Do nothing to the foreground!
+* `48 : 0` -- Do nothing to the background!
+* `38 : 1` -- Make the foreground transparent.
+* `48 : 1` -- Make the background transparent.
+
+#### RGB/True/24-bit Colors
+
+For [RGB] colors, the [ISO/IEC 8613-6] forms apply.  The 2nd argument is left
+blank as it is the color space identifier which we ignore.  We also ignore
+the trailing tolerance and color space arguments.
+
+* `38 : 2 : : R : G : B` -- Set foreground color to rgb(R, G, B).
+* `48 : 2 : : R : G : B` -- Set background color to rgb(R, G, B).
+
+We also support the legacy xterm forms for compatibility.
+
+* `38 ; 2 ; R ; G ; B` -- Only RGB is specified, and uses semi-colons.
+* `48 ; 2 ; R ; G ; B` -- Same as above.
+* `38 : 2 : R : G : B` -- Only RGB is specified using colons.
+* `48 : 2 : R : G : B` -- Same as above.
+
+We do *not* support the mixed xterm form as no one else seems to either,
+or has actively decided to drop support for it.
+
+* `38 ; 2 : R : G : B` -- Mixes semi-colon & colon arguments.
+* `48 ; 2 : R : G : B` -- Same as above.
+
+#### CMY/CMYK Colors
+
+***note
+CMY is not yet supported.
+***
+
+For [CMY] and [CMYK] colors, we require the [ISO/IEC 8613-6] form.  The 2nd
+argument is left blank as it is the color space identifier which we ignore.
+We also ignore the trailing tolerance and color space arguments.
+
+* `38 : 3 : : C : M : Y` -- Set foreground color to [CMY] color.
+* `48 : 3 : : C : M : Y` -- Set background color to [CMY] color.
+* `38 : 4 : : C : M : Y : K` -- Set foreground color to [CMYK] color.
+* `48 : 4 : : C : M : Y : K` -- Set background color to [CMYK] color.
+
+#### Palette/8-bit/88/256 Colors
+
+For palette based colors (8-bit/88-colors/256-colors), the [ISO/IEC 8613-6]
+forms apply.
+
+* `38 : 5 : P` -- Set foreground color using a palette index.
+* `48 : 5 : P` -- Set background color using a palette index.
+
+We also support the legacy xterm forms for compatibility.
+
+* `38 ; 5 ; P` -- Uses semi-colons instead of colons.
+* `48 ; 5 ; P` -- Same as above.
+
+We do *not* support the mixed xterm form as no one else seems to either,
+or has actively decided to drop support for it.
+
+* `38 ; 5 : P` -- Mixes semi-colon & colon arguments.
+* `48 ; 5 : P` -- Same as above.
+
 ## References
 
-* [ECMA-35]: Character Code Structure and Extension Techniques
-* [ECMA-43]: 8-bit Coded Character Set Structure and Rules
-* [ECMA-48]: Control Functions for Coded Character Sets
+* [ECMA-35] (*Character Code Structure and Extension Techniques*): covers some
+  fundamentals related to character sets, the notions of [C0], [C1], [G0],
+  etc... (but not their contents), and how escape sequences work (but not what
+  they mean).  This is equivalent to [ISO/IEC 2022].
+* [ECMA-43] (*8-bit Coded Character Set Structure and Rules*): Builds on top of
+  [ECMA-35] by defining the character sets (e.g. 0x40 == @).  This is equivalent
+  to [ISO/IEC 4873].
+* [ECMA-48] (*Control Functions for Coded Character Sets*): Builds on top of
+  [ECMA-35] by defining many of the common escape sequences.  Supersedes the
+  ANSI codes, and is equivalent to [ISO/IEC 6429].
+* [ISO/IEC 8613-6] (*Character content architectures*): Builds on top of
+  [ECMA-35] by defining fonts and graphic renditions (e.g. [SGR]).
+  This is equivalent to [ITU T.416].
+
+* [ECMA-35] & [ISO/IEC 2022]: Character Code Structure and Extension Techniques.
+* [ECMA-43] & [ISO/IEC 4873]: 8-bit Coded Character Set Structure and Rules.
+* [ECMA-48] & [ISO/IEC 6429]: Control Functions for Coded Character Sets.
+* [ISO/IEC 8613-6] & [ITU T.416]: Character content architectures.
 * [VT100.net](http://vt100.net/): Everything related to classic VTstandards.
 * [VT100 User Guide](http://vt100.net/docs/vt100-ug/contents.html)
 * [VT510 Video Terminal Programmer Information](http://vt100.net/docs/vt510-rm/contents)
@@ -822,9 +910,17 @@ color selection.
 
 [1337]: #OSC-1337
 
+[CMY]: https://en.wikipedia.org/wiki/CMYK_color_model
+[CMYK]: https://en.wikipedia.org/wiki/CMYK_color_model
+[RGB]: https://en.wikipedia.org/wiki/RGB_color_model
 [ECMA-35]: http://www.ecma-international.org/publications/standards/Ecma-035.htm
 [ECMA-43]: http://www.ecma-international.org/publications/standards/Ecma-043.htm
 [ECMA-48]: http://www.ecma-international.org/publications/standards/Ecma-048.htm
+[ISO/IEC 2022]: https://www.iso.org/standard/22747.html
+[ISO/IEC 4873]: https://www.iso.org/standard/10859.html
+[ISO/IEC 6429]: https://www.iso.org/standard/12782.html
+[ISO/IEC 8613-6]: https://www.iso.org/standard/22943.html
+[ITU T.416]: https://www.itu.int/rec/T-REC-T.416/
 
 [hterm_vt.js]: ../js/hterm_vt.js
 [hterm_vt_character_map.js]: ../js/hterm_vt_character_map.js

@@ -2324,69 +2324,163 @@ hterm.VT.CSI['?l'] = function(parseState) {
 };
 
 /**
+ * Parse extended SGR 38/48 sequences.
+ *
+ * This deals with the various ISO 8613-6 forms, and with legacy xterm forms
+ * that are common in the wider application world.
+ *
+ * @param {hterm.VT.ParseState} parseState The current input state.
+ * @param {number} i The argument in parseState to start processing.
+ * @param {hterm.TextAttributes} attrs The current text attributes.
+ * @return {Object} The skipCount member defines how many arguments to skip
+ *     (i.e. how many were processed), and the color member is the color that
+ *     was successfully processed, or undefined if not.
+ */
+hterm.VT.prototype.parseSgrExtendedColors = function(parseState, i, attrs) {
+  let ary;
+  let usedSubargs;
+
+  if (parseState.argHasSubargs(i)) {
+    // The ISO 8613-6 compliant form.
+    // e.g. 38:[color choice]:[arg1]:[arg2]:...
+    ary = parseState.args[i].split(':');
+    ary.shift();  // Remove "38".
+    usedSubargs = true;
+  } else if (parseState.argHasSubargs(i + 1)) {
+    // The xterm form which isn't ISO 8613-6 compliant.  Not many emulators
+    // support this, and others actively do not want to.  We'll ignore it so
+    // at least the rest of the stream works correctly.  e.g. 38;2:R:G:B
+    // We return 0 here so we only skip the "38" ... we can't be confident the
+    // next arg is actually supposed to be part of it vs a typo where the next
+    // arg is legit.
+    return {skipCount: 0};
+  } else {
+    // The xterm form which isn't ISO 8613-6 compliant, but many emulators
+    // support, and many applications rely on.
+    // e.g. 38;2;R;G;B
+    ary = parseState.args.slice(i + 1);
+    usedSubargs = false;
+  }
+
+  // Figure out which form to parse.
+  switch (parseInt(ary[0])) {
+    default:  // Unknown.
+    case 0:  // Implementation defined.  We ignore it.
+      return {skipCount: 0};
+
+    case 1: {  // Transparent color.
+      // Require ISO 8613-6 form.
+      if (!usedSubargs)
+        return {skipCount: 0};
+
+      return {
+        color: 'rgba(0, 0, 0, 0)',
+        skipCount: 0,
+      };
+    }
+
+    case 2: {  // RGB color.
+      // Skip over the color space identifier, if it exists.
+      let start;
+      if (usedSubargs) {
+        // The ISO 8613-6 compliant form:
+        //   38:2:<color space id>:R:G:B[:...]
+        // The xterm form isn't ISO 8613-6 compliant.
+        //   38:2:R:G:B
+        // Since the ISO 8613-6 form requires at least 5 arguments,
+        // we can still support the xterm form unambiguously.
+        if (ary.length == 4)
+          start = 1;
+        else
+          start = 2;
+      } else {
+        // The legacy xterm form: 38;2;R;G;B
+        start = 1;
+      }
+
+      // We need at least 3 args for RGB.  If we don't have them, assume this
+      // sequence is corrupted, so don't eat anything more.
+      // We ignore more than 3 args on purpose since ISO 8613-6 defines some,
+      // and we don't care about them.
+      if (ary.length < start + 3)
+        return {skipCount: 0};
+
+      const r = parseState.parseInt(ary[start + 0]);
+      const g = parseState.parseInt(ary[start + 1]);
+      const b = parseState.parseInt(ary[start + 2]);
+      return {
+        color: `rgb(${r}, ${g}, ${b})`,
+        skipCount: usedSubargs ? 0 : 4,
+      };
+    }
+
+    case 3: {  // CMY color.
+      // No need to support xterm/legacy forms as xterm doesn't support CMY.
+      if (!usedSubargs)
+        return {skipCount: 0};
+
+      // We need at least 4 args for CMY.  If we don't have them, assume
+      // this sequence is corrupted.  We ignore the color space identifier,
+      // tolerance, etc...
+      if (ary.length < 4)
+        return {skipCount: 0};
+
+      // TODO: See CMYK below.
+      const c = parseState.parseInt(ary[1]);
+      const m = parseState.parseInt(ary[2]);
+      const y = parseState.parseInt(ary[3]);
+      return {skipCount: 0};
+    }
+
+    case 4: {  // CMYK color.
+      // No need to support xterm/legacy forms as xterm doesn't support CMYK.
+      if (!usedSubargs)
+        return {skipCount: 0};
+
+      // We need at least 5 args for CMYK.  If we don't have them, assume
+      // this sequence is corrupted.  We ignore the color space identifier,
+      // tolerance, etc...
+      if (ary.length < 5)
+        return {skipCount: 0};
+
+      // TODO: Implement this.
+      // Might wait until CSS4 is adopted for device-cmyk():
+      // https://www.w3.org/TR/css-color-4/#cmyk-colors
+      // Or normalize it to RGB ourselves:
+      // https://www.w3.org/TR/css-color-4/#cmyk-rgb
+      const c = parseState.parseInt(ary[1]);
+      const m = parseState.parseInt(ary[2]);
+      const y = parseState.parseInt(ary[3]);
+      const k = parseState.parseInt(ary[4]);
+      return {skipCount: 0};
+    }
+
+    case 5: {  // Color palette index.
+      // If we're short on args, assume this sequence is corrupted, so don't
+      // eat anything more.
+      if (ary.length < 2)
+        return {skipCount: 0};
+
+      // Support 38:5:P (ISO 8613-6) and 38;5;P (xterm/legacy).
+      // We also ignore extra args with 38:5:P:[...], but more for laziness.
+      const ret = {
+        skipCount: usedSubargs ? 0 : 2,
+      };
+      const color = parseState.parseInt(ary[1]);
+      if (color < attrs.colorPalette.length)
+        ret.color = color;
+      return ret;
+    }
+  }
+};
+
+/**
  * Character Attributes (SGR).
  *
  * Iterate through the list of arguments, applying the attribute changes based
  * on the argument value...
  */
 hterm.VT.CSI['m'] = function(parseState) {
-  function get256(i) {
-    let ary;
-    let skipCount;
-    if (parseState.argHasSubargs(i)) {
-      // Form: 38:5:P
-      ary = parseState.args[i].split(/:/);
-      ary.shift();  // Remove "38".
-      skipCount = 0;
-    } else if (parseState.argHasSubargs(i + 1)) {
-      // Form: 38;5:P
-      ary = parseState.args[i + 1].split(/:/);
-      skipCount = 1;
-    } else {
-      // Form: 38;5;P
-      ary = parseState.args.slice(i + 1, i + 3);
-      skipCount = 2;
-    }
-
-    if (ary.length != 2 || ary[0] != 5)
-      return null;
-
-    return {
-        color: parseState.parseInt(ary[1]),
-        skipCount: skipCount,
-    };
-  }
-
-  function getTrueColor(i) {
-    let ary;
-    let skipCount;
-    if (parseState.argHasSubargs(i)) {
-      // Form: 38:2:R:G:B
-      ary = parseState.args[i].split(/:/);
-      ary.shift();  // Remove "38".
-      skipCount = 0;
-    } else if (parseState.argHasSubargs(i + 1)) {
-      // Form: 38;2:R:G:B
-      ary = parseState.args[i + 1].split(/:/);
-      skipCount = 1;
-    } else {
-      // Form: 38;2;R;G;B
-      ary = parseState.args.slice(i + 1, i + 5);
-      skipCount = 4;
-    }
-
-    if (ary.length != 4 || ary[0] != 2)
-      return null;
-
-    let r = parseState.parseInt(ary[1]);
-    let g = parseState.parseInt(ary[2]);
-    let b = parseState.parseInt(ary[3]);
-    return {
-        color: `rgb(${r} ,${g} ,${b})`,
-        skipCount: skipCount,
-    };
-  }
-
   var attrs = this.terminal.getTextAttributes();
 
   if (!parseState.args.length) {
@@ -2446,25 +2540,10 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.foregroundSource = arg - 30;
 
       } else if (arg == 38) {
-        // First check for true color definition
-        var trueColor = getTrueColor(i);
-        if (trueColor != null) {
-          attrs.foregroundSource = trueColor.color;
-
-          i += trueColor.skipCount;
-        } else {
-          // Check for 256 color
-          var c = get256(i);
-          if (c == null)
-            break;
-
-          i += c.skipCount;
-
-          if (c >= attrs.colorPalette.length)
-            continue;
-
-          attrs.foregroundSource = c.color;
-        }
+        const result = this.parseSgrExtendedColors(parseState, i, attrs);
+        if (result.color !== undefined)
+          attrs.foregroundSource = result.color;
+        i += result.skipCount;
 
       } else if (arg == 39) {
         attrs.foregroundSource = attrs.SRC_DEFAULT;
@@ -2473,25 +2552,11 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.backgroundSource = arg - 40;
 
       } else if (arg == 48) {
-        // First check for true color definition
-        var trueColor = getTrueColor(i);
-        if (trueColor != null) {
-          attrs.backgroundSource = trueColor.color;
+        const result = this.parseSgrExtendedColors(parseState, i, attrs);
+        if (result.color !== undefined)
+          attrs.backgroundSource = result.color;
+        i += result.skipCount;
 
-          i += trueColor.skipCount;
-        } else {
-          // Check for 256 color
-          var c = get256(i);
-          if (c == null)
-            break;
-
-          i += c.skipCount;
-
-          if (c >= attrs.colorPalette.length)
-            continue;
-
-          attrs.backgroundSource = c.color;
-        }
       } else {
         attrs.backgroundSource = attrs.SRC_DEFAULT;
       }
