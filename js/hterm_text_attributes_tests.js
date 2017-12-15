@@ -91,61 +91,74 @@ hterm.TextAttributes.Tests.addTest('decoration-combos', function(result, cx) {
   const tattrs = new hterm.TextAttributes(cx.window.document);
   let node;
 
-  // Underline only.
-  tattrs.underline = true;
-  tattrs.doubleUnderline = false;
+  // Underline.
+  tattrs.underline = 'solid';
   tattrs.strikethrough = false;
   node = tattrs.createContainer('asdf');
   result.assertEQ('underline', node.style.textDecorationLine);
-  result.assertEQ('', node.style.textDecorationStyle);
+  result.assertEQ('solid', node.style.textDecorationStyle);
 
-  // Double underline only.
-  tattrs.underline = false;
-  tattrs.doubleUnderline = true;
+  // Double underline.
+  tattrs.underline = 'double';
   tattrs.strikethrough = false;
   node = tattrs.createContainer('asdf');
   result.assertEQ('underline', node.style.textDecorationLine);
   result.assertEQ('double', node.style.textDecorationStyle);
 
-  // Strikethrough only.
+  // Strikethrough.
   tattrs.underline = false;
-  tattrs.doubleUnderline = false;
   tattrs.strikethrough = true;
   node = tattrs.createContainer('asdf');
   result.assertEQ('line-through', node.style.textDecorationLine);
   result.assertEQ('', node.style.textDecorationStyle);
 
-  // Underline + double underline.
-  tattrs.underline = true;
-  tattrs.doubleUnderline = true;
-  tattrs.strikethrough = false;
-  node = tattrs.createContainer('asdf');
-  result.assertEQ('underline', node.style.textDecorationLine);
-  result.assertEQ('double', node.style.textDecorationStyle);
-
   // Underline + strikethrough.
-  tattrs.underline = true;
-  tattrs.doubleUnderline = false;
+  tattrs.underline = 'solid';
   tattrs.strikethrough = true;
   node = tattrs.createContainer('asdf');
   result.assertEQ('underline line-through', node.style.textDecorationLine);
-  result.assertEQ('', node.style.textDecorationStyle);
+  result.assertEQ('solid', node.style.textDecorationStyle);
 
   // Double underline + strikethrough.
-  tattrs.underline = false;
-  tattrs.doubleUnderline = true;
+  tattrs.underline = 'double';
   tattrs.strikethrough = true;
   node = tattrs.createContainer('asdf');
   result.assertEQ('underline line-through', node.style.textDecorationLine);
   result.assertEQ('double', node.style.textDecorationStyle);
 
-  // Underline + double underline + strikethrough.
-  tattrs.underline = true;
-  tattrs.doubleUnderline = true;
-  tattrs.strikethrough = true;
+  result.pass();
+});
+
+/**
+ * Underline colors.
+ */
+hterm.TextAttributes.Tests.addTest('underline-colors', function(result, cx) {
+  const tattrs = new hterm.TextAttributes(cx.window.document);
+  let node;
+
+  tattrs.underline = 'solid';
+
+  // Default color.
   node = tattrs.createContainer('asdf');
-  result.assertEQ('underline line-through', node.style.textDecorationLine);
-  result.assertEQ('double', node.style.textDecorationStyle);
+  result.assertEQ('underline', node.style.textDecorationLine);
+  result.assertEQ('solid', node.style.textDecorationStyle);
+  result.assertEQ('', node.style.textDecorationColor);
+
+  // Indexed color.
+  tattrs.underlineSource = 1;
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline', node.style.textDecorationLine);
+  result.assertEQ('solid', node.style.textDecorationStyle);
+  result.assertEQ('rgb(204, 0, 0)', node.style.textDecorationColor);
+
+  // True color.
+  tattrs.underlineSource = 'rgb(1, 2, 3)';
+  tattrs.syncColors();
+  node = tattrs.createContainer('asdf');
+  result.assertEQ('underline', node.style.textDecorationLine);
+  result.assertEQ('solid', node.style.textDecorationStyle);
+  result.assertEQ('rgb(1, 2, 3)', node.style.textDecorationColor);
 
   result.pass();
 });

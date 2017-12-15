@@ -679,7 +679,7 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 |   1 | Bold (increased intensity)                 | Supported |
 |   2 | Faint (decreased intensity)                | Supported |
 |   3 | Italic                                     | Supported |
-|   4 | Underlined                                 | Supported |
+|   4 | Underlined                                 | Supported [**(2)**](#SGR-underline) |
 |   5 | Blink (slowly)                             | Supported |
 |   6 | Rapid blink                                | *Ignored (TBD)* |
 |   7 | Inverse (negative image)                   | Supported |
@@ -737,8 +737,8 @@ command.  Accepts an arbitrary number of args delimited by ; and in any order.
 |  55 | Not overlined                              | *Ignored (TBD)* |
 |  56 | *Reserved*                                 | *Ignored (TBD)* |
 |  57 | *Reserved*                                 | *Ignored (TBD)* |
-|  58 | *Reserved*                                 | *Ignored (TBD)* |
-|  59 | *Reserved*                                 | *Ignored (TBD)* |
+|  58 | Set underline color to extended color      | Supported [**(1)**](#SGR-extended-color) |
+|  59 | Set underline color to default (original)  | Supported |
 |  60 | Ideogram underline or right side line      | *Ignored (TBD)* |
 |  61 | Ideogram double underline or double right side line | *Ignored (TBD)* |
 |  62 | Ideogram overline or left side line        | *Ignored (TBD)* |
@@ -768,6 +768,23 @@ Note that most terminals consider "bold" to be "bold and bright".  In some
 documents the bold state is even referred to as bright.  We interpret bold
 as bold-bright here too, but only when the "bold" setting comes before the
 color selection.
+
+### Underlining {#SGR-underline}
+
+In addition to the standard underline sequences, we support some non-standard
+sequences to enable more styles and coloring.  We'll cover the non-standard
+sequences here only.
+
+* `4:0`: Turn off underlining (same as SGR+24).
+* `4:1`: Underline with a single solid line (same as the normal `4`).
+* `4:2`: Underline with double lines (same as SGR+21).
+* `4:3`: Underline with a single wavy/curvy line.
+* `4:4`: Underline with a single dotted line.
+* `4:5`: Underline with a single dashed line.
+
+In addition to the style, you can change the color by using SGR+58 (which uses
+the same syntax as [SGR+38/SGR+48](#SGR-extended-color), and clear the color
+by using SGR+59 (which uses the same syntax as SGR+39/SGR+49).
 
 ### SGR+38/SGR+48: Extended Colors {#SGR-extended-color}
 

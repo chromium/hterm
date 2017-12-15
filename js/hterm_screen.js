@@ -512,6 +512,8 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
                  !cursorNode.asciiNode ||
                  cursorNode.tileNode ||
                  cursorNode.style.textDecoration ||
+                 cursorNode.style.textDecorationStyle ||
+                 cursorNode.style.textDecorationLine ||
                  cursorNode.style.backgroundColor)) {
       // Second best case, the current node is able to hold the whitespace.
       cursorNode.textContent = (cursorNodeText += ws);

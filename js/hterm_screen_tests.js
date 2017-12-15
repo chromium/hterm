@@ -500,3 +500,92 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
 
     result.pass();
   });
+
+/**
+ * Check whitespace insertion handling.
+ */
+hterm.Screen.Tests.addTest('whitespace-fill', function(result, cx) {
+  const ta = this.screen.textAttributes;
+  const row = document.createElement('div');
+  this.screen.pushRow(row);
+
+  // Plain text everywhere.
+  this.screen.setCursorPosition(0, 3);
+  this.screen.insertString('hi');
+  result.assertEQ(row.innerHTML, '   hi');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  // Insert wide character.
+  this.screen.setCursorPosition(0, 3);
+  ta.wcNode = true;
+  ta.asciiNode = false;
+  this.screen.insertString('\u5B57');
+  result.assertEQ(row.innerHTML,
+                  '   <span class="wc-node">\u5B57</span>');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  // Insert underline text.
+  this.screen.setCursorPosition(0, 3);
+  ta.underline = 'solid';
+  this.screen.insertString('hi');
+  result.assertEQ(row.innerHTML,
+                  '   <span style="text-decoration-style: solid; text-' +
+                  'decoration-line: underline;">hi</span>');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  // Insert strike-through text.
+  this.screen.setCursorPosition(0, 3);
+  ta.strikethrough = true;
+  this.screen.insertString('hi');
+  result.assertEQ(row.innerHTML,
+                  '   <span style="text-decoration-line: line-through;">' +
+                  'hi</span>');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  // Insert plain text, but after double underline text.
+  this.screen.setCursorPosition(0, 0);
+  ta.underline = 'double';
+  this.screen.insertString('hi');
+  ta.reset();
+  this.screen.setCursorPosition(0, 5);
+  this.screen.insertString('bye');
+  result.assertEQ(row.innerHTML,
+                  '<span style="text-decoration-style: double; text-' +
+                  'decoration-line: underline;">hi</span>   bye');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  // Insert plain text, but after strike-through text.
+  this.screen.setCursorPosition(0, 0);
+  ta.strikethrough = true;
+  this.screen.insertString('hi');
+  ta.reset();
+  this.screen.setCursorPosition(0, 5);
+  this.screen.insertString('bye');
+  result.assertEQ(row.innerHTML,
+                  '<span style="text-decoration-line: line-through;">hi' +
+                  '</span>   bye');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  // Do styled text with gaps between.
+  this.screen.setCursorPosition(0, 0);
+  this.screen.insertString('start ');
+  ta.underline = 'wavy';
+  this.screen.insertString('hi');
+  this.screen.maybeClipCurrentRow();
+  this.screen.setCursorPosition(0, 15);
+  this.screen.insertString('bye');
+  result.assertEQ(row.innerHTML,
+                  'start <span style="text-decoration-style: wavy; text-decoration-' +
+                  'line: underline;">hi</span>       <span style="text-decoration-' +
+                  'style: wavy; text-decoration-line: underline;">bye</span>');
+  ta.reset();
+  this.screen.clearCursorRow();
+
+  result.pass();
+});

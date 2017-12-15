@@ -1316,7 +1316,7 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
 
   // Check fully semi-colon delimited: 38;2;R;G;Bm
   this.terminal.interpret('\x1b[38;2;110;120;130;48;2;10;20;30;4mHI1');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(110, 120, 130)', style.color);
   result.assertEQ('rgb(10, 20, 30)', style.backgroundColor);
@@ -1328,7 +1328,7 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
 
   // Check fully colon delimited (xterm-specific): 38:2:R:G:Bm
   this.terminal.interpret('\x1b[38:2:170:180:190;48:2:70:80:90;4mHI2');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(170, 180, 190)', style.color);
   result.assertEQ('rgb(70, 80, 90)', style.backgroundColor);
@@ -1340,7 +1340,7 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
 
   // Check fully colon delimited (ISO 8613-6): 38:2::R:G:Bm
   this.terminal.interpret('\x1b[38:2::171:181:191;48:2::71:81:91;4mHI3');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(171, 181, 191)', style.color);
   result.assertEQ('rgb(71, 81, 91)', style.backgroundColor);
@@ -1352,7 +1352,7 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
 
   // Check fully colon delimited w/extra args (ISO 8613-6): 38:2::R:G:B::m
   this.terminal.interpret('\x1b[38:2::172:182:192::;48:2::72:82:92::;4mHI4');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(172, 182, 192)', style.color);
   result.assertEQ('rgb(72, 82, 92)', style.backgroundColor);
@@ -1364,7 +1364,7 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
 
   // Check fully colon delimited w/too few args (ISO 8613-6): 38:2::R
   this.terminal.interpret('\x1b[38:2::33;48:2::44;4mHI5');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('', style.color);
   result.assertEQ('', style.backgroundColor);
@@ -1384,7 +1384,7 @@ hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
 
   // Check fully semi-colon delimited: 38;5;Pm
   this.terminal.interpret('\x1b[38;5;10;48;5;20;4mHI1');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(0, 186, 19)', style.color);
   result.assertEQ('rgb(0, 0, 215)', style.backgroundColor);
@@ -1396,7 +1396,7 @@ hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
 
   // Check fully colon delimited: 38:5:Pm
   this.terminal.interpret('\x1b[38:5:50;48:5:60;4mHI2');
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
   result.assertEQ('rgb(0, 255, 215)', style.color);
   result.assertEQ('rgb(95, 95, 135)', style.backgroundColor);
@@ -1475,7 +1475,7 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
                           'mHI1');
   result.assertEQ(true, ta.bold);
   result.assertEQ(true, ta.italic);
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   result.assertEQ(false, ta.faint);
   result.assertEQ(false, ta.strikethrough);
   style = this.terminal.getRowNode(0).childNodes[0].style;
@@ -1509,7 +1509,7 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
                           'mHI2');
   result.assertEQ(true, ta.bold);
   result.assertEQ(true, ta.italic);
-  result.assertEQ(true, ta.underline);
+  result.assertEQ('solid', ta.underline);
   result.assertEQ(false, ta.faint);
   result.assertEQ(false, ta.strikethrough);
   style = this.terminal.getRowNode(0).childNodes[0].style;
@@ -1517,6 +1517,57 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
   result.assertEQ('rgb(0, 95, 0)', style.backgroundColor);
   text = this.terminal.getRowText(0);
   result.assertEQ('HI2', text);
+
+  result.pass();
+});
+
+/**
+ * Check various underline modes.
+ */
+hterm.VT.Tests.addTest('underline-sgr', function(result, cx) {
+  const ta = this.terminal.getTextAttributes();
+
+  // Default mode 4: plain underline.
+  this.terminal.interpret('\x1b[0;4m');
+  result.assertEQ('solid', ta.underline);
+
+  // 0 subarg turns it off.
+  this.terminal.interpret('\x1b[0;4:0m');
+  result.assertEQ(false, ta.underline);
+
+  // 1 subarg is a single underline.
+  this.terminal.interpret('\x1b[0;4:1m');
+  result.assertEQ('solid', ta.underline);
+
+  // 2 subarg is double underline.
+  this.terminal.interpret('\x1b[0;4:2m');
+  result.assertEQ('double', ta.underline);
+
+  // 3 subarg is wavy underline.
+  this.terminal.interpret('\x1b[0;4:3m');
+  result.assertEQ('wavy', ta.underline);
+
+  // 4 subarg is dotted underline.
+  this.terminal.interpret('\x1b[0;4:4m');
+  result.assertEQ('dotted', ta.underline);
+
+  // 5 subarg is dashed underline.
+  this.terminal.interpret('\x1b[0;4:5m');
+  result.assertEQ('dashed', ta.underline);
+
+  // 6 subarg is unknown -> none.
+  this.terminal.interpret('\x1b[0;4:6m');
+  result.assertEQ(false, ta.underline);
+
+  // Check coloring (lightly as SGR 38/48 tests cover it).
+  this.terminal.interpret('\x1b[0;4;58:2:10:20:30m');
+  result.assertEQ('solid', ta.underline);
+  result.assertEQ('rgb(10, 20, 30)', ta.underlineSource);
+
+  // Check reset behavior.
+  this.terminal.interpret('\x1b[0m');
+  result.assertEQ(false, ta.underline);
+  result.assertEQ(ta.SRC_DEFAULT, ta.underlineSource);
 
   result.pass();
 });
@@ -2542,7 +2593,7 @@ hterm.VT.Tests.addTest('cursor-save-restore', function(result, cx) {
   this.terminal.interpret('\x1b[1;4m');
   tattrs = this.terminal.getTextAttributes();
   result.assertEQ(true, tattrs.bold);
-  result.assertEQ(true, tattrs.underline);
+  result.assertEQ('solid', tattrs.underline);
 
   // Change color palette a bit.
   result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);

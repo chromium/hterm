@@ -2524,7 +2524,23 @@ hterm.VT.CSI['m'] = function(parseState) {
       } else if (arg == 3) {  // Italic.
         attrs.italic = true;
       } else if (arg == 4) {  // Underline.
-        attrs.underline = true;
+        if (parseState.argHasSubargs(i)) {
+          const uarg = parseState.args[i].split(':')[1];
+          if (uarg == 0)
+            attrs.underline = false;
+          else if (uarg == 1)
+            attrs.underline = 'solid';
+          else if (uarg == 2)
+            attrs.underline = 'double';
+          else if (uarg == 3)
+            attrs.underline = 'wavy';
+          else if (uarg == 4)
+            attrs.underline = 'dotted';
+          else if (uarg == 5)
+            attrs.underline = 'dashed';
+        } else {
+          attrs.underline = 'solid';
+        }
       } else if (arg == 5) {  // Blink.
         attrs.blink = true;
       } else if (arg == 7) {  // Inverse.
@@ -2534,7 +2550,7 @@ hterm.VT.CSI['m'] = function(parseState) {
       } else if (arg == 9) {  // Crossed out.
         attrs.strikethrough = true;
       } else if (arg == 21) {  // Double underlined.
-        attrs.doubleUnderline = true;
+        attrs.underline = 'double';
       } else if (arg == 22) {  // Not bold & not faint.
         attrs.bold = false;
         attrs.faint = false;
@@ -2542,7 +2558,6 @@ hterm.VT.CSI['m'] = function(parseState) {
         attrs.italic = false;
       } else if (arg == 24) {  // Not underlined.
         attrs.underline = false;
-        attrs.doubleUnderline = false;
       } else if (arg == 25) {  // Not blink.
         attrs.blink = false;
       } else if (arg == 27) {  // Steady.
@@ -2581,6 +2596,15 @@ hterm.VT.CSI['m'] = function(parseState) {
       } else {
         attrs.backgroundSource = attrs.SRC_DEFAULT;
       }
+
+    } else if (arg == 58) {  // Underline coloring.
+      const result = this.parseSgrExtendedColors(parseState, i, attrs);
+      if (result.color !== undefined)
+        attrs.underlineSource = result.color;
+      i += result.skipCount;
+
+    } else if (arg == 59) {  // Disable underline coloring.
+      attrs.underlineSource = attrs.SRC_DEFAULT;
 
     } else if (arg >= 90 && arg <= 97) {
       attrs.foregroundSource = arg - 90 + 8;
