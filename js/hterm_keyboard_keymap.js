@@ -216,7 +216,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [119, '[F8]',  CSI + '19~',               DEFAULT, CSI + "32~", DEFAULT],
     [120, '[F9]',  CSI + '20~',               DEFAULT, CSI + "33~", DEFAULT],
     [121, '[F10]', CSI + '21~',               DEFAULT, CSI + "34~", DEFAULT],
-    [122, '[F11]', CSI + '23~',               DEFAULT, CSI + "42~", DEFAULT],
+    [122, '[F11]', c('onF11_'),               DEFAULT, CSI + "42~", DEFAULT],
     [123, '[F12]', CSI + '24~',               DEFAULT, CSI + "43~", DEFAULT],
 
     // Second row.
@@ -472,6 +472,20 @@ hterm.Keyboard.KeyMap.prototype.onKeyArrowDown_ = function(e) {
 hterm.Keyboard.KeyMap.prototype.onClear_ = function(e, keyDef) {
   this.keyboard.terminal.wipeContents();
   return hterm.Keyboard.KeyActions.CANCEL;
+};
+
+/**
+ * Handle F11 behavior (fullscreen) when not in a window.
+ *
+ * It would be nice to use the Fullscreen API, but the UX is slightly different
+ * a bad way: the Escape key is automatically registered for exiting.  If we let
+ * the browser handle F11 directly though, we still get to capture Escape.
+ */
+hterm.Keyboard.KeyMap.prototype.onF11_ = function(e, keyDef) {
+  if (hterm.windowType != 'popup')
+    return hterm.Keyboard.KeyActions.PASS;
+  else
+    return '\x1b[23~';
 };
 
 /**
