@@ -381,9 +381,9 @@ For example:
 |  104 | Reset color number                 | Ignored                 | |
 |  105 | Reset special color number         | Ignored                 | |
 |  106 | Enable special color number        | Ignored                 | |
-|  110 | Reset foreground color             | Ignored                 | ESC ] 110 ; \a |
-|  111 | Reset background color             | Ignored                 | ESC ] 111 ; \a |
-|  112 | Reset text cursor color            | Ignored                 | ESC ] 112 ; \a |
+|  110 | Reset foreground color             | Supported               | ESC ] 110 ; \a |
+|  111 | Reset background color             | Supported               | ESC ] 111 ; \a |
+|  112 | Reset text cursor color            | Supported               | ESC ] 112 ; \a |
 |  113 | Reset mouse foreground color       | Ignored                 | ESC ] 113 ; \a |
 |  114 | Reset mouse background color       | Ignored                 | ESC ] 114 ; \a |
 |  115 | Reset Tektronix foreground color   | Ignored                 | ESC ] 115 ; \a |

@@ -606,9 +606,13 @@ hterm.Terminal.prototype.setBracketedPaste = function(state) {
  * If you want this setting to persist, set it through prefs_, rather than
  * with this method.
  *
- * @param {string} color The color to set.
+ * @param {string=} color The color to set.  If not defined, we reset to the
+ *     saved user preference.
  */
 hterm.Terminal.prototype.setCursorColor = function(color) {
+  if (color === undefined)
+    color = this.prefs_.get('cursor-color');
+
   this.cursorColor_ = color;
   this.cursorNode_.style.backgroundColor = color;
   this.cursorNode_.style.borderColor = color;
@@ -637,9 +641,13 @@ hterm.Terminal.prototype.setSelectionEnabled = function(state) {
  * If you want this setting to persist, set it through prefs_, rather than
  * with this method.
  *
- * @param {string} color The color to set.
+ * @param {string=} color The color to set.  If not defined, we reset to the
+ *     saved user preference.
  */
 hterm.Terminal.prototype.setBackgroundColor = function(color) {
+  if (color === undefined)
+    color = this.prefs_.get('background-color');
+
   this.backgroundColor_ = lib.colors.normalizeCSS(color);
   this.primaryScreen_.textAttributes.setDefaults(
       this.foregroundColor_, this.backgroundColor_);
@@ -666,9 +674,13 @@ hterm.Terminal.prototype.getBackgroundColor = function() {
  * If you want this setting to persist, set it through prefs_, rather than
  * with this method.
  *
- * @param {string} color The color to set.
+ * @param {string=} color The color to set.  If not defined, we reset to the
+ *     saved user preference.
  */
 hterm.Terminal.prototype.setForegroundColor = function(color) {
+  if (color === undefined)
+    color = this.prefs_.get('foreground-color');
+
   this.foregroundColor_ = lib.colors.normalizeCSS(color);
   this.primaryScreen_.textAttributes.setDefaults(
       this.foregroundColor_, this.backgroundColor_);
@@ -1488,7 +1500,7 @@ hterm.Terminal.prototype.decorate = function(div) {
        '-webkit-transition: opacity, background-color 100ms linear;' +
        '-moz-transition: opacity, background-color 100ms linear;');
 
-  this.setCursorColor(this.prefs_.get('cursor-color'));
+  this.setCursorColor();
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
   this.restyleCursor_();
 

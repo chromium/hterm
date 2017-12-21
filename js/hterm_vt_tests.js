@@ -2080,6 +2080,69 @@ hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
   });
 
 /**
+ * Verify resetting text foreground color.
+ */
+hterm.VT.Tests.addTest('OSC-110', function(result, cx) {
+  // Make sure other colors aren't changed by accident.
+  const backColor = this.terminal.getBackgroundColor();
+  const cursorColor = this.terminal.getCursorColor();
+
+  this.terminal.interpret('\x1b]10;red\x07');
+  result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+
+  this.terminal.interpret('\x1b]110;\x07');
+  result.assertEQ('rgb(240, 240, 240)', this.terminal.getForegroundColor());
+
+  // Make sure other colors aren't changed by accident.
+  result.assertEQ(backColor, this.terminal.getBackgroundColor());
+  result.assertEQ(cursorColor, this.terminal.getCursorColor());
+
+  result.pass();
+});
+
+/**
+ * Verify resetting text background color.
+ */
+hterm.VT.Tests.addTest('OSC-111', function(result, cx) {
+  // Make sure other colors aren't changed by accident.
+  const foreColor = this.terminal.getForegroundColor();
+  const cursorColor = this.terminal.getCursorColor();
+
+  this.terminal.interpret('\x1b]11;red\x07');
+  result.assertEQ('rgb(255, 0, 0)', this.terminal.getBackgroundColor());
+
+  this.terminal.interpret('\x1b]111;\x07');
+  result.assertEQ('rgb(16, 16, 16)', this.terminal.getBackgroundColor());
+
+  // Make sure other colors aren't changed by accident.
+  result.assertEQ(foreColor, this.terminal.getForegroundColor());
+  result.assertEQ(cursorColor, this.terminal.getCursorColor());
+
+  result.pass();
+});
+
+/**
+ * Verify resetting text cursor color (not the mouse cursor).
+ */
+hterm.VT.Tests.addTest('OSC-112', function(result, cx) {
+  // Make sure other colors aren't changed by accident.
+  const foreColor = this.terminal.getForegroundColor();
+  const backColor = this.terminal.getBackgroundColor();
+
+  this.terminal.interpret('\x1b]12;red\x07');
+  result.assertEQ('rgb(255, 0, 0)', this.terminal.getCursorColor());
+
+  this.terminal.interpret('\x1b]112;\x07');
+  result.assertEQ('rgba(255, 0, 0, 0.5)', this.terminal.getCursorColor());
+
+  // Make sure other colors aren't changed by accident.
+  result.assertEQ(foreColor, this.terminal.getForegroundColor());
+  result.assertEQ(backColor, this.terminal.getBackgroundColor());
+
+  result.pass();
+});
+
+/**
  * Test URxvt notify module.
  */
 hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {

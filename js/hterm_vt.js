@@ -1897,6 +1897,27 @@ hterm.VT.OSC['52'] = function(parseState) {
 };
 
 /**
+ * Reset foreground color.
+ */
+hterm.VT.OSC['110'] = function(parseState) {
+  this.terminal.setForegroundColor();
+};
+
+/**
+ * Reset background color.
+ */
+hterm.VT.OSC['111'] = function(parseState) {
+  this.terminal.setBackgroundColor();
+};
+
+/**
+ * Reset text cursor color.
+ */
+hterm.VT.OSC['112'] = function(parseState) {
+  this.terminal.setCursorColor();
+};
+
+/**
  * iTerm2 extended sequences.
  *
  * We only support image display atm.
