@@ -903,12 +903,12 @@ hterm.VT.Tests.addTest('color-change', function(result, cx) {
   });
 
 hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
-    this.terminal.interpret('[mplain....... [0;36m中\r\n' +
-                            '[mitalic...... [3;36m中\r\n' +
-                            '[mbright...... [0;96m中\r\n' +
-                            '[mbold........ [1;36m中\r\n' +
-                            '[mbold-bright. [1;96m中\r\n' +
-                            '[mbright-bold. [96;1m中');
+    this.terminal.io.print('[mplain....... [0;36m中\r\n' +
+                           '[mitalic...... [3;36m中\r\n' +
+                           '[mbright...... [0;96m中\r\n' +
+                           '[mbold........ [1;36m中\r\n' +
+                           '[mbold-bright. [1;96m中\r\n' +
+                           '[mbright-bold. [96;1m中');
 
     var text = this.terminal.getRowsText(0, 6);
     result.assertEQ(text,
