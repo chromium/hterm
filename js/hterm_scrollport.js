@@ -299,6 +299,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       '-webkit-user-select: none;' +
       '-moz-user-select: none;');
 
+  const metaCharset = doc.createElement('meta');
+  metaCharset.setAttribute('charset', 'utf-8');
+  doc.head.appendChild(metaCharset);
+
   if (this.DEBUG_) {
     // When we're debugging we add padding to the body so that the offscreen
     // elements are visible.

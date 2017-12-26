@@ -1404,6 +1404,12 @@ hterm.Terminal.prototype.interpret = function(str) {
  * @param {HTMLDivElement} div The div to use as the terminal display.
  */
 hterm.Terminal.prototype.decorate = function(div) {
+  const charset = div.ownerDocument.characterSet.toLowerCase();
+  if (charset != 'utf-8') {
+    console.warn(`Document encoding should be set to utf-8, not "${charset}";` +
+                 ` Add <meta charset='utf-8'/> to your HTML <head> to fix.`);
+  }
+
   this.div_ = div;
 
   this.scrollPort_.decorate(div);
