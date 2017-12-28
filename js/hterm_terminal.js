@@ -390,7 +390,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'enable-blink': function(v) {
-      terminal.syncBlinkState();
+      terminal.setTextBlink(!!v);
     },
 
     'enable-clipboard-write': function(v) {
@@ -772,6 +772,20 @@ hterm.Terminal.prototype.setCssVar = function(name, value,
 };
 
 /**
+ * Get a CSS variable.
+ *
+ * Normally this is used to get variables in the hterm namespace.
+ *
+ * @param {string} name The variable to read.
+ * @param {string?} opt_prefix The variable namespace/prefix to use.
+ * @return {string} The current setting for this variable.
+ */
+hterm.Terminal.prototype.getCssVar = function(name, opt_prefix='--hterm-') {
+  return this.document_.documentElement.style.getPropertyValue(
+      `${opt_prefix}${name}`);
+};
+
+/**
  * Set the font size for this terminal.
  *
  * Call setFontSize(0) to reset to the default font size.
@@ -862,11 +876,14 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
 };
 
 /**
- * Enable or disable blink based on the enable-blink pref.
+ * Control text blinking behavior.
+ *
+ * @param {boolean=} state Whether to enable support for blinking text.
  */
-hterm.Terminal.prototype.syncBlinkState = function() {
-  this.setCssVar('node-duration',
-                 this.prefs_.get('enable-blink') ? '0.7s' : '0');
+hterm.Terminal.prototype.setTextBlink = function(state) {
+  if (state === undefined)
+    state = this.prefs_.get('enable-blink');
+  this.setCssVar('blink-node-duration', state ? '0.7s' : '0');
 };
 
 /**

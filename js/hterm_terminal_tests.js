@@ -477,3 +477,25 @@ hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
 
   result.requestTime(200);
 });
+
+/**
+ * Verify turning text blink on/off works.
+ *
+ * This test isn't great.  Since we use CSS animations for everything, we
+ * assume that part is working, so we just check the stored timing values.
+ */
+hterm.Terminal.Tests.addTest('text-blink', function(result, cx) {
+  // Default blink state is enabled.
+  this.terminal.setTextBlink();
+  result.assert('0' != this.terminal.getCssVar('blink-node-duration'));
+
+  // Explicitly turn it off.
+  this.terminal.setTextBlink(false);
+  result.assertEQ('0', this.terminal.getCssVar('blink-node-duration'));
+
+  // Explicitly turn it back on.
+  this.terminal.setTextBlink(true);
+  result.assert('0' != this.terminal.getCssVar('blink-node-duration'));
+
+  result.pass();
+});
