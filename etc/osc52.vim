@@ -24,7 +24,11 @@ let g:max_osc52_sequence=100000
 
 " Send a string to the terminal's clipboard using the OSC 52 sequence.
 function! SendViaOSC52 (str)
-  if match($TERM, 'screen') > -1
+  " Since tmux defaults to setting TERM=screen (ugh), we need to detect it here
+  " specially.
+  if !empty($TMUX)
+    let osc52 = s:get_OSC52_tmux(a:str)
+  elseif match($TERM, 'screen') > -1
     let osc52 = s:get_OSC52_DCS(a:str)
   else
     let osc52 = s:get_OSC52(a:str)
@@ -44,6 +48,16 @@ endfunction
 function! s:get_OSC52 (str)
   let b64 = s:b64encode(a:str)
   let rv = "\e]52;c;" . b64 . "\x07"
+  return rv
+endfunction
+
+" This function base64's the entire string and wraps it in a single OSC52 for
+" tmux.
+"
+" This is for `tmux` sessions which filters OSC 52 locally.
+function! s:get_OSC52_tmux (str)
+  let b64 = s:b64encode(a:str)
+  let rv = "\ePtmux;\e\e]52;c;" . b64 . "\x07\e\\"
   return rv
 endfunction
 
