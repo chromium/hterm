@@ -1,3 +1,15 @@
+# 1.77, 2018-01-05, Various bug fixes.
+
+* Fix typo in mouse wheel reporting (for newer tmux).
+* Add sanity check on user font size.
+* Overhaul SGR 38/48 handling for ISO 8613-6.
+* Fix osc52 vim script in tmux.
+* Allow F11 when running in a tab for fullscreen.
+* Implement OSC 110/111/112.
+* Set charset=utf-8 in html files.
+* Check document character set at startup.
+* Fix typo in blink preference handling (broke in hterm-1.69).
+
 # 1.76, 2017-12-13, Standards/compatibility fixes & OSC-8 links & OSC-1337 image features.
 
 * change default terminal encoding to utf8
