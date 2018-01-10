@@ -340,7 +340,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.setAttribute('spellcheck', 'false');
   this.screen_.setAttribute('autocomplete', 'off');
   this.screen_.setAttribute('autocorrect', 'off');
-  this.screen_.setAttribute('autocaptalize', 'none');
+  this.screen_.setAttribute('autocapitalize', 'none');
   this.screen_.setAttribute('role', 'textbox');
   this.screen_.setAttribute('tabindex', '-1');
   this.screen_.style.cssText = (
