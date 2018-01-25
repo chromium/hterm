@@ -47,6 +47,7 @@ hterm.Frame.prototype.onMessage_ = function(e) {
       // Show the finished frame, and then rebind our message handler to the
       // callback below.
       this.container_.style.display = 'flex';
+      this.postMessage('visible');
       this.messageChannel_.port1.onmessage = this.onMessage.bind(this);
       this.onLoad();
       return;
