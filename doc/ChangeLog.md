@@ -1,3 +1,12 @@
+# 1.78, 2018-01-29, Extended underlying support.
+
+* Add support for changing underline style/color.
+* README: document our mirrors/release sites.
+* Fix typo in autocapitalize attribute.
+* Send a signal when the frame is made visible.
+* Document expected coding style.
+* Fix fallback git value.
+
 # 1.77, 2018-01-05, Various bug fixes.
 
 * Fix typo in mouse wheel reporting (for newer tmux).
