@@ -342,21 +342,26 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [109, '[KP-]', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
     [106, '[KP*]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
     [111, '[KP/]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
-    [110, '[KP.]', DEFAULT, DEFAULT, DEFAULT, DEFAULT],
-
-    // Chrome OS keyboard top row.
-    [166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+"23~", DEFAULT],
-    [167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+"24~", DEFAULT],
-    [168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+"25~", DEFAULT],
-    [183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+"26~", DEFAULT],
-    [182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+"28~", DEFAULT],
-    [216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+"29~", DEFAULT],
-    [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+"31~", DEFAULT]
-
-    // 173 [MUTE], 174 [VOL-] and 175 [VOL+] are trapped by the Chrome OS
-    // window manager, so we'll never see them. Note that 173 is also
-    // Firefox's -_ keycode.
+    [110, '[KP.]', DEFAULT, DEFAULT, DEFAULT, DEFAULT]
   );
+
+  // OS-specific differences.
+  if (hterm.os == 'cros') {
+    this.addKeyDefs(
+      // Chrome OS keyboard top row.
+      [166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+'23~', DEFAULT],
+      [167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+'24~', DEFAULT],
+      [168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+'25~', DEFAULT],
+      [183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+'26~', DEFAULT],
+      [182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+'28~', DEFAULT],
+      [216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+'29~', DEFAULT],
+      [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+'31~', DEFAULT]
+
+      // 173 [MUTE], 174 [VOL-] and 175 [VOL+] are trapped by the Chrome OS
+      // window manager, so we'll never see them. Note that 173 is also
+      // Firefox's -_ keycode.
+    );
+  }
 };
 
 /**
