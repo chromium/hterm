@@ -235,6 +235,9 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [0,   '[UNKNOWN]', PASS, PASS, PASS, PASS],
 
     // First row.
+    // These bindings match xterm for lack of a better standard.  The emitted
+    // values might look like they're skipping values, but it's what xterm does.
+    // https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-PC-Style-Function-Keys
     [27,  '[ESC]', ESC,                       DEFAULT, DEFAULT,     DEFAULT],
     [112, '[F1]',  mod(SS3 + 'P', CSI + 'P'), DEFAULT, CSI + "23~", DEFAULT],
     [113, '[F2]',  mod(SS3 + 'Q', CSI + 'Q'), DEFAULT, CSI + "24~", DEFAULT],
@@ -373,18 +376,33 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   // OS-specific differences.
   if (hterm.os == 'cros') {
     this.addKeyDefs(
-      // Chrome OS keyboard top row.
-      [166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+'23~', DEFAULT],
-      [167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+'24~', DEFAULT],
-      [168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+'25~', DEFAULT],
-      [183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+'26~', DEFAULT],
-      [182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+'28~', DEFAULT],
-      [216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+'29~', DEFAULT],
-      [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+'31~', DEFAULT]
+      // Chrome OS keyboard top row.  The media-keys-are-fkeys preference allows
+      // users to make these always behave as function keys (see those bindings
+      // above for more details).
+      [166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+'23~', DEFAULT],  // F1
+      [167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+'24~', DEFAULT],  // F2
+      [168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+'25~', DEFAULT],  // F3
+      [183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+'26~', DEFAULT],  // F4
+      [182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+'28~', DEFAULT],  // F5
+      [216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+'29~', DEFAULT],  // F6
+      [217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+'31~', DEFAULT],  // F7
+      [173, '[MUTE]',   med(CSI + '19~'),           DEFAULT, CSI+'32~', DEFAULT],  // F8
+      [174, '[VOL-]',   med(CSI + '20~'),           DEFAULT, CSI+'33~', DEFAULT],  // F9
+      [175, '[VOL+]',   med(CSI + '21~'),           DEFAULT, CSI+'34~', DEFAULT],  // F10
 
-      // 173 [MUTE], 174 [VOL-] and 175 [VOL+] are trapped by the Chrome OS
-      // window manager, so we'll never see them. Note that 173 is also
-      // Firefox's -_ keycode.
+      // We could make this into F11, but it'd be a bit weird.  Chrome allows us
+      // to see this and react, but it doesn't actually allow us to block or
+      // cancel it, so it makes the screen flash/lock still.
+      [152, '[POWER]',  DEFAULT, DEFAULT, DEFAULT, DEFAULT],
+
+      // The Pixelbook has a slightly different layout.  This means half the keys
+      // above are off by one.  https://crbug.com/807513
+      [179, '[PLAY]',   med(CSI + '18~'),           DEFAULT, CSI + '31~', DEFAULT], // F7
+      // The settings / hamburgers / three hot dogs / menu / whatever-it's-called.
+      [154, '[DOGS]',   med(CSI + '23~'),           DEFAULT, CSI + '42~', DEFAULT], // F11
+
+      // We don't use this for anything, but keep it from popping up by default.
+      [153, '[ASSIST]', DEFAULT, DEFAULT, DEFAULT, DEFAULT]
     );
   }
 };
