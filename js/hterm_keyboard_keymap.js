@@ -188,6 +188,36 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     };
   }
 
+  // Browser-specific differences.
+  if (window.navigator && navigator.userAgent) {
+    if (navigator.userAgent.includes('Firefox')) {
+      // Firefox defines some keys uniquely.  No other browser defines these is
+      // this way.  Some even conflict.  The keyCode field isn't well documented
+      // as it isn't standardized.  At some point we should switch to "key".
+      // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
+      // http://unixpapa.com/js/key.html
+      var keycapMute = 181;   // Mute
+      var keycapVolDn = 182;  // Volume Down
+      var keycapVolUp = 183;  // Volume Up
+      var keycapSC = 59;      // ;:
+      var keycapEP = 61;      // =+
+      var keycapMU = 173;     // -_
+
+      this.addKeyDefs(
+        // Firefox Italian +*.
+        [171, '+*', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')]
+      );
+    } else {
+      // All other browsers use these mappings.
+      var keycapMute = 173;   // Mute
+      var keycapVolDn = 174;  // Volume Down
+      var keycapVolUp = 175;  // Volume Up
+      var keycapSC = 186;     // ;:
+      var keycapEP = 187;     // =+
+      var keycapMU = 189;     // -_
+    }
+  }
+
   var ESC = '\x1b';
   var CSI = '\x1b[';
   var SS3 = '\x1bO';
@@ -231,13 +261,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [56,  '8*', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [57,  '9(', DEFAULT, c('onCtrlNum_'),    c('onAltNum_'), c('onMetaNum_')],
     [48,  '0)', DEFAULT, c('onPlusMinusZero_'),c('onAltNum_'),c('onPlusMinusZero_')],
-    [189, '-_', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
-    [187, '=+', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
-    // Firefox -_ and =+
-    [173, '-_', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
-    [61, '=+', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
-    // Firefox Italian +*
-    [171, '+*', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    [keycapMU, '-_', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
+    [keycapEP, '=+', DEFAULT, c('onPlusMinusZero_'), DEFAULT, c('onPlusMinusZero_')],
 
     [8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT],
 
@@ -268,7 +293,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [74,  'jJ',      DEFAULT, sh(ctl('J'), PASS),             DEFAULT, DEFAULT],
     [75,  'kK',      DEFAULT, sh(ctl('K'), c('onClear_')),    DEFAULT, DEFAULT],
     [76,  'lL',      DEFAULT, sh(ctl('L'), PASS),             DEFAULT, DEFAULT],
-    [186, ';:',      DEFAULT, STRIP,                          DEFAULT, DEFAULT],
+    [keycapSC, ';:', DEFAULT, STRIP,                          DEFAULT, DEFAULT],
     [222, '\'"',     DEFAULT, STRIP,                          DEFAULT, DEFAULT],
     [13,  '[ENTER]', '\r',    CANCEL,                         CANCEL,  DEFAULT],
 
