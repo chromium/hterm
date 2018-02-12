@@ -1,1 +1,5 @@
+# Stuff we build for distribution
 dist
+
+# npm related dirs.
+node_modules
