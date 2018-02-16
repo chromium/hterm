@@ -46,7 +46,7 @@ endfunction
 "
 " It's appropriate when running in a raw terminal that supports OSC 52.
 function! s:get_OSC52 (str)
-  let b64 = s:b64encode(a:str)
+  let b64 = s:b64encode(a:str, 0)
   let rv = "\e]52;c;" . b64 . "\x07"
   return rv
 endfunction
@@ -56,7 +56,7 @@ endfunction
 "
 " This is for `tmux` sessions which filters OSC 52 locally.
 function! s:get_OSC52_tmux (str)
-  let b64 = s:b64encode(a:str)
+  let b64 = s:b64encode(a:str, 0)
   let rv = "\ePtmux;\e\e]52;c;" . b64 . "\x07\e\\"
   return rv
 endfunction
@@ -68,9 +68,7 @@ endfunction
 " but will pass the contents of a DCS sequence to the outer terminal unmolested.
 " It imposes a small max length to DCS sequences, so we send in chunks.
 function! s:get_OSC52_DCS (str)
-  " The base64 commands with no params will return a string with newlines
-  " every 72 characters.
-  let b64 = s:b64encode(a:str)
+  let b64 = s:b64encode(a:str, 76)
 
   " Remove the trailing newline.
   let b64 = substitute(b64, '\n*$', '', '')
@@ -107,9 +105,10 @@ let s:b64_table = [
       \ "w","x","y","z","0","1","2","3","4","5","6","7","8","9","+","/"]
 
 " Encode a string of bytes in base 64.
-" Copied from http://vim-soko.googlecode.com/svn-history/r405/trunk/vimfiles/
+" Based on http://vim-soko.googlecode.com/svn-history/r405/trunk/vimfiles/
 " autoload/base64.vim
-function! s:b64encode(str)
+" If size is > 0 the output will be line wrapped every `size` chars.
+function! s:b64encode(str, size)
   let bytes = s:str2bytes(a:str)
   let b64 = []
 
@@ -132,8 +131,17 @@ function! s:b64encode(str)
     let b64[-1] = '='
   endif
 
-  return join(b64, '')
+  let b64 = join(b64, '')
+  if a:size <= 0
+    return b64
+  endif
 
+  let chunked = ''
+  while strlen(b64) > 0
+    let chunked .= strpart(b64, 0, a:size) . "\n"
+    let b64 = strpart(b64, a:size)
+  endwhile
+  return chunked
 endfunction
 
 function! s:str2bytes(str)
