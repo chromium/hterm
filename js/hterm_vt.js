@@ -417,10 +417,12 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
       // Mouse wheel is treated as button 1 or 2 plus an additional 64.
       b = (((e.deltaY * -1) > 0) ? 0 : 1) + 64;
       b |= mod;
-      if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR)
+      if (this.mouseCoordinates == this.MOUSE_COORDINATES_SGR) {
         response = `\x1b[<${b};${x};${y}M`;
-      else
-        response = '\x1b[M' + String.fromCharCode(b) + x + y;
+      } else {
+        // X10 based modes (including UTF8) add 32 for legacy encoding reasons.
+        response = '\x1b[M' + String.fromCharCode(b + 32) + x + y;
+      }
 
       // Keep the terminal from scrolling.
       e.preventDefault();
@@ -429,7 +431,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
     case 'mousedown':
       // Buttons are encoded as button number.
       var b = Math.min(e.button, 2);
-      // In X10 mode, we also add 32 for legacy reasons.
+      // X10 based modes (including UTF8) add 32 for legacy encoding reasons.
       if (this.mouseCoordinates != this.MOUSE_COORDINATES_SGR)
         b += 32;
 
@@ -460,6 +462,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
         // button press (e.g. if left & right are pressed, right is ignored),
         // and it only supports the first three buttons.  If none of them are
         // pressed, then XTerm flags it as a release.  We'll do the same.
+        // X10 based modes (including UTF8) add 32 for legacy encoding reasons.
         b = this.mouseCoordinates == this.MOUSE_COORDINATES_SGR ? 0 : 32;
 
         // Priority here matches XTerm: left, middle, right.

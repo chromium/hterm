@@ -86,6 +86,31 @@ hterm.VT.Tests.addTest = function(name, callback) {
 };
 
 /**
+ * Create a MouseEvent/WheelEvent that the VT layer expects.
+ *
+ * The Terminal layer adds some extra fields to it.  We can't create an object
+ * in the same way as the runtime doesn't allow it (for no real good reason).
+ * i.e. these methods fail:
+ * (1) MouseEvent.apply(this, [...]) -> DOM object constructor cannot be called
+ * (2) https://developers.google.com/web/updates/2015/04/DOM-attributes-now-on-the-prototype-chain
+ *     m = new MouseEvent(...); Object.assign(this, m); -> attrs omitted
+ *
+ * @param {string} type The name of the new DOM event type (e.g. 'mouseup').
+ * @param {object=} options Fields to set in the new event.
+ * @return {MouseEvent|WheelEvent} The new fully initialized event.
+ */
+const MockTerminalMouseEvent = function(type, options = {}) {
+  let ret;
+  if (type == 'wheel')
+    ret = new WheelEvent(type, options);
+  else
+    ret = new MouseEvent(type, options);
+  ret.terminalRow = options.terminalRow || 0;
+  ret.terminalColumn = options.terminalColumn || 0;
+  return ret;
+};
+
+/**
  * Basic sanity test to make sure that when we insert plain text it appears
  * on the screen and scrolls into the scrollback buffer correctly.
  */
@@ -2613,6 +2638,764 @@ hterm.VT.Tests.addTest('cursor-save-restore', function(result, cx) {
   // Make sure color palette did not change.
   result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
   result.assertEQ('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+
+  result.pass();
+});
+
+/**
+ * Check different mouse mode selection.
+ */
+hterm.VT.Tests.addTest('mouse-switching', function(result, cx) {
+  const terminal = this.terminal;
+
+  const assertMouse = (report, coordinates) => {
+    result.assertEQ(report, terminal.vt.mouseReport);
+    result.assertEQ(coordinates, terminal.vt.mouseCoordinates);
+  };
+
+  // Mouse reporting is turned off by default (and in legacy X10).
+  assertMouse(terminal.vt.MOUSE_REPORT_DISABLED,
+              terminal.vt.MOUSE_COORDINATES_X10);
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+  assertMouse(terminal.vt.MOUSE_REPORT_PRESS,
+              terminal.vt.MOUSE_COORDINATES_X10);
+  // Reset back.
+  terminal.interpret('\x1b[?9l');
+  assertMouse(terminal.vt.MOUSE_REPORT_DISABLED,
+              terminal.vt.MOUSE_COORDINATES_X10);
+
+  // Turn on drags.
+  terminal.interpret('\x1b[?1002h');
+  assertMouse(terminal.vt.MOUSE_REPORT_DRAG,
+              terminal.vt.MOUSE_COORDINATES_X10);
+  // Reset back.
+  terminal.interpret('\x1b[?1002l');
+  assertMouse(terminal.vt.MOUSE_REPORT_DISABLED,
+              terminal.vt.MOUSE_COORDINATES_X10);
+
+  // Resetting a different mode should also work.
+  terminal.interpret('\x1b[?9h');
+  assertMouse(terminal.vt.MOUSE_REPORT_PRESS,
+              terminal.vt.MOUSE_COORDINATES_X10);
+  terminal.interpret('\x1b[?1002l');
+  assertMouse(terminal.vt.MOUSE_REPORT_DISABLED,
+              terminal.vt.MOUSE_COORDINATES_X10);
+
+  // Enable extended encoding.
+  terminal.interpret('\x1b[?1005h');
+  assertMouse(terminal.vt.MOUSE_REPORT_DISABLED,
+              terminal.vt.MOUSE_COORDINATES_UTF8);
+  terminal.interpret('\x1b[?9h');
+  assertMouse(terminal.vt.MOUSE_REPORT_PRESS,
+              terminal.vt.MOUSE_COORDINATES_UTF8);
+
+  // Enable SGR encoding.
+  terminal.interpret('\x1b[?1006h');
+  assertMouse(terminal.vt.MOUSE_REPORT_PRESS,
+              terminal.vt.MOUSE_COORDINATES_SGR);
+
+  result.pass();
+});
+
+/**
+ * Check mouse behavior when reporting is disabled.
+ */
+hterm.VT.Tests.addTest('mouse-disabled', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Nothing should be generated when reporting is disabled (the default).
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  e = MockTerminalMouseEvent('mouseup');
+  terminal.vt.onTerminalMouse_(e);
+
+  result.assertEQ(undefined, resultString);
+  result.pass();
+});
+
+/**
+ * Check mouse behavior when press reports are enabled.
+ */
+hterm.VT.Tests.addTest('mouse-report-press', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+
+  // Send a mousedown event and check the report.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M   ', resultString);
+  resultString = undefined;
+
+  // Mouse move events should be ignored.
+  e = MockTerminalMouseEvent('mousemove', {terminalRow: 1, buttons: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  // Mouse up events should be ignored.
+  e = MockTerminalMouseEvent('mouseup');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse press behavior with keyboard modifiers.
+ *
+ * Namely, keyboard modifiers shouldn't be reported.
+ */
+hterm.VT.Tests.addTest('mouse-report-press-keyboard', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?9h');
+
+  // Switch to SGR coordinates to make tests below easier.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check left mouse w/no keyboard.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  resultString = undefined;
+
+  // Check various key combos are not reported.
+  e = MockTerminalMouseEvent('mousedown', {shiftKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  resultString = undefined;
+
+  e = MockTerminalMouseEvent('mousedown', {altKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  resultString = undefined;
+
+  e = MockTerminalMouseEvent('mousedown', {metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  resultString = undefined;
+
+  e = MockTerminalMouseEvent('mousedown', {ctrlKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  resultString = undefined;
+
+  e = MockTerminalMouseEvent('mousedown', {shiftKey: true, metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  resultString = undefined;
+
+  result.pass();
+});
+
+/**
+ * Check mouse press behavior in X10 coordinates.
+ */
+hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.  Default is X10 coordinates.
+  terminal.interpret('\x1b[?9h');
+
+  // Check 0,0 cell.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M   ', resultString);
+
+  // Check 150,100 cell.
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \x84\xb6', resultString);
+
+  // Check 222,222 cell (just below max range).
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 222, terminalColumn: 222});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \xfe\xfe', resultString);
+
+  // Check 223,223 cell (max range).
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 223, terminalColumn: 223});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \xff\xff', resultString);
+
+  // Check 300,300 cell (out of range).
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 300, terminalColumn: 300});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \xff\xff', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse press behavior in UTF8 coordinates.
+ */
+hterm.VT.Tests.addTest('mouse-press-utf8-coord', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+
+  // Switch to UTF8 coordinates.
+  terminal.interpret('\x1b[?1005h');
+
+  // Check 0,0 cell.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M   ', resultString);
+
+  // Check 150,100 cell.
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \x84\xb6', resultString);
+
+  // Check 2000,2000 cell.
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 2000, terminalColumn: 2000});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \u07f0\u07f0', resultString);
+
+  // Check 2014,2014 cell (just below max range).
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 2014, terminalColumn: 2014});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \u07fe\u07fe', resultString);
+
+  // Check 2015,2015 cell (max range).
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 2015, terminalColumn: 2015});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \u07ff\u07ff', resultString);
+
+  // Check 3000,3000 cell (out of range).
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 3000, terminalColumn: 3000});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \u07ff\u07ff', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse press behavior in SGR coordinates.
+ */
+hterm.VT.Tests.addTest('mouse-press-sgr-coord', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+
+  // Switch to SGR coordinates.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check 0,0 cell.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+
+  // Check 150,100 cell.
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;100;150M', resultString);
+
+  // Check 2000,3000 cell.
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 2000, terminalColumn: 3000});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;3000;2000M', resultString);
+
+  // Check 99999,55555 cell.
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 99999, terminalColumn: 55555});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;55555;99999M', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse behavior when press clicks are enabled.
+ */
+hterm.VT.Tests.addTest('mouse-report-click', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?1000h');
+
+  // Send a mousedown event and check the report.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M   ', resultString);
+  resultString = undefined;
+
+  // Mouse move events should be ignored.
+  e = MockTerminalMouseEvent('mousemove', {terminalRow: 1, buttons: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  // Mouse up events should be reported.
+  e = MockTerminalMouseEvent('mouseup');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M#  ', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse click behavior with buttons.
+ *
+ * Note: Most of the mouseup events in here lie and say that a button was
+ * released ('mouseup') while saying it's still pressed ('buttons').  The
+ * VT code doesn't check for this, so (ab)use this to simplify the test.
+ */
+hterm.VT.Tests.addTest('mouse-report-click-buttons', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?1000h');
+
+  // Switch to SGR coordinates to make tests below easier.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check left mouse w/no keyboard.
+  e = MockTerminalMouseEvent('mousedown', {button: 0, buttons: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {button: 0, buttons: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+
+  // Check right mouse w/no keyboard.
+  e = MockTerminalMouseEvent('mousedown', {button: 2, buttons: 2});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<2;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {button: 2, buttons: 2});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<2;0;0m', resultString);
+
+  // Check middle mouse w/no keyboard.
+  e = MockTerminalMouseEvent('mousedown', {button: 1, buttons: 4});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<1;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {button: 1, buttons: 4});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<1;0;0m', resultString);
+
+  // Check pressing multiple buttons and then releasing them.
+  e = MockTerminalMouseEvent('mousedown', {button: 0, buttons: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+  e = MockTerminalMouseEvent('mousedown', {button: 2, buttons: 3});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<2;0;0M', resultString);
+  e = MockTerminalMouseEvent('mousedown', {button: 1, buttons: 7});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<1;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {button: 0, buttons: 7});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+  e = MockTerminalMouseEvent('mouseup', {button: 0, buttons: 6});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+  e = MockTerminalMouseEvent('mouseup', {button: 2, buttons: 4});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<2;0;0m', resultString);
+  e = MockTerminalMouseEvent('mouseup', {button: 1, buttons: 0});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<1;0;0m', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse click behavior with keyboard modifiers.
+ */
+hterm.VT.Tests.addTest('mouse-report-click-keyboard', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?1000h');
+
+  // Switch to SGR coordinates to make tests below easier.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check left mouse w/no keyboard.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+
+  // Check mouse down w/various key combos.
+  e = MockTerminalMouseEvent('mousedown', {shiftKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<4;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousedown', {altKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousedown', {metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<8;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousedown', {ctrlKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<16;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousedown', {shiftKey: true, metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<12;0;0M', resultString);
+
+  // Check buttons & keys together.
+  e = MockTerminalMouseEvent('mousedown', {button: 2, shiftKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<6;0;0M', resultString);
+
+  // Check mouse up doesn't report any key combos, only mouse buttons.
+  e = MockTerminalMouseEvent('mouseup', {shiftKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {altKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {ctrlKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+
+  e = MockTerminalMouseEvent('mouseup', {shiftKey: true, metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<0;0;0m', resultString);
+
+  // Check buttons & keys together.
+  e = MockTerminalMouseEvent('mouseup', {button: 2, shiftKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<2;0;0m', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse behavior when drags are enabled.
+ */
+hterm.VT.Tests.addTest('mouse-report-drag', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?1002h');
+
+  // Send a mousedown event and check the report.
+  e = MockTerminalMouseEvent('mousedown');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M   ', resultString);
+
+  // Mouse move events should be reported.
+  e = MockTerminalMouseEvent('mousemove', {terminalRow: 1, buttons: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M@ !', resultString);
+
+  // Duplicate move events should not be reported.
+  resultString = undefined;
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  // Mouse up events should be reported.
+  e = MockTerminalMouseEvent('mouseup');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M#  ', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse drag behavior with buttons.
+ */
+hterm.VT.Tests.addTest('mouse-report-drag-buttons', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?1002h');
+
+  // Switch to SGR coordinates to make tests below easier.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check mouse button priority.
+  e = MockTerminalMouseEvent('mousemove', {buttons: 8});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<35;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousemove', {buttons: 2});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<34;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousemove', {buttons: 6});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<33;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousemove', {buttons: 7});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<32;0;0M', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse drag behavior with keyboard modifiers.
+ */
+hterm.VT.Tests.addTest('mouse-report-drag-keyboard', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on clicks.
+  terminal.interpret('\x1b[?1002h');
+
+  // Switch to SGR coordinates to make tests below easier.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check various key combos.
+  e = MockTerminalMouseEvent('mousemove', {buttons: 1, shiftKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<36;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousemove', {buttons: 1, altKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<32;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousemove', {buttons: 1, metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<40;0;0M', resultString);
+
+  e = MockTerminalMouseEvent('mousemove', {buttons: 1, ctrlKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<48;0;0M', resultString);
+
+  e = MockTerminalMouseEvent(
+      'mousemove', {buttons: 1, shiftKey: true, ctrlKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<52;0;0M', resultString);
+
+  e = MockTerminalMouseEvent(
+      'mousemove', {buttons: 1, shiftKey: true, ctrlKey: true, metaKey: true});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<60;0;0M', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse wheel behavior when reports are enabled.
+ */
+hterm.VT.Tests.addTest('mouse-report-wheel', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+
+  // Send a wheel down event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaY: 1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma  ', resultString);
+
+  // Send a wheel up event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaY: -1});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M`  ', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse wheel behavior in X10 coordinates.
+ */
+hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.  Default is X10 coordinates.
+  terminal.interpret('\x1b[?9h');
+
+  // Check 0,0 cell.
+  e = MockTerminalMouseEvent('wheel');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma  ', resultString);
+
+  // Check 150,100 cell.
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\x84\xb6', resultString);
+
+  // Check 222,222 cell (just below max range).
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 222, terminalColumn: 222});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\xfe\xfe', resultString);
+
+  // Check 223,223 cell (max range).
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 223, terminalColumn: 223});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\xff\xff', resultString);
+
+  // Check 300,300 cell (out of range).
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 300, terminalColumn: 300});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\xff\xff', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse wheel behavior in UTF8 coordinates.
+ */
+hterm.VT.Tests.addTest('mouse-wheel-utf8-coord', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+
+  // Switch to UTF8 coordinates.
+  terminal.interpret('\x1b[?1005h');
+
+  // Check 0,0 cell.
+  e = MockTerminalMouseEvent('wheel');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma  ', resultString);
+
+  // Check 150,100 cell.
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\x84\xb6', resultString);
+
+  // Check 2000,2000 cell.
+  e = MockTerminalMouseEvent(
+      'wheel', {terminalRow: 2000, terminalColumn: 2000});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\u07f0\u07f0', resultString);
+
+  // Check 2014,2014 cell (just below max range).
+  e = MockTerminalMouseEvent(
+      'wheel', {terminalRow: 2014, terminalColumn: 2014});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\u07fe\u07fe', resultString);
+
+  // Check 2015,2015 cell (max range).
+  e = MockTerminalMouseEvent(
+      'wheel', {terminalRow: 2015, terminalColumn: 2015});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\u07ff\u07ff', resultString);
+
+  // Check 3000,3000 cell (out of range).
+  e = MockTerminalMouseEvent(
+      'wheel', {terminalRow: 3000, terminalColumn: 3000});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\u07ff\u07ff', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse wheel behavior in SGR coordinates.
+ */
+hterm.VT.Tests.addTest('mouse-wheel-sgr-coord', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Turn on presses.
+  terminal.interpret('\x1b[?9h');
+
+  // Switch to SGR coordinates.
+  terminal.interpret('\x1b[?1006h');
+
+  // Check 0,0 cell.
+  e = MockTerminalMouseEvent('wheel');
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<65;0;0M', resultString);
+
+  // Check 150,100 cell.
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<65;100;150M', resultString);
+
+  // Check 2000,3000 cell.
+  e = MockTerminalMouseEvent(
+      'wheel', {terminalRow: 2000, terminalColumn: 3000});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<65;3000;2000M', resultString);
+
+  // Check 99999,55555 cell.
+  e = MockTerminalMouseEvent(
+      'wheel', {terminalRow: 99999, terminalColumn: 55555});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[<65;55555;99999M', resultString);
 
   result.pass();
 });

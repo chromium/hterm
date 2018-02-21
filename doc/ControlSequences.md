@@ -617,7 +617,7 @@ we support some of them.
 |    6 | DECOM   | DEC    | Origin Mode                                 | Supported |
 |    7 | DECAWM  | DEC    | Wraparound Mode                             | Supported |
 |    8 | DECARM  | DEC    | Auto-repeat Keys                            | Won't support |
-|    9 |         |        | Send Mouse X & Y on button press            | Supported |
+|    9 | X10 MOUSE | X    | Send Mouse X & Y on button press            | Supported |
 |   10 |         | rxvt   | Show toolbar                                | Won't support |
 |   12 |         | att610 | Start blinking cursor                       | Supported |
 |   18 | DECPFF  | DEC    | Print form feed                             | *Ignored (TBD)* |
@@ -635,7 +635,7 @@ we support some of them.
 |   47 |         |        | Use Alternate Screen Buffer                 | Supported |
 |   66 | DECNKM  | DEC    | Application keypad                          | *Ignored (TBD)* |
 |   67 | DECBKM  | DEC    | Backarrow key sends backspace               | Supported |
-| 1000 | MOUSE_REPORT_CLICK | | Send Mouse X & Y on button press and release | Supported |
+| 1000 | MOUSE_REPORT_CLICK | X | Send Mouse X & Y on button press and release | Supported |
 | 1001 |         |        | Use Hilite Mouse Tracking                   | *Ignored (TBD)* |
 | 1002 | MOUSE_REPORT_DRAG | | Use Cell Motion Mouse Tracking           | Supported |
 | 1003 |         |        | Use All Motion Mouse Tracking               | *Ignored (TBD)* |
@@ -665,6 +665,173 @@ we support some of them.
 | 1060 |         |        | Set legacy keyboard emulation (X11R6)       | Won't support |
 | 1061 |         |        | Set VT220 keyboard emulation                | *Ignored (TBD)* |
 | 2004 |         |        | Set bracketed paste mode                    | Supported |
+
+### Mouse Reporting / Tracking
+
+These are the sequences that the terminal generates based on mouse events the
+user themselves create.
+The terminal sends them to the remote so the application can handle mouse
+inputs.
+These could be things as simple as clicking different mouse buttons in different
+terminal rows/cols, or more complicated things like click & drag, or wheel
+scrolling.
+
+There are a few different mouse reporting modes in the wild.
+Here we document all the modes that hterm currently supports.
+It's unlikely we'll support more modes unless they offer significant
+functionality over the existing modes.
+
+Some of the modes seem to overlap, but they can largely be broken down into
+two different aspects: what is reported (presses/drags/etc...) and how is the
+message encoded.
+The terminal first calculates the values to report (via the reporting mode),
+then the values are encoded before being sent to the remote.
+
+By default, no mouse reporting is enabled, so all mouse events are handled
+by the native implementation (e.g. for copying content or clicking links).
+If mouse reporting is enabled, it by default uses the X10 encoding.
+
+If you want to enable mouse reporting, you should always use the SGR encoding.
+For reporting modes, most people want to start with the xterm extensions (so
+they get mouse press & release events, wheel scrolls, and keyboard modifiers).
+
+#### Reporting Modes
+
+Only mouse buttons 1 (primary aka left), 2 (secondary aka right), 3 (middle), 4
+(wheel up), and 5 (wheel down) can be reported.
+All other buttons are ignored.
+
+##### X10
+
+This is the simplest and oldest mode: only mouse button presses are reported;
+no releases, and no motion/drags.
+It is enabled via DECSET 9.
+
+The mouse button is the button number minus 1.
+
+##### X11 / xterm
+
+Reporting is extended to support mouse button releases and keyboard modifiers.
+It is enabled via DECSET 1000.
+
+The mouse button status is in the bottom two bits.
+Only SGR supports reporting which mouse button was released
+(see the SGR encoding section below for more details).
+
+* `0`: Mouse button 1 is pressed.
+* `1`: Mouse button 2 is pressed.
+* `2`: Mouse button 3 is pressed.
+* `3`: The mouse button was released.
+
+The keyboard modifiers are encoded in bits 2, 3, and 4.
+They indicate which keyboard keys were held down.
+There is no way to detect keyboard presses/releases directly.
+
+* bit 2: The shift key.
+* bit 3: The meta key.
+* bit 4: The control key.
+
+##### Cell / Button Event Tracking
+
+Reporting is extended to support motion events while buttons are held down.
+It is enabled via DECSET 1002.
+
+##### Motion Event Tracking
+
+Reporting is extended to support motion events regardless of button state.
+It is enabled via DECSET 1003.
+
+This is not currently supported as most programs do not use it or care.
+It can end up transmitting a lot of data when the mouse is constantly moved.
+
+#### Encoding Modes
+
+If you're unsure which encoding to select, then use SGR.
+
+##### X10
+
+There is a limit of 223 rows and columns due to the protocol encoding:
+they made sure that each byte of data was printable, so 32 was added
+(which is the first printable ASCII character).
+There is also an 8-bit encoding limit, so 255 is the largest value.
+
+This is the default encoding if no other selection has been made.
+You should really use SGR instead though.
+
+The encoding takes the form of `CSI M Cb Cx Cy` where:
+
+* Each value has 32 added to it.
+* `Cb` is the button & keyboard modifiers.
+* `Cx` is the column (between 0 and 223).
+* `Cy` is the row (between 0 and 223).
+
+##### UTF-8 (Extended)
+
+This is like the X10 form, but since we can assume UTF-8 encoding, the row and
+column limit is increased to 2047.
+The values still had 32 added to them.
+Hence it is often referred to as "UTF-8" or "extended" encoding modes.
+
+It is enabled via DECSET 1005.
+
+The encoding takes the form of `CSI M Cb Cx Cy` where:
+
+* Each field is encoded in UTF-8.
+* Each value has 32 added to it.
+* `Cb` is the button & keyboard modifiers.
+* `Cx` is the column (between 0 and 2047).
+* `Cy` is the row (between 0 and 2047).
+
+##### SGR
+
+This is the preferred encoding format as there are no row or column limits.
+
+This can easily be confused with the Select Graphic Rendition (SGR) naming,
+but that's no coincidence: they use similar encoding formats with semi-colon
+delimited numbers.
+
+Since the value is always printable (by virtue of being a number),
+there is no need to add 32 to each value.
+
+It is enabled via DECSET 1006.
+
+The encoding takes the form of `CSI < Cb ; Cx ; Cy M` when a button is pressed,
+and `CSI < Cb ; Cx ; Cy m` when a button is released, where:
+
+* Each field is encoded as an ASCII integer.
+* `Cb` is the button & keyboard modifiers.
+* `Cx` is the column.
+* `Cy` is the row.
+
+##### urxvt
+
+The only other notable encoding at this time is urxvt's, but since its encoding
+is ambiguous with other CSI sequences, we won't support it.
+The SGR encoding supports everything that urxvt tried to do too.
+
+It is enabled via DECSET 1015.
+
+#### Wheel Mice
+
+Since the mouse reporting can only handle 3 buttons normally,
+wheel up (button 4) is encoded as mouse button 1 with 64 added to it.
+Wheel down (button 5) is mouse button 2 with 64 added to it.
+
+No release events are generated.
+
+Wheel mice events are always enabled when mouse reporting is active.
+
+##### Alternate Scroll Mode
+
+Instead of generating mouse events, the mouse wheel can be configured to
+emit up/down arrow key presses instead.
+This is useful when working with applications that don't understand mouse
+reporting, but do handle arrow keys fine.
+
+This mode is only active when the alternate screen is enabled.
+Otherwise, the mouse wheel is used to control local buffer scrolling.
+
+It is enabled via DECSET 1007.
 
 ## Select Graphic Rendition (SGR) {#SGR}
 
