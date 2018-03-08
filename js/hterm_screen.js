@@ -881,11 +881,15 @@ hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
 };
 
 /**
- * Expands selection to surround URLs.
+ * Expands selection to surrounding string with word break matches.
  *
  * @param {Selection} selection Selection to expand.
- **/
-hterm.Screen.prototype.expandSelection = function(selection) {
+ * @param {string} leftMatch left word break match.
+ * @param {string} rightMatch right word break match.
+ * @param {string} insideMatch inside word break match.
+ */
+hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
+    function(selection, leftMatch, rightMatch, insideMatch) {
   if (!selection)
     return;
 
@@ -908,11 +912,6 @@ hterm.Screen.prototype.expandSelection = function(selection) {
   if (endPosition == -1)
     return;
 
-  // Use the user configurable match settings.
-  var leftMatch   = this.wordBreakMatchLeft;
-  var rightMatch  = this.wordBreakMatchRight;
-  var insideMatch = this.wordBreakMatchMiddle;
-
   //Move start to the left.
   var rowText = this.getLineText_(row);
   var lineUpToRange = lib.wc.substring(rowText, 0, endPosition);
@@ -934,6 +933,32 @@ hterm.Screen.prototype.expandSelection = function(selection) {
 
   this.setRange_(row, expandedStart, expandedEnd, range);
   selection.addRange(range);
+};
+
+/**
+ * Expands selection to surrounding string using the user's settings.
+ *
+ * @param {Selection} selection Selection to expand.
+ */
+hterm.Screen.prototype.expandSelection = function(selection) {
+  this.expandSelectionWithWordBreakMatches_(
+      selection,
+      this.wordBreakMatchLeft,
+      this.wordBreakMatchRight,
+      this.wordBreakMatchMiddle);
+}
+
+/**
+ * Expands selection to surrounding URL using a set of fixed match settings.
+ *
+ * @param {Selection} selection Selection to expand.
+ */
+hterm.Screen.prototype.expandSelectionForUrl = function(selection) {
+  this.expandSelectionWithWordBreakMatches_(
+      selection,
+      "[^\\s\\[\\](){}<>\"'\\^!@#$%&*,;:`]",
+      "[^\\s\\[\\](){}<>\"'\\^!@#$%&*,;:~.`]",
+      "[^\\s\\[\\](){}<>\"'\\^]*");
 };
 
 /**

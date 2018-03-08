@@ -3244,7 +3244,7 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
 
   // If there is no selection, try and expand wherever they clicked.
   if (str == null) {
-    this.screen_.expandSelection(this.document_.getSelection());
+    this.screen_.expandSelectionForUrl(this.document_.getSelection());
     str = this.getSelectionText();
 
     // If clicking in empty space, return.

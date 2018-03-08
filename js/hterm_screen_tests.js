@@ -589,3 +589,43 @@ hterm.Screen.Tests.addTest('whitespace-fill', function(result, cx) {
 
   result.pass();
 });
+
+/**
+ * Test expanding strings when selecting.
+ */
+hterm.Screen.Tests.addTest('expand-selection', function(result, cx) {
+  const document = cx.window.document;
+  const row = document.createElement('x-row');
+  document.body.appendChild(row);
+
+  // Test basic text selection.
+  row.innerText = 'start this_is_a_testing_string|end';
+  this.screen.pushRow(row);
+
+  const range = document.createRange();
+  const selection = document.getSelection();
+
+  this.screen.setRange_(row, 10, 12, range);
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  this.screen.wordBreakMatchLeft = '[^\\s\\|]';
+  this.screen.wordBreakMatchRight = '[^\\s\\|]';
+  this.screen.wordBreakMatchMiddle = '[^\\s\\|]*';
+  this.screen.expandSelection(selection);
+
+  result.assertEQ('this_is_a_testing_string', selection.toString());
+
+  // Now test URL selection.
+  row.innerText = 'start https://www.google.com/(end)';
+
+  this.screen.setRange_(row, 7, 9, range);
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  this.screen.expandSelectionForUrl(selection);
+
+  result.assertEQ('https://www.google.com/', selection.toString());
+
+  result.pass();
+});
