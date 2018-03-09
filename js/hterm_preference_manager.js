@@ -82,7 +82,7 @@ hterm.PreferenceManager.defaultPreferences = {
   'alt-gr-mode':
   [hterm.PreferenceManager.categories.Keyboard, null,
    [null, 'none', 'ctrl-alt', 'left-alt', 'right-alt'],
-   'Select an AltGr detection hack^Wheuristic.\n' +
+   'Select an AltGr detection heuristic.\n' +
    '\n' +
    '\'null\': Autodetect based on navigator.language:\n' +
    '      \'en-us\' => \'none\', else => \'right-alt\'\n' +
