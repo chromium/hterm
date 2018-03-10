@@ -3179,7 +3179,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
     img.onerror = (e) => {
       this.document_.body.removeChild(img);
       io.showOverlay(hterm.msg('LOADING_RESOURCE_FAILED', [options.name],
-                               'Loading $1 failed ...'));
+                               'Loading $1 failed'));
       io.pop();
 
       if (onError)

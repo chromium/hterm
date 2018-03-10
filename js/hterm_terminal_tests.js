@@ -346,8 +346,8 @@ hterm.Terminal.Tests.addTest('display-img-prompt', function(result, cx) {
   // Search for the block & allow buttons.
   this.terminal.displayImage({uri: ''});
   const text = this.terminal.getRowsText(0, 1);
-  result.assert(text.includes('block'));
-  result.assert(text.includes('allow'));
+  result.assert(text.toLowerCase().includes('block'));
+  result.assert(text.toLowerCase().includes('allow'));
 
   result.pass();
 });
