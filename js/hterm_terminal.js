@@ -3458,8 +3458,14 @@ hterm.Terminal.prototype.onScroll_ = function() {
 hterm.Terminal.prototype.onPaste_ = function(e) {
   var data = e.text.replace(/\n/mg, '\r');
   data = this.keyboard.encode(data);
-  if (this.options_.bracketedPaste)
-    data = '\x1b[200~' + data + '\x1b[201~';
+  if (this.options_.bracketedPaste) {
+    // We strip out most escape sequences as they can cause issues (like
+    // inserting an \x1b[201~ midstream).  We pass through whitespace
+    // though: 0x08:\b 0x09:\t 0x0a:\n 0x0d:\r.
+    // This matches xterm behavior.
+    const filter = (data) => data.replace(/[\x00-\x07\x0b-\x0c\x0e-\x1f]/g, '');
+    data = '\x1b[200~' + filter(data) + '\x1b[201~';
+  }
 
   this.io.sendString(data);
 };
