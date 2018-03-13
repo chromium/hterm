@@ -36,26 +36,26 @@ hterm.Keyboard.KeyMap = function(keyboard) {
 /**
  * Add a single key definition.
  *
- * The definition is a hash containing the following keys: 'keyCap', 'normal',
- * 'control', and 'alt'.
+ * The definition is an object containing the following fields: 'keyCap',
+ * 'normal', 'control', 'alt', and 'meta'.
  *
- *  - keyCap is a string identifying the key.  For printable
+ *  - keyCap is a string identifying the key on the keyboard.  For printable
  *    keys, the key cap should be exactly two characters, starting with the
  *    unshifted version.  For example, 'aA', 'bB', '1!' and '=+'.  For
  *    non-printable the key cap should be surrounded in square braces, as in
  *    '[INS]', '[LEFT]'.  By convention, non-printable keycaps are in uppercase
  *    but this is not a strict requirement.
  *
- *  - Normal is the action that should be performed when they key is pressed
+ *  - Normal is the action that should be performed when the key is pressed
  *    in the absence of any modifier.  See below for the supported actions.
  *
- *  - Control is the action that should be performed when they key is pressed
+ *  - Control is the action that should be performed when the key is pressed
  *    along with the control modifier.  See below for the supported actions.
  *
- *  - Alt is the action that should be performed when they key is pressed
+ *  - Alt is the action that should be performed when the key is pressed
  *    along with the alt modifier.  See below for the supported actions.
  *
- *  - Meta is the action that should be performed when they key is pressed
+ *  - Meta is the action that should be performed when the key is pressed
  *    along with the meta modifier.  See below for the supported actions.
  *
  * Actions can be one of the hterm.Keyboard.KeyActions as documented below,
