@@ -75,6 +75,15 @@ hterm.Terminal.Tests.addTest = function(name, callback) {
   lib.TestManager.Suite.addTest.apply(this, [name, testProxy]);
 };
 
+/**
+ * How long to wait for image display tests to timeout.
+ *
+ * Passing tests won't hit this, so having it higher is OK.  When Chrome is
+ * running in the background (e.g. the window/tab isn't focused), then Chrome
+ * will deprioritize it causing JS/image loading/etc... to take longer.
+ */
+hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT = 5000;
+
 hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
     for (var i = 0; i < this.visibleColumnCount; i++) {
       this.terminal.interpret(parseInt(i / 10));
@@ -357,16 +366,8 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
   // This is a 16px x 8px gif.
   const data = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1mabHWZy6t1U/htQAEAOw==';
 
-  // Display an image that only takes up one row.
-  this.terminal.displayImage({
-    height: '2px',
-    inline: true,
-    align: 'center',
-    uri: `data:application/octet-stream;base64,${data}`,
-  });
-
-  // Hopefully 100msecs is enough time for Chrome to load the image.
-  setTimeout(() => {
+  // Callback when loading finishes.
+  const onLoad = () => {
     result.assertEQ(1, this.terminal.getCursorRow());
     const row = this.terminal.getRowNode(0);
     const container = row.childNodes[1];
@@ -376,9 +377,17 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
     result.assertEQ(2, img.clientHeight);
 
     result.pass();
-  }, 100);
+  };
 
-  result.requestTime(200);
+  // Display an image that only takes up one row.
+  this.terminal.displayImage({
+    height: '2px',
+    inline: true,
+    align: 'center',
+    uri: `data:application/octet-stream;base64,${data}`,
+  }, onLoad, (e) => result.fail(e));
+
+  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
 
 /**
@@ -390,16 +399,8 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
   // This is a 16px x 8px gif.
   const data = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1mabHWZy6t1U/htQAEAOw==';
 
-  // Display an image that only takes up one row.
-  this.terminal.displayImage({
-    height: '4',
-    width: '75%',
-    inline: true,
-    uri: `data:application/octet-stream;base64,${data}`,
-  });
-
-  // Hopefully 100msecs is enough time for Chrome to load the image.
-  setTimeout(() => {
+  // Callback when loading finishes.
+  const onLoad = () => {
     result.assertEQ(4, this.terminal.getCursorRow());
     const row = this.terminal.getRowNode(3);
     const container = row.childNodes[1];
@@ -415,9 +416,17 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
     result.assert(img.clientWidth < bodyWidth * 0.80);
 
     result.pass();
-  }, 100);
+  };
 
-  result.requestTime(200);
+  // Display an image that only takes up one row.
+  this.terminal.displayImage({
+    height: '4',
+    width: '75%',
+    inline: true,
+    uri: `data:application/octet-stream;base64,${data}`,
+  }, onLoad, (e) => result.fail(e));
+
+  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
 
 /**
@@ -429,16 +438,8 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
   // This is a 16px x 8px gif.
   const data = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1mabHWZy6t1U/htQAEAOw==';
 
-  // Display an image that only takes up one row.
-  this.terminal.displayImage({
-    height: '4000px',
-    width: '1000',
-    inline: true,
-    uri: `data:application/octet-stream;base64,${data}`,
-  });
-
-  // Hopefully 100msecs is enough time for Chrome to load the image.
-  setTimeout(() => {
+  // Callback when loading finishes.
+  const onLoad = () => {
     const rowNum = this.terminal.screen_.getHeight() - 1;
     result.assertEQ(rowNum, this.terminal.getCursorRow());
     const row = this.terminal.getRowNode(rowNum);
@@ -451,9 +452,17 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
     result.assertEQ(img.clientWidth, body.clientWidth);
 
     result.pass();
-  }, 100);
+  };
 
-  result.requestTime(200);
+  // Display an image that only takes up one row.
+  this.terminal.displayImage({
+    height: '4000px',
+    width: '1000',
+    inline: true,
+    uri: `data:application/octet-stream;base64,${data}`,
+  }, onLoad, (e) => result.fail(e));
+
+  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
 
 /**
@@ -462,20 +471,25 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
 hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
   this.terminal.allowImagesInline = true;
 
+  // Callback when loading finishes (i.e. failure triggers).
+  const onError = () => {
+    // The cursor should not have advanced.
+    result.assertEQ(0, this.terminal.getCursorRow());
+    result.pass();
+  };
+
   // The data is invalid image content.
   this.terminal.displayImage({
     inline: true,
     uri: 'data:application/octet-stream;base64,asdf',
+  }, () => result.fail('image loading should have failed'), () => {
+     // We can't seem to run directly from the onError as JS doesn't like to
+     // throw exceptions in there that our framework catches.
+     // TODO(vapier): Should figure this out.
+     setTimeout(onError, 0);
   });
 
-  // Hopefully 100msecs is enough time for Chrome to load the image.
-  setTimeout(() => {
-    // The cursor should not have advanced.
-    result.assertEQ(0, this.terminal.getCursorRow());
-    result.pass();
-  }, 100);
-
-  result.requestTime(200);
+  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
 
 /**

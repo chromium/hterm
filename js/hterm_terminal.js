@@ -3024,8 +3024,10 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
  * @param {string|number=} options.height The height of the image.
  * @param {string=} options.align Direction to align the image.
  * @param {string} options.uri The source URI for the image.
+ * @param {function=} onLoad Callback when loading finishes.
+ * @param {function(Event)=} onError Callback when loading fails.
  */
-hterm.Terminal.prototype.displayImage = function(options) {
+hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
   // Make sure we're actually given a resource to display.
   if (options.uri === undefined)
     return;
@@ -3165,6 +3167,9 @@ hterm.Terminal.prototype.displayImage = function(options) {
 
       io.hideOverlay();
       io.pop();
+
+      if (onLoad)
+        onLoad();
     };
 
     // If we got a malformed image, give up.
@@ -3173,6 +3178,9 @@ hterm.Terminal.prototype.displayImage = function(options) {
       io.showOverlay(hterm.msg('LOADING_RESOURCE_FAILED', [options.name],
                                'Loading $1 failed ...'));
       io.pop();
+
+      if (onError)
+        onError(e);
     };
   } else {
     // We can't use chrome.downloads.download as that requires "downloads"
