@@ -3340,9 +3340,10 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   if (!reportMouseEvents) {
-    if (e.type == 'dblclick' && this.copyOnSelect) {
+    if (e.type == 'dblclick') {
       this.screen_.expandSelection(this.document_.getSelection());
-      this.copySelectionToClipboard(this.document_);
+      if (this.copyOnSelect)
+        this.copySelectionToClipboard(this.document_);
     }
 
     if (e.type == 'click' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
