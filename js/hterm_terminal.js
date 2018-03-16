@@ -1517,7 +1517,7 @@ hterm.Terminal.prototype.decorate = function(div) {
       ('position: absolute;' +
        'left: calc(var(--hterm-charsize-width) * var(--hterm-cursor-offset-col));' +
        'top: calc(var(--hterm-charsize-height) * var(--hterm-cursor-offset-row));' +
-       'display: block;' +
+       'display: ' + (this.options_.cursorVisible ? '' : 'none') + ';' +
        'width: var(--hterm-charsize-width);' +
        'height: var(--hterm-charsize-height);' +
        '-webkit-transition: opacity, background-color 100ms linear;' +
