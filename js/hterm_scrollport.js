@@ -438,6 +438,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.pasteTarget_ = doc.createElement('textarea');
   this.pasteTarget_.id = 'hterm:ctrl-v-paste-target';
   this.pasteTarget_.setAttribute('tabindex', '-1');
+  this.pasteTarget_.setAttribute('aria-hidden', 'true');
   this.pasteTarget_.style.cssText = (
     'position: absolute;' +
     'height: 1px;' +

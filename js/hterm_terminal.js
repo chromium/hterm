@@ -1538,6 +1538,7 @@ hterm.Terminal.prototype.decorate = function(div) {
   // It's a hack, but it's the cleanest way I could find.
   this.scrollBlockerNode_ = this.document_.createElement('div');
   this.scrollBlockerNode_.id = 'hterm:mouse-drag-scroll-blocker';
+  this.scrollBlockerNode_.setAttribute('aria-hidden', 'true');
   this.scrollBlockerNode_.style.cssText =
       ('position: absolute;' +
        'top: -99px;' +
