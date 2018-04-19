@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import atexit
 import json
 import os
@@ -151,7 +153,7 @@ class VTScope(object):
         command_line = raw_input(PROMPT)
       except EOFError:
         self.running = False
-        print 'exit'
+        print('exit')
         return
 
       if not command_line:
@@ -204,7 +206,7 @@ class VTScope(object):
         self.end_position = m.end()
       else:
         self.end_position = self.start_position + MAX_TEXT
-        print 'Unable to find end of escape sequence.'
+        print('Unable to find end of escape sequence.')
 
       sequence = self.data[self.start_position + 1 : self.end_position]
       return json.dumps(esc_name + ' ' + ' '.join(sequence))[1:-1]
@@ -227,9 +229,9 @@ class VTScope(object):
     snippet = self.find_next_chunk()
 
     if snippet:
-      print 'Next up: offset %s, %s' % (self.start_position, snippet)
+      print('Next up: offset %s, %s' % (self.start_position, snippet))
     else:
-      print 'End of data.'
+      print('End of data.')
 
   def send(self, str):
     """Broadcast a string to all clients, removing any that appear to
@@ -240,7 +242,7 @@ class VTScope(object):
       try:
         fd.send(str)
       except IOError:
-        print 'Client #%s disconnected.' % i
+        print('Client #%s disconnected.' % i)
         del self.clients[i - 1]
 
   def broadcast_chunk(self):
@@ -266,7 +268,7 @@ class VTScope(object):
 
     command_function = getattr(self, 'cmd_' + command_name, None)
     if not command_function:
-      print 'Unknown command: "%s"' % command_name
+      print('Unknown command: "%s"' % command_name)
       return
 
     # Change this test to 'if False' to skip over the try/catch, making it
@@ -275,8 +277,8 @@ class VTScope(object):
       try:
         command_function(command_args)
       except Exception as ex:
-        print 'Error executing %s: %s: %s' % \
-            (command_name, type(ex), ex)
+        print('Error executing %s: %s: %s' %
+              (command_name, type(ex), ex))
     else:
       command_function(command_args)
 
@@ -299,7 +301,7 @@ class VTScope(object):
     """
 
     if not len(args):
-      print 'Missing argument.'
+      print('Missing argument.')
       return
 
     if args[0][0] == '+':
@@ -308,17 +310,17 @@ class VTScope(object):
       count = int(args[0])
       self.clients = []
 
-    print 'Listening on %s:%s' % (LISTEN_HOST, LISTEN_PORT)
+    print('Listening on %s:%s' % (LISTEN_HOST, LISTEN_PORT))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((LISTEN_HOST, LISTEN_PORT))
     sock.listen(1)
 
     while len(self.clients) < count:
-      print 'Waiting for client %s/%s...' % (len(self.clients) + 1, count)
+      print('Waiting for client %s/%s...' % (len(self.clients) + 1, count))
       (fd, addr) = sock.accept()
       self.clients.append(fd)
-      print 'Remote connected by', addr
+      print('Remote connected by', addr)
 
     sock.close()
 
@@ -342,7 +344,7 @@ class VTScope(object):
     if len(args):
       self.delay_ms = int(args[0])
 
-    print 'Delay is now: %s' % self.delay_ms
+    print('Delay is now: %s' % self.delay_ms)
 
   def cmd_exit(self, args):
     """Exit vtscope.
@@ -393,7 +395,7 @@ class VTScope(object):
       else:
         str += json.loads('"%s"' % arg)
 
-    print 'Sending %s' % json.dumps(str)
+    print('Sending %s' % json.dumps(str))
     self.send(str)
 
   def cmd_stops(self, args):
@@ -403,14 +405,14 @@ class VTScope(object):
     """
 
     if not len(self.stops):
-      print 'No stop offsets found.'
+      print('No stop offsets found.')
       return
 
     for i in xrange(len(self.stops)):
       offset = self.stops[i]
-      print '#%s offset: %s, lines: %s, cursor: %s,%s' % \
-          (i + 1, offset['offset'], offset['lines'], offset['row'],
-           offset['column'])
+      print('#%s offset: %s, lines: %s, cursor: %s,%s' %
+            (i + 1, offset['offset'], offset['lines'], offset['row'],
+             offset['column']))
 
   def cmd_open(self, args):
     """Open a local file containing canned data.
@@ -431,14 +433,14 @@ class VTScope(object):
     if re.match(r'(#[^\n]*\n)*@@ HEADER_START', self.data):
       m = re.search(r'@@ HEADER_END\r?\n', self.data, re.MULTILINE)
       if not m:
-        print 'Unable to locate end of header.'
+        print('Unable to locate end of header.')
       else:
         end = m.end()
-        print 'Read %s bytes of header.' % end
+        print('Read %s bytes of header.' % end)
         self.scan_header(self.data[0 : end])
         self.data = self.data[end : ]
 
-    print 'Read %s bytes of playback.' % len(self.data)
+    print('Read %s bytes of playback.' % len(self.data))
     self.cmd_reset([])
 
   def cmd_reset(self, args):
@@ -465,17 +467,17 @@ class VTScope(object):
     """
 
     if len(args) < 1:
-      print 'Missing argument'
+      print('Missing argument')
       return
 
     if not self.data:
-      print 'No data.'
+      print('No data.')
       return
 
     if args[0][0] == '#':
       index = int(args[0][1:])
       if index < 1 or index > len(self.stops):
-        print 'No such stop.'
+        print('No such stop.')
         return
 
       pos = self.stops[index - 1]['offset']
@@ -484,7 +486,7 @@ class VTScope(object):
       pos = int(args[0])
 
     if pos > len(self.data):
-      print 'Seek past end.'
+      print('Seek past end.')
       return
 
     if pos <= self.start_position:
@@ -501,7 +503,7 @@ class VTScope(object):
     """
 
     if self.start_position >= len(self.data):
-      print 'Already at end of data.'
+      print('Already at end of data.')
       return
 
     if len(args) > 0:
