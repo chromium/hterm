@@ -290,8 +290,8 @@ hterm.PreferenceManager.defaultPreferences = {
 
   'font-family':
   [hterm.PreferenceManager.categories.Appearance,
-   '"DejaVu Sans Mono", "Everson Mono", FreeMono, "Menlo", "Terminal", ' +
-   'monospace', 'string',
+   '"DejaVu Sans Mono", "Noto Sans Mono", "Everson Mono", ' +
+   'FreeMono, Menlo, Terminal, monospace', 'string',
    'Default font family for the terminal text.'],
 
   'font-size':
