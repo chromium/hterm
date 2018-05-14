@@ -145,6 +145,8 @@ The vast majority of the code here lives under [js/].
     keyboard key names and actions).
 
 * Supplementary modules
+  * [hterm_accessibility_reader.js]: Code related to rendering terminal output
+    for a screen reader.
   * [hterm_options.js]: Internal runtime settings for the `Terminal` object.
   * [hterm_preference_manager.js]: Manager for user preferences.
   * [hterm_pubsub.js]: Helper for managing custom events.
@@ -213,6 +215,8 @@ loads rows on the fly from `hterm.Terminal` (as a "RowProvider").
 [hterm_test.html]: ../html/hterm_test.html
 
 [hterm.js]: ../js/hterm.js
+[hterm_accessibility_reader.js]: ../js/hterm_accessibility_reader.js
+[hterm_accessibility_reader_tests.js]: ../js/hterm_accessibility_reader_tests.js
 [hterm_frame.js]: ../js/hterm_frame.js
 [hterm_keyboard.js]: ../js/hterm_keyboard.js
 [hterm_keyboard_bindings.js]: ../js/hterm_keyboard_bindings.js

@@ -342,6 +342,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.setAttribute('autocorrect', 'off');
   this.screen_.setAttribute('autocapitalize', 'none');
   this.screen_.setAttribute('role', 'textbox');
+  this.screen_.setAttribute('aria-live', 'off');
 
   // Set aria-readonly to indicate to the screen reader that the text on the
   // screen is not modifiable by the html cursor. It may be modifiable by
