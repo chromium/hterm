@@ -5,9 +5,9 @@
 'use strict';
 
 lib.rtdep('lib.colors', 'lib.PreferenceManager', 'lib.resource', 'lib.wc',
-          'lib.f', 'hterm.AccessibilityReader', 'hterm.Keyboard',
-          'hterm.Options', 'hterm.PreferenceManager', 'hterm.Screen',
-          'hterm.ScrollPort', 'hterm.Size', 'hterm.TextAttributes', 'hterm.VT');
+          'lib.f', 'hterm.Keyboard', 'hterm.Options', 'hterm.PreferenceManager',
+          'hterm.Screen', 'hterm.ScrollPort', 'hterm.Size',
+          'hterm.TextAttributes', 'hterm.VT');
 
 /**
  * Constructor for the Terminal class.
@@ -106,13 +106,6 @@ hterm.Terminal = function(opt_profileId) {
   this.bellAudio_ = this.document_.createElement('audio');
   this.bellAudio_.id = 'hterm:bell-audio';
   this.bellAudio_.setAttribute('preload', 'auto');
-
-  // The AccessibilityReader object for announcing command output.
-  this.accessibilityReader_ = null;
-
-  // Whether command output should be rendered for Assistive Technology.
-  // This isn't always enabled because it has an impact on performance.
-  this.accessibilityEnabled_ = false;
 
   // All terminal bell notifications that have been generated (not necessarily
   // shown).
@@ -1436,8 +1429,6 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.div_ = div;
 
-  this.accessibilityReader_ = new hterm.AccessibilityReader(div);
-
   this.scrollPort_.decorate(div);
   this.scrollPort_.setBackgroundImage(this.prefs_.get('background-image'));
   this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
@@ -1775,10 +1766,6 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
  * @param{string} str The string to print.
  */
 hterm.Terminal.prototype.print = function(str) {
-  // Basic accessibility output for the screen reader.
-  if (this.accessibilityEnabled_)
-    this.accessibilityReader_.announce(str);
-
   var startOffset = 0;
 
   var strWidth = lib.wc.strWidth(str);
@@ -2111,8 +2098,6 @@ hterm.Terminal.prototype.clearHome = function(opt_screen) {
   var screen = opt_screen || this.screen_;
   var bottom = screen.getHeight();
 
-  this.accessibilityReader_.clear();
-
   if (bottom == 0) {
     // Empty screen, nothing to do.
     return;
@@ -2278,18 +2263,6 @@ hterm.Terminal.prototype.vtScrollDown = function(opt_count) {
   this.restoreCursor(cursor);
 };
 
-/**
- * Set live output for accessibility.
- *
- * This will generate additional DOM nodes in an aria-live region that will
- * cause Assitive Technology to announce the output of the terminal. This isn't
- * enabled by default as it can have a performance impact.
- *
- * @param {boolean} enabled Whether to enable live output.
- */
-hterm.Terminal.prototype.setLiveOutputForAccessibility = function(enabled) {
-  this.accessibilityEnabled_ = enabled;
-};
 
 /**
  * Set the cursor position.
