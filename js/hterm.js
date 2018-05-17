@@ -61,9 +61,9 @@ hterm.desktopNotificationTitle = '\u266A %(title) \u266A';
  *
  * A test harness should ensure that they all exist before running.
  */
-hterm.testDeps = ['hterm.ScrollPort.Tests', 'hterm.Screen.Tests',
-                  'hterm.Terminal.Tests', 'hterm.VT.Tests',
-                  'hterm.VT.CannedTests'];
+hterm.testDeps = ['hterm.AccessibilityReader.Tests', 'hterm.ScrollPort.Tests',
+                  'hterm.Screen.Tests', 'hterm.Terminal.Tests',
+                  'hterm.VT.Tests', 'hterm.VT.CannedTests'];
 
 /**
  * The hterm init function, registered with lib.registerInit().
