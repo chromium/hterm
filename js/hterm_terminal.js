@@ -1776,8 +1776,9 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
  */
 hterm.Terminal.prototype.print = function(str) {
   // Basic accessibility output for the screen reader.
-  if (this.accessibilityEnabled_)
+  if (this.accessibilityEnabled_) {
     this.accessibilityReader_.announce(str);
+  }
 
   var startOffset = 0;
 
@@ -1790,7 +1791,7 @@ hterm.Terminal.prototype.print = function(str) {
   while (startOffset < strWidth) {
     if (this.options_.wraparound && this.screen_.cursorPosition.overflow) {
       this.screen_.commitLineOverflow();
-      this.newLine();
+      this.newLine(true);
     }
 
     var count = strWidth - startOffset;
@@ -1903,8 +1904,14 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
  * buffer.
  *
  * Otherwise, this moves the cursor to column zero of the next row.
+ *
+ * @param {boolean=} dueToOverflow Whether the newline is due to wraparound of
+ *     the terminal.
  */
-hterm.Terminal.prototype.newLine = function() {
+hterm.Terminal.prototype.newLine = function(dueToOverflow = false) {
+  if (!dueToOverflow)
+    this.accessibilityReader_.newLine();
+
   var cursorAtEndOfScreen = (this.screen_.cursorPosition.row ==
                              this.screen_.rowsArray.length - 1);
 

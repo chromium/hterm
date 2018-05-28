@@ -27,7 +27,7 @@ hterm.AccessibilityReader.Tests.prototype.preamble = function(result, cx) {
   div.style.width = '100%';
 
   this.accessibilityReader = new hterm.AccessibilityReader(div);
-  this.liveRegion = div.firstChild;
+  this.liveElement = div.firstChild.firstChild;
 
   document.body.appendChild(div);
 };
@@ -41,28 +41,42 @@ hterm.AccessibilityReader.Tests.addTest(
     'a11y-live-region-single-delay', function(result, cx) {
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
+  this.accessibilityReader.newLine();
+  this.accessibilityReader.announce('More output');
 
-  result.assertEQ(0, this.liveRegion.children.length);
+  result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+
+  const checkClear = () => {
+    result.assertEQ('',
+                    this.liveElement.getAttribute('aria-label'));
+    return true;
+  };
+
+  const checkFirstAnnounce = () => {
+    result.assertEQ('Some test output Some other test output\nMore output',
+                    this.liveElement.getAttribute('aria-label'));
+    return true;
+  };
+
+  const checksToComplete = [checkClear, checkFirstAnnounce];
 
   const observer = new MutationObserver(() => {
-    if (this.liveRegion.children.length < 2) {
-      return;
+    if (checksToComplete[0]()) {
+      checksToComplete.shift();
     }
 
-    result.assertEQ('Some test output',
-                    this.liveRegion.children[0].innerHTML);
-    result.assertEQ('Some other test output',
-                    this.liveRegion.children[1].innerHTML);
-
-    observer.disconnect();
-    result.pass();
+    if (checksToComplete.length == 0) {
+      observer.disconnect();
+      result.pass();
+    }
   });
 
-  observer.observe(this.liveRegion, {childList: true});
-  // This should only need to be 1x the initial delay but we wait longer to
+  observer.observe(this.liveElement, {attributes: true});
+  // This should only need to be 2x the initial delay but we wait longer to
   // avoid flakiness.
   result.requestTime(500);
 });
+
 
 /**
  * Test that after text has been added to the live region, there is again a
@@ -72,35 +86,36 @@ hterm.AccessibilityReader.Tests.addTest(
     'a11y-live-region-double-delay', function(result, cx) {
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
+  this.accessibilityReader.newLine();
+  this.accessibilityReader.announce('More output');
 
-  result.assertEQ(0, this.liveRegion.children.length);
+  result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+
+  const checkClear = () => {
+    result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+    return true;
+  };
 
   const checkFirstAnnounce = () => {
-    if (this.liveRegion.children.length < 2) {
-      return false;
-    }
-
-    result.assertEQ('Some test output',
-                    this.liveRegion.children[0].innerHTML);
-    result.assertEQ('Some other test output',
-                    this.liveRegion.children[1].innerHTML);
+    result.assertEQ('Some test output Some other test output\nMore output',
+                    this.liveElement.getAttribute('aria-label'));
 
     this.accessibilityReader.announce('more text');
+    this.accessibilityReader.newLine();
     this.accessibilityReader.announce('...and more');
     return true;
   };
 
   const checkSecondAnnounce = () => {
-    if (this.liveRegion.children.length < 2) {
-      return false;
-    }
-
-    result.assertEQ('more text', this.liveRegion.children[0].innerHTML);
-    result.assertEQ('...and more', this.liveRegion.children[1].innerHTML);
+    result.assertEQ('more text\n...and more',
+                    this.liveElement.getAttribute('aria-label'));
     return true;
   };
 
-  const checksToComplete = [checkFirstAnnounce, checkSecondAnnounce];
+  const checksToComplete = [checkClear,
+                            checkFirstAnnounce,
+                            checkClear,
+                            checkSecondAnnounce];
 
   const observer = new MutationObserver(() => {
     if (checksToComplete[0]()) {
@@ -113,62 +128,8 @@ hterm.AccessibilityReader.Tests.addTest(
     }
   });
 
-  observer.observe(this.liveRegion, {childList: true});
+  observer.observe(this.liveElement, {attributes: true});
   // This should only need to be 2x the initial delay but we wait longer to
   // avoid flakiness.
-  result.requestTime(500);
-});
-
-/**
- * Test that when adding a large amount of text, it will get buffered into the
- * live region.
- */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-live-region-large-text', function(result, cx) {
-  for (let i = 0; i < hterm.AccessibilityReader.MAX_ITEMS_TO_ADD; ++i) {
-    this.accessibilityReader.announce('First pass');
-  }
-  this.accessibilityReader.announce('Second pass');
-
-  result.assertEQ(0, this.liveRegion.children.length);
-
-  const checkFirstAnnounce = () => {
-    if (this.liveRegion.children.length <
-        hterm.AccessibilityReader.MAX_ITEMS_TO_ADD) {
-      return false;
-    }
-
-    for (let i = 0; i < hterm.AccessibilityReader.MAX_ITEMS_TO_ADD; ++i) {
-      result.assertEQ('First pass', this.liveRegion.children[i].innerHTML);
-    }
-
-    return true;
-  };
-
-  const checkSecondAnnounce = () => {
-    if (this.liveRegion.children.length < 1) {
-      return false;
-    }
-
-    result.assertEQ('Second pass', this.liveRegion.children[0].innerHTML);
-    return true;
-  };
-
-  const checksToComplete = [checkFirstAnnounce, checkSecondAnnounce];
-
-  const observer = new MutationObserver(() => {
-    if (checksToComplete[0]()) {
-      checksToComplete.shift();
-    }
-
-    if (checksToComplete.length == 0) {
-      observer.disconnect();
-      result.pass();
-    }
-  });
-
-  observer.observe(this.liveRegion, {childList: true});
-  // This should only need to be the initial delay plus the subsequent delay
-  // but we use a longer delay to avoid flakiness.
   result.requestTime(500);
 });
