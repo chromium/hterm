@@ -142,6 +142,74 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
   });
 
 /**
+ * Make sure the selection is maintained for a collapsed selection.
+ */
+hterm.ScrollPort.Tests.addTest(
+    'scroll-selection-collapsed', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  const s = doc.getSelection();
+
+  // Scroll into a part of the buffer that can be scrolled off the top
+  // and the bottom of the screen.
+  this.scrollPort.scrollRowToTop(50);
+
+  // Force a synchronous redraw.  We'll need to DOM to be correct in order
+  // to alter the selection.
+  this.scrollPort.redraw_();
+
+  // Create a collapsed selection.
+  s.removeAllRanges();
+  const anchorRow = this.rowProvider.getRowNode(53);
+  const anchorNode = anchorRow;
+  const range = doc.createRange();
+  range.selectNode(anchorNode.firstChild);
+  range.collapse(true);
+  s.addRange(range);
+
+  result.assertEQ(anchorNode, s.anchorNode);
+  result.assertEQ(anchorNode, s.focusNode);
+  result.assert(s.isCollapsed);
+
+  // When accessibility is enabled, the selection should be preserved after
+  // scrolling.
+  this.scrollPort.setAccessibilityEnabled(true);
+
+  for (let i = 0; i < this.visibleRowCount; i++) {
+    this.scrollPort.scrollRowToTop(50 - i);
+    this.scrollPort.redraw_();
+    result.assertEQ(anchorNode, s.anchorNode);
+    result.assertEQ(anchorNode, s.focusNode);
+  }
+
+  for (let i = 0; i < this.visibleRowCount; i++) {
+    this.scrollPort.scrollRowToTop(50 + i);
+    this.scrollPort.redraw_();
+    result.assertEQ(anchorNode, s.anchorNode);
+    result.assertEQ(anchorNode, s.focusNode);
+  }
+
+  // When accessibility isn't enabled, the selection shouldn't be preserved
+  // after scrolling.
+  this.scrollPort.setAccessibilityEnabled(false);
+
+  for (let i = 0; i < this.visibleRowCount; i++) {
+    this.scrollPort.scrollRowToTop(50 - i);
+    this.scrollPort.redraw_();
+  }
+
+  for (let i = 0; i < this.visibleRowCount; i++) {
+    this.scrollPort.scrollRowToTop(50 + i);
+    this.scrollPort.redraw_();
+  }
+
+  result.assert(anchorNode != s.anchorNode);
+  result.assert(anchorNode != s.focusNode);
+
+  result.pass();
+});
+
+/**
  * Test the select-all function.
  */
 hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {

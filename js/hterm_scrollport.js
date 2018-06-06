@@ -87,6 +87,11 @@ hterm.ScrollPort = function(rowProvider) {
    */
   this.ctrlVPaste = false;
 
+  /**
+   * Whether accessibility features that impact performance should be enabled.
+   */
+  this.accessibilityEnabled_ = false;
+
   this.div_ = null;
   this.document_ = null;
 
@@ -207,8 +212,17 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   this.isMultiline = null;
   this.isCollapsed = !selection || selection.isCollapsed;
 
-  if (this.isCollapsed)
+  if (!selection) {
     return;
+  }
+
+  // Usually collapsed selections wouldn't be interesting, however screen
+  // readers will set a collapsed selection as they navigate through the DOM.
+  // It is important to preserve these nodes in the DOM as scrolling happens
+  // so that screen reader navigation isn't cleared.
+  if (this.isCollapsed && !this.scrollPort_.accessibilityEnabled_) {
+    return;
+  }
 
   var anchorRow = selection.anchorNode;
   while (anchorRow && !('rowIndex' in anchorRow)) {
@@ -376,6 +390,10 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
 
+  this.document_.addEventListener('selectionchange', () => {
+    this.selection.sync();
+  });
+
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
   this.rowNodes_.id = 'hterm:row-nodes';
@@ -460,6 +478,15 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'textInput', this.handlePasteTargetTextInput_.bind(this));
 
   this.resize();
+};
+
+/**
+ * Enable accessibility-friendly features that have a performance impact.
+ *
+ * @param {boolean} enabled Whether to enable accessibility-friendly features.
+ */
+hterm.ScrollPort.prototype.setAccessibilityEnabled = function(enabled) {
+  this.accessibilityEnabled_ = enabled;
 };
 
 /**
@@ -1447,7 +1474,7 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
   this.resetSelectBags_();
   this.selection.sync();
 
-  if (!this.selection.startRow ||
+  if (this.selection.isCollapsed ||
       this.selection.endRow.rowIndex - this.selection.startRow.rowIndex < 2) {
     return;
   }

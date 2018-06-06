@@ -2286,16 +2286,19 @@ hterm.Terminal.prototype.vtScrollDown = function(opt_count) {
 };
 
 /**
- * Set live output for accessibility.
+ * Enable accessibility-friendly features that have a performance impact.
  *
  * This will generate additional DOM nodes in an aria-live region that will
- * cause Assitive Technology to announce the output of the terminal. This isn't
- * enabled by default as it can have a performance impact.
+ * cause Assitive Technology to announce the output of the terminal. It also
+ * enables other features that aid assistive technology. All the features gated
+ * behind this flag have a performance impact on the terminal which is why they
+ * are made optional.
  *
- * @param {boolean} enabled Whether to enable live output.
+ * @param {boolean} enabled Whether to enable accessibility-friendly features.
  */
-hterm.Terminal.prototype.setLiveOutputForAccessibility = function(enabled) {
+hterm.Terminal.prototype.setAccessibilityEnabled = function(enabled) {
   this.accessibilityEnabled_ = enabled;
+  this.scrollPort_.setAccessibilityEnabled(enabled);
 };
 
 /**
