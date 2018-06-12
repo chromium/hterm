@@ -84,30 +84,25 @@ hterm.Terminal.Tests.addTest = function(name, callback) {
  */
 hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT = 5000;
 
+/**
+ * Checks that the dimensions of the scrollport match the dimensions of the
+ * values that the Terminal was constructed with.
+ */
 hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
-    for (var i = 0; i < this.visibleColumnCount; i++) {
-      this.terminal.interpret(parseInt(i / 10));
-    }
-
-    this.terminal.interpret('\n');
-
-    for (var i = 0; i < this.visibleColumnCount; i++) {
-      this.terminal.interpret(i % 10);
-    }
-
-    this.terminal.interpret('\n');
-
     var divSize = hterm.getClientSize(this.div);
     var scrollPort = this.terminal.scrollPort_;
-    var innerWidth = divSize.width - scrollPort.currentScrollbarWidthPx;
+    var innerWidth = Math.round(
+        divSize.width - scrollPort.currentScrollbarWidthPx);
 
-    result.assertEQ(innerWidth, scrollPort.getScreenWidth());
-    result.assertEQ(divSize.height, scrollPort.getScreenHeight());
+    result.assertEQ(innerWidth, Math.round(scrollPort.getScreenWidth()));
+    result.assertEQ(Math.round(divSize.height),
+                    Math.round(scrollPort.getScreenHeight()));
 
     result.assertEQ(Math.floor(innerWidth / scrollPort.characterSize.width),
                     this.visibleColumnCount);
-    result.assertEQ(divSize.height / scrollPort.characterSize.height,
-                    this.visibleRowCount);
+    result.assertEQ(
+        Math.round(divSize.height / scrollPort.characterSize.height),
+        this.visibleRowCount);
 
     result.assertEQ(this.terminal.screen_.getWidth(), this.visibleColumnCount);
     result.assertEQ(this.terminal.screen_.getHeight(), this.visibleRowCount);
