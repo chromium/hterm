@@ -146,6 +146,20 @@ hterm.TextAttributes.prototype.resetColorPalette = function() {
 };
 
 /**
+ * Reset the color.
+ *
+ * @param {integer|string} index The color index in the palette to reset.
+ */
+hterm.TextAttributes.prototype.resetColor = function(index) {
+  index = parseInt(index, 10);
+  if (isNaN(index) || index >= this.colorPalette.length)
+    return;
+
+  this.colorPalette[index] = lib.colors.stockColorPalette[index];
+  this.syncColors();
+};
+
+/**
  * Test if the current attributes describe unstyled text.
  *
  * @return {boolean} True if the current attributes describe unstyled text.

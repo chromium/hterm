@@ -378,7 +378,7 @@ For example:
 |   50 | Set the cursor shape               | Supported               | ESC ] 50 ; CursorShape=[0&#124;1&#124;2] \a |
 |   51 | Reserved for Emacs                 | Ignored                 | |
 |   52 | Clipboard operations               | Only "c" supported      | ESC ] 52 ; c ; [base64 data] \a |
-|  104 | Reset color number                 | Ignored                 | |
+|  104 | Reset color number                 | Supported               | ESC ] 104 ; index1;...;indexN \a |
 |  105 | Reset special color number         | Ignored                 | |
 |  106 | Enable special color number        | Ignored                 | |
 |  110 | Reset foreground color             | Supported               | ESC ] 110 ; \a |

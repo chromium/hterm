@@ -247,6 +247,69 @@ hterm.TextAttributes.Tests.addTest('invisible', function(result, cx) {
   result.pass();
 });
 
+/**
+ * Check color palette reset.
+ */
+hterm.TextAttributes.Tests.addTest('reset-color-palette', function(result, cx) {
+  const tattrs = new hterm.TextAttributes(cx.window.document);
+
+  // The color entries we'll test.
+  const indices = [0, 7, 15, 31, 63, 127, 255];
+  // The unique color we'll test against.
+  const custom = '#123456';
+
+  // Change the colors.
+  indices.forEach((index) => {
+    // Make sure the default doesn't match our custom color.
+    result.assert(tattrs.colorPalette[index] != custom);
+    tattrs.colorPalette[index] = custom;
+  });
+
+  // Reset the palette and check the colors.
+  tattrs.resetColorPalette();
+  indices.forEach((index) => {
+    result.assert(tattrs.colorPalette[index] != custom);
+  });
+
+  result.pass();
+});
+
+/**
+ * Check individual color reset.
+ */
+hterm.TextAttributes.Tests.addTest('reset-color', function(result, cx) {
+  const tattrs = new hterm.TextAttributes(cx.window.document);
+
+  // The color entries we'll test.
+  const indices = [0, 7, 15, 31, 63, 127, 255];
+  // The unique color we'll test against.
+  const custom = '#123456';
+
+  // Change the colors and test the reset.
+  indices.forEach((index) => {
+    // Make sure the default doesn't match our custom color.
+    result.assert(tattrs.colorPalette[index] != custom);
+
+    tattrs.colorPalette[index] = custom;
+    tattrs.resetColor(index);
+
+    // Check it's back to the stock value.
+    result.assertEQ(lib.colors.stockColorPalette[index],
+                    tattrs.colorPalette[index]);
+  });
+
+  // Check some edge cases don't crash.
+  tattrs.colorPalette[0] = custom;
+  tattrs.resetColor('0');
+  result.assertEQ(lib.colors.stockColorPalette[0],
+                  tattrs.colorPalette[0]);
+
+  // Shouldn't do anything.
+  tattrs.resetColor('alskdjf');
+
+  result.pass();
+});
+
 hterm.TextAttributes.Tests.addTest('splitWidecharString-ascii', function(result, cx) {
   var text = 'abcdefghijklmn';
 

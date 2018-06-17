@@ -1900,6 +1900,24 @@ hterm.VT.OSC['52'] = function(parseState) {
 };
 
 /**
+ * Reset color palette.
+ */
+hterm.VT.OSC['104'] = function(parseState) {
+  const attrs = this.terminal.getTextAttributes();
+
+  // If there are no args, we reset the entire palette.
+  if (!parseState.args[0]) {
+    attrs.resetColorPalette();
+    return;
+  }
+
+  // Args come in as a single 'index1;index2;...;indexN' string.
+  // Split on the semicolon and iterate through the colors.
+  const args = parseState.args[0].split(';');
+  args.forEach((c) => attrs.resetColor(c));
+};
+
+/**
  * Reset foreground color.
  */
 hterm.VT.OSC['110'] = function(parseState) {
