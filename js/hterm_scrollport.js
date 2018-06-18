@@ -225,24 +225,22 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   }
 
   var anchorRow = selection.anchorNode;
-  while (anchorRow && !('rowIndex' in anchorRow)) {
+  while (anchorRow && anchorRow.nodeName != 'X-ROW') {
     anchorRow = anchorRow.parentNode;
   }
 
   if (!anchorRow) {
-    console.error('Selection anchor is not rooted in a row node: ' +
-                  selection.anchorNode.nodeName);
+    // Don't set a selection if it's not a row node that's selected.
     return;
   }
 
   var focusRow = selection.focusNode;
-  while (focusRow && !('rowIndex' in focusRow)) {
+  while (focusRow && focusRow.nodeName != 'X-ROW') {
     focusRow = focusRow.parentNode;
   }
 
   if (!focusRow) {
-    console.error('Selection focus is not rooted in a row node: ' +
-                  selection.focusNode.nodeName);
+    // Don't set a selection if it's not a row node that's selected.
     return;
   }
 
