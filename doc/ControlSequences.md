@@ -327,9 +327,9 @@ in the Action column below.
 
 ### ESC+&#35; (DEC) {#DEC}
 
-A few random escape sequences.  They are initiated with ESC+]+#.
+A few random escape sequences.  They are initiated with ESC+#.
 
-| DSC | Name   | Description                                    | Action  |
+| Num | Name   | Description                                    | Action  |
 |:---:|:------:|------------------------------------------------|---------|
 |   3 | DECDHL | Double-Width, Double-Height Line (Top Half)    | Ignored |
 |   4 | DECDHL | Double-Width, Double-Height Line (Bottom Half) | Ignored |

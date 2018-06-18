@@ -1444,8 +1444,11 @@ hterm.VT.ESC['\x20'] = function(parseState) {
 hterm.VT.ESC['#'] = function(parseState) {
   parseState.func = function(parseState) {
     var ch = parseState.consumeChar();
-    if (ch == '8')  // DEC Screen Alignment Test (DECALN)
+    if (ch == '8') {
+      // DEC Screen Alignment Test (DECALN).
+      this.terminal.setCursorPosition(0, 0);
       this.terminal.fill('E');
+    }
 
     parseState.resetParseFunction();
   };
