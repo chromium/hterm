@@ -1,3 +1,32 @@
+# 1.79, 2018-06-20, A11y (screen reader) improvements & keyboard/mouse fixes.
+
+* Update to libdot 1.22.  Unicode 11.0.0 updates and new helpers.
+* osc52.vim: Split base64 output when using get_OSC52_DCS for screen.
+* keyboard: Add media key handling only for Chrome OS systems.
+* keyboard: Cleanly handle Firefox keyboard deviations.
+* keyboard: Update Chromebook media bindings.
+* build: Fix base64 usage on macOS.
+* vt: Strip most control chars out for bracketed paste.
+* keyboard: Improve addKeyDef documentation.
+* mouse: Don't use user-configured word break matches when ctrl-clicking on urls.
+* mouse: Double click should expand selection whether "copy-on-select" is on or off.
+* a11y: Hide invisible elements from the screen reader.
+* a11y: Add the aria-readonly attribute to the x-screen element.
+* vt: Fix initial cursor display to match internal state.
+* vtscope: Fix python-3 print func handling.
+* prefs: Add Noto Sans Mono to the default font list.
+* Clean up code a bit to pass linting.
+* a11y: Add basic support for announcing command output to AT in hterm.
+* a11y: Improve accessibility command output.
+* tests: Add callbacks with image loading.
+* terminal: Preserve selection when scrolling collapsed selections.
+* Crush all images.
+* tests: Fix floating point rounding error in Terminal.dimensions.
+* vt: Unbreak legacy mouse wheel encoding.
+* vt: Implement OSC 104 (color reset) support.
+* vt: DECALN: Fix cursor position.
+* prefs: Improve descriptions and translation tips.
+
 # 1.78, 2018-01-29, Extended underlying support.
 
 * Add support for changing underline style/color.
