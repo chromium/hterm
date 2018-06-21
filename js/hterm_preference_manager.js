@@ -297,6 +297,10 @@ hterm.PreferenceManager.defaultPreferences = {
      // this shouldn't cause problems.
      'NCURSES_NO_UTF8_ACS': '1',
      'TERM': 'xterm-256color',
+     // Set this env var that a bunch of mainstream terminal emulators set to
+     // indicate we support true colors.
+     // https://gist.github.com/XVilka/8346728
+     'COLORTERM': 'truecolor',
    },
    'value',
    'The initial set of environment variables, as an object.'],
