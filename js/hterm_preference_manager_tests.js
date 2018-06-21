@@ -16,6 +16,7 @@ hterm.PreferenceManager.Tests = new lib.TestManager.Suite('hterm.PreferenceManag
 hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx) {
   const prefIdToMsgId = (id) => 'PREF_' + id.replace(/-/g, '_').toUpperCase();
   const msgIdToPrefId = (id) => id.substr(11).replace(/_/g, '-').toLowerCase();
+  const titleIdToMsgId = (id) => `TITLE_PREF_${id.toUpperCase()}`;
 
   // Load the translations database from nassh.
   hterm.messageManager.loadMessages(
@@ -29,6 +30,16 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
                 result.assert(key in hterm.PreferenceManager.defaultPreferences,
                               `stale ${msgId} translation for key ${key}`);
               }
+
+              if (msgId.startsWith('HTERM_TITLE_PREF_')) {
+                let found = false;
+                hterm.PreferenceManager.categoryDefinitions.forEach((def) => {
+                  if (msgId == 'HTERM_' + titleIdToMsgId(def.id))
+                    found = true;
+                });
+                result.assert(found,
+                              `stale ${msgId} translation for category`);
+              }
             });
 
         // Walk the local hterm prefs and make sure they match the nassh copy.
@@ -39,6 +50,14 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
               const nasshMsg = hterm.msg(msgId);
               result.assertEQ(htermMsg, nasshMsg, msgId);
             });
+
+        // Walk the hterm categories and make sure they match the nassh copy.
+        hterm.PreferenceManager.categoryDefinitions.forEach((def) => {
+          const msgId = titleIdToMsgId(def.id);
+          const htermMsg = def.text;
+          const nasshMsg = hterm.msg(msgId);
+          result.assertEQ(htermMsg, nasshMsg, msgId);
+        });
 
         result.pass();
       },

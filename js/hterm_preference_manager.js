@@ -74,7 +74,7 @@ hterm.PreferenceManager.categoryDefinitions = [
   { id: hterm.PreferenceManager.categories.Extensions,
     text: 'Extensions'},
   { id: hterm.PreferenceManager.categories.Miscellaneous,
-    text: 'Misc.'}
+    text: 'Miscellaneous'}
 ];
 
 
