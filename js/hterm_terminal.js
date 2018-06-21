@@ -102,6 +102,11 @@ hterm.Terminal = function(opt_profileId) {
   // True if we should override mouse event reporting to allow local selection.
   this.defeatMouseReports_ = false;
 
+  // Whether to auto hide the mouse cursor when typing.
+  this.setAutomaticMouseHiding();
+  // Timer to keep mouse visible while it's being used.
+  this.mouseHideDelay_ = null;
+
   // Terminal bell sound.
   this.bellAudio_ = this.document_.createElement('audio');
   this.bellAudio_.id = 'hterm:bell-audio';
@@ -428,6 +433,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'foreground-color': function(v) {
       terminal.setForegroundColor(v);
+    },
+
+    'hide-mouse-while-typing': function(v) {
+      terminal.setAutomaticMouseHiding(v);
     },
 
     'home-keys-scroll': function(v) {
@@ -1465,6 +1474,8 @@ hterm.Terminal.prototype.decorate = function(div) {
   screenNode.addEventListener('mouseup', onMouse);
   screenNode.addEventListener('mousemove', onMouse);
   this.scrollPort_.onScrollWheel = onMouse;
+
+  screenNode.addEventListener('keydown', this.onKeyboardActivity_.bind(this));
 
   screenNode.addEventListener(
       'focus', this.onFocusChange_.bind(this, true));
@@ -3319,6 +3330,33 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
   hterm.openUrl(str);
 };
 
+/**
+ * Manage the automatic mouse hiding behavior while typing.
+ *
+ * @param {boolean=} v Whether to enable automatic hiding.
+ */
+hterm.Terminal.prototype.setAutomaticMouseHiding = function(v=null) {
+  // Since Chrome OS & macOS do this by default everywhere, we don't need to.
+  // Linux & Windows seem to leave this to specific applications to manage.
+  if (v === null)
+    v = (hterm.os != 'cros' && hterm.os != 'mac');
+
+  this.mouseHideWhileTyping_ = !!v;
+};
+
+/**
+ * Handler for monitoring user keyboard activity.
+ *
+ * This isn't for processing the keystrokes directly, but for updating any
+ * state that might toggle based on the user using the keyboard at all.
+ *
+ * @param {KeyboardEvent} e The keyboard event that triggered us.
+ */
+hterm.Terminal.prototype.onKeyboardActivity_ = function(e) {
+  // When the user starts typing, hide the mouse cursor.
+  if (this.mouseHideWhileTyping_ && !this.mouseHideDelay_)
+    this.setCssVar('mouse-cursor-style', 'none');
+};
 
 /**
  * Add the terminalRow and terminalColumn properties to mouse events and
@@ -3345,6 +3383,17 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.vt.mouseReport != this.vt.MOUSE_REPORT_DISABLED);
 
   e.processedByTerminalHandler_ = true;
+
+  // Handle auto hiding of mouse cursor while typing.
+  if (this.mouseHideWhileTyping_ && !this.mouseHideDelay_) {
+    // Make sure the mouse cursor is visible.
+    this.syncMouseStyle();
+    // This debounce isn't perfect, but should work well enough for such a
+    // simple implementation.  If the user moved the mouse, we enabled this
+    // debounce, and then moved the mouse just before the timeout, we wouldn't
+    // debounce that later movement.
+    this.mouseHideDelay_ = setTimeout(() => this.mouseHideDelay_ = null, 1000);
+  }
 
   // One based row/column stored on the mouse event.
   e.terminalRow = parseInt((e.clientY - this.scrollPort_.visibleRowTopMargin) /

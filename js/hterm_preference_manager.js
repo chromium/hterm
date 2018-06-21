@@ -323,6 +323,14 @@ hterm.PreferenceManager.defaultPreferences = {
   [hterm.PreferenceManager.categories.Appearance, 'rgb(240, 240, 240)', 'color',
    'The foreground color for text with no other color attributes.'],
 
+  'hide-mouse-while-typing':
+  [hterm.PreferenceManager.categories.Keyboard, null, 'tristate',
+   'Whether to automatically hide the mouse cursor when typing. ' +
+   'By default, autodetect whether the platform/OS handles this.\n' +
+   '\n' +
+   'Note: Some operating systems may override this setting and thus you ' +
+   'might not be able to always disable it.'],
+
   'home-keys-scroll':
   [hterm.PreferenceManager.categories.Keyboard, false, 'bool',
    'If true, Home/End controls the terminal scrollbar and Shift-Home/' +
