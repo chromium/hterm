@@ -1,3 +1,9 @@
+# 1.80, 2018-06-22, Minor tweaks.
+
+* prefs: Add COLORTERM to default env.
+* vt: Automatically hide the mouse cursor while typing.
+* vt: Improve & document mouse cursor customization.
+
 # 1.79, 2018-06-20, A11y (screen reader) improvements & keyboard/mouse fixes.
 
 * Update to libdot 1.22.  Unicode 11.0.0 updates and new helpers.
