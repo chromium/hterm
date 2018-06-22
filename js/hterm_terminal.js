@@ -1515,7 +1515,7 @@ hterm.Terminal.prototype.decorate = function(div) {
        '}' +
        '.uri-node:hover {' +
        '  text-decoration: underline;' +
-       '  cursor: pointer;' +
+       '  cursor: var(--hterm-mouse-cursor-pointer), pointer;' +
        '}' +
        '@keyframes blink {' +
        '  from { opacity: 1.0; }' +
@@ -1528,7 +1528,12 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  animation-timing-function: ease-in-out;' +
        '  animation-direction: alternate;' +
        '}');
-  this.document_.head.appendChild(style);
+  // Insert this stock style as the first node so that any user styles will
+  // override w/out having to use !important everywhere.  The rules above mix
+  // runtime variables with default ones designed to be overridden by the user,
+  // but we can wait for a concrete case from the users to determine the best
+  // way to split the sheet up to before & after the user-css settings.
+  this.document_.head.insertBefore(style, this.document_.head.firstChild);
 
   this.cursorNode_ = this.document_.createElement('div');
   this.cursorNode_.id = 'hterm:terminal-cursor';
