@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>hterm test page</title>
+<meta charset='utf-8'/>
+<script src='../dist/js/hterm_deps.js'></script>
+<script src='../dist/js/hterm_resources.js'></script>
+<!-- Dist version.
+<script src='../dist/js/hterm.js'></script>
+-->
+<!-- Live version. -->
+<script src='../js/hterm.js'></script>
+<script src='../js/hterm_accessibility_reader.js'></script>
+<script src='../js/hterm_frame.js'></script>
+<script src='../js/hterm_keyboard.js'></script>
+<script src='../js/hterm_keyboard_bindings.js'></script>
+<script src='../js/hterm_keyboard_keymap.js'></script>
+<script src='../js/hterm_keyboard_keypattern.js'></script>
+<script src='../js/hterm_options.js'></script>
+<script src='../js/hterm_parser.js'></script>
+<script src='../js/hterm_parser_identifiers.js'></script>
+<script src='../js/hterm_preference_manager.js'></script>
+<script src='../js/hterm_pubsub.js'></script>
+<script src='../js/hterm_screen.js'></script>
+<script src='../js/hterm_scrollport.js'></script>
+<script src='../js/hterm_terminal.js'></script>
+<script src='../js/hterm_terminal_io.js'></script>
+<script src='../js/hterm_text_attributes.js'></script>
+<script src='../js/hterm_vt.js'></script>
+<script src='../js/hterm_vt_character_map.js'></script>
+
+<style>
+html {
+  height: 100%;
+}
+body {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  margin: 0px;
+  padding: 0px;
+}
+#terminal {
+  display: block;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+}
+</style>
+</head>
+
+<body>
+<div id='terminal'></div>
+<script>
+function initContent(io) {
+  const ver = lib.resource.getData('libdot/changelog/version');
+  const date = lib.resource.getData('libdot/changelog/date');
+  const pkg = `libdot ${ver} (${date})`;
+  io.println("\r\n\
+                            .--~~~~~~~~~~~~~------.\r\n\
+                           /--===============------\\\r\n\
+                           | |```````````````|     |\r\n\
+                           | |               |     |\r\n\
+                           | |      >_<      |     |\r\n\
+                           | |               |     |\r\n\
+                           | |_______________|     |\r\n\
+                           |                   ::::|\r\n\
+                           '======================='\r\n\
+                           //-'-'-'-'-'-'-'-'-'-'-\\\\\r\n\
+                          //_'_'_'_'_'_'_'_'_'_'_'_\\\\\r\n\
+                          [-------------------------]\r\n\
+                          \\_________________________/\r\n\
+\r\n\
+                               Welcome to hterm!\r\n\
+                Press F11 to go fullscreen to use all shortcuts.\r\n\
+                       Running " + pkg + ".\r\n\
+");
+};
+
+function setupHterm() {
+  const term = new hterm.Terminal();
+
+  term.onTerminalReady = function() {
+    const io = this.io.push();
+    function printPrompt() {
+      io.print(
+          '\x1b[38:2:51:105:232mh' +
+          '\x1b[38:2:213:15:37mt' +
+          '\x1b[38:2:238:178:17me' +
+          '\x1b[38:2:51:105:232mr' +
+          '\x1b[38:2:0:153:37mm' +
+          '\x1b[38:2:213:15:37m>' +
+          '\x1b[0m ');
+    }
+
+    io.onVTKeystroke = (string) => {
+      switch (string) {
+        case '\r':
+          io.println('');
+          printPrompt();
+          break;
+        default:
+          io.print(string);
+          break;
+      }
+    };
+    io.sendString = io.print;
+    initContent(io);
+    printPrompt();
+    this.setCursorVisible(true);
+
+    this.keyboard.characterEncoding = 'raw';
+    this.keyboard.bindings.addBinding('F11', 'PASS');
+    this.keyboard.bindings.addBinding('Ctrl-R', 'PASS');
+  };
+  term.decorate(document.querySelector('#terminal'));
+  term.installKeyboard();
+
+  // Useful for console debugging.
+  window.term_ = term;
+}
+
+window.onload = function() {
+  lib.init(setupHterm);
+};
+</script>
+
+</body>
+</html>
