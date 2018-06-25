@@ -897,7 +897,10 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
   if (!range || range.toString().match(/\s/))
     return;
 
-  var row = this.getLineStartRow_(this.getXRowAncestor_(range.startContainer));
+  const rowElement = this.getXRowAncestor_(range.startContainer);
+  if (!rowElement)
+    return;
+  const row = this.getLineStartRow_(rowElement);
   if (!row)
     return;
 

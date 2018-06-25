@@ -388,9 +388,77 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 
   doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
 
+  // Add buttons to make accessible scrolling through terminal history work
+  // well. These are positioned off-screen until they are selected, at which
+  // point they are moved on-screen.
+  const scrollButtonHeight = 30;
+  const scrollButtonBorder = 1;
+  const scrollButtonTotalHeight = scrollButtonHeight + 2 * scrollButtonBorder;
+  const scrollButtonStyle = `right: 0px;
+                             position:fixed;
+                             z-index: 1;
+                             text-align: center;
+                             cursor: pointer;
+                             height: ${scrollButtonHeight}px;
+                             width: 110px;
+                             line-height: ${scrollButtonHeight}px;
+                             border-width: ${scrollButtonBorder}px;
+                             border-style: solid;
+                             font-weight: bold;`;
+  // Note: we use a <div> rather than a <button> because we don't want it to be
+  // focusable. If it's focusable this interferes with the contenteditable
+  // focus.
+  this.scrollUpButton_ = this.document_.createElement('div');
+  this.scrollUpButton_.id = 'hterm:a11y:page-up';
+  this.scrollUpButton_.innerText = hterm.msg('BUTTON_PAGE_UP', [], 'Page up');
+  this.scrollUpButton_.setAttribute('role', 'button');
+  this.scrollUpButton_.style.cssText = scrollButtonStyle;
+  this.scrollUpButton_.style.top = -scrollButtonTotalHeight + 'px';
+  this.scrollUpButton_.addEventListener('click', () => {
+    const i = this.getTopRowIndex();
+    this.scrollRowToTop(i - this.visibleRowCount + 1);
+  });
+
+  this.scrollDownButton_ = this.document_.createElement('div');
+  this.scrollDownButton_.id = 'hterm:a11y:page-down';
+  this.scrollDownButton_.innerText =
+      hterm.msg('BUTTON_PAGE_DOWN', [], 'Page down');
+  this.scrollDownButton_.setAttribute('role', 'button');
+  this.scrollDownButton_.style.cssText = scrollButtonStyle;
+  this.scrollDownButton_.style.bottom = -scrollButtonTotalHeight + 'px';
+  this.scrollDownButton_.addEventListener('click', () => {
+    const i = this.getTopRowIndex();
+    this.scrollRowToTop(i + this.visibleRowCount - 1);
+  });
+
+  // We only allow the scroll buttons to display after a delay, otherwise the
+  // page up button can flash onto the screen during the intial change in focus.
+  // This seems to be because it is the first element inside the <x-screen>
+  // element, which will get focussed on page load.
+  this.allowScrollButtonsToDisplay_ = false;
+  setTimeout(() => { this.allowScrollButtonsToDisplay_ = true; }, 500);
   this.document_.addEventListener('selectionchange', () => {
     this.selection.sync();
+    if (!this.allowScrollButtonsToDisplay_)
+      return;
+    const selection = this.document_.getSelection();
+    let selectedElement;
+    if (selection.anchorNode && selection.anchorNode.parentElement) {
+      selectedElement = selection.anchorNode.parentElement;
+    }
+    if (selectedElement == this.scrollUpButton_) {
+      this.scrollUpButton_.style.top = '0px';
+    } else {
+      this.scrollUpButton_.style.top = -scrollButtonTotalHeight + 'px';
+    }
+    if (selectedElement == this.scrollDownButton_) {
+      this.scrollDownButton_.style.bottom = '0px';
+    } else {
+      this.scrollDownButton_.style.bottom = -scrollButtonTotalHeight + 'px';
+    }
   });
+
+  this.screen_.appendChild(this.scrollUpButton_);
 
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
@@ -402,6 +470,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       '-webkit-user-select: text;' +
       '-moz-user-select: text;');
   this.screen_.appendChild(this.rowNodes_);
+
+  this.screen_.appendChild(this.scrollDownButton_);
 
   // Two nodes to hold offscreen text during the copy event.
   this.topSelectBag_ = doc.createElement('x-select-bag');
@@ -542,6 +612,8 @@ hterm.ScrollPort.prototype.getForegroundColor = function() {
 
 hterm.ScrollPort.prototype.setForegroundColor = function(color) {
   this.screen_.style.color = color;
+  this.scrollUpButton_.style.backgroundColor = color;
+  this.scrollDownButton_.style.backgroundColor = color;
 };
 
 hterm.ScrollPort.prototype.getBackgroundColor = function() {
@@ -550,6 +622,8 @@ hterm.ScrollPort.prototype.getBackgroundColor = function() {
 
 hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
   this.screen_.style.backgroundColor = color;
+  this.scrollUpButton_.style.color = color;
+  this.scrollDownButton_.style.color = color;
 };
 
 hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
@@ -847,6 +921,21 @@ hterm.ScrollPort.prototype.scheduleRedraw = function() {
 };
 
 /**
+ * Update the state of scroll up/down buttons.
+ *
+ * If the viewport is at the top or bottom row of output, these buttons will
+ * be made transparent and clicking them shouldn't scroll any further.
+ */
+hterm.ScrollPort.prototype.updateScrollButtonState_ = function() {
+  const setButton = (button, disabled) => {
+    button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    button.style.opacity = disabled ? 0.5 : 1;
+  };
+  setButton(this.scrollUpButton_, this.getTopRowIndex() == 0);
+  setButton(this.scrollDownButton_, this.isScrolledEnd);
+};
+
+/**
  * Redraw the current hterm.ScrollPort based on the current scrollbar position.
  *
  * When redrawing, we are careful to make sure that the rows that start or end
@@ -878,6 +967,8 @@ hterm.ScrollPort.prototype.redraw_ = function() {
 
   this.isScrolledEnd = (
     this.getTopRowIndex() + this.visibleRowCount >= this.lastRowCount_);
+
+  this.updateScrollButtonState_();
 };
 
 /**

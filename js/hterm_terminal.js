@@ -3225,10 +3225,13 @@ hterm.Terminal.prototype.getSelectionText = function() {
   if (selection.isCollapsed)
     return null;
 
-
   // Start offset measures from the beginning of the line.
   var startOffset = selection.startOffset;
   var node = selection.startNode;
+
+  // If an x-row isn't selected, |node| will be null.
+  if (!node)
+    return null;
 
   if (node.nodeName != 'X-ROW') {
     // If the selection doesn't start on an x-row node, then it must be

@@ -221,6 +221,92 @@ hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {
   });
 
 /**
+ * Test that the page up/down buttons are onscreen when selected but offscreen
+ * otherwise.
+ */
+hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  this.scrollPort.allowScrollButtonsToDisplay_ = true;
+
+  const selection = doc.getSelection();
+
+  const pageUp = doc.getElementById('hterm:a11y:page-up');
+  result.assert(pageUp.getBoundingClientRect().bottom <= 0);
+
+  selection.removeAllRanges();
+  let range = document.createRange();
+  range.selectNodeContents(pageUp.firstChild);
+  selection.addRange(range);
+  doc.dispatchEvent(new Event('selectionchange'));
+
+  result.assert(pageUp.getBoundingClientRect().top >= 0);
+
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+  result.assert(pageDown.getBoundingClientRect().top >=
+                this.scrollPort.getScreenHeight());
+
+  selection.removeAllRanges();
+  range = document.createRange();
+  range.selectNodeContents(pageDown.firstChild);
+  selection.addRange(range);
+  doc.dispatchEvent(new Event('selectionchange'));
+
+  result.assert(pageDown.getBoundingClientRect().bottom <=
+                this.scrollPort.getScreenHeight());
+
+  result.pass();
+});
+
+/**
+ * Test that clicking page up/down causes the viewport to scroll up/down.
+ */
+hterm.ScrollPort.Tests.addTest('page-up-down-scroll', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  const topRow = 50;
+  this.scrollPort.scrollRowToTop(topRow);
+  result.assertEQ(this.scrollPort.getTopRowIndex(), topRow);
+
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+  pageDown.dispatchEvent(new Event('click'));
+  result.assertEQ(this.scrollPort.getTopRowIndex(), topRow + 24);
+
+  const pageUp = doc.getElementById('hterm:a11y:page-up');
+  pageUp.dispatchEvent(new Event('click'));
+  result.assertEQ(this.scrollPort.getTopRowIndex(), topRow);
+
+  result.pass();
+});
+
+/**
+ * Test that the page up/down buttons are enabled/disabled correctly at the top
+ * and bottom of the scrollport.
+ */
+hterm.ScrollPort.Tests.addTest('page-up-down-state', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+  const pageUp = doc.getElementById('hterm:a11y:page-up');
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+
+  this.scrollPort.scrollRowToTop(0);
+  this.scrollPort.redraw_();
+  result.assertEQ(pageUp.getAttribute('aria-disabled'), 'true');
+  result.assertEQ(pageDown.getAttribute('aria-disabled'), 'false');
+
+  this.scrollPort.scrollRowToTop(50);
+  this.scrollPort.redraw_();
+  result.assertEQ(pageUp.getAttribute('aria-disabled'), 'false');
+  result.assertEQ(pageDown.getAttribute('aria-disabled'), 'false');
+
+  this.scrollPort.scrollRowToTop(10000);
+  this.scrollPort.redraw_();
+  result.assertEQ(pageUp.getAttribute('aria-disabled'), 'false');
+  result.assertEQ(pageDown.getAttribute('aria-disabled'), 'true');
+
+  result.pass();
+});
+
+/**
  * Remove the scrollPort that was set up and leave the user with a full-page
  * scroll port.
  *
