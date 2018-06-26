@@ -76,6 +76,10 @@ hterm.AccessibilityReader.DELAY = 90;
  */
 hterm.AccessibilityReader.prototype.setAccessibilityEnabled =
     function(enabled) {
+  if (!enabled) {
+    this.clear();
+  }
+
   this.accessibilityEnabled = enabled;
 };
 
@@ -139,6 +143,10 @@ hterm.AccessibilityReader.prototype.announceCurrentScreen = function(str) {
  * Add a newline to the text that will be announced to the live region.
  */
 hterm.AccessibilityReader.prototype.newLine = function() {
+  if (!this.accessibilityEnabled) {
+    return;
+  }
+
   this.queue_.push('');
 };
 

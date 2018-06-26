@@ -184,3 +184,86 @@ hterm.AccessibilityReader.Tests.addTest(
   // Wait a time to ensure that nothing is announced from liveElement.
   result.requestTime(250);
 });
+
+/**
+ * Test that nothing is announced when accessibility is disabled.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-disabled-enabled', function(result, cx) {
+  this.accessibilityReader.setAccessibilityEnabled(false);
+  this.accessibilityReader.announce('Some test output');
+  this.accessibilityReader.announce('Some other test output');
+  this.accessibilityReader.newLine();
+  this.accessibilityReader.announce('More output');
+
+  result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+
+  // Only 'Other output' should be announced now.
+  this.accessibilityReader.setAccessibilityEnabled(true);
+  this.accessibilityReader.announce('Other output');
+
+  const observer = new MutationObserver(() => {
+    if (this.liveElement.getAttribute('aria-label') == 'Other output') {
+      result.pass();
+    } else {
+      result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+    }
+  });
+  observer.observe(this.liveElement, {attributes: true});
+
+  result.requestTime(250);
+});
+
+/**
+ * Test that when accessibility is disabled, nothing else will be announced.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-enabled-disabled', function(result, cx) {
+  this.accessibilityReader.announce('Some test output');
+  this.accessibilityReader.announce('Some other test output');
+  this.accessibilityReader.newLine();
+  this.accessibilityReader.announce('More output');
+
+  result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+
+  // The live element should not change because accessibility is disabled. It
+  // should only announce the 'PASS' string which comes after all the output
+  // above.
+  const observer = new MutationObserver(() => {
+    if (this.liveElement.getAttribute('aria-label') == 'PASS') {
+      result.pass();
+    } else {
+      result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+    }
+  });
+  observer.observe(this.liveElement, {attributes: true});
+
+  this.accessibilityReader.setAccessibilityEnabled(false);
+
+  this.accessibilityReader.setAccessibilityEnabled(true);
+  this.accessibilityReader.announce('PASS');
+
+  // Wait a time to ensure that nothing is announced from liveElement.
+  result.requestTime(250);
+});
+
+/**
+ * Test that when accessibility is disabled, assertive announcements aren't
+ * announced.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-assertive-disabled-enabled', function(result, cx) {
+  this.accessibilityReader.setAccessibilityEnabled(false);
+
+  this.accessibilityReader.announceCurrentScreen('Some test output');
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+
+  this.accessibilityReader.setAccessibilityEnabled(true);
+
+  this.accessibilityReader.announceCurrentScreen('Some test output');
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
+                  'Some test output');
+
+  result.pass();
+});
+
