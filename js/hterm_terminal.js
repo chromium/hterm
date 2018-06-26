@@ -115,10 +115,6 @@ hterm.Terminal = function(opt_profileId) {
   // The AccessibilityReader object for announcing command output.
   this.accessibilityReader_ = null;
 
-  // Whether command output should be rendered for Assistive Technology.
-  // This isn't always enabled because it has an impact on performance.
-  this.accessibilityEnabled_ = false;
-
   // All terminal bell notifications that have been generated (not necessarily
   // shown).
   this.bellNotificationList_ = [];
@@ -1202,8 +1198,7 @@ hterm.Terminal.prototype.scrollEnd = function() {
  * position.
  */
 hterm.Terminal.prototype.scrollPageUp = function() {
-  var i = this.scrollPort_.getTopRowIndex();
-  this.scrollPort_.scrollRowToTop(i - this.screenSize.height + 1);
+  this.scrollPort_.scrollPageUp();
 };
 
 /**
@@ -1211,8 +1206,7 @@ hterm.Terminal.prototype.scrollPageUp = function() {
  * position.
  */
 hterm.Terminal.prototype.scrollPageDown = function() {
-  var i = this.scrollPort_.getTopRowIndex();
-  this.scrollPort_.scrollRowToTop(i + this.screenSize.height - 1);
+  this.scrollPort_.scrollPageDown();
 };
 
 /**
@@ -1454,6 +1448,7 @@ hterm.Terminal.prototype.decorate = function(div) {
       this.prefs_.get('background-position'));
   this.scrollPort_.setUserCssUrl(this.prefs_.get('user-css'));
   this.scrollPort_.setUserCssText(this.prefs_.get('user-css-text'));
+  this.scrollPort_.setAccessibilityReader(this.accessibilityReader_);
 
   this.div_.focus = this.focus.bind(this);
 
@@ -1792,9 +1787,7 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
  */
 hterm.Terminal.prototype.print = function(str) {
   // Basic accessibility output for the screen reader.
-  if (this.accessibilityEnabled_) {
-    this.accessibilityReader_.announce(str);
-  }
+  this.accessibilityReader_.announce(str);
 
   var startOffset = 0;
 
@@ -2313,8 +2306,7 @@ hterm.Terminal.prototype.vtScrollDown = function(opt_count) {
  * @param {boolean} enabled Whether to enable accessibility-friendly features.
  */
 hterm.Terminal.prototype.setAccessibilityEnabled = function(enabled) {
-  this.accessibilityEnabled_ = enabled;
-  this.scrollPort_.setAccessibilityEnabled(enabled);
+  this.accessibilityReader_.setAccessibilityEnabled(enabled);
 };
 
 /**

@@ -23,15 +23,29 @@ hterm.AccessibilityReader = function(div) {
   // The live region element to add text to.
   const liveRegion = this.document_.createElement('div');
   liveRegion.id = 'hterm:accessibility-live-region';
-  liveRegion.setAttribute('aria-live', 'polite');
   liveRegion.style.cssText = `position: absolute;
                               width: 0; height: 0;
                               overflow: hidden;
                               left: 0; top: 0;`;
   div.appendChild(liveRegion);
+
+  // Whether command output should be rendered for Assistive Technology.
+  // This isn't always enabled because it has an impact on performance.
+  this.accessibilityEnabled = false;
+
+  // This live element is used for command output.
   this.liveElement_ = this.document_.createElement('p');
+  this.liveElement_.setAttribute('aria-live', 'polite');
   this.liveElement_.setAttribute('aria-label', '');
   liveRegion.appendChild(this.liveElement_);
+
+  // This live element is used for speaking out the current screen when
+  // navigating through the scrollback buffer. It will interrupt existing
+  // announcements.
+  this.assertiveLiveElement_ = this.document_.createElement('p');
+  this.assertiveLiveElement_.setAttribute('aria-live', 'assertive');
+  this.assertiveLiveElement_.setAttribute('aria-label', '');
+  liveRegion.appendChild(this.assertiveLiveElement_);
 
   // A queue of updates to announce.
   this.queue_ = [];
@@ -56,11 +70,25 @@ hterm.AccessibilityReader = function(div) {
 hterm.AccessibilityReader.DELAY = 90;
 
 /**
+ * Enable accessibility-friendly features that have a performance impact.
+ *
+ * @param {boolean} enabled Whether to enable accessibility-friendly features.
+ */
+hterm.AccessibilityReader.prototype.setAccessibilityEnabled =
+    function(enabled) {
+  this.accessibilityEnabled = enabled;
+};
+
+/**
  * Announce the command output.
  *
  * @param {string} str The string to announce using a live region.
  */
 hterm.AccessibilityReader.prototype.announce = function(str) {
+  if (!this.accessibilityEnabled) {
+    return;
+  }
+
   if (this.queue_.length == 0) {
     this.queue_.push(str);
   } else {
@@ -93,6 +121,21 @@ hterm.AccessibilityReader.prototype.announce = function(str) {
 };
 
 /**
+ * Announce the current screen of content. This will interrupt existing
+ * announcements.
+ *
+ * @param {string} str The string to announce using a live region.
+ */
+hterm.AccessibilityReader.prototype.announceCurrentScreen = function(str) {
+  if (!this.accessibilityEnabled) {
+    return;
+  }
+
+  this.clear();
+  this.assertiveLiveElement_.setAttribute('aria-label', str);
+};
+
+/**
  * Add a newline to the text that will be announced to the live region.
  */
 hterm.AccessibilityReader.prototype.newLine = function() {
@@ -104,6 +147,9 @@ hterm.AccessibilityReader.prototype.newLine = function() {
  */
 hterm.AccessibilityReader.prototype.clear = function() {
   this.liveElement_.setAttribute('aria-label', '');
+  this.assertiveLiveElement_.setAttribute('aria-label', '');
+  clearTimeout(this.nextReadTimer_);
+  this.nextReadTimer_ = null;
   this.queue_ = [];
 };
 
@@ -137,8 +183,8 @@ hterm.AccessibilityReader.prototype.onNextReadTimer_ = function() {
   // cleared. This is only necessary if the string to be announced is identical
   // to the previous string to be announced.
   // TODO(raymes): Optimize for the above case if necessary.
-  setTimeout(this.onClearFinished_.bind(this),
-             hterm.AccessibilityReader.DELAY / 2);
+  this.nextReadTimer_ = setTimeout(this.onClearFinished_.bind(this),
+                                   hterm.AccessibilityReader.DELAY / 2);
 };
 
 /**

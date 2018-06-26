@@ -87,11 +87,6 @@ hterm.ScrollPort = function(rowProvider) {
    */
   this.ctrlVPaste = false;
 
-  /**
-   * Whether accessibility features that impact performance should be enabled.
-   */
-  this.accessibilityEnabled_ = false;
-
   this.div_ = null;
   this.document_ = null;
 
@@ -220,7 +215,9 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   // readers will set a collapsed selection as they navigate through the DOM.
   // It is important to preserve these nodes in the DOM as scrolling happens
   // so that screen reader navigation isn't cleared.
-  if (this.isCollapsed && !this.scrollPort_.accessibilityEnabled_) {
+  const accessibilityEnabled = this.scrollPort_.accessibilityReader_ &&
+      this.scrollPort_.accessibilityReader_.accessibilityEnabled;
+  if (this.isCollapsed && !accessibilityEnabled) {
     return;
   }
 
@@ -414,10 +411,7 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.scrollUpButton_.setAttribute('role', 'button');
   this.scrollUpButton_.style.cssText = scrollButtonStyle;
   this.scrollUpButton_.style.top = -scrollButtonTotalHeight + 'px';
-  this.scrollUpButton_.addEventListener('click', () => {
-    const i = this.getTopRowIndex();
-    this.scrollRowToTop(i - this.visibleRowCount + 1);
-  });
+  this.scrollUpButton_.addEventListener('click', this.scrollPageUp.bind(this));
 
   this.scrollDownButton_ = this.document_.createElement('div');
   this.scrollDownButton_.id = 'hterm:a11y:page-down';
@@ -426,10 +420,8 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.scrollDownButton_.setAttribute('role', 'button');
   this.scrollDownButton_.style.cssText = scrollButtonStyle;
   this.scrollDownButton_.style.bottom = -scrollButtonTotalHeight + 'px';
-  this.scrollDownButton_.addEventListener('click', () => {
-    const i = this.getTopRowIndex();
-    this.scrollRowToTop(i + this.visibleRowCount - 1);
-  });
+  this.scrollDownButton_.addEventListener(
+      'click', this.scrollPageDown.bind(this));
 
   // We only allow the scroll buttons to display after a delay, otherwise the
   // page up button can flash onto the screen during the intial change in focus.
@@ -549,12 +541,36 @@ hterm.ScrollPort.prototype.decorate = function(div) {
 };
 
 /**
- * Enable accessibility-friendly features that have a performance impact.
+ * Set the AccessibilityReader object to use to announce page scroll updates.
  *
- * @param {boolean} enabled Whether to enable accessibility-friendly features.
+ * @param {hterm.AccessibilityReader} accessibilityReader for announcing page
+ *     scroll updates.
  */
-hterm.ScrollPort.prototype.setAccessibilityEnabled = function(enabled) {
-  this.accessibilityEnabled_ = enabled;
+hterm.ScrollPort.prototype.setAccessibilityReader =
+    function(accessibilityReader) {
+  this.accessibilityReader_ = accessibilityReader;
+};
+
+/**
+ * Scroll the terminal one page up (minus one line) relative to the current
+ * position.
+ */
+hterm.ScrollPort.prototype.scrollPageUp = function() {
+  const i = this.getTopRowIndex();
+  this.scrollRowToTop(i - this.visibleRowCount + 1);
+
+  this.announceCurrentScreen_();
+};
+
+/**
+ * Scroll the terminal one page down (minus one line) relative to the current
+ * position.
+ */
+hterm.ScrollPort.prototype.scrollPageDown = function() {
+  const i = this.getTopRowIndex();
+  this.scrollRowToTop(i + this.visibleRowCount - 1);
+
+  this.announceCurrentScreen_();
 };
 
 /**
@@ -851,6 +867,33 @@ hterm.ScrollPort.prototype.resize = function() {
         self.scrollRowToBottom(self.rowProvider_.getRowCount());
         self.scheduleRedraw();
       });
+};
+
+/**
+ * Announce text content on the current screen for the screen reader.
+ */
+hterm.ScrollPort.prototype.announceCurrentScreen_ = function() {
+  if (!this.accessibilityReader_) {
+    return;
+  }
+
+  const topRow = this.getTopRowIndex();
+  const bottomRow = this.getBottomRowIndex(topRow);
+
+  let percentScrolled = 100 * topRow /
+      (this.rowProvider_.getRowCount() - this.visibleRowCount);
+  percentScrolled = Math.min(100, Math.round(percentScrolled));
+  let currentScreenContent = hterm.msg('ANNOUNCE_CURRENT_SCREEN_HEADER',
+                                       [percentScrolled],
+                                       '$1% scrolled,');
+  currentScreenContent += '\n';
+
+  for (let i = topRow; i <= bottomRow; ++i) {
+    const node = this.fetchRowNode_(i);
+    currentScreenContent += node.textContent + '\n';
+  }
+
+  this.accessibilityReader_.announceCurrentScreen(currentScreenContent);
 };
 
 /**

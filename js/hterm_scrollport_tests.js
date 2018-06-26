@@ -4,6 +4,25 @@
 
 'use strict';
 
+/**
+ * A mock accessibility reader which will simply record the last string passed
+ * to announceCurrentScreen.
+ */
+const MockAccessibilityReader = function() {
+  this.accessibilityEnabled = false;
+  this.lastStringAnnounced = '';
+};
+
+/**
+ * Record the string passed to this function, which in a real implementation
+ * would be announced by the screen reader.
+ *
+ * @param {string} str The string to announce.
+ */
+MockAccessibilityReader.prototype.announceCurrentScreen = function(str) {
+  this.lastStringAnnounced = str;
+};
+
 hterm.ScrollPort.Tests = new lib.TestManager.Suite('hterm.ScrollPort.Tests');
 
 hterm.ScrollPort.Tests.prototype.setup = function(cx) {
@@ -173,7 +192,9 @@ hterm.ScrollPort.Tests.addTest(
 
   // When accessibility is enabled, the selection should be preserved after
   // scrolling.
-  this.scrollPort.setAccessibilityEnabled(true);
+  const mockAccessibilityReader = new MockAccessibilityReader();
+  mockAccessibilityReader.accessibilityEnabled = true;
+  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
 
   for (let i = 0; i < this.visibleRowCount; i++) {
     this.scrollPort.scrollRowToTop(50 - i);
@@ -191,7 +212,7 @@ hterm.ScrollPort.Tests.addTest(
 
   // When accessibility isn't enabled, the selection shouldn't be preserved
   // after scrolling.
-  this.scrollPort.setAccessibilityEnabled(false);
+  mockAccessibilityReader.accessibilityEnabled = false;
 
   for (let i = 0; i < this.visibleRowCount; i++) {
     this.scrollPort.scrollRowToTop(50 - i);
@@ -302,6 +323,118 @@ hterm.ScrollPort.Tests.addTest('page-up-down-state', function(result, cx) {
   this.scrollPort.redraw_();
   result.assertEQ(pageUp.getAttribute('aria-disabled'), 'false');
   result.assertEQ(pageDown.getAttribute('aria-disabled'), 'true');
+
+  result.pass();
+});
+
+/**
+ * Test that paging up/down causes the screen contents to be announced
+ * correctly.
+ */
+hterm.ScrollPort.Tests.addTest('page-up-down-announce', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  this.scrollPort.scrollRowToTop(0);
+  const mockAccessibilityReader = new MockAccessibilityReader();
+  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
+
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+  pageDown.dispatchEvent(new Event('click'));
+  result.assertEQ(
+      mockAccessibilityReader.lastStringAnnounced,
+      '0% scrolled,\n' +
+      'This is line 24 red green yellow blue magenta cyan\n' +
+      'This is line 25 red green yellow blue magenta cyan\n' +
+      'This is line 26 red green yellow blue magenta cyan\n' +
+      'This is line 27 red green yellow blue magenta cyan\n' +
+      'This is line 28 red green yellow blue magenta cyan\n' +
+      'This is line 29 red green yellow blue magenta cyan\n' +
+      'This is line 30 red green yellow blue magenta cyan\n' +
+      'This is line 31 red green yellow blue magenta cyan\n' +
+      'This is line 32 red green yellow blue magenta cyan\n' +
+      'This is line 33 red green yellow blue magenta cyan\n' +
+      'This is line 34 red green yellow blue magenta cyan\n' +
+      'This is line 35 red green yellow blue magenta cyan\n' +
+      'This is line 36 red green yellow blue magenta cyan\n' +
+      'This is line 37 red green yellow blue magenta cyan\n' +
+      'This is line 38 red green yellow blue magenta cyan\n' +
+      'This is line 39 red green yellow blue magenta cyan\n' +
+      'This is line 40 red green yellow blue magenta cyan\n' +
+      'This is line 41 red green yellow blue magenta cyan\n' +
+      'This is line 42 red green yellow blue magenta cyan\n' +
+      'This is line 43 red green yellow blue magenta cyan\n' +
+      'This is line 44 red green yellow blue magenta cyan\n' +
+      'This is line 45 red green yellow blue magenta cyan\n' +
+      'This is line 46 red green yellow blue magenta cyan\n' +
+      'This is line 47 red green yellow blue magenta cyan\n' +
+      'This is line 48 red green yellow blue magenta cyan\n');
+
+  const pageUp = doc.getElementById('hterm:a11y:page-up');
+  pageUp.dispatchEvent(new Event('click'));
+  const linesOneToTwentyFive = '0% scrolled,\n' +
+      'This is line 0 red green yellow blue magenta cyan\n' +
+      'This is line 1 red green yellow blue magenta cyan\n' +
+      'This is line 2 red green yellow blue magenta cyan\n' +
+      'This is line 3 red green yellow blue magenta cyan\n' +
+      'This is line 4 red green yellow blue magenta cyan\n' +
+      'This is line 5 red green yellow blue magenta cyan\n' +
+      'This is line 6 red green yellow blue magenta cyan\n' +
+      'This is line 7 red green yellow blue magenta cyan\n' +
+      'This is line 8 red green yellow blue magenta cyan\n' +
+      'This is line 9 red green yellow blue magenta cyan\n' +
+      'This is line 10 red green yellow blue magenta cyan\n' +
+      'This is line 11 red green yellow blue magenta cyan\n' +
+      'This is line 12 red green yellow blue magenta cyan\n' +
+      'This is line 13 red green yellow blue magenta cyan\n' +
+      'This is line 14 red green yellow blue magenta cyan\n' +
+      'This is line 15 red green yellow blue magenta cyan\n' +
+      'This is line 16 red green yellow blue magenta cyan\n' +
+      'This is line 17 red green yellow blue magenta cyan\n' +
+      'This is line 18 red green yellow blue magenta cyan\n' +
+      'This is line 19 red green yellow blue magenta cyan\n' +
+      'This is line 20 red green yellow blue magenta cyan\n' +
+      'This is line 21 red green yellow blue magenta cyan\n' +
+      'This is line 22 red green yellow blue magenta cyan\n' +
+      'This is line 23 red green yellow blue magenta cyan\n' +
+      'This is line 24 red green yellow blue magenta cyan\n'
+  result.assertEQ(mockAccessibilityReader.lastStringAnnounced,
+                  linesOneToTwentyFive);
+
+  // Test that other forms of scrolling won't cause announcements.
+  this.scrollPort.scrollRowToTop(2000);
+  result.assertEQ(mockAccessibilityReader.lastStringAnnounced,
+                  linesOneToTwentyFive);
+
+  // Ensure the percentage is computed correctly.
+  pageDown.dispatchEvent(new Event('click'));
+  result.assertEQ(
+      mockAccessibilityReader.lastStringAnnounced,
+      '20% scrolled,\n' +
+      'This is line 2024 red green yellow blue magenta cyan\n' +
+      'This is line 2025 red green yellow blue magenta cyan\n' +
+      'This is line 2026 red green yellow blue magenta cyan\n' +
+      'This is line 2027 red green yellow blue magenta cyan\n' +
+      'This is line 2028 red green yellow blue magenta cyan\n' +
+      'This is line 2029 red green yellow blue magenta cyan\n' +
+      'This is line 2030 red green yellow blue magenta cyan\n' +
+      'This is line 2031 red green yellow blue magenta cyan\n' +
+      'This is line 2032 red green yellow blue magenta cyan\n' +
+      'This is line 2033 red green yellow blue magenta cyan\n' +
+      'This is line 2034 red green yellow blue magenta cyan\n' +
+      'This is line 2035 red green yellow blue magenta cyan\n' +
+      'This is line 2036 red green yellow blue magenta cyan\n' +
+      'This is line 2037 red green yellow blue magenta cyan\n' +
+      'This is line 2038 red green yellow blue magenta cyan\n' +
+      'This is line 2039 red green yellow blue magenta cyan\n' +
+      'This is line 2040 red green yellow blue magenta cyan\n' +
+      'This is line 2041 red green yellow blue magenta cyan\n' +
+      'This is line 2042 red green yellow blue magenta cyan\n' +
+      'This is line 2043 red green yellow blue magenta cyan\n' +
+      'This is line 2044 red green yellow blue magenta cyan\n' +
+      'This is line 2045 red green yellow blue magenta cyan\n' +
+      'This is line 2046 red green yellow blue magenta cyan\n' +
+      'This is line 2047 red green yellow blue magenta cyan\n' +
+      'This is line 2048 red green yellow blue magenta cyan\n');
 
   result.pass();
 });
