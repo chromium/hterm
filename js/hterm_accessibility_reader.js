@@ -147,7 +147,10 @@ hterm.AccessibilityReader.prototype.newLine = function() {
     return;
   }
 
-  this.queue_.push('');
+  // Don't append to the queue if the queue is empty. It won't have any impact.
+  if (this.queue_.length > 0) {
+    this.queue_.push('');
+  }
 };
 
 /**

@@ -267,3 +267,15 @@ hterm.AccessibilityReader.Tests.addTest(
   result.pass();
 });
 
+/**
+ * Regression test for a bug that is caused by adding 2 newlines and then
+ * calling announce. In this case an exception was thrown.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-newlines-then-announce', function(result, cx) {
+  this.accessibilityReader.newLine();
+  this.accessibilityReader.newLine();
+  this.accessibilityReader.announce('Some test output');
+
+  result.pass();
+});
