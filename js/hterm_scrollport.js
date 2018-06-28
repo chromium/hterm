@@ -889,7 +889,7 @@ hterm.ScrollPort.prototype.announceCurrentScreen_ = function() {
   const bottomRow = this.getBottomRowIndex(topRow);
 
   let percentScrolled = 100 * topRow /
-      (this.rowProvider_.getRowCount() - this.visibleRowCount);
+      Math.max(1, this.rowProvider_.getRowCount() - this.visibleRowCount);
   percentScrolled = Math.min(100, Math.round(percentScrolled));
   let currentScreenContent = hterm.msg('ANNOUNCE_CURRENT_SCREEN_HEADER',
                                        [percentScrolled],

@@ -464,6 +464,32 @@ hterm.ScrollPort.Tests.addTest(
 });
 
 /**
+ * Test that the percentage scrolled is always listed as 0% when all rows are
+ * visible.
+ */
+hterm.ScrollPort.Tests.addTest(
+    'page-down-all-rows-visible', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  // Resize the scrollport to show all rows.
+  doc.body.firstChild.style.height =
+      this.scrollPort.characterSize.height * this.totalRowCount + 1 + 'px';
+  this.scrollPort.resize();
+
+  this.scrollPort.scrollRowToTop(0);
+  const mockAccessibilityReader = new MockAccessibilityReader();
+  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
+
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+  pageDown.dispatchEvent(new Event('click'));
+  result.assertEQ(
+      mockAccessibilityReader.lastStringAnnounced.split('\n')[0],
+      '0% scrolled,');
+
+  result.pass();
+});
+
+/**
  * Remove the scrollPort that was set up and leave the user with a full-page
  * scroll port.
  *
