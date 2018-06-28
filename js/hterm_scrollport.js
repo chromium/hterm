@@ -556,6 +556,10 @@ hterm.ScrollPort.prototype.setAccessibilityReader =
  * position.
  */
 hterm.ScrollPort.prototype.scrollPageUp = function() {
+  if (this.getTopRowIndex() == 0) {
+    return;
+  }
+
   const i = this.getTopRowIndex();
   this.scrollRowToTop(i - this.visibleRowCount + 1);
 
@@ -567,6 +571,10 @@ hterm.ScrollPort.prototype.scrollPageUp = function() {
  * position.
  */
 hterm.ScrollPort.prototype.scrollPageDown = function() {
+  if (this.isScrolledEnd) {
+    return;
+  }
+
   const i = this.getTopRowIndex();
   this.scrollRowToTop(i + this.visibleRowCount - 1);
 

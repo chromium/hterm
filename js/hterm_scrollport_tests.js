@@ -440,6 +440,30 @@ hterm.ScrollPort.Tests.addTest('page-up-down-announce', function(result, cx) {
 });
 
 /**
+ * Test that paging up/down when at the top/bottom of the screen doesn't trigger
+ * any announcement.
+ */
+hterm.ScrollPort.Tests.addTest(
+    'page-up-down-dont-announce', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  this.scrollPort.scrollRowToTop(0);
+  const mockAccessibilityReader = new MockAccessibilityReader();
+  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
+
+  const pageUp = doc.getElementById('hterm:a11y:page-up');
+  pageUp.dispatchEvent(new Event('click'));
+  result.assertEQ(mockAccessibilityReader.lastStringAnnounced, '');
+
+  this.scrollPort.scrollRowToTop(10000);
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+  pageDown.dispatchEvent(new Event('click'));
+  result.assertEQ(mockAccessibilityReader.lastStringAnnounced, '');
+
+  result.pass();
+});
+
+/**
  * Remove the scrollPort that was set up and leave the user with a full-page
  * scroll port.
  *
