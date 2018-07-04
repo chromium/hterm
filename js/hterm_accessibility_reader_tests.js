@@ -141,7 +141,7 @@ hterm.AccessibilityReader.Tests.addTest(
  */
 hterm.AccessibilityReader.Tests.addTest(
     'a11y-assertive-live-region', function(result, cx) {
-  this.accessibilityReader.announceCurrentScreen('Some test output');
+  this.accessibilityReader.assertiveAnnounce('Some test output');
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
                   'Some test output');
   this.accessibilityReader.clear();
@@ -175,7 +175,7 @@ hterm.AccessibilityReader.Tests.addTest(
   });
   observer.observe(this.liveElement, {attributes: true});
 
-  this.accessibilityReader.announceCurrentScreen('Some test output');
+  this.accessibilityReader.assertiveAnnounce('Some test output');
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
                   'Some test output');
 
@@ -248,21 +248,23 @@ hterm.AccessibilityReader.Tests.addTest(
 });
 
 /**
- * Test that when accessibility is disabled, assertive announcements aren't
- * announced.
+ * Test that when accessibility is disabled, assertive announcements still work.
+ * These are not performance sensitive so they don't need to be gated on the
+ * flag.
  */
 hterm.AccessibilityReader.Tests.addTest(
     'a11y-assertive-disabled-enabled', function(result, cx) {
   this.accessibilityReader.setAccessibilityEnabled(false);
 
-  this.accessibilityReader.announceCurrentScreen('Some test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  this.accessibilityReader.assertiveAnnounce('Some test output');
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
+                  'Some test output');
 
   this.accessibilityReader.setAccessibilityEnabled(true);
 
-  this.accessibilityReader.announceCurrentScreen('Some test output');
+  this.accessibilityReader.assertiveAnnounce('More test output');
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  'Some test output');
+                  'More test output');
 
   result.pass();
 });

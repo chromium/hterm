@@ -224,6 +224,21 @@ hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
   });
 
 /**
+ * Verify showing an overlay will also announce the message.
+ */
+hterm.Terminal.Tests.addTest('show-overlay-announce', function(result, cx) {
+  const liveElement = this.terminal.accessibilityReader_.assertiveLiveElement_;
+
+  this.terminal.showOverlay('test');
+  result.assertEQ('test', liveElement.getAttribute('aria-label'));
+
+  this.terminal.showOverlay('hello');
+  result.assertEQ('hello', liveElement.getAttribute('aria-label'));
+
+  result.pass();
+});
+
+/**
  * Test that focus sequences are passed as expected when focus reporting is
  * turned on, and nothing is passed when reporting is off.
  */

@@ -6,7 +6,7 @@
 
 /**
  * A mock accessibility reader which will simply record the last string passed
- * to announceCurrentScreen.
+ * to assertiveAnnounce.
  */
 const MockAccessibilityReader = function() {
   this.accessibilityEnabled = false;
@@ -19,7 +19,7 @@ const MockAccessibilityReader = function() {
  *
  * @param {string} str The string to announce.
  */
-MockAccessibilityReader.prototype.announceCurrentScreen = function(str) {
+MockAccessibilityReader.prototype.assertiveAnnounce = function(str) {
   this.lastStringAnnounced = str;
 };
 

@@ -2950,6 +2950,8 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   if (this.overlayTimeout_)
     clearTimeout(this.overlayTimeout_);
 
+  this.accessibilityReader_.assertiveAnnounce(msg);
+
   if (opt_timeout === null)
     return;
 

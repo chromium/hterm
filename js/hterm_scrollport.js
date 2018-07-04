@@ -563,7 +563,7 @@ hterm.ScrollPort.prototype.scrollPageUp = function() {
   const i = this.getTopRowIndex();
   this.scrollRowToTop(i - this.visibleRowCount + 1);
 
-  this.announceCurrentScreen_();
+  this.assertiveAnnounce_();
 };
 
 /**
@@ -578,7 +578,7 @@ hterm.ScrollPort.prototype.scrollPageDown = function() {
   const i = this.getTopRowIndex();
   this.scrollRowToTop(i + this.visibleRowCount - 1);
 
-  this.announceCurrentScreen_();
+  this.assertiveAnnounce_();
 };
 
 /**
@@ -880,7 +880,7 @@ hterm.ScrollPort.prototype.resize = function() {
 /**
  * Announce text content on the current screen for the screen reader.
  */
-hterm.ScrollPort.prototype.announceCurrentScreen_ = function() {
+hterm.ScrollPort.prototype.assertiveAnnounce_ = function() {
   if (!this.accessibilityReader_) {
     return;
   }
@@ -901,7 +901,7 @@ hterm.ScrollPort.prototype.announceCurrentScreen_ = function() {
     currentScreenContent += node.textContent + '\n';
   }
 
-  this.accessibilityReader_.announceCurrentScreen(currentScreenContent);
+  this.accessibilityReader_.assertiveAnnounce(currentScreenContent);
 };
 
 /**

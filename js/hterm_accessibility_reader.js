@@ -125,16 +125,11 @@ hterm.AccessibilityReader.prototype.announce = function(str) {
 };
 
 /**
- * Announce the current screen of content. This will interrupt existing
- * announcements.
+ * Voice an announcement that will interrupt other announcements.
  *
  * @param {string} str The string to announce using a live region.
  */
-hterm.AccessibilityReader.prototype.announceCurrentScreen = function(str) {
-  if (!this.accessibilityEnabled) {
-    return;
-  }
-
+hterm.AccessibilityReader.prototype.assertiveAnnounce = function(str) {
   this.clear();
   this.assertiveLiveElement_.setAttribute('aria-label', str);
 };
