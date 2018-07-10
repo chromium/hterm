@@ -350,8 +350,18 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   this.screen_.setAttribute('autocomplete', 'off');
   this.screen_.setAttribute('autocorrect', 'off');
   this.screen_.setAttribute('autocapitalize', 'none');
-  this.screen_.setAttribute('role', 'textbox');
+
+  // In some ways the terminal behaves like a text box but not in all ways. It
+  // is not editable in the same ways a text box is editable and the content we
+  // want to be read out by a screen reader does not always align with the edits
+  // (selection changes) that happen in the terminal window. Use the log role so
+  // that the screen reader doesn't treat it like a text box and announce all
+  // selection changes. The announcements that we want spoken are generated
+  // by a separate live region, which gives more control over what will be
+  // spoken.
+  this.screen_.setAttribute('role', 'log');
   this.screen_.setAttribute('aria-live', 'off');
+  this.screen_.setAttribute('aria-roledescription', 'Terminal');
 
   // Set aria-readonly to indicate to the screen reader that the text on the
   // screen is not modifiable by the html cursor. It may be modifiable by
