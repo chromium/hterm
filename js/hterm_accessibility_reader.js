@@ -67,7 +67,7 @@ hterm.AccessibilityReader = function(div) {
  * @constant
  * @type {integer}
  */
-hterm.AccessibilityReader.DELAY = 90;
+hterm.AccessibilityReader.DELAY = 50;
 
 /**
  * Enable accessibility-friendly features that have a performance impact.
@@ -116,8 +116,8 @@ hterm.AccessibilityReader.prototype.announce = function(str) {
   // very soon after. In that case, wait a small delay so we can merge the
   // related strings.
   if (this.queue_.length == 1) {
-    this.nextReadTimer_ = setTimeout(this.onNextReadTimer_.bind(this),
-                                     hterm.AccessibilityReader.DELAY / 2);
+    this.nextReadTimer_ = setTimeout(this.addToLiveRegion_.bind(this),
+                                     hterm.AccessibilityReader.DELAY);
   } else {
     throw new Error(
         'Expected only one item in queue_ or nextReadTimer_ to be running.');
@@ -130,6 +130,15 @@ hterm.AccessibilityReader.prototype.announce = function(str) {
  * @param {string} str The string to announce using a live region.
  */
 hterm.AccessibilityReader.prototype.assertiveAnnounce = function(str) {
+  // If the same string is announced twice, an attribute change won't be
+  // registered and the screen reader won't know that the string has changed.
+  // So we slightly change the string to ensure that the attribute change gets
+  // registered.
+  str = str.trim();
+  if (str == this.assertiveLiveElement_.getAttribute('aria-label')) {
+    str = '\n' + str;
+  }
+
   this.clear();
   this.assertiveLiveElement_.setAttribute('aria-label', str);
 };
@@ -164,39 +173,18 @@ hterm.AccessibilityReader.prototype.clear = function() {
  *
  */
 hterm.AccessibilityReader.prototype.addToLiveRegion_ = function() {
-  if (this.nextReadTimer_) {
-    throw new Error('Expected nextReadTimer_ not to be running.');
+  this.nextReadTimer_ = null;
+
+  let str = this.queue_.join('\n').trim();
+
+  // If the same string is announced twice, an attribute change won't be
+  // registered and the screen reader won't know that the string has changed.
+  // So we slightly change the string to ensure that the attribute change gets
+  // registered.
+  if (str == this.liveElement_.getAttribute('aria-label')) {
+    str = '\n' + str;
   }
 
-  // As soon as the aria-label is changed, the screen reader will be informed so
-  // we can re-use the same element.
-  // TODO(raymes): One downside of this approach is that strings that span two
-  // calls to addToLiveRegion_ will have a newline placed between them. We could
-  // try to use heuristics to avoid this but it would be more complicated and it
-  // should only happen for large amounts of output.
-  this.liveElement_.setAttribute('aria-label', this.queue_.join('\n'));
+  this.liveElement_.setAttribute('aria-label', str);
   this.queue_ = [];
-};
-
-/**
- * Fired when nextReadTimer_ finishes.
- *
- * This clears the aria-label attribute and sets up a call to onClearFinished_.
- */
-hterm.AccessibilityReader.prototype.onNextReadTimer_ = function() {
-  this.liveElement_.setAttribute('aria-label', '');
-  // We need to wait for the screen reader to register that the attribute is
-  // cleared. This is only necessary if the string to be announced is identical
-  // to the previous string to be announced.
-  // TODO(raymes): Optimize for the above case if necessary.
-  this.nextReadTimer_ = setTimeout(this.onClearFinished_.bind(this),
-                                   hterm.AccessibilityReader.DELAY / 2);
-};
-
-/**
- * Fired when sufficient time has passed to clear the aria-label attribute.
- */
-hterm.AccessibilityReader.prototype.onClearFinished_ = function() {
-  this.nextReadTimer_ = null;
-  this.addToLiveRegion_();
 };

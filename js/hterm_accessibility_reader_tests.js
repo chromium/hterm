@@ -48,29 +48,11 @@ hterm.AccessibilityReader.Tests.addTest(
 
   result.assertEQ('', this.liveElement.getAttribute('aria-label'));
 
-  const checkClear = () => {
-    result.assertEQ('',
-                    this.liveElement.getAttribute('aria-label'));
-    return true;
-  };
-
-  const checkFirstAnnounce = () => {
+  const observer = new MutationObserver(() => {
     result.assertEQ('Some test output Some other test output\nMore output',
                     this.liveElement.getAttribute('aria-label'));
-    return true;
-  };
-
-  const checksToComplete = [checkClear, checkFirstAnnounce];
-
-  const observer = new MutationObserver(() => {
-    if (checksToComplete[0]()) {
-      checksToComplete.shift();
-    }
-
-    if (checksToComplete.length == 0) {
-      observer.disconnect();
-      result.pass();
-    }
+    observer.disconnect();
+    result.pass();
   });
 
   observer.observe(this.liveElement, {attributes: true});
@@ -93,11 +75,6 @@ hterm.AccessibilityReader.Tests.addTest(
 
   result.assertEQ('', this.liveElement.getAttribute('aria-label'));
 
-  const checkClear = () => {
-    result.assertEQ('', this.liveElement.getAttribute('aria-label'));
-    return true;
-  };
-
   const checkFirstAnnounce = () => {
     result.assertEQ('Some test output Some other test output\nMore output',
                     this.liveElement.getAttribute('aria-label'));
@@ -114,10 +91,50 @@ hterm.AccessibilityReader.Tests.addTest(
     return true;
   };
 
-  const checksToComplete = [checkClear,
-                            checkFirstAnnounce,
-                            checkClear,
-                            checkSecondAnnounce];
+  const checksToComplete = [checkFirstAnnounce, checkSecondAnnounce];
+
+  const observer = new MutationObserver(() => {
+    if (checksToComplete[0]()) {
+      checksToComplete.shift();
+    }
+
+    if (checksToComplete.length == 0) {
+      observer.disconnect();
+      result.pass();
+    }
+  });
+
+  observer.observe(this.liveElement, {attributes: true});
+  // This should only need to be 2x the initial delay but we wait longer to
+  // avoid flakiness.
+  result.requestTime(500);
+});
+
+/**
+ * Test that adding the same text twice to the live region gets slightly
+ * modified to trigger an attribute change.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-live-region-duplicate-text', function(result, cx) {
+  this.accessibilityReader.announce('Some test output');
+
+  result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+
+  const checkFirstAnnounce = () => {
+    result.assertEQ('Some test output',
+                    this.liveElement.getAttribute('aria-label'));
+
+    this.accessibilityReader.announce('Some test output');
+    return true;
+  };
+
+  const checkSecondAnnounce = () => {
+    result.assertEQ('\nSome test output',
+                    this.liveElement.getAttribute('aria-label'));
+    return true;
+  };
+
+  const checksToComplete = [checkFirstAnnounce, checkSecondAnnounce];
 
   const observer = new MutationObserver(() => {
     if (checksToComplete[0]()) {
@@ -147,6 +164,21 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.clear();
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
                   '');
+  result.pass();
+});
+
+/**
+ * Test that adding the same text twice to the assertive live region gets
+ * slightly modified to trigger an attribute change.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-assertive-live-region-duplicate-text', function(result, cx) {
+  this.accessibilityReader.assertiveAnnounce('Some test output');
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
+                  'Some test output');
+  this.accessibilityReader.assertiveAnnounce('Some test output');
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
+                  '\nSome test output');
   result.pass();
 });
 
