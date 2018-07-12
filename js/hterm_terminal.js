@@ -1421,8 +1421,8 @@ hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
  * @param {string} str Sequence of characters to interpret or pass through.
  */
 hterm.Terminal.prototype.interpret = function(str) {
-  this.vt.interpret(str);
   this.scheduleSyncCursorPosition_();
+  this.vt.interpret(str);
 };
 
 /**
@@ -1460,6 +1460,7 @@ hterm.Terminal.prototype.decorate = function(div) {
       this.prefs_.get('scroll-wheel-move-multiplier'));
 
   this.document_ = this.scrollPort_.getDocument();
+  this.accessibilityReader_.decorate(this.document_);
 
   this.document_.body.oncontextmenu = function() { return false; };
 
@@ -1786,6 +1787,8 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
  * @param{string} str The string to print.
  */
 hterm.Terminal.prototype.print = function(str) {
+  this.scheduleSyncCursorPosition_();
+
   // Basic accessibility output for the screen reader.
   this.accessibilityReader_.announce(str);
 
@@ -1840,8 +1843,6 @@ hterm.Terminal.prototype.print = function(str) {
     this.screen_.maybeClipCurrentRow();
     startOffset += count;
   }
-
-  this.scheduleSyncCursorPosition_();
 
   if (this.scrollOnOutput_)
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
@@ -2756,6 +2757,15 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
   var cursorRowIndex = this.scrollbackRows_.length +
       this.screen_.cursorPosition.row;
 
+  if (this.accessibilityReader_.accessibilityEnabled) {
+    // Report the new position of the cursor for accessibility purposes.
+    const cursorColumnIndex = this.screen_.cursorPosition.column;
+    const cursorLineText =
+        this.screen_.rowsArray[this.screen_.cursorPosition.row].innerText;
+    this.accessibilityReader_.afterCursorChange(
+        cursorLineText, cursorRowIndex, cursorColumnIndex);
+  }
+
   if (cursorRowIndex > bottomRowIndex) {
     // Cursor is scrolled off screen, move it outside of the visible area.
     this.setCssVar('cursor-offset-row', '-1');
@@ -2831,11 +2841,23 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
  * Synchronizes the visible cursor with the current cursor coordinates.
  *
  * The sync will happen asynchronously, soon after the call stack winds down.
- * Multiple calls will be coalesced into a single sync.
+ * Multiple calls will be coalesced into a single sync. This should be called
+ * prior to the cursor actually changing position.
  */
 hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
   if (this.timeouts_.syncCursor)
     return;
+
+  if (this.accessibilityReader_.accessibilityEnabled) {
+    // Report the previous position of the cursor for accessibility purposes.
+    const cursorRowIndex = this.scrollbackRows_.length +
+        this.screen_.cursorPosition.row;
+    const cursorColumnIndex = this.screen_.cursorPosition.column;
+    const cursorLineText =
+        this.screen_.rowsArray[this.screen_.cursorPosition.row].innerText;
+    this.accessibilityReader_.beforeCursorChange(
+        cursorLineText, cursorRowIndex, cursorColumnIndex);
+  }
 
   var self = this;
   this.timeouts_.syncCursor = setTimeout(function() {
