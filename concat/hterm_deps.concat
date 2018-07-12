@@ -9,6 +9,7 @@ libdot/js/lib_polyfill.js
 libdot/js/lib_array.js
 libdot/js/lib_colors.js
 libdot/js/lib_f.js
+libdot/js/lib_i18n.js
 libdot/js/lib_message_manager.js
 libdot/js/lib_preference_manager.js
 libdot/js/lib_resource.js

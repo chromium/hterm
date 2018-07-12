@@ -81,7 +81,7 @@ lib.registerInit('hterm', function(onInit) {
   }
 
   function initMessageManager() {
-    lib.f.getAcceptLanguages((languages) => {
+    lib.i18n.getAcceptLanguages((languages) => {
       if (!hterm.messageManager)
         hterm.messageManager = new lib.MessageManager(languages);
 

@@ -86,7 +86,7 @@ hterm.Frame.prototype.onLoad = function() {};
  * Sends the terminal-info message to the iframe.
  */
 hterm.Frame.prototype.sendTerminalInfo_ = function() {
-  lib.f.getAcceptLanguages(function(languages) {
+  lib.i18n.getAcceptLanguages(function(languages) {
       this.postMessage('terminal-info', [{
          acceptLanguages: languages,
          foregroundColor: this.terminal_.getForegroundColor(),
