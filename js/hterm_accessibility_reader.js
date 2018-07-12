@@ -254,6 +254,10 @@ hterm.AccessibilityReader.prototype.announce = function(str) {
  * @param {string} str The string to announce using a live region.
  */
 hterm.AccessibilityReader.prototype.assertiveAnnounce = function(str) {
+  if (this.hasUserGesture_ && str == ' ') {
+    str = hterm.msg('SPACE_CHARACTER', [], 'Space');
+  }
+
   // If the same string is announced twice, an attribute change won't be
   // registered and the screen reader won't know that the string has changed.
   // So we slightly change the string to ensure that the attribute change gets
@@ -337,6 +341,15 @@ hterm.AccessibilityReader.prototype.announceAction_ =
 
   // The case when the row of text has changed.
   if (this.lastCursorRowString_ != cursorRowString) {
+    // Spacebar. We manually announce this character since the screen reader may
+    // not announce the whitespace in a live region.
+    if (this.lastCursorColumn_ + 1 == cursorColumn) {
+      if (lib.wc.substr(cursorRowString, cursorColumn - 1, 1) == ' ') {
+        this.assertiveAnnounce(' ');
+        return true;
+      }
+    }
+
     // Backspace and deletion.
     // The position of the characters deleted is right after the current
     // position of the cursor in the case of backspace and delete.

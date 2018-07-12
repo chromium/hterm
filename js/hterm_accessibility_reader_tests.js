@@ -555,3 +555,33 @@ hterm.AccessibilityReader.Tests.addTest(
 
   result.requestTime(250);
 });
+
+/**
+ * Test that entering a space character triggers 'Space' to be spoken.
+ */
+hterm.AccessibilityReader.Tests.addTest(
+    'a11y-selection-space', function(result, cx) {
+  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.beforeCursorChange('abc', 0, 3);
+  this.accessibilityReader.announce(' ');
+  this.accessibilityReader.afterCursorChange('abc ', 0, 4);
+  result.assertEQ(
+      this.assertiveLiveElement.getAttribute('aria-label'), 'Space');
+
+  // No space announced if the cursor doesn't move.
+  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.beforeCursorChange('abc', 0, 3);
+  this.accessibilityReader.announce(' ');
+  this.accessibilityReader.afterCursorChange('abc ', 0, 3);
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+
+  // No space announced if there's not a user gesture.
+  this.accessibilityReader.beforeCursorChange('abc', 0, 3);
+  this.accessibilityReader.announce(' ');
+  this.accessibilityReader.afterCursorChange('abc ', 0, 4);
+  result.assertEQ(
+      this.assertiveLiveElement.getAttribute('aria-label'), '');
+
+  result.pass();
+});
