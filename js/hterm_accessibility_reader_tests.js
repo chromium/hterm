@@ -322,45 +322,45 @@ hterm.AccessibilityReader.Tests.addTest(
     'a11y-selection-change-left-right', function(result, cx) {
   // Move the cursor right 1 character.
   // Simulatue a user gesture.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Move the cursor left 1 character.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
 
   // Move the cursor right 1 character with wide chars in the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へどabc', 0, 0);
   this.accessibilityReader.afterCursorChange('匂へどabc', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '匂');
 
   // Move the cursor left 1 character with wide chars in the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へどabc', 0, 9);
   this.accessibilityReader.afterCursorChange('匂へどabc', 0, 8);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Move the cursor to the end of the output.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 3);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
 
   // Move the cursor to the start of the output.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('abc', 0, 0);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
 
   // Don't move the cursor at all.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 0);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
@@ -371,21 +371,21 @@ hterm.AccessibilityReader.Tests.addTest(
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but have the output change at the same time.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abcd', 0, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but have the output change elsewhere on the
   // screen at the same time.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce('foo bar');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but have the row change as well.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 1, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
@@ -402,7 +402,7 @@ hterm.AccessibilityReader.Tests.addTest(
   // Move the cursor 1 character. In the process of doing this, a space
   // character is printed somewhere in the terminal. It should get consumed and
   // not announced as it may just be a side effect of the cursor change.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
@@ -410,7 +410,7 @@ hterm.AccessibilityReader.Tests.addTest(
 
   // Do this again but 'foo bar' is announced during the cursor change.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce('foo bar');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
@@ -435,19 +435,19 @@ hterm.AccessibilityReader.Tests.addTest(
 hterm.AccessibilityReader.Tests.addTest(
     'a11y-selection-change-backspace-delete', function(result, cx) {
   // Backspace a character at the start of the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Backspace a character at the end of the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Backspace a wide character.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へど', 0, 6);
   this.accessibilityReader.afterCursorChange('匂へ', 0, 4);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'ど');
@@ -456,7 +456,7 @@ hterm.AccessibilityReader.Tests.addTest(
   // terminal may do this as spaces are no different from empty space in the
   // terminal.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab ', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
@@ -464,31 +464,31 @@ hterm.AccessibilityReader.Tests.addTest(
   // Do the same thing but add other text as well. The backspace shouldn't be
   // announced.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab e ', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Backspace a character in the middle of the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ac', 0, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
 
   // Delete a character at the start of the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Delete a character at the end of the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Delete the entire end of the line of text.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc: xyzabc', 0, 11);
   this.accessibilityReader.afterCursorChange('abc: ', 0, 5);
   result.assertEQ(
@@ -498,7 +498,7 @@ hterm.AccessibilityReader.Tests.addTest(
   // terminal may do this as spaces are no different from empty space in the
   // terminal.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab ', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
@@ -506,13 +506,13 @@ hterm.AccessibilityReader.Tests.addTest(
   // Do the same thing but add other text as well. The delete shouldn't be
   // announced.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab e ', 0, 2);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Delete a character in the middle of the string.
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('ac', 0, 1);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
@@ -536,7 +536,7 @@ hterm.AccessibilityReader.Tests.addTest(
   // process, we ignore it. This is because lots of updates can happen during a
   // backspace (e.g. all the characers after the deleted character need to be
   // moved and reprinted).
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.announce('bc');
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
@@ -561,7 +561,7 @@ hterm.AccessibilityReader.Tests.addTest(
  */
 hterm.AccessibilityReader.Tests.addTest(
     'a11y-selection-space', function(result, cx) {
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);
@@ -570,7 +570,7 @@ hterm.AccessibilityReader.Tests.addTest(
 
   // No space announced if the cursor doesn't move.
   this.assertiveLiveElement.setAttribute('aria-label', '');
-  this.accessibilityReader.hasUserGesture_ = true;
+  this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 3);

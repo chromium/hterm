@@ -2757,11 +2757,19 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
   var cursorRowIndex = this.scrollbackRows_.length +
       this.screen_.cursorPosition.row;
 
+  let forceSyncSelection = false;
   if (this.accessibilityReader_.accessibilityEnabled) {
     // Report the new position of the cursor for accessibility purposes.
     const cursorColumnIndex = this.screen_.cursorPosition.column;
     const cursorLineText =
         this.screen_.rowsArray[this.screen_.cursorPosition.row].innerText;
+    // This will force the selection to be sync'd to the cursor position if the
+    // user has pressed a key. Generally we would only sync the cursor position
+    // when selection is collapsed so that if the user has selected something
+    // we don't clear the selection by moving the selection. However when a
+    // screen reader is used, it's intuitive for entering a key to move the
+    // selection to the cursor.
+    forceSyncSelection = this.accessibilityReader_.hasUserGesture;
     this.accessibilityReader_.afterCursorChange(
         cursorLineText, cursorRowIndex, cursorColumnIndex);
   }
@@ -2794,8 +2802,9 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
 
   // Update the caret for a11y purposes.
   var selection = this.document_.getSelection();
-  if (selection && selection.isCollapsed)
+  if (selection && (selection.isCollapsed || forceSyncSelection)) {
     this.screen_.syncSelectionCaret(selection);
+  }
 };
 
 /**

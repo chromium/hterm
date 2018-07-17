@@ -239,6 +239,79 @@ hterm.Terminal.Tests.addTest('show-overlay-announce', function(result, cx) {
 });
 
 /**
+ * Selection should be sync'd to the cursor when the selection is collapsed.
+ */
+hterm.Terminal.Tests.addTest('sync-collapsed-selection', function(result, cx) {
+  this.terminal.print('foo');
+  this.terminal.newLine();
+  this.terminal.print('bar');
+
+  // Wait for selection to sync to the caret.
+  setTimeout(() => {
+    const selection = this.terminal.document_.getSelection();
+    result.assertEQ('bar', selection.anchorNode.textContent);
+    result.assertEQ(3, selection.anchorOffset);
+    result.pass();
+  });
+
+  result.requestTime(500);
+});
+
+/**
+ * Selection should not be sync'd to the cursor when the selection is not
+ * collapsed. This avoids clearing selection that has been set by the user.
+ */
+hterm.Terminal.Tests.addTest('sync-uncollapsed-selection', function(result, cx) {
+  this.terminal.print('foo');
+  this.terminal.newLine();
+  // Select the text 'foo'
+  const firstRow = terminal.getRowNode(0).firstChild;
+  this.terminal.document_.getSelection().setBaseAndExtent(
+      firstRow, 0, firstRow, 3);
+  this.terminal.print('bar');
+
+  // Wait for selection to sync to the caret.
+  setTimeout(() => {
+    const selection = this.terminal.document_.getSelection();
+    result.assertEQ('foo', selection.anchorNode.textContent);
+    result.assertEQ(0, selection.anchorOffset);
+    result.assertEQ('foo', selection.focusNode.textContent);
+    result.assertEQ(3, selection.focusOffset);
+    result.pass();
+  });
+
+  result.requestTime(500);
+});
+
+/**
+ * With accessibility enabled, selection should be sync'd to the cursor even
+ * when the selection is not collapsed, as long as there is a user gesture.
+ */
+hterm.Terminal.Tests.addTest('sync-uncollapsed-selection-a11y',
+    function(result, cx) {
+  this.terminal.setAccessibilityEnabled(true);
+  this.terminal.accessibilityReader_.hasUserGesture = true;
+
+  this.terminal.print('foo');
+  this.terminal.newLine();
+  // Select the text 'foo'
+  const firstRow = terminal.getRowNode(0).firstChild;
+  this.terminal.document_.getSelection().setBaseAndExtent(
+      firstRow, 0, firstRow, 3);
+  this.terminal.print('bar');
+
+  // Wait for selection to sync to the caret.
+  setTimeout(() => {
+    const selection = this.terminal.document_.getSelection();
+    result.assertEQ('bar', selection.anchorNode.textContent);
+    result.assertEQ(3, selection.anchorOffset);
+    result.pass();
+  });
+
+  result.requestTime(500);
+});
+
+/**
  * Test that focus sequences are passed as expected when focus reporting is
  * turned on, and nothing is passed when reporting is off.
  */

@@ -78,7 +78,7 @@ hterm.AccessibilityReader = function(div) {
   this.lastCursorColumn_ = null;
 
   // True if a keypress has been performed since the last cursor change.
-  this.hasUserGesture_ = false;
+  this.hasUserGesture = false;
 };
 
 /**
@@ -116,7 +116,7 @@ hterm.AccessibilityReader.prototype.setAccessibilityEnabled =
 hterm.AccessibilityReader.prototype.decorate = function(doc) {
   const handlers = ['keydown', 'keypress', 'keyup', 'textInput'];
   handlers.forEach((handler) => {
-    doc.addEventListener(handler, () => { this.hasUserGesture_ = true; });
+    doc.addEventListener(handler, () => { this.hasUserGesture = true; });
   });
 };
 
@@ -142,7 +142,7 @@ hterm.AccessibilityReader.prototype.beforeCursorChange =
 
   // If there is no user gesture that can be tied to the cursor change, we
   // don't want to announce anything.
-  if (!this.hasUserGesture_ || this.cursorIsChanging_) {
+  if (!this.hasUserGesture || this.cursorIsChanging_) {
     return;
   }
 
@@ -187,7 +187,7 @@ hterm.AccessibilityReader.prototype.afterCursorChange =
   this.lastCursorRowString_ = null;
   this.lastCursorRow_ = null;
   this.lastCursorColumn_ = null;
-  this.hasUserGesture_ = false;
+  this.hasUserGesture = false;
 };
 
 /**
@@ -254,7 +254,7 @@ hterm.AccessibilityReader.prototype.announce = function(str) {
  * @param {string} str The string to announce using a live region.
  */
 hterm.AccessibilityReader.prototype.assertiveAnnounce = function(str) {
-  if (this.hasUserGesture_ && str == ' ') {
+  if (this.hasUserGesture && str == ' ') {
     str = hterm.msg('SPACE_CHARACTER', [], 'Space');
   }
 
@@ -293,7 +293,7 @@ hterm.AccessibilityReader.prototype.clear = function() {
   this.lastCursorRowString_ = null;
   this.lastCursorRow_ = null;
   this.lastCursorColumn_ = null;
-  this.hasUserGesture_ = false;
+  this.hasUserGesture = false;
 };
 
 /**
