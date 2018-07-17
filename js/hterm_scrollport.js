@@ -321,12 +321,29 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   }
 
   var style = doc.createElement('style');
-  style.textContent = (
-      'x-row {' +
-      '  display: block;' +
-      '  height: var(--hterm-charsize-height);' +
-      '  line-height: var(--hterm-charsize-height);' +
-      '}');
+
+  // Hide rows that are above or below the x-fold elements. This is necessary to
+  // ensure that these rows aren't visible to a screen reader. First hide all
+  // rows that are children of the <x-screen>. Then display the nodes that are
+  // after the top fold. Then rehide nodes that are after the bottom fold.
+  style.textContent = `
+      x-row {
+        display: block;
+        height: var(--hterm-charsize-height);
+        line-height: var(--hterm-charsize-height);
+      }
+
+      x-screen x-row {
+        visibility: hidden;
+      }
+
+      #hterm\\:top-fold-for-row-selection ~ x-row {
+        visibility: visible;
+      }
+
+      #hterm\\:bottom-fold-for-row-selection ~ x-row {
+        visibility: hidden;
+      }`;
   doc.head.appendChild(style);
 
   this.userCssLink_ = doc.createElement('link');

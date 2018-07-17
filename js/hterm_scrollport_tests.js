@@ -120,6 +120,7 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     // ranges and selects the parent node.  Ignore this test on IE for now.
     if (!s.extend) {
       result.pass();
+      return;
     }
 
     // Scroll into a part of the buffer that can be scrolled off the top
@@ -498,6 +499,70 @@ hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
 
     result.pass();
   });
+
+/**
+ * Make sure that offscreen elements are marked hidden.
+ */
+hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  const s = doc.getSelection();
+  // IE does not supposed the extend method on selections.  They support
+  // an approximation using addRange, but it automatically merges sibling
+  // ranges and selects the parent node.  Ignore this test on IE for now.
+  if (!s.extend) {
+    result.pass();
+    return;
+  }
+
+  // Scroll into a part of the buffer that can be scrolled off the top
+  // and the bottom of the screen.
+  this.scrollPort.scrollRowToTop(1000);
+
+  // Force a synchronous redraw.  We'll need to DOM to be correct in order
+  // to alter the selection.
+  this.scrollPort.redraw_();
+
+  // And select some text in the middle of the visible range.
+  const anchorRow = this.rowProvider.getRowNode(1003);
+  let anchorNode = anchorRow;
+  while (anchorNode.firstChild)
+    anchorNode = anchorNode.firstChild;
+  s.collapse(anchorNode, 0);
+
+  const focusRow = this.rowProvider.getRowNode(1004);
+  let focusNode = focusRow;
+  while (focusNode.lastChild)
+    focusNode = focusNode.lastChild;
+  s.extend(focusNode, focusNode.length || 0);
+
+  function getVisibility(row) {
+    return doc.defaultView.getComputedStyle(row).getPropertyValue('visibility');
+  };
+
+  result.assert(getVisibility(anchorRow) != 'hidden');
+  result.assert(getVisibility(focusRow) != 'hidden');
+
+  this.scrollPort.scrollRowToTop(0);
+  this.scrollPort.redraw_();
+
+  result.assertEQ(getVisibility(anchorRow), 'hidden');
+  result.assertEQ(getVisibility(focusRow), 'hidden');
+
+  this.scrollPort.scrollRowToTop(1000);
+  this.scrollPort.redraw_();
+
+  result.assert(getVisibility(anchorRow) != 'hidden');
+  result.assert(getVisibility(focusRow) != 'hidden');
+
+  this.scrollPort.scrollRowToTop(2000);
+  this.scrollPort.redraw_();
+
+  result.assertEQ(getVisibility(anchorRow), 'hidden');
+  result.assertEQ(getVisibility(focusRow), 'hidden');
+
+  result.pass();
+});
 
 hterm.ScrollPort.DragAndDropTests =
     new lib.TestManager.Suite('hterm.ScrollPort.DragAndDrop.Tests');
