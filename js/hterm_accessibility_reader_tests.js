@@ -576,7 +576,16 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.afterCursorChange('abc ', 0, 3);
   result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
+  // No space announced if a space is not printed to the screen.
+  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.accessibilityReader.hasUserGesture = true;
+  this.accessibilityReader.beforeCursorChange('abc ', 0, 4);
+  this.accessibilityReader.announce('d');
+  this.accessibilityReader.afterCursorChange('dabc ', 0, 5);
+  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+
   // No space announced if there's not a user gesture.
+  this.assertiveLiveElement.setAttribute('aria-label', '');
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);

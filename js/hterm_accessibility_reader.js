@@ -344,7 +344,9 @@ hterm.AccessibilityReader.prototype.announceAction_ =
     // Spacebar. We manually announce this character since the screen reader may
     // not announce the whitespace in a live region.
     if (this.lastCursorColumn_ + 1 == cursorColumn) {
-      if (lib.wc.substr(cursorRowString, cursorColumn - 1, 1) == ' ') {
+      if (lib.wc.substr(cursorRowString, cursorColumn - 1, 1) == ' ' &&
+          this.cursorChangeQueue_.length > 0 &&
+          this.cursorChangeQueue_[0] == ' ') {
         this.assertiveAnnounce(' ');
         return true;
       }
