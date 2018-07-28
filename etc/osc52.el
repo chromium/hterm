@@ -94,6 +94,7 @@ hitting screen's max DCS length."
 `window-system' and the TERM environment variable."
   (if (not window-system)
       (setq interprogram-cut-function
-            (if (string-match "^screen" (getenv "TERM"))
+            (if (string-match "^screen"
+                              (getenv-internal "TERM" initial-environment))
                 'osc52-select-text-dcs
                 'osc52-select-text))))
