@@ -26,15 +26,12 @@ source "${LIBDOT_DIR}/bin/common.sh"
 
 cd "${BIN_DIR}/.."
 
-DEFINE_boolean forever "$FLAGS_FALSE" \
-  "Recreate dist/js whenever an input file changes." f
-
 FLAGS "$@" || exit $?
 eval set -- "${FLAGS_ARGV}"
 
 function concat() {
   local outdir="$1"
-  local concat=( concat.sh -I )
+  local concat=( concat )
 
   insist "${concat[@]}" -i ./concat/hterm_deps.concat -o "$outdir/hterm_deps.js"
   insist "${concat[@]}" -i ./concat/hterm_resources.concat -o \
@@ -48,21 +45,7 @@ function concat() {
 function main() {
   rm -rf ./dist/js/
   mkdir -p ./dist/js/
-
-  local inotify_list
-  inotify_list="$(concat "./dist/js")"
-  insist
-
-  if [ "$FLAGS_forever" = "$FLAGS_TRUE" ]; then
-    inotifywait -qqe modify $0 $inotify_list
-    local err=$?
-    if [[ $err != 0 && $err != 1 ]]; then
-      echo_err "inotify exited with status code: $err"
-      exit $err
-    fi
-
-    exec $COMMAND_LINE
-  fi
+  concat "./dist/js"
 }
 
 main "$@"
