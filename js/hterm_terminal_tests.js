@@ -312,6 +312,31 @@ hterm.Terminal.Tests.addTest('sync-uncollapsed-selection-a11y',
 });
 
 /**
+ * Ensure that focussing the scrollPort will cause the selection to sync to the
+ * caret.
+ */
+hterm.Terminal.Tests.addTest('scrollport-focus-cursor', function(result, cx) {
+  this.terminal.print('foo');
+  this.terminal.newLine();
+  this.terminal.print('bar');
+
+  // Wait for selection to sync to the caret.
+  setTimeout(() => {
+    // Manually change the selection and trigger focus.
+    this.terminal.document_.getSelection().collapse(terminal.getRowNode(0), 0);
+    this.terminal.scrollPort_.focus();
+    setTimeout(() => {
+      const selection = this.terminal.document_.getSelection();
+      result.assertEQ('bar', selection.anchorNode.textContent);
+      result.assertEQ(3, selection.anchorOffset);
+      result.pass();
+    });
+  });
+
+  result.requestTime(1000);
+});
+
+/**
  * Test that focus sequences are passed as expected when focus reporting is
  * turned on, and nothing is passed when reporting is off.
  */

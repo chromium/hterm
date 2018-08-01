@@ -458,19 +458,24 @@ hterm.ScrollPort.prototype.decorate = function(div) {
   setTimeout(() => { this.allowScrollButtonsToDisplay_ = true; }, 500);
   this.document_.addEventListener('selectionchange', () => {
     this.selection.sync();
+
     if (!this.allowScrollButtonsToDisplay_)
       return;
+
+    const accessibilityEnabled = this.accessibilityReader_ &&
+        this.accessibilityReader_.accessibilityEnabled;
+
     const selection = this.document_.getSelection();
     let selectedElement;
     if (selection.anchorNode && selection.anchorNode.parentElement) {
       selectedElement = selection.anchorNode.parentElement;
     }
-    if (selectedElement == this.scrollUpButton_) {
+    if (accessibilityEnabled && selectedElement == this.scrollUpButton_) {
       this.scrollUpButton_.style.top = '0px';
     } else {
       this.scrollUpButton_.style.top = -scrollButtonTotalHeight + 'px';
     }
-    if (selectedElement == this.scrollDownButton_) {
+    if (accessibilityEnabled && selectedElement == this.scrollDownButton_) {
       this.scrollDownButton_.style.bottom = '0px';
     } else {
       this.scrollDownButton_.style.bottom = -scrollButtonTotalHeight + 'px';
@@ -655,6 +660,7 @@ hterm.ScrollPort.prototype.setUserCssText = function(text) {
 hterm.ScrollPort.prototype.focus = function() {
   this.iframe_.focus();
   this.screen_.focus();
+  this.publish('focus');
 };
 
 hterm.ScrollPort.prototype.getForegroundColor = function() {
@@ -1712,7 +1718,7 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
   setTimeout(function() {
       self.publish('paste', { text: self.pasteTarget_.value });
       self.pasteTarget_.value = '';
-      self.screen_.focus();
+      self.focus();
     }, 0);
 };
 

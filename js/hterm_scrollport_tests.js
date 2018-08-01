@@ -246,10 +246,13 @@ hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {
  * Test that the page up/down buttons are onscreen when selected but offscreen
  * otherwise.
  */
-hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
+hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
   const doc = this.scrollPort.getDocument();
 
   this.scrollPort.allowScrollButtonsToDisplay_ = true;
+  const mockAccessibilityReader = new MockAccessibilityReader();
+  mockAccessibilityReader.accessibilityEnabled = true;
+  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
 
   const selection = doc.getSelection();
 
@@ -275,6 +278,48 @@ hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
   doc.dispatchEvent(new Event('selectionchange'));
 
   result.assert(pageDown.getBoundingClientRect().bottom <=
+                this.scrollPort.getScreenHeight());
+
+  result.pass();
+});
+
+/**
+ * Test that the page up/down buttons aren't moved onscreen when accessibility
+ * isn't enabled.
+ *
+ */
+hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  this.scrollPort.allowScrollButtonsToDisplay_ = true;
+  const mockAccessibilityReader = new MockAccessibilityReader();
+  mockAccessibilityReader.accessibilityEnabled = false;
+  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
+
+  const selection = doc.getSelection();
+
+  const pageUp = doc.getElementById('hterm:a11y:page-up');
+  result.assert(pageUp.getBoundingClientRect().bottom <= 0);
+
+  selection.removeAllRanges();
+  let range = document.createRange();
+  range.selectNodeContents(pageUp.firstChild);
+  selection.addRange(range);
+  doc.dispatchEvent(new Event('selectionchange'));
+
+  result.assert(pageUp.getBoundingClientRect().bottom <= 0);
+
+  const pageDown = doc.getElementById('hterm:a11y:page-down');
+  result.assert(pageDown.getBoundingClientRect().top >=
+                this.scrollPort.getScreenHeight());
+
+  selection.removeAllRanges();
+  range = document.createRange();
+  range.selectNodeContents(pageDown.firstChild);
+  selection.addRange(range);
+  doc.dispatchEvent(new Event('selectionchange'));
+
+  result.assert(pageDown.getBoundingClientRect().top >=
                 this.scrollPort.getScreenHeight());
 
   result.pass();

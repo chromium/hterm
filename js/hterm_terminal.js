@@ -50,6 +50,7 @@ hterm.Terminal = function(opt_profileId) {
   this.scrollPort_.subscribe('resize', this.onResize_.bind(this));
   this.scrollPort_.subscribe('scroll', this.onScroll_.bind(this));
   this.scrollPort_.subscribe('paste', this.onPaste_.bind(this));
+  this.scrollPort_.subscribe('focus', this.onScrollportFocus_.bind(this));
   this.scrollPort_.onCopy = this.onCopy_.bind(this);
 
   // The div that contains this terminal.
@@ -2750,6 +2751,8 @@ hterm.Terminal.prototype.setCursorVisible = function(state) {
 /**
  * Synchronizes the visible cursor and document selection with the current
  * cursor coordinates.
+ *
+ * @return {boolean} True if the cursor is onscreen and synced.
  */
 hterm.Terminal.prototype.syncCursorPosition_ = function() {
   var topRowIndex = this.scrollPort_.getTopRowIndex();
@@ -2777,7 +2780,7 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
   if (cursorRowIndex > bottomRowIndex) {
     // Cursor is scrolled off screen, move it outside of the visible area.
     this.setCssVar('cursor-offset-row', '-1');
-    return;
+    return false;
   }
 
   if (this.options_.cursorVisible &&
@@ -2805,6 +2808,7 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
   if (selection && (selection.isCollapsed || forceSyncSelection)) {
     this.screen_.syncSelectionCaret(selection);
   }
+  return true;
 };
 
 /**
@@ -3703,4 +3707,17 @@ hterm.Terminal.prototype.closeBellNotifications_ = function() {
       n.close();
     });
   this.bellNotificationList_.length = 0;
+};
+
+/**
+ * Syncs the cursor position when the scrollport gains focus.
+ */
+hterm.Terminal.prototype.onScrollportFocus_ = function() {
+  // If the cursor is offscreen we set selection to the last row on the screen.
+  const topRowIndex = this.scrollPort_.getTopRowIndex();
+  const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
+  const selection = this.document_.getSelection();
+  if (!this.syncCursorPosition_() && selection) {
+    selection.collapse(this.getRowNode(bottomRowIndex));
+  }
 };
