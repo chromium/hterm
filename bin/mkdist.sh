@@ -19,15 +19,10 @@
 #    this.
 #
 
-COMMAND_LINE="$(readlink -f $0) $@"
-
 LIBDOT_DIR="$(dirname -- "$0")/../../libdot"
 source "${LIBDOT_DIR}/bin/common.sh"
 
 cd "${BIN_DIR}/.."
-
-FLAGS "$@" || exit $?
-eval set -- "${FLAGS_ARGV}"
 
 function do_concat() {
   local outdir="$1"
