@@ -29,7 +29,7 @@ cd "${BIN_DIR}/.."
 FLAGS "$@" || exit $?
 eval set -- "${FLAGS_ARGV}"
 
-function concat() {
+function do_concat() {
   local outdir="$1"
   local concat=( concat )
 
@@ -45,7 +45,7 @@ function concat() {
 function main() {
   rm -rf ./dist/js/
   mkdir -p ./dist/js/
-  concat "./dist/js"
+  do_concat "./dist/js"
 }
 
 main "$@"
