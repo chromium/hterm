@@ -308,6 +308,14 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
     return;
   }
 
+  if (e.keyCode == 9 /* Tab */) {
+    // On FF, a key press event will be fired in addition of key down for the
+    // Tab key if key down isn't handled. This would only happen if a custom
+    // PASS binding has been created and therefore this should be handled by the
+    // browser.
+    return;
+  }
+
   if (e.altKey && this.altSendsWhat == 'browser-key' && e.charCode == 0) {
     // If we got here because we were expecting the browser to handle an
     // alt sequence but it didn't do it, then we might be on an OS without
