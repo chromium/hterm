@@ -300,9 +300,8 @@ hterm.Keyboard.prototype.onTextInput_ = function(e) {
 hterm.Keyboard.prototype.onKeyPress_ = function(e) {
   var code;
 
-  var key = String.fromCharCode(e.which);
-  var lowerKey = key.toLowerCase();
-  if ((e.ctrlKey || e.metaKey) && (lowerKey == 'c' || lowerKey == 'v')) {
+  if ((e.ctrlKey || e.metaKey) &&
+      (e.keyCode == 99 /* 'c' */ || e.keyCode == 118 /* 'v' */)) {
     // On FF the key press (not key down) event gets fired for copy/paste.
     // Let it fall through for the default browser behavior.
     return;

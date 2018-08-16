@@ -1719,9 +1719,7 @@ hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
   if (!this.ctrlVPaste)
     return;
 
-  var key = String.fromCharCode(e.which);
-  var lowerKey = key.toLowerCase();
-  if ((e.ctrlKey || e.metaKey) && lowerKey == "v")
+  if ((e.ctrlKey || e.metaKey) && e.keyCode == 118 /* 'v' */)
     this.pasteTarget_.focus();
 };
 
