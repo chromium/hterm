@@ -3416,6 +3416,13 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     return;
   }
 
+  // Consume navigation events.  Button 3 is usually "browser back" and
+  // button 4 is "browser forward" which we don't want to happen.
+  if (e.button > 2) {
+    e.preventDefault();
+    // We don't return so click events can be passed to the remote below.
+  }
+
   var reportMouseEvents = (!this.defeatMouseReports_ &&
       this.vt.mouseReport != this.vt.MOUSE_REPORT_DISABLED);
 
