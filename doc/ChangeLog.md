@@ -1,3 +1,32 @@
+# 1.81, 2018-08-29, A11y improvements, and keyboard/mouse tweaks.
+
+* Update to libdot 1.23.  Build improvements, i18n helpers, and npm support.
+* mouse: Support horizontal mouse scroll wheel events.
+* keyboard: Add more keyboard binding callbacks.
+* mouse: Disable default handling for mouse buttons 3 & 4.
+* keyboard: Ignore Tab keys in onKeyPress_.
+* etc: osc52.el: Fix terminal detection.
+* build: mkdist: Delete dead code.
+* a11y: Ensure the Page Up button isn't shown when the ScrollPort is focussed.
+* build: Convert concat to a python script.
+* a11y: Only announce a space character if it is the character actually printed to the screen.
+* a11y: Mark offscreen rows that hold selection as hidden.
+* a11y: Update the selection when accessibility is enabled even if it's collapsed.
+* test: Remove invalid page-down-all-rows-visible test.
+* a11y: Add announcements of the Space character.
+* a11y: Handle announcements of selection changes.
+* a11y: Simplify handling of duplicate live output.
+* a11y: Change <x-screen> to have a role="log".
+* a11y: Announce messages shown by showOverlay.
+* a11y: Fix announcement of current scrolled percentage.
+* a11y: Don't announce page up/down at the top/bottom of the screen.
+* a11y: Fix an assertion failure in hterm.AccessibilityReader.
+* test: Add simple test page.
+* test: Add/update various test data files.
+* a11y: Make it possible to enable/disable accessibility at runtime.
+* a11y: Announce the current screen content on Page up/down.
+* a11y: Add skip-links to allow screen readers to scroll the terminal.
+
 # 1.80, 2018-06-22, Minor tweaks.
 
 * prefs: Add COLORTERM to default env.
