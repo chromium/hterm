@@ -1486,9 +1486,9 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
     return;
 
   // Figure out how far this event wants us to scroll.
-  var delta = this.scrollWheelDelta(e);
+  const delta = this.scrollWheelDelta(e);
 
-  var top = this.screen_.scrollTop - delta;
+  let top = this.screen_.scrollTop - delta.y;
   if (top < 0)
     top = 0;
 
@@ -1510,26 +1510,36 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
 /**
  * Calculate how far a wheel event should scroll.
  *
+ * This normalizes the browser's concept of a scroll (pixels, lines, etc...)
+ * into a standard pixel distance.
+ *
  * @param {WheelEvent} e The mouse wheel event to process.
- * @return {number} How far (in pixels) to scroll.
+ * @return {Object} The x & y of how far (in pixels) to scroll.
  */
 hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
-  var delta;
+  const delta = {x: 0, y: 0};
 
   switch (e.deltaMode) {
     case WheelEvent.DOM_DELTA_PIXEL:
-      delta = e.deltaY * this.scrollWheelMultiplier_;
+      delta.x = e.deltaX * this.scrollWheelMultiplier_;
+      delta.y = e.deltaY * this.scrollWheelMultiplier_;
       break;
     case WheelEvent.DOM_DELTA_LINE:
-      delta = e.deltaY * this.characterSize.height;
+      delta.x = e.deltaX * this.characterSize.width;
+      delta.y = e.deltaY * this.characterSize.height;
       break;
     case WheelEvent.DOM_DELTA_PAGE:
-      delta = e.deltaY * this.characterSize.height * this.screen_.getHeight();
+      delta.x = e.deltaX * this.characterSize.width * this.screen_.getWidth();
+      delta.y = e.deltaY * this.characterSize.height * this.screen_.getHeight();
       break;
   }
 
-  // The sign is inverted from what we would expect.
-  return delta * -1;
+  // The Y sign is inverted from what we would expect: up/down are
+  // negative/positive respectively.  The X sign is sane though: left/right
+  // are negative/positive respectively.
+  delta.y *= -1;
+
+  return delta;
 };
 
 

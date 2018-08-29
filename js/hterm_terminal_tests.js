@@ -621,3 +621,85 @@ hterm.Terminal.Tests.addTest('text-blink', function(result, cx) {
 
   result.pass();
 });
+
+/**
+ * Check mouse wheel emulation of arrow keys.
+ */
+hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Configure arrow key emulation and switch to alternative screen.
+  terminal.scrollWheelArrowKeys_ = true;
+  terminal.keyboard.applicationCursor = true;
+  terminal.setAlternateMode(true);
+
+  // Send a wheel event w/no delta and check the report.
+  e = MockTerminalMouseEvent('wheel');
+  terminal.onMouse_(e);
+  result.assertEQ('', resultString);
+
+  // Send a wheel up event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaY: -1, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ('\x1bOA', resultString);
+
+  // Send a wheel down event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaY: 1, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ('\x1bOB', resultString);
+
+  // Send a wheel left event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaX: -1, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ('\x1bOD', resultString);
+
+  // Send a wheel right event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaX: 1, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ('\x1bOC', resultString);
+
+  // Send multiple combo reports.  The order doesn't matter, but reflects
+  // how the code internally works atm.
+  e = MockTerminalMouseEvent('wheel', {deltaY: 2, deltaX: 2, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ('\x1bOB\x1bOB\x1bOC\x1bOC', resultString);
+
+  result.pass();
+});
+
+/**
+ * Check mouse wheel emulation of arrow keys are disabled on primary screen.
+ */
+hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys-primary', function(result, cx) {
+  const terminal = this.terminal;
+  let e;
+
+  let resultString;
+  terminal.io.sendString = (str) => resultString = str;
+
+  // Configure arrow key emulation and switch to primary screen.
+  terminal.scrollWheelArrowKeys_ = true;
+  terminal.keyboard.applicationCursor = true;
+  terminal.setAlternateMode(false);
+
+  // Send a wheel event w/no delta and check the report.
+  e = MockTerminalMouseEvent('wheel');
+  terminal.onMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  // Send a wheel up event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaY: -1, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  // Send a wheel down event and check the report.
+  e = MockTerminalMouseEvent('wheel', {deltaY: 1, deltaMode: 1});
+  terminal.onMouse_(e);
+  result.assertEQ(undefined, resultString);
+
+  result.pass();
+});

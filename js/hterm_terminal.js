@@ -3519,12 +3519,29 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     if (this.scrollWheelArrowKeys_ && !e.shiftKey &&
         this.keyboard.applicationCursor && !this.isPrimaryScreen()) {
       if (e.type == 'wheel') {
-        var delta = this.scrollPort_.scrollWheelDelta(e);
-        var lines = lib.f.smartFloorDivide(
-            Math.abs(delta), this.scrollPort_.characterSize.height);
+        const delta = this.scrollPort_.scrollWheelDelta(e);
 
-        var data = '\x1bO' + (delta < 0 ? 'B' : 'A');
-        this.io.sendString(data.repeat(lines));
+        // Helper to turn a wheel event delta into a series of key presses.
+        const deltaToArrows = (distance, charSize, arrowPos, arrowNeg) => {
+          if (distance == 0) {
+            return '';
+          }
+
+          // Convert the scroll distance into a number of rows/cols.
+          const cells = lib.f.smartFloorDivide(Math.abs(distance), charSize);
+          const data = '\x1bO' + (distance < 0 ? arrowNeg : arrowPos);
+          return data.repeat(cells);
+        };
+
+        // The order between up/down and left/right doesn't really matter.
+        this.io.sendString(
+            // Up/down arrow keys.
+            deltaToArrows(delta.y, this.scrollPort_.characterSize.height,
+                          'A', 'B') +
+            // Left/right arrow keys.
+            deltaToArrows(delta.x, this.scrollPort_.characterSize.width,
+                          'C', 'D')
+        );
 
         e.preventDefault();
       }

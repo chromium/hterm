@@ -824,7 +824,7 @@ Wheel mice events are always enabled when mouse reporting is active.
 ##### Alternate Scroll Mode
 
 Instead of generating mouse events, the mouse wheel can be configured to
-emit up/down arrow key presses instead.
+emit up/down/left/right arrow key presses instead.
 This is useful when working with applications that don't understand mouse
 reporting, but do handle arrow keys fine.
 
