@@ -76,7 +76,25 @@ hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
 hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.local);
 ```
 
+### Framework initialization
+
+Before using hterm, you'll need to initialize the underlying libdot framework.
+You do this by calling `lib.init` and passing it your initialization callback.
+
+```js
+function setupHterm() {
+  ... your hterm initialization logic ...
+}
+
+// This will be whatever normal entry/initialization point your project uses.
+window.onload = function() {
+  lib.init(setupHterm);
+};
+```
+
 ### Terminal initialization
+
+All of the logic below lives within the `setupHterm` callback.
 
 Create an instance of `hterm.Terminal`:
 
