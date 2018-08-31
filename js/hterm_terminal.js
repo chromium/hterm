@@ -3181,7 +3181,8 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
     io.onVTKeystroke = io.sendString = () => {};
 
     // Initialize this new image.
-    const img = this.document_.createElement('img');
+    const img =
+        /** @type {!HTMLImageElement} */ (this.document_.createElement('img'));
     img.src = options.uri;
     img.title = img.alt = options.name;
 
