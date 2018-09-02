@@ -82,9 +82,6 @@ hterm.Terminal = function(opt_profileId) {
   // The current cursor shape of the terminal.
   this.cursorShape_ = hterm.Terminal.cursorShape.BLOCK;
 
-  // The current color of the cursor.
-  this.cursorColor_ = null;
-
   // Cursor blink on/off cycle in ms, overwritten by prefs once they're loaded.
   this.cursorBlinkCycle_ = [100, 100];
 
@@ -626,9 +623,7 @@ hterm.Terminal.prototype.setCursorColor = function(color) {
   if (color === undefined)
     color = this.prefs_.get('cursor-color');
 
-  this.cursorColor_ = color;
-  this.cursorNode_.style.backgroundColor = color;
-  this.cursorNode_.style.borderColor = color;
+  this.setCssVar('cursor-color', color);
 };
 
 /**
@@ -636,7 +631,7 @@ hterm.Terminal.prototype.setCursorColor = function(color) {
  * @return {string}
  */
 hterm.Terminal.prototype.getCursorColor = function() {
-  return this.cursorColor_;
+  return this.getCssVar('cursor-color');
 };
 
 /**
@@ -1542,6 +1537,8 @@ hterm.Terminal.prototype.decorate = function(div) {
        'display: ' + (this.options_.cursorVisible ? '' : 'none') + ';' +
        'width: var(--hterm-charsize-width);' +
        'height: var(--hterm-charsize-height);' +
+       'background-color: var(--hterm-cursor-color);' +
+       'border-color: var(--hterm-cursor-color);' +
        '-webkit-transition: opacity, background-color 100ms linear;' +
        '-moz-transition: opacity, background-color 100ms linear;');
 
@@ -2843,7 +2840,7 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
 
     default:
       style.height = 'var(--hterm-charsize-height)';
-      style.backgroundColor = this.cursorColor_;
+      style.backgroundColor = 'var(--hterm-cursor-color)';
       style.borderBottomStyle = null;
       style.borderLeftStyle = null;
       break;
