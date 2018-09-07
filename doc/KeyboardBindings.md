@@ -118,6 +118,7 @@ else, please file a [feature request] with us.
 * `scrollToTop`: Scroll to the top of the terminal buffer.
 * `scrollToBottom`: Scroll to the bottom of the terminal buffer.
 * `clearScreen`: Clear the screen and move the cursor to (0,0).
+* `clearScrollback`: Clear the scrollback buffer.
 * `clearTerminal`: Clear the terminal and scrollback, and move the cursor to
   (0,0).
 * `fullReset`: Perform a full terminal reset (like running `reset`).

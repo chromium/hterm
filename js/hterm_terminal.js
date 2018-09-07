@@ -1228,16 +1228,27 @@ hterm.Terminal.prototype.scrollLineDown = function() {
  * Clear primary screen, secondary screen, and the scrollback buffer.
  */
 hterm.Terminal.prototype.wipeContents = function() {
+  this.clearHome(this.primaryScreen_);
+  this.clearHome(this.alternateScreen_);
+
+  this.clearScrollback();
+};
+
+/**
+ * Clear scrollback buffer.
+ */
+hterm.Terminal.prototype.clearScrollback = function() {
+  // Move to the end of the buffer in case the screen was scrolled back.
+  // We're going to throw it away which would leave the display invalid.
+  this.scrollEnd();
+
   this.scrollbackRows_.length = 0;
   this.scrollPort_.resetCache();
 
-  [this.primaryScreen_, this.alternateScreen_].forEach(function(screen) {
-    var bottom = screen.getHeight();
-    if (bottom > 0) {
-      this.renumberRows_(0, bottom);
-      this.clearHome(screen);
-    }
-  }.bind(this));
+  [this.primaryScreen_, this.alternateScreen_].forEach((screen) => {
+    const bottom = screen.getHeight();
+    this.renumberRows_(0, bottom, screen);
+  });
 
   this.syncCursorPosition_();
   this.scrollPort_.invalidate();

@@ -252,6 +252,14 @@ hterm.Parser.identifiers.actions = {
   },
 
   /**
+   * Clear the scrollback buffer.
+   */
+  clearScrollback: function(terminal) {
+    terminal.clearScrollback();
+    return hterm.Keyboard.KeyActions.CANCEL;
+  },
+
+  /**
    * Clear the terminal and scrollback buffer and move the cursor to (0,0).
    */
   clearTerminal: function(terminal) {
