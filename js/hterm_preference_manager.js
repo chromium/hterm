@@ -289,6 +289,13 @@ hterm.PreferenceManager.defaultPreferences = {
    'Respect the host\'s attempt to change the text cursor blink status using ' +
    'DEC Private Mode 12.'],
 
+  'enable-csi-j-3':
+  [hterm.PreferenceManager.categories.Miscellaneous, true, 'bool',
+   'Whether CSI-J (Erase Display) mode 3 may clear the terminal scrollback ' +
+   'buffer.\n' +
+   '\n' +
+   'Enabling this by default is safe.'],
+
   'environment':
   [hterm.PreferenceManager.categories.Miscellaneous,
    {

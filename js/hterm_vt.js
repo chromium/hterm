@@ -80,6 +80,11 @@ hterm.VT = function(terminal) {
   this.enableDec12 = false;
 
   /**
+   * Respect the host's attempt to clear the scrollback buffer using CSI-J-3.
+   */
+  this.enableCsiJ3 = true;
+
+  /**
    * The expected encoding method for data received from the host.
    */
   this.characterEncoding = 'utf-8';
@@ -2152,9 +2157,9 @@ hterm.VT.CSI['?J'] = function(parseState, code) {
   } else if (arg == 2) {
     this.terminal.clear();
   } else if (arg == 3) {
-    // The xterm docs say this means "Erase saved lines", but we'll just clear
-    // the display since killing the scrollback seems rude.
-    this.terminal.clear();
+    if (this.enableCsiJ3) {
+      this.terminal.clearScrollback();
+    }
   }
 };
 

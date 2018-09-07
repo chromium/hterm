@@ -410,6 +410,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.vt.enableDec12 = !!v;
     },
 
+    'enable-csi-j-3': function(v) {
+      terminal.vt.enableCsiJ3 = !!v;
+    },
+
     'font-family': function(v) {
       terminal.syncFontFamily();
     },

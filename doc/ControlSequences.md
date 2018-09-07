@@ -471,7 +471,7 @@ argN p.
 |   G | CHA      | Cursor Horizontal Absolute                  | Move cursor to `arg1` column |
 |   H | CUP      | Cursor Position                             | Move cursor to `arg1` row and `arg2` column |
 |   I | CHT      | Cursor Forward Tabulation                   | Move cursor forward `arg1` tabs |
-|   J | ED       | Erase in Display                            | `!arg1` or `arg1 == 0`: Clear cursor to end of display<br> `arg1 == 1`: Clear start of display to cursor<br> `arg1 == 2`: Clear display |
+|   J | ED       | Erase in Display                            | `!arg1` or `arg1 == 0`: Clear cursor to end of display<br> `arg1 == 1`: Clear start of display to cursor<br> `arg1 == 2`: Clear display<br> `arg1 == 3`: Clear scrollback |
 |  ?J | DECSED   | Selective Erase in Display                  | Same as ED above |
 |   K | EL       | Erase in Line                               | `!arg1` or `arg1 == 0`: Clear cursor to end of line<br> `arg1 == 1`: Clear start of line to cursor<br> `arg1 == 2`: Clear line |
 |  ?K | DECSEL   | Selective Erase in Line                     | Same as EL above |

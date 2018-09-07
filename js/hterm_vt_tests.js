@@ -3399,3 +3399,160 @@ hterm.VT.Tests.addTest('mouse-wheel-sgr-coord', function(result, cx) {
 
   result.pass();
 });
+
+/**
+ * Verify CSI-J-0 (erase below) works.
+ */
+hterm.VT.Tests.addTest('csi-j-0', function(result, cx) {
+  const terminal = this.terminal;
+
+  // Fill the screen with something useful.
+  for (let i = 0; i < this.visibleRowCount * 2; ++i) {
+    terminal.interpret(`ab${i}\n\r`);
+  }
+  const rowCount = terminal.getRowCount();
+  terminal.scrollEnd();
+  terminal.scrollPort_.redraw_();
+
+  // Move to the middle of the screen.
+  terminal.setCursorPosition(3, 1);
+  result.assertEQ('ab9', terminal.getRowText(9));
+  result.assertEQ('ab10', terminal.getRowText(10));
+
+  // Clear after & including the cursor (implicit arg=0).
+  terminal.interpret('\x1b[J');
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(1, terminal.getCursorColumn());
+  result.assertEQ('ab9', terminal.getRowText(9));
+  result.assertEQ('a', terminal.getRowText(10));
+  result.assertEQ('', terminal.getRowText(11));
+
+  // Move up and clear after & including the cursor (explicit arg=0).
+  terminal.setCursorPosition(2, 1);
+  terminal.interpret('\x1b[0J');
+  result.assertEQ(2, terminal.getCursorRow());
+  result.assertEQ(1, terminal.getCursorColumn());
+  result.assertEQ('ab8', terminal.getRowText(8));
+  result.assertEQ('a', terminal.getRowText(9));
+  result.assertEQ('', terminal.getRowText(10));
+
+  // The scrollback should stay intact.
+  result.assertEQ('ab0', terminal.getRowText(0));
+  result.assertEQ(rowCount, terminal.getRowCount());
+
+  result.pass();
+});
+
+/**
+ * Verify CSI-J-1 (erase above) works.
+ */
+hterm.VT.Tests.addTest('csi-j-1', function(result, cx) {
+  const terminal = this.terminal;
+
+  // Fill the screen with something useful.
+  for (let i = 0; i < this.visibleRowCount * 2; ++i) {
+    terminal.interpret(`ab${i}\n\r`);
+  }
+  const rowCount = terminal.getRowCount();
+  terminal.scrollEnd();
+  terminal.scrollPort_.redraw_();
+
+  // Move to the middle of the screen.
+  terminal.setCursorPosition(3, 1);
+  result.assertEQ('ab9', terminal.getRowText(9));
+  result.assertEQ('ab10', terminal.getRowText(10));
+
+  // Clear before & including the cursor (arg=1).
+  terminal.interpret('\x1b[1J');
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(1, terminal.getCursorColumn());
+  result.assertEQ('', terminal.getRowText(9));
+  result.assertEQ('  10', terminal.getRowText(10));
+  result.assertEQ('ab11', terminal.getRowText(11));
+
+  // The scrollback should stay intact.
+  result.assertEQ('ab0', terminal.getRowText(0));
+  result.assertEQ(rowCount, terminal.getRowCount());
+
+  result.pass();
+});
+
+/**
+ * Verify CSI-J-2 (erase screen) works.
+ */
+hterm.VT.Tests.addTest('csi-j-2', function(result, cx) {
+  const terminal = this.terminal;
+
+  // Fill the screen with something useful.
+  for (let i = 0; i < this.visibleRowCount * 2; ++i) {
+    terminal.interpret(`ab${i}\n\r`);
+  }
+  const rowCount = terminal.getRowCount();
+  terminal.scrollEnd();
+  terminal.scrollPort_.redraw_();
+
+  // Move to the middle of the screen.
+  terminal.setCursorPosition(3, 1);
+  result.assertEQ('ab9', terminal.getRowText(9));
+  result.assertEQ('ab10', terminal.getRowText(10));
+
+  // Clear the screen (arg=2).
+  terminal.interpret('\x1b[2J');
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(1, terminal.getCursorColumn());
+  result.assertEQ('', terminal.getRowText(9));
+  result.assertEQ('', terminal.getRowText(10));
+  result.assertEQ('', terminal.getRowText(11));
+
+  // The scrollback should stay intact.
+  result.assertEQ('ab0', terminal.getRowText(0));
+  result.assertEQ(rowCount, terminal.getRowCount());
+
+  result.pass();
+});
+
+/**
+ * Verify CSI-J-3 (erase scrollback) works.
+ */
+hterm.VT.Tests.addTest('csi-j-3', function(result, cx) {
+  const terminal = this.terminal;
+
+  // Fill the screen with something useful.
+  for (let i = 0; i < this.visibleRowCount * 2; ++i) {
+    terminal.interpret(`ab${i}\n\r`);
+  }
+  const rowCount = terminal.getRowCount();
+  terminal.scrollEnd();
+  terminal.scrollPort_.redraw_();
+
+  // Move to the middle of the screen.
+  terminal.setCursorPosition(3, 1);
+  result.assertEQ('ab9', terminal.getRowText(9));
+  result.assertEQ('ab10', terminal.getRowText(10));
+
+  // Disable this feature.  It should make it a nop.
+  terminal.vt.enableCsiJ3 = false;
+  terminal.interpret('\x1b[3J');
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(1, terminal.getCursorColumn());
+  result.assertEQ('ab0', terminal.getRowText(0));
+  result.assertEQ(rowCount, terminal.getRowCount());
+
+  // Re-enable the feature.
+  terminal.vt.enableCsiJ3 = true;
+
+  // Clear the scrollback (arg=3).
+  // The current screen should stay intact.
+  terminal.interpret('\x1b[3J');
+  result.assertEQ(3, terminal.getCursorRow());
+  result.assertEQ(1, terminal.getCursorColumn());
+  result.assertEQ('ab7', terminal.getRowText(0));
+  result.assertEQ('ab8', terminal.getRowText(1));
+  result.assertEQ('ab11', terminal.getRowText(this.visibleRowCount - 2));
+
+  // The scrollback should be gone.
+  result.assertEQ(this.visibleRowCount, terminal.getRowCount());
+  result.assertEQ([], terminal.scrollbackRows_);
+
+  result.pass();
+});
