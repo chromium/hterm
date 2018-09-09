@@ -14,9 +14,13 @@ hterm.PreferenceManager.Tests = new lib.TestManager.Suite('hterm.PreferenceManag
  * Make sure hterm translations are kept in sync with nassh.
  */
 hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx) {
-  const prefIdToMsgId = (id) => 'PREF_' + id.replace(/-/g, '_').toUpperCase();
-  const msgIdToPrefId = (id) => id.substr(11).replace(/_/g, '-').toLowerCase();
-  const titleIdToMsgId = (id) => `TITLE_PREF_${id.toUpperCase()}`;
+  const toMsgId = (id) => id.replace(/-/g, '_').toUpperCase();
+  const fromMsgId = (id) => id.replace(/_/g, '-').toLowerCase();
+  const helpIdToMsgId = (id) => `PREF_${toMsgId(id)}`;
+  const msgIdToHelpId = (id) => fromMsgId(id.substr(11));
+  const nameIdToMsgId = (id) => `NAME_PREF_${toMsgId(id)}`;
+  const msgIdToNameId = (id) => fromMsgId(id.substr(16));
+  const titleIdToMsgId = (id) => `TITLE_PREF_${toMsgId(id)}`;
 
   // Load the translations database from nassh.
   hterm.messageManager.loadMessages(
@@ -26,9 +30,9 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
         Object.entries(hterm.messageManager.messages).forEach(
             ([msgId, nasshMsg]) => {
               if (msgId.startsWith('HTERM_PREF_')) {
-                const key = msgIdToPrefId(msgId);
+                const key = msgIdToHelpId(msgId);
                 result.assert(key in hterm.PreferenceManager.defaultPreferences,
-                              `stale ${msgId} translation for key ${key}`);
+                              `stale ${msgId} help translation for key ${key}`);
               }
 
               if (msgId.startsWith('HTERM_TITLE_PREF_')) {
@@ -40,15 +44,28 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
                 result.assert(found,
                               `stale ${msgId} translation for category`);
               }
+
+              if (msgId.startsWith('HTERM_NAME_PREF_')) {
+                const key = msgIdToNameId(msgId);
+                result.assert(key in hterm.PreferenceManager.defaultPreferences,
+                              `stale ${msgId} name translation for key ${key}`);
+              }
             });
 
         // Walk the local hterm prefs and make sure they match the nassh copy.
         Object.entries(hterm.PreferenceManager.defaultPreferences).forEach(
             ([key, entry]) => {
-              const msgId = prefIdToMsgId(key);
-              const htermMsg = entry['help'];
-              const nasshMsg = hterm.msg(msgId);
-              result.assertEQ(htermMsg, nasshMsg, msgId);
+              // Check the pref name text.
+              const nameId = nameIdToMsgId(key);
+              const htermNameMsg = entry['name'];
+              const nasshNameMsg = hterm.msg(nameId);
+              result.assertEQ(htermNameMsg, nasshNameMsg, nameId);
+
+              // Check the help text.
+              const helpId = helpIdToMsgId(key);
+              const htermHelpMsg = entry['help'];
+              const nasshHelpMsg = hterm.msg(helpId);
+              result.assertEQ(htermHelpMsg, nasshHelpMsg, helpId);
             });
 
         // Walk the hterm categories and make sure they match the nassh copy.
