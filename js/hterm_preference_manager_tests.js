@@ -46,7 +46,7 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
         Object.entries(hterm.PreferenceManager.defaultPreferences).forEach(
             ([key, entry]) => {
               const msgId = prefIdToMsgId(key);
-              const htermMsg = entry[3];
+              const htermMsg = entry['help'];
               const nasshMsg = hterm.msg(msgId);
               result.assertEQ(htermMsg, nasshMsg, msgId);
             });
