@@ -339,18 +339,13 @@ hterm.TextAttributes.prototype.syncColors = function() {
     return i;
   }
 
+  // Expand the default color as makes sense.
+  const getDefaultColor = (color, defaultColor) => {
+    return color == this.DEFAULT_COLOR ? defaultColor : color;
+  };
+
   var foregroundSource = this.foregroundSource;
   var backgroundSource = this.backgroundSource;
-  var defaultForeground = this.DEFAULT_COLOR;
-  var defaultBackground = this.DEFAULT_COLOR;
-
-  if (this.inverse) {
-    foregroundSource = this.backgroundSource;
-    backgroundSource = this.foregroundSource;
-    // We can't inherit the container's color anymore.
-    defaultForeground = this.defaultBackground;
-    defaultBackground = this.defaultForeground;
-  }
 
   if (this.enableBoldAsBright && this.bold) {
     if (Number.isInteger(foregroundSource)) {
@@ -359,24 +354,32 @@ hterm.TextAttributes.prototype.syncColors = function() {
   }
 
   if (foregroundSource == this.SRC_DEFAULT)
-    this.foreground = defaultForeground;
+    this.foreground = this.DEFAULT_COLOR;
   else if (Number.isInteger(foregroundSource))
     this.foreground = this.colorPalette[foregroundSource];
   else
     this.foreground = foregroundSource;
 
   if (this.faint) {
-    var colorToMakeFaint = ((this.foreground == this.DEFAULT_COLOR) ?
-                            this.defaultForeground : this.foreground);
+    const colorToMakeFaint =
+        getDefaultColor(this.foreground, this.defaultForeground);
     this.foreground = lib.colors.mix(colorToMakeFaint, 'rgb(0, 0, 0)', 0.3333);
   }
 
   if (backgroundSource == this.SRC_DEFAULT)
-    this.background = defaultBackground;
+    this.background = this.DEFAULT_COLOR;
   else if (Number.isInteger(backgroundSource))
     this.background = this.colorPalette[backgroundSource];
   else
     this.background = backgroundSource;
+
+  // Once we've processed the bold-as-bright and faint attributes, swap.
+  // This matches xterm/gnome-terminal.
+  if (this.inverse) {
+    const swp = getDefaultColor(this.foreground, this.defaultForeground);
+    this.foreground = getDefaultColor(this.background, this.defaultBackground);
+    this.background = swp;
+  }
 
   // Process invisible settings last to keep it simple.
   if (this.invisible)
