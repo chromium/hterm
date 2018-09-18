@@ -122,7 +122,7 @@ hterm.PreferenceManager.defaultPreferences = {
       'Alt+Backspace is Meta+Backspace',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `If set, undoes the Chrome OS Alt+Backspace->DEL remap, so that ` +
+      `If set, undoes the Chrome OS Alt+Backspace->Delete remap, so that ` +
       `Alt+Backspace indeed is Alt+Backspace.`
   ),
 
@@ -150,7 +150,7 @@ hterm.PreferenceManager.defaultPreferences = {
       'Alert bell sound (URI)',
       hterm.PreferenceManager.Categories.Sounds,
       'lib-resource:hterm/audio/bell', 'url',
-      `URL of the terminal bell sound. Empty string for no audible bell.`
+      `URL of the terminal bell sound. Leave it blank for no audible bell.`
   ),
 
   'desktop-notification-bell': hterm.PreferenceManager.definePref_(
@@ -180,7 +180,7 @@ hterm.PreferenceManager.defaultPreferences = {
       'Background image',
       hterm.PreferenceManager.Categories.Appearance,
       '', 'string',
-      `CSS value of the background image. Empty string for no image.\n` +
+      `CSS value of the background image. Leave it blank for no image.\n` +
       `\n` +
       `For example:\n` +
       `  url(https://goo.gl/anedTK)\n` +
@@ -209,8 +209,8 @@ hterm.PreferenceManager.defaultPreferences = {
       'Backspace key behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `If true, the backspace should send BS ('\\x08', aka ^H). Otherwise ` +
-      `the backspace key should send '\\x7f'.`
+      `If true, the Backspace key will send BS ('\\x08', aka ^H). Otherwise ` +
+      `the Backspace key will send '\\x7f'.`
   ),
 
   'character-map-overrides': hterm.PreferenceManager.definePref_(
@@ -223,8 +223,12 @@ hterm.PreferenceManager.defaultPreferences = {
       `received character and the value is the displayed character.\n` +
       `\n` +
       `For example:\n` +
-      `  {"0":{"+":"\\u2192",",":"\\u2190","-":"\\u2191",".":"\\u2193", ` +
-      `"0":"\\u2588"}}`
+      `{ "0": {\n` +
+      `  "+": "\\u2192",\n` +
+      `  ",": "\\u2190",\n` +
+      `  "-": "\\u2191",\n` +
+      `  ".": "\\u2193",\n` +
+      `  "0": "\\u2588"\n} }`
   ),
 
   'close-on-exit': hterm.PreferenceManager.definePref_(
@@ -256,7 +260,7 @@ hterm.PreferenceManager.defaultPreferences = {
       'Text cursor shape',
       hterm.PreferenceManager.Categories.Appearance,
       'BLOCK', ['BLOCK', 'BEAM', 'UNDERLINE'],
-      `The shape of the visible text cursor. This can be toggled at ` +
+      `The shape of the visible text cursor. This can be changed at ` +
       `runtime via terminal escape sequences.`
   ),
 
@@ -414,8 +418,8 @@ hterm.PreferenceManager.defaultPreferences = {
       'Allow clearing of scrollback buffer (CSI-J-3)',
       hterm.PreferenceManager.Categories.Miscellaneous,
       true, 'bool',
-      `Whether CSI-J (Erase Display) mode 3 may clear the terminal ` +
-      `scrollback buffer.\n` +
+      `Whether the Erase Saved Lines function (mode 3) of the Erase Display ` +
+      `command (CSI-J) may clear the terminal scrollback buffer.\n` +
       `\n` +
       `Enabling this by default is safe.`
   ),
@@ -554,7 +558,7 @@ hterm.PreferenceManager.defaultPreferences = {
       'Mouse button paste',
       hterm.PreferenceManager.Categories.CopyPaste,
       null, [null, 0, 1, 2, 3, 4, 5, 6],
-      `Mouse paste button, or null to autodetect.\n` +
+      `The mouse button to use for pasting.\n` +
       `\n` +
       `For autodetect, we'll use the middle mouse button for non-X11 ` +
       `platforms (including Chrome OS). On X11, we'll use the right mouse ` +
@@ -622,7 +626,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Alt+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
-      `lose Chrome's "switch to tab" keyboard accelerators. When not running ` +
+      `lose Chrome's "switch to tab" keyboard shortcuts. When not running ` +
       `in a tab it's better to send these keys to the host so they can be ` +
       `used in vim or emacs.\n` +
       `\n` +
@@ -638,7 +642,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Ctrl+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
-      `lose Chrome's "switch to tab" keyboard accelerators. When not running ` +
+      `lose Chrome's "switch to tab" keyboard shortcuts. When not running ` +
       `in a tab it's better to send these keys to the host so they can be ` +
       `used in vim or emacs.\n` +
       `\n` +
@@ -654,7 +658,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Ctrl+N is passed to the browser.\n` +
       `\n` +
       `If true, Ctrl+N will be handled by the browser as the "new window" ` +
-      `keyboard accelerator. If false, Ctrl+N will be sent to the host.`
+      `keyboard shortcut. If false, Ctrl+N will be sent to the host.`
   ),
 
   'pass-ctrl-t': hterm.PreferenceManager.definePref_(
@@ -664,7 +668,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Ctrl+T is passed to the browser.\n` +
       `\n` +
       `If true, Ctrl+T will be handled by the browser as the "new tab" ` +
-      `keyboard accelerator. If false, Ctrl+T will be sent to the host.`
+      `keyboard shortcut. If false, Ctrl+T will be sent to the host.`
   ),
 
   'pass-ctrl-tab': hterm.PreferenceManager.definePref_(
@@ -674,7 +678,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Ctrl+Tab and Ctrl+Shift+Tab are passed to the browser.\n` +
       `\n` +
       `If true, Ctrl+Tab and Ctrl+Shift+Tab will be handled by the browser ` +
-      `as the "next/previous tab" keyboard accelerator. If false, the Tab ` +
+      `as the "next/previous tab" keyboard shortcut. If false, the Tab ` +
       `key is sent to the host without Ctrl or Shift.`
   ),
 
@@ -685,7 +689,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Ctrl+W is passed to the browser.\n` +
       `\n` +
       `If true, Ctrl+W will be handled by the browser as the "close tab" ` +
-      `keyboard accelerator. If false, Ctrl+W will be sent to the host.`
+      `keyboard shortcut. If false, Ctrl+W will be sent to the host.`
   ),
 
   'pass-meta-number': hterm.PreferenceManager.definePref_(
@@ -695,7 +699,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether Meta+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
-      `lose Chrome's "switch to tab" keyboard accelerators. When not running ` +
+      `lose Chrome's "switch to tab" keyboard shortcuts. When not running ` +
       `in a tab it's better to send these keys to the host so they can be ` +
       `used in vim or emacs.\n` +
       `\n` +

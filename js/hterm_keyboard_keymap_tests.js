@@ -35,8 +35,8 @@ describe('hterm_keyboard_keymap_tests.js', () => {
     window.open = this.originalOpen;
   });
 
-  /** Verify tab accelerators. */
-  it('handles-tab-accelerators', function() {
+  /** Verify tab shortcuts. */
+  it('handles-tab-shortcuts', function() {
     const map = this.keyMap;
 
     /**
