@@ -19,7 +19,20 @@ tmux_dcs() {
 # Send a DCS sequence through screen.
 # Usage: <sequence>
 screen_dcs() {
-  printf '\033P\033%s\033\\' "$1"
+  # Screen limits the length of string sequences, so we have to break it up.
+  # Going by the screen history:
+  #   (v4.2.1) Apr 2014 - today: 768 bytes
+  #   Aug 2008 - Apr 2014 (v4.2.0): 512 bytes
+  #   ??? - Aug 2008 (v4.0.3): 256 bytes
+  # Since v4.2.0 is only ~4 years old, we'll use the 256 limit.
+  # We can probably switch to the 768 limit in 2022.
+  local limit=256
+  # We go 4 bytes under the limit because we're going to insert two bytes
+  # before (\eP) and 2 bytes after (\e\) each string.
+  echo "$1" | \
+    sed -E "s:.{$(( limit - 4 ))}:&\n:g" | \
+    sed -E -e 's:^:\x1bP:' -e 's:$:\x1b\\:' | \
+    tr -d '\n'
 }
 
 # Send an escape sequence to hterm.
