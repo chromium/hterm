@@ -3081,7 +3081,12 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   var focusNode = selection.focusNode;
   var focusOffset = selection.focusOffset;
 
-  selection.selectAllChildren(copySource);
+  // FF sometimes throws NS_ERROR_FAILURE exceptions when we make this call.
+  // Catch it because a failure here leaks the copySource node.
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1178676
+  try {
+    selection.selectAllChildren(copySource);
+  } catch (ex) {}
 
   hterm.copySelectionToClipboard(this.document_);
 
