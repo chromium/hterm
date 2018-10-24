@@ -1,3 +1,17 @@
+# 1.82, 2018-10-24, New context menu.
+
+* Update to libdot 1.24.  Tool improvements for supporting nightly builds.
+* embed: Update examples to use lib.init.
+* terminal: Move cursor color to css vars.
+* Add support for a context menu.
+* keyboard: Add a clearScrollback hook.
+* vt: Change CSI-J-3 to clear scrollback.
+* terminal: Add HTMLImageElement cast to avoid XSS compilation warnings.
+* terminal: Process inverse text attr after bold-as-bright & faint.
+* hterm-notify/hterm-show-file: Fix long sequences under screen.
+* osc52.sh: Rewrite to match other helper scripts.
+* terminal: Workaround FireFox bug with selectAllChildren.
+
 # 1.81, 2018-08-29, A11y improvements, and keyboard/mouse tweaks.
 
 * Update to libdot 1.23.  Build improvements, i18n helpers, and npm support.
