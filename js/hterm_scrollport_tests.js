@@ -714,6 +714,22 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-shift', funct
 });
 
 /**
+ * Verify paste doesn't happen if it's disabled.
+ */
+hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-disabled', function(result, cx) {
+  const e = new MockDragEvent();
+  this.scrollPort.subscribe('paste', () => result.fail());
+
+  this.scrollPort.setPasteOnDrop(false);
+
+  e.dataTransfer.setData('text/plain', 'plain');
+  this.scrollPort.onDragAndDrop_(e);
+
+  result.requestTime(1000);
+  setTimeout(() => result.pass(), 100);
+});
+
+/**
  * Verify bad sources don't trigger paste events.
  */
 hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-unusable', function(result, cx) {

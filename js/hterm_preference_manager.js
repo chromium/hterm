@@ -471,6 +471,11 @@ hterm.PreferenceManager.defaultPreferences = {
   [hterm.PreferenceManager.categories.Keyboard, true, 'bool',
    'Whether Meta-V gets passed to host.'],
 
+  'paste-on-drop':
+  [hterm.PreferenceManager.categories.CopyPaste, true, 'bool',
+   'If true, Drag and dropped text will paste into terminal.\n' +
+   'If false, dropped text will be ignored.'],
+
   'receive-encoding':
   [hterm.PreferenceManager.categories.Encoding, 'utf-8', ['utf-8', 'raw'],
    'Set the expected encoding for data received from the host.\n' +

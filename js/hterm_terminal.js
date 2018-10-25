@@ -381,6 +381,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.scrollPort_.setCtrlVPaste(v);
     },
 
+    'paste-on-drop': function(v) {
+      terminal.scrollPort_.setPasteOnDrop(v);
+    },
+
     'east-asian-ambiguous-as-two-column': function(v) {
       lib.wc.regardCjkAmbiguous = v;
     },

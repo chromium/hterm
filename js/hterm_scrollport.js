@@ -87,6 +87,11 @@ hterm.ScrollPort = function(rowProvider) {
    */
   this.ctrlVPaste = false;
 
+  /**
+   * Whether to paste on dropped text.
+   */
+  this.pasteOnDrop = true;
+
   this.div_ = null;
   this.document_ = null;
 
@@ -697,6 +702,10 @@ hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
 
 hterm.ScrollPort.prototype.setCtrlVPaste = function(ctrlVPaste) {
   this.ctrlVPaste = ctrlVPaste;
+};
+
+hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
+  this.pasteOnDrop = pasteOnDrop;
 };
 
 /**
@@ -1751,6 +1760,9 @@ hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
  * @param {DragEvent} e The drag event that fired us.
  */
 hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
+  if (!this.pasteOnDrop)
+    return;
+
   e.preventDefault();
 
   let data;
