@@ -1,3 +1,10 @@
+# 1.83, 2018-12-02, Minor improvements.
+
+* Split default/pointer cursor style.
+* Avoid using KeyboardEvent.which.
+* prefs: Turn default pref settings into proper objects.
+* Add `paste-on-drop` preference.
+
 # 1.82, 2018-10-24, New context menu.
 
 * Update to libdot 1.24.  Tool improvements for supporting nightly builds.
