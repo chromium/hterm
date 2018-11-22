@@ -912,7 +912,7 @@ hterm.Terminal.prototype.syncMouseStyle = function() {
   this.setCssVar('mouse-cursor-style',
                  this.vt.mouseReport == this.vt.MOUSE_REPORT_DISABLED ?
                      'var(--hterm-mouse-cursor-text)' :
-                     'var(--hterm-mouse-cursor-pointer)');
+                     'var(--hterm-mouse-cursor-default)');
 };
 
 /**
@@ -1543,13 +1543,14 @@ hterm.Terminal.prototype.decorate = function(div) {
        '  --hterm-cursor-offset-col: -1;' +
        '  --hterm-cursor-offset-row: -1;' +
        '  --hterm-blink-node-duration: 0.7s;' +
+       '  --hterm-mouse-cursor-default: default;' +
        '  --hterm-mouse-cursor-text: text;' +
-       '  --hterm-mouse-cursor-pointer: default;' +
+       '  --hterm-mouse-cursor-pointer: pointer;' +
        '  --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);' +
        '}' +
        '.uri-node:hover {' +
        '  text-decoration: underline;' +
-       '  cursor: var(--hterm-mouse-cursor-pointer), pointer;' +
+       '  cursor: var(--hterm-mouse-cursor-pointer);' +
        '}' +
        '@keyframes blink {' +
        '  from { opacity: 1.0; }' +
