@@ -246,7 +246,7 @@ hterm.openUrl = function(url) {
     // For Chrome v2 apps, we need to use this API to properly open windows.
     chrome.browser.openTab({'url': url});
   } else {
-    const win = window.open(url, '_blank');
+    const win = lib.f.openWindow(url, '_blank');
     win.focus();
   }
 };

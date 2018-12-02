@@ -621,10 +621,10 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
   if (e.shiftKey) {
-    window.open(document.location.href, '',
-                'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
-                'minimizable=yes,width=' + window.innerWidth +
-                ',height=' + window.innerHeight);
+    lib.f.openWindow(document.location.href, '',
+                     'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
+                     'minimizable=yes,width=' + window.innerWidth +
+                     ',height=' + window.innerHeight);
     return hterm.Keyboard.KeyActions.CANCEL;
   }
 
@@ -660,10 +660,10 @@ hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
  */
 hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e, keyDef) {
   if (e.shiftKey) {
-    window.open(document.location.href, '',
-                'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
-                'minimizable=yes,width=' + window.outerWidth +
-                ',height=' + window.outerHeight);
+    lib.f.openWindow(document.location.href, '',
+                     'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
+                     'minimizable=yes,width=' + window.outerWidth +
+                     ',height=' + window.outerHeight);
     return hterm.Keyboard.KeyActions.CANCEL;
   }
 
