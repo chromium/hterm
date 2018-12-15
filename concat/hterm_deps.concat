@@ -17,7 +17,6 @@ libdot/js/lib_storage.js
 libdot/js/lib_storage_chrome.js
 libdot/js/lib_storage_local.js
 libdot/js/lib_storage_memory.js
-libdot/js/lib_test_manager.js
 libdot/js/lib_utf8.js
 libdot/third_party/wcwidth/lib_wc.js
 
