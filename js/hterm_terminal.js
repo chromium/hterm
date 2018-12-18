@@ -1450,7 +1450,15 @@ hterm.Terminal.prototype.decorate = function(div) {
 
   this.accessibilityReader_ = new hterm.AccessibilityReader(div);
 
-  this.scrollPort_.decorate(div);
+  this.scrollPort_.decorate(div, () => this.setupScrollPort_());
+};
+
+/**
+ * Initialisation of ScrollPort properties which need to be set after its DOM
+ * has been initialised.
+ * @private
+ */
+hterm.Terminal.prototype.setupScrollPort_ = function() {
   this.scrollPort_.setBackgroundImage(this.prefs_.get('background-image'));
   this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
   this.scrollPort_.setBackgroundPosition(

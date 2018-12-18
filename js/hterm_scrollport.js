@@ -282,7 +282,7 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
 /**
  * Turn a div into this hterm.ScrollPort.
  */
-hterm.ScrollPort.prototype.decorate = function(div) {
+hterm.ScrollPort.prototype.decorate = function(div, callback) {
   this.div_ = div;
 
   this.iframe_ = div.ownerDocument.createElement('iframe');
@@ -292,13 +292,31 @@ hterm.ScrollPort.prototype.decorate = function(div) {
       'position: absolute;' +
       'width: 100%');
 
-  // Set the iframe src to # in FF.  Otherwise when the frame's
-  // load event fires in FF it clears out the content of the iframe.
-  if ('mozInnerScreenX' in window)  // detect a FF only property
-    this.iframe_.src = '#';
-
   div.appendChild(this.iframe_);
 
+  const onLoad = () => {
+    this.paintIframeContents_();
+    if (callback) {
+      callback();
+    }
+  };
+
+  // Insert Iframe content asynchronously in FF.  Otherwise when the frame's
+  // load event fires in FF it clears out the content of the iframe.
+  if ('mozInnerScreenX' in window) { // detect a FF only property
+    this.iframe_.addEventListener('load', () => onLoad());
+  } else {
+    onLoad();
+  }
+};
+
+
+/**
+ * Initialises the content of this.iframe_. This needs to be done asynchronously
+ * in FF after the Iframe's load event has fired.
+ * @private
+ */
+hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   this.iframe_.contentWindow.addEventListener('resize',
                                               this.onResize_.bind(this));
 
