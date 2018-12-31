@@ -106,11 +106,6 @@ hterm.Keyboard = function(terminal) {
   this.backspaceSendsBackspace = false;
 
   /**
-   * The encoding method for data sent to the host.
-   */
-  this.characterEncoding = 'utf-8';
-
-  /**
    * Set whether the meta key sends a leading escape or not.
    */
   this.metaSendsEscape = true;
@@ -228,16 +223,6 @@ hterm.Keyboard.KeyActions = {
    * modifier while preventing the browser from reacting to the key.
    */
   STRIP: lib.f.createEnum('STRIP')
-};
-
-/**
- * Encode a string according to the 'send-encoding' preference.
- */
-hterm.Keyboard.prototype.encode = function(str) {
-  if (this.characterEncoding == 'utf-8')
-    return this.terminal.vt.encodeUTF8(str);
-
-  return str;
 };
 
 /**

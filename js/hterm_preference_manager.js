@@ -702,13 +702,6 @@ hterm.PreferenceManager.defaultPreferences = {
       `Alters how fast the page scrolls.`
   ),
 
-  'send-encoding': hterm.PreferenceManager.definePref_(
-      'Transmit encoding',
-      hterm.PreferenceManager.categories.Encoding,
-      'utf-8', ['utf-8', 'raw'],
-      `Set the encoding for data sent to host.`
-  ),
-
   'terminal-encoding': hterm.PreferenceManager.definePref_(
       'Terminal encoding',
       hterm.PreferenceManager.categories.Encoding,

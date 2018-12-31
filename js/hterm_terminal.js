@@ -549,15 +549,6 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.setScrollWheelMoveMultipler(v);
     },
 
-    'send-encoding': function(v) {
-       if (!(/^(utf-8|raw)$/).test(v)) {
-         console.warn('Invalid value for "send-encoding": ' + v);
-         v = 'utf-8';
-       }
-
-       terminal.keyboard.characterEncoding = v;
-    },
-
     'shift-insert-paste': function(v) {
       terminal.keyboard.shiftInsertPaste = v;
     },
@@ -3373,7 +3364,7 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
   if (this.scrollOnKeystroke_)
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
 
-  this.io.onVTKeystroke(this.keyboard.encode(string));
+  this.io.onVTKeystroke(string);
 };
 
 /**
@@ -3664,7 +3655,6 @@ hterm.Terminal.prototype.onScroll_ = function() {
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
   var data = e.text.replace(/\n/mg, '\r');
-  data = this.keyboard.encode(data);
   if (this.options_.bracketedPaste) {
     // We strip out most escape sequences as they can cause issues (like
     // inserting an \x1b[201~ midstream).  We pass through whitespace
