@@ -159,17 +159,58 @@ hterm.getClientHeight = function(dom) {
 };
 
 /**
- * Copy the current selection to the system clipboard.
+ * Copy the specified text to the system clipboard.
  *
- * @param {HTMLDocument} The document with the selection to copy.
+ * We'll create selections on demand based on the content to copy.
+ *
+ * @param {HTMLDocument} document The document with the selection to copy.
+ * @param {string} str The string data to copy out.
  */
-hterm.copySelectionToClipboard = function(document) {
+hterm.copySelectionToClipboard = function(document, str) {
+  const copySource = document.createElement('pre');
+  copySource.id = 'hterm:copy-to-clipboard-source';
+  copySource.textContent = str;
+  copySource.style.cssText = (
+      '-webkit-user-select: text;' +
+      '-moz-user-select: text;' +
+      'position: absolute;' +
+      'top: -99px');
+
+  document.body.appendChild(copySource);
+
+  const selection = document.getSelection();
+  const anchorNode = selection.anchorNode;
+  const anchorOffset = selection.anchorOffset;
+  const focusNode = selection.focusNode;
+  const focusOffset = selection.focusOffset;
+
+  // FF sometimes throws NS_ERROR_FAILURE exceptions when we make this call.
+  // Catch it because a failure here leaks the copySource node.
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1178676
+  try {
+    selection.selectAllChildren(copySource);
+  } catch (ex) {}
+
   try {
     document.execCommand('copy');
   } catch (firefoxException) {
     // Ignore this. FF throws an exception if there was an error, even though
     // the spec says just return false.
   }
+
+  // IE doesn't support selection.extend.  This means that the selection won't
+  // return on IE.
+  if (selection.extend) {
+    // When running in the test harness, we won't have any related nodes.
+    if (anchorNode) {
+      selection.collapse(anchorNode, anchorOffset);
+    }
+    if (focusNode) {
+      selection.extend(focusNode, focusOffset);
+    }
+  }
+
+  copySource.parentNode.removeChild(copySource);
 };
 
 /**

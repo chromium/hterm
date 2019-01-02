@@ -3060,40 +3060,7 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   if (this.prefs_.get('enable-clipboard-notice'))
     setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
 
-  var copySource = this.document_.createElement('pre');
-  copySource.id = 'hterm:copy-to-clipboard-source';
-  copySource.textContent = str;
-  copySource.style.cssText = (
-      '-webkit-user-select: text;' +
-      '-moz-user-select: text;' +
-      'position: absolute;' +
-      'top: -99px');
-
-  this.document_.body.appendChild(copySource);
-
-  var selection = this.document_.getSelection();
-  var anchorNode = selection.anchorNode;
-  var anchorOffset = selection.anchorOffset;
-  var focusNode = selection.focusNode;
-  var focusOffset = selection.focusOffset;
-
-  // FF sometimes throws NS_ERROR_FAILURE exceptions when we make this call.
-  // Catch it because a failure here leaks the copySource node.
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1178676
-  try {
-    selection.selectAllChildren(copySource);
-  } catch (ex) {}
-
-  hterm.copySelectionToClipboard(this.document_);
-
-  // IE doesn't support selection.extend. This means that the selection
-  // won't return on IE.
-  if (selection.extend) {
-    selection.collapse(anchorNode, anchorOffset);
-    selection.extend(focusNode, focusOffset);
-  }
-
-  copySource.parentNode.removeChild(copySource);
+  hterm.copySelectionToClipboard(this.document_, str);
 };
 
 /**

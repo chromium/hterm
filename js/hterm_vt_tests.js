@@ -2059,10 +2059,9 @@ hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
     // Mock this out since we can't document.execCommand from the
     // test harness.
     var old_cCSTC = hterm.copySelectionToClipboard;
-    hterm.copySelectionToClipboard = function(document) {
-      var s = document.getSelection();
-      result.assertEQ(s.anchorNode.textContent, 'copypasta!');
+    hterm.copySelectionToClipboard = function(document, str) {
       hterm.copySelectionToClipboard = old_cCSTC;
+      result.assertEQ(str, 'copypasta!');
       result.pass();
     };
 
@@ -2078,10 +2077,9 @@ hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
     // Mock this out since we can't document.execCommand from the
     // test harness.
     var old_cCSTC = hterm.copySelectionToClipboard;
-    hterm.copySelectionToClipboard = function(document) {
-      var s = document.getSelection();
-      result.assertEQ(s.anchorNode.textContent, expect);
+    hterm.copySelectionToClipboard = function(document, str) {
       hterm.copySelectionToClipboard = old_cCSTC;
+      result.assertEQ(str, expect);
       result.pass();
     };
 

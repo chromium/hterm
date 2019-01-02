@@ -66,3 +66,25 @@ hterm.notify.Tests.addTest('notification-fields', function(result, cx) {
 
   result.pass();
 });
+
+/**
+ * Test copying content via execCommand.
+ */
+hterm.notify.Tests.addTest('copy-execCommand', function(result, cx) {
+  const doc = cx.window.document;
+
+  // Mock this out since we can't document.execCommand from the test harness.
+  const oldExec = doc.execCommand;
+  doc.execCommand = (cmd) => {
+    doc.execCommand = oldExec;
+
+    result.assertEQ('copy', cmd);
+
+    const s = doc.getSelection();
+    result.assertEQ('copypasta!', s.toString());
+    result.pass();
+  };
+
+  hterm.copySelectionToClipboard(doc, 'copypasta!');
+  result.requestTime(500);
+});
