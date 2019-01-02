@@ -3521,7 +3521,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     if (e.type == 'dblclick') {
       this.screen_.expandSelection(this.document_.getSelection());
       if (this.copyOnSelect)
-        this.copySelectionToClipboard(this.document_);
+        this.copySelectionToClipboard();
     }
 
     if (e.type == 'click' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
@@ -3547,7 +3547,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
 
     if (e.type == 'mouseup' && e.button == 0 && this.copyOnSelect &&
         !this.document_.getSelection().isCollapsed) {
-      this.copySelectionToClipboard(this.document_);
+      this.copySelectionToClipboard();
     }
 
     if ((e.type == 'mousemove' || e.type == 'mouseup') &&
