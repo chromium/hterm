@@ -167,50 +167,106 @@ hterm.getClientHeight = function(dom) {
  * @param {string} str The string data to copy out.
  */
 hterm.copySelectionToClipboard = function(document, str) {
-  const copySource = document.createElement('pre');
-  copySource.id = 'hterm:copy-to-clipboard-source';
-  copySource.textContent = str;
-  copySource.style.cssText = (
-      '-webkit-user-select: text;' +
-      '-moz-user-select: text;' +
-      'position: absolute;' +
-      'top: -99px');
+  // Request permission if need be.
+  const requestPermission = () => {
+    // Use the Permissions API if available.
+    if (navigator.permissions && navigator.permissions.query) {
+      return navigator.permissions.query({name: 'clipboard-write'})
+        .then((status) => {
+          const checkState = (resolve, reject) => {
+            switch (status.state) {
+              case 'granted':
+                return resolve();
+              case 'denied':
+                return reject();
+              default:
+                // Wait for the user to approve/disprove.
+                return new Promise((resolve, reject) => {
+                  status.onchange = () => checkState(resolve, reject);
+                });
+            }
+          };
 
-  document.body.appendChild(copySource);
-
-  const selection = document.getSelection();
-  const anchorNode = selection.anchorNode;
-  const anchorOffset = selection.anchorOffset;
-  const focusNode = selection.focusNode;
-  const focusOffset = selection.focusOffset;
-
-  // FF sometimes throws NS_ERROR_FAILURE exceptions when we make this call.
-  // Catch it because a failure here leaks the copySource node.
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1178676
-  try {
-    selection.selectAllChildren(copySource);
-  } catch (ex) {}
-
-  try {
-    document.execCommand('copy');
-  } catch (firefoxException) {
-    // Ignore this. FF throws an exception if there was an error, even though
-    // the spec says just return false.
-  }
-
-  // IE doesn't support selection.extend.  This means that the selection won't
-  // return on IE.
-  if (selection.extend) {
-    // When running in the test harness, we won't have any related nodes.
-    if (anchorNode) {
-      selection.collapse(anchorNode, anchorOffset);
+          return new Promise(checkState);
+        })
+        // If the platform doesn't support "clipboard-write", or is denied,
+        // we move on to the copying step anyways.
+        .catch(() => Promise.resolve());
+    } else {
+      // No permissions API, so resolve right away.
+      return Promise.resolve();
     }
-    if (focusNode) {
-      selection.extend(focusNode, focusOffset);
-    }
-  }
+  };
 
-  copySource.parentNode.removeChild(copySource);
+  // Write to the clipboard.
+  const writeClipboard = () => {
+    // Use the Clipboard API if available.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      // If this fails (perhaps due to focus changing windows), fallback to the
+      // legacy copy method.
+      return navigator.clipboard.writeText(str)
+        .catch(execCommand);
+    } else {
+      // No Clipboard API, so use the old execCommand style.
+      return execCommand();
+    }
+  };
+
+  // Write to the clipboard using the legacy execCommand method.
+  // TODO: Once we can rely on the Clipboard API everywhere, we can simplify
+  // this a lot by deleting the custom selection logic.
+  const execCommand = () => {
+    const copySource = document.createElement('pre');
+    copySource.id = 'hterm:copy-to-clipboard-source';
+    copySource.textContent = str;
+    copySource.style.cssText = (
+        '-webkit-user-select: text;' +
+        '-moz-user-select: text;' +
+        'position: absolute;' +
+        'top: -99px');
+
+    document.body.appendChild(copySource);
+
+    const selection = document.getSelection();
+    const anchorNode = selection.anchorNode;
+    const anchorOffset = selection.anchorOffset;
+    const focusNode = selection.focusNode;
+    const focusOffset = selection.focusOffset;
+
+    // FF sometimes throws NS_ERROR_FAILURE exceptions when we make this call.
+    // Catch it because a failure here leaks the copySource node.
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1178676
+    try {
+      selection.selectAllChildren(copySource);
+    } catch (ex) {}
+
+    try {
+      document.execCommand('copy');
+    } catch (firefoxException) {
+      // Ignore this. FF throws an exception if there was an error, even
+      // though the spec says just return false.
+    }
+
+    // IE doesn't support selection.extend.  This means that the selection won't
+    // return on IE.
+    if (selection.extend) {
+      // When running in the test harness, we won't have any related nodes.
+      if (anchorNode) {
+        selection.collapse(anchorNode, anchorOffset);
+      }
+      if (focusNode) {
+        selection.extend(focusNode, focusOffset);
+      }
+    }
+
+    copySource.parentNode.removeChild(copySource);
+
+    // Since execCommand is synchronous, resolve right away.
+    return Promise.resolve();
+  };
+
+  // Kick it all off!
+  return requestPermission().then(writeClipboard);
 };
 
 /**
