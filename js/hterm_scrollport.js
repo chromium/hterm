@@ -1602,6 +1602,16 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
   var i, touch;
   switch (e.type) {
     case 'touchstart':
+      // Workaround focus bug on CrOS if possible.
+      // TODO(vapier): Drop this once https://crbug.com/919222 is fixed.
+      if (hterm.os == 'cros' && window.chrome && chrome.windows) {
+        chrome.windows.getCurrent((win) => {
+          if (!win.focused) {
+            chrome.windows.update(win.id, {focused: true});
+          }
+        });
+      }
+
       // Save the current set of touches.
       for (i = 0; i < e.changedTouches.length; ++i) {
         touch = scrubTouch(e.changedTouches[i]);
