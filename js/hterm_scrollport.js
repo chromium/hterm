@@ -1719,7 +1719,7 @@ hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
   if (!this.ctrlVPaste)
     return;
 
-  if ((e.ctrlKey || e.metaKey) && e.keyCode == 118 /* 'v' */)
+  if ((e.ctrlKey || e.metaKey) && e.keyCode == 86 /* 'V' */)
     this.pasteTarget_.focus();
 };
 

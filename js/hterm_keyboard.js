@@ -281,12 +281,14 @@ hterm.Keyboard.prototype.onTextInput_ = function(e) {
 
 /**
  * Handle onKeyPress events.
+ *
+ * TODO(vapier): Drop this event entirely and only use keydown.
  */
 hterm.Keyboard.prototype.onKeyPress_ = function(e) {
-  var code;
-
-  if ((e.ctrlKey || e.metaKey) &&
-      (e.keyCode == 99 /* 'c' */ || e.keyCode == 118 /* 'v' */)) {
+  // FF doesn't set keyCode reliably in keypress events.  Stick to the which
+  // field here until we can move to keydown entirely.
+  const key = String.fromCharCode(e.which).toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && (key == 'c' || key == 'v')) {
     // On FF the key press (not key down) event gets fired for copy/paste.
     // Let it fall through for the default browser behavior.
     return;
@@ -311,7 +313,6 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
     var ch = String.fromCharCode(e.keyCode);
     if (!e.shiftKey)
       ch = ch.toLowerCase();
-    code = ch.charCodeAt(0) + 128;
 
   } else if (e.charCode >= 32) {
     ch = e.charCode;
