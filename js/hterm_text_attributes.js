@@ -78,12 +78,12 @@ hterm.TextAttributes.prototype.enableBoldAsBright = true;
 /**
  * A sentinel constant meaning "whatever the default color is in this context".
  */
-hterm.TextAttributes.prototype.DEFAULT_COLOR = lib.f.createEnum('');
+hterm.TextAttributes.prototype.DEFAULT_COLOR = Symbol('DEFAULT_COLOR');
 
 /**
  * A constant string used to specify that source color is context default.
  */
-hterm.TextAttributes.prototype.SRC_DEFAULT = 'default';
+hterm.TextAttributes.prototype.SRC_DEFAULT = Symbol('SRC_DEFAULT');
 
 /**
  * The document object which should own the DOM nodes created by this instance.
@@ -235,7 +235,7 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
     textDecorationLine += ' underline';
     style.textDecorationStyle = this.underline;
   }
-  if (this.underlineSource != this.SRC_DEFAULT)
+  if (this.underlineColor != this.DEFAULT_COLOR)
     style.textDecorationColor = this.underlineColor;
   if (this.strikethrough) {
     textDecorationLine += ' line-through';
@@ -300,9 +300,12 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           this.asciiNode == obj.asciiNode &&
           !(this.tileData != null || obj.tileNode) &&
           this.uriId == obj.uriId &&
-          this.foreground == style.color &&
-          this.background == style.backgroundColor &&
-          this.underlineColor == style.textDecorationColor &&
+          (this.foreground == this.DEFAULT_COLOR &&
+           style.color == '') &&
+          (this.background == this.DEFAULT_COLOR &&
+           style.backgroundColor == '') &&
+          (this.underlineColor == this.DEFAULT_COLOR &&
+           style.textDecorationColor == '') &&
           (this.enableBold && this.bold) == !!style.fontWeight &&
           this.blink == !!obj.blinkNode &&
           this.italic == !!style.fontStyle &&
@@ -386,7 +389,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
     this.foreground = this.background;
 
   if (this.underlineSource == this.SRC_DEFAULT)
-    this.underlineColor = '';
+    this.underlineColor = this.DEFAULT_COLOR;
   else if (Number.isInteger(this.underlineSource))
     this.underlineColor = this.colorPalette[this.underlineSource];
   else

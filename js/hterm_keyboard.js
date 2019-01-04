@@ -180,7 +180,7 @@ hterm.Keyboard.KeyActions = {
    * Call preventDefault and stopPropagation for this key event and nothing
    * else.
    */
-  CANCEL: lib.f.createEnum('CANCEL'),
+  CANCEL: Symbol('CANCEL'),
 
   /**
    * This performs the default terminal action for the key.  If used in the
@@ -206,13 +206,13 @@ hterm.Keyboard.KeyActions = {
    *  - If meta is down and configured to send an escape, '\x1b' will be sent
    *    before the normal action is performed.
    */
-  DEFAULT: lib.f.createEnum('DEFAULT'),
+  DEFAULT: Symbol('DEFAULT'),
 
   /**
    * Causes the terminal to opt out of handling the key event, instead letting
    * the browser deal with it.
    */
-  PASS: lib.f.createEnum('PASS'),
+  PASS: Symbol('PASS'),
 
   /**
    * Insert the first or second character of the keyCap, based on e.shiftKey.
@@ -222,7 +222,7 @@ hterm.Keyboard.KeyActions = {
    * It is useful for a modified key action, where it essentially strips the
    * modifier while preventing the browser from reacting to the key.
    */
-  STRIP: lib.f.createEnum('STRIP')
+  STRIP: Symbol('STRIP')
 };
 
 /**
@@ -523,7 +523,8 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     meta = false;
   }
 
-  if (action.substr(0, 2) == '\x1b[' && (alt || control || shift || meta)) {
+  if (typeof action == 'string' && action.substr(0, 2) == '\x1b[' &&
+      (alt || control || shift || meta)) {
     // The action is an escape sequence that and it was triggered in the
     // presence of a keyboard modifier, we may need to alter the action to
     // include the modifier before sending it.
