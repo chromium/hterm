@@ -3074,6 +3074,8 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
 /**
  * Display an image.
  *
+ * Either URI or buffer or blob fields must be specified.
+ *
  * @param {Object} options The image to display.
  * @param {string=} options.name A human readable string for the image.
  * @param {string|number=} options.size The size (in bytes).
@@ -3082,13 +3084,16 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
  * @param {string|number=} options.width The width of the image.
  * @param {string|number=} options.height The height of the image.
  * @param {string=} options.align Direction to align the image.
- * @param {string} options.uri The source URI for the image.
+ * @param {string=} options.uri The source URI for the image.
+ * @param {ArrayBuffer=} options.buffer The ArrayBuffer image data.
+ * @param {Blob=} options.blob The Blob image data.
  * @param {function=} onLoad Callback when loading finishes.
  * @param {function(Event)=} onError Callback when loading fails.
  */
 hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
   // Make sure we're actually given a resource to display.
-  if (options.uri === undefined)
+  if (options.uri === undefined && options.buffer === undefined &&
+      options.blob === undefined)
     return;
 
   // Set up the defaults to simplify code below.
@@ -3159,7 +3164,14 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
     // Initialize this new image.
     const img =
         /** @type {!HTMLImageElement} */ (this.document_.createElement('img'));
-    img.src = options.uri;
+    if (options.uri !== undefined) {
+      img.src = options.uri;
+    } else if (options.buffer !== undefined) {
+      const blob = new Blob([options.buffer]);
+      img.src = URL.createObjectURL(blob);
+    } else {
+      img.src = URL.createObjectURL(options.blob);
+    }
     img.title = img.alt = options.name;
 
     // Attach the image to the page to let it load/render.  It won't stay here.
@@ -3225,6 +3237,11 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
                                   this.getCursorRow() - 1);
       row.appendChild(div);
 
+      // Now that the image has been read, we can revoke the source.
+      if (options.uri === undefined) {
+        URL.revokeObjectURL(img.src);
+      }
+
       io.hideOverlay();
       io.pop();
 
@@ -3246,11 +3263,21 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
     // We can't use chrome.downloads.download as that requires "downloads"
     // permissions, and that works only in extensions, not apps.
     const a = this.document_.createElement('a');
-    a.href = options.uri;
+    if (options.uri !== undefined) {
+      a.href = options.uri;
+    } else if (options.buffer !== undefined) {
+      const blob = new Blob([options.buffer]);
+      a.href = URL.createObjectURL(blob);
+    } else {
+      a.href = URL.createObjectURL(options.blob);
+    }
     a.download = options.name;
     this.document_.body.appendChild(a);
     a.click();
     a.remove();
+    if (options.uri === undefined) {
+      URL.revokeObjectURL(a.href);
+    }
   }
 };
 

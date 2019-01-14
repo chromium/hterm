@@ -15,6 +15,13 @@ hterm.Terminal.Tests.prototype.setup = function(cx) {
       { visibleColumnCount: 80,
         visibleRowCount: 24,
       });
+
+  // This is a 16px x 8px gif.
+  this.imageBase64 = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1' +
+                     'mabHWZy6t1U/htQAEAOw==';
+  this.imageArrayBuffer = lib.codec.stringToCodeUnitArray(
+      this.imageBase64, Uint8Array).buffer;
+  this.imageBlob = new Blob([this.imageArrayBuffer]);
 };
 
 /**
@@ -471,9 +478,6 @@ hterm.Terminal.Tests.addTest('display-img-prompt', function(result, cx) {
 hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
   this.terminal.allowImagesInline = true;
 
-  // This is a 16px x 8px gif.
-  const data = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1mabHWZy6t1U/htQAEAOw==';
-
   // Callback when loading finishes.
   const onLoad = () => {
     result.assertEQ(1, this.terminal.getCursorRow());
@@ -492,7 +496,7 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
     height: '2px',
     inline: true,
     align: 'center',
-    uri: `data:application/octet-stream;base64,${data}`,
+    uri: `data:application/octet-stream;base64,${this.imageBase64}`,
   }, onLoad, (e) => result.fail(e));
 
   result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
@@ -503,9 +507,6 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
  */
 hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
   this.terminal.allowImagesInline = true;
-
-  // This is a 16px x 8px gif.
-  const data = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1mabHWZy6t1U/htQAEAOw==';
 
   // Callback when loading finishes.
   const onLoad = () => {
@@ -531,7 +532,7 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
     height: '4',
     width: '75%',
     inline: true,
-    uri: `data:application/octet-stream;base64,${data}`,
+    uri: `data:application/octet-stream;base64,${this.imageBase64}`,
   }, onLoad, (e) => result.fail(e));
 
   result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
@@ -542,9 +543,6 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
  */
 hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) {
   this.terminal.allowImagesInline = true;
-
-  // This is a 16px x 8px gif.
-  const data = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1mabHWZy6t1U/htQAEAOw==';
 
   // Callback when loading finishes.
   const onLoad = () => {
@@ -567,7 +565,7 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
     height: '4000px',
     width: '1000',
     inline: true,
-    uri: `data:application/octet-stream;base64,${data}`,
+    uri: `data:application/octet-stream;base64,${this.imageBase64}`,
   }, onLoad, (e) => result.fail(e));
 
   result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);

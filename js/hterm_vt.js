@@ -1969,7 +1969,7 @@ hterm.VT.OSC['1337'] = function(parseState) {
     width: 'auto',
     height: 'auto',
     align: 'left',
-    uri: 'data:application/octet-stream;base64,' + args[2].replace(/[\n\r]+/gm, ''),
+    buffer: lib.codec.stringToCodeUnitArray(atob(args[2]), Uint8Array).buffer,
   };
   // Walk the "key=value;" sets.
   args[1].split(';').forEach((ele) => {
