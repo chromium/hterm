@@ -1,5 +1,22 @@
+# 1.84, 2019-01-19, Firefox fixes, openWindow security fixes, and few improvements.
+
+* Update to libdot 1.26.  openWindow & new codec helpers.
+* Optimize image display with Blobs & ArrayBuffers.
+* Workaround touch focus bug on CrOS.
+* Initialising iframe contents asynchronously on FF.
+* Add support for new Clipboard API for copying text.
+* Push selection logic down into copySelectionToClipboard.
+* Fix paste event on Firefox.
+* terminal: Stop passing down this.document_ when copying.
+* Switch to array buffers for sending tty data.
+* Provide readable pref strings.
+* tests: Switch to a dark theme.
+* concat: Stop listing test code in deps.
+* Use new lib.f.openWindow helper.
+
 # 1.83, 2018-12-02, Minor improvements.
 
+* Update to libdot 1.25.  Minor improvements.
 * Split default/pointer cursor style.
 * Avoid using KeyboardEvent.which.
 * prefs: Turn default pref settings into proper objects.
