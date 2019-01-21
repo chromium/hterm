@@ -427,6 +427,7 @@ The overall form looks like ESC+] 1337 ; File=name=[base64];inline=1 :
   If `1`, display the file in the terminal.
 * `align`: Set the display alignment with `left` (the default), `right`, or
   `center`.
+* `type`: Set the [MIME type] of the content.  Auto-detected otherwise.
 
 For the base64 encoded fields, make sure to omit whitespace (e.g. newlines) if
 using a tool like `base64`.
@@ -1105,6 +1106,7 @@ or has actively decided to drop support for it.
 [ISO/IEC 6429]: https://www.iso.org/standard/12782.html
 [ISO/IEC 8613-6]: https://www.iso.org/standard/22943.html
 [ITU T.416]: https://www.itu.int/rec/T-REC-T.416/
+[MIME type]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
 
 [hterm_vt.js]: ../js/hterm_vt.js
 [hterm_vt_character_map.js]: ../js/hterm_vt_character_map.js

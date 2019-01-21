@@ -3087,6 +3087,7 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
  * @param {string=} options.uri The source URI for the image.
  * @param {ArrayBuffer=} options.buffer The ArrayBuffer image data.
  * @param {Blob=} options.blob The Blob image data.
+ * @param {string=} options.type The MIME type of the image data.
  * @param {function=} onLoad Callback when loading finishes.
  * @param {function(Event)=} onError Callback when loading fails.
  */
@@ -3099,6 +3100,20 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
   // Set up the defaults to simplify code below.
   if (!options.name)
     options.name = '';
+
+  // See if the mime type is available.  If not, guess from the filename.
+  // We don't list all possible mime types because the browser can usually
+  // guess it correctly.  So list the ones that need a bit more help.
+  if (!options.type) {
+    const ary = options.name.split('.');
+    const ext = ary[ary.length - 1].trim();
+    switch (ext) {
+      case 'svg':
+      case 'svgz':
+        options.type = 'image/svg+xml';
+        break;
+    }
+  }
 
   // Has the user approved image display yet?
   if (this.allowImagesInline !== true) {
@@ -3167,9 +3182,10 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
     if (options.uri !== undefined) {
       img.src = options.uri;
     } else if (options.buffer !== undefined) {
-      const blob = new Blob([options.buffer]);
+      const blob = new Blob([options.buffer], {type: options.type});
       img.src = URL.createObjectURL(blob);
     } else {
+      const blob = new Blob([options.blob], {type: options.type});
       img.src = URL.createObjectURL(options.blob);
     }
     img.title = img.alt = options.name;

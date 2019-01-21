@@ -1956,6 +1956,7 @@ hterm.VT.OSC['1337'] = function(parseState) {
     width: 'auto',
     height: 'auto',
     align: 'left',
+    type: '',
     buffer: lib.codec.stringToCodeUnitArray(atob(args[2]), Uint8Array).buffer,
   };
   // Walk the "key=value;" sets.
@@ -1991,6 +1992,9 @@ hterm.VT.OSC['1337'] = function(parseState) {
       // hterm-specific keys.
       case 'align':
         options.align = kv[2];
+        break;
+      case 'type':
+        options.type = kv[2];
         break;
       default:
         // Ignore unknown keys.  Don't want remote stuffing our JS env.
