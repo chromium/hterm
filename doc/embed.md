@@ -173,3 +173,60 @@ going directly through the terminal.  It will take care of encoding UTF-16 to
 UTF-8 and then sending it via `t.interpret` (which processes escape sequences).
 If you use the `t.print` function directly, it won't do either of those things,
 which might be what you want.
+
+## Encoding
+
+Modern applications need to make sure they handle data encoding properly at all
+times lest we end up with [Mojibake] everywhere.
+All data going in & out of hterm is via the `hterm.Terminal.IO` object (which
+may be accessed via `t.io` in the code snippets above).
+
+### hterm->app
+
+When hterm passes data to the application (via the `onVTKeystroke` and
+`sendString` callbacks), it uses [UTF-16] in native JavaScript strings.
+The application should then convert it to whatever encoding it expects.
+
+A common example when working with [WebSockets] is to convert the string to
+an [ArrayBuffer] with [UTF-8] encoding.
+This is easily accomplished with the [TextEncoder] API.
+
+```js
+const encoder = new TextEncoder();
+const ws = new WebSocket(...);
+...
+  io.onVTKeystroke = (str) => {
+    ws.send(encoder.encode(str));
+  };
+```
+
+***note
+Note: <=hterm-1.83 offered a `send-encoding` preference where you could select
+between `utf-8` and `raw` settings.
+The `utf-8` mode would encode [UTF-8] [code unit]s into a JS [UTF-16] string
+while the `raw` mode would pass through the [UTF-16] string unmodified.
+With >=hterm-1.84, the `send-encoding` preference has been dropped and hterm
+always runs in the equivalent `raw` mode.
+***
+
+### app->hterm
+
+When passing data to hterm to interpret, strings should be in [UTF-16] encoding.
+This covers `hterm.Terminal.IO`'s `print`, `writeUTF16`, `println`, and
+`writelnUTF16` APIs.
+
+A few APIs are also provided to pass in [UTF-16] strings with [UTF-8]
+[code unit]s, but those are deprecated and should be avoided.
+This covers `hterm.Terminal.IO`'s `writeUTF8` and `writelnUTF8` APIs.
+
+The `hterm.Terminal.interpret` API currently expects [UTF-8] [code unit]s.
+We plan on changing this to [UTF-16] encoding.
+
+
+[ArrayBuffer]: https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer
+[code unit]: https://en.wikipedia.org/wiki/Character_encoding
+[Mojibake]: https://en.wikipedia.org/wiki/Mojibake
+[TextEncoder]: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder
+[UTF-16]: https://en.wikipedia.org/wiki/UTF-16
+[UTF-8]: https://en.wikipedia.org/wiki/UTF-8
+[WebSockets]: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
