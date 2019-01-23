@@ -185,18 +185,10 @@ hterm.Terminal.IO.prototype.onTerminalResize = function(width, height) {
  * @param {string} string The UTF-8 encoded string to print.
  */
 hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
-  // If another process has the foreground IO, buffer new data sent to this IO
-  // (since it's in the background).  When we're made the foreground IO again,
-  // we'll flush everything.
-  if (this.terminal_.io != this) {
-    this.buffered_ += string;
-    return;
-  }
-
   if (this.terminal_.characterEncoding != 'raw')
     string = this.utf8Decoder_.decode(string);
 
-  this.terminal_.interpret(string);
+  this.print(string);
 };
 
 /**
@@ -215,7 +207,15 @@ hterm.Terminal.IO.prototype.writelnUTF8 = function(string) {
  */
 hterm.Terminal.IO.prototype.print =
 hterm.Terminal.IO.prototype.writeUTF16 = function(string) {
-  this.writeUTF8(lib.encodeUTF8(string));
+  // If another process has the foreground IO, buffer new data sent to this IO
+  // (since it's in the background).  When we're made the foreground IO again,
+  // we'll flush everything.
+  if (this.terminal_.io != this) {
+    this.buffered_ += string;
+    return;
+  }
+
+  this.terminal_.interpret(string);
 };
 
 /**
@@ -225,5 +225,5 @@ hterm.Terminal.IO.prototype.writeUTF16 = function(string) {
  */
 hterm.Terminal.IO.prototype.println =
 hterm.Terminal.IO.prototype.writelnUTF16 = function(string) {
-  this.writelnUTF8(lib.encodeUTF8(string));
+  this.print(string + '\r\n');
 };
