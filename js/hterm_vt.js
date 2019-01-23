@@ -548,25 +548,9 @@ hterm.VT.prototype.interpret = function(buf) {
  */
 hterm.VT.prototype.decode = function(str) {
   if (this.characterEncoding == 'utf-8')
-    return this.decodeUTF8(str);
+    return this.utf8Decoder_.decode(str);
 
   return str;
-};
-
-/**
- * Encode a UTF-16 string as UTF-8.
- *
- * See also: https://en.wikipedia.org/wiki/UTF-16
- */
-hterm.VT.prototype.encodeUTF8 = function(str) {
-  return lib.encodeUTF8(str);
-};
-
-/**
- * Decode a UTF-8 string into UTF-16.
- */
-hterm.VT.prototype.decodeUTF8 = function(str) {
-  return this.utf8Decoder_.decode(str);
 };
 
 /**
