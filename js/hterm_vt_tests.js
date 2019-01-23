@@ -133,19 +133,19 @@ hterm.VT.Tests.addTest('sanity', function(result, cx) {
  */
 hterm.VT.Tests.addTest('utf8', function(result, cx) {
     // 11100010 10000000 10011001 split over two writes.
-    this.terminal.interpret('\xe2\x80');
-    this.terminal.interpret('\x99\r\n');
+    this.terminal.io.writeUTF8('\xe2\x80');
+    this.terminal.io.writeUTF8('\x99\r\n');
 
     // Interpret some invalid UTF-8. xterm and gnome-terminal are
     // inconsistent about the number of replacement characters. We
     // match xterm.
-    this.terminal.interpret('a\xf1\x80\x80\xe1\x80\xc2b\x80c\x80\xbfd\r\n');
+    this.terminal.io.writelnUTF8('a\xf1\x80\x80\xe1\x80\xc2b\x80c\x80\xbfd');
 
     // Surrogate pairs turn into replacements.
-    this.terminal.interpret('\xed\xa0\x80' +  // D800
-                            '\xed\xad\xbf' +  // D87F
-                            '\xed\xae\x80' +  // DC00
-                            '\xed\xbf\xbf');  // DFFF
+    this.terminal.io.writeUTF8('\xed\xa0\x80' +  // D800
+                               '\xed\xad\xbf' +  // D87F
+                               '\xed\xae\x80' +  // DC00
+                               '\xed\xbf\xbf');  // DFFF
 
     var text = this.terminal.getRowsText(0, 3);
     result.assertEQ(text,
@@ -168,7 +168,7 @@ hterm.VT.Tests.addTest('utf8', function(result, cx) {
  * producing something like "âc".
  */
 hterm.VT.Tests.addTest('utf8-combining', function(result, cx) {
-    this.terminal.interpret('abc\b\b\xcc\x82\n');
+    this.terminal.interpret('abc\b\b\u{302}\n');
     var text = this.terminal.getRowsText(0, 1);
     result.assertEQ(text, 'a\u{302}bc');
     result.pass();
@@ -272,7 +272,7 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
     // Send a "set window title" command using a disabled 8-bit
     // control. It's a C1 control, so we interpret it after UTF-8
     // decoding.
-    this.terminal.interpret('\xc2\x9d0;test title\x07!!');
+    this.terminal.interpret('\u{9d}0;test title\x07!!');
 
     result.assertEQ(title, null);
     result.assertEQ(this.terminal.getRowsText(0, 1), '0;test title!!');
@@ -288,7 +288,7 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
     title = null;
     this.terminal.reset();
     this.terminal.vt.enable8BitControl = true;
-    this.terminal.interpret('\xc2\x9d0;test title\x07!!');
+    this.terminal.interpret('\u{9d}0;test title\x07!!');
     result.assertEQ(title, 'test title');
     result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
 
@@ -509,10 +509,7 @@ hterm.VT.Tests.addTest('erase-left', function(result, cx) {
  * Test the erase left command with widechar string.
  */
 hterm.VT.Tests.addTest('erase-left-widechar', function(result, cx) {
-    this.terminal.interpret(
-        '\xe7\xac\xac\xe4\xb8\x80\xe8\xa1\x8c\r\n' +
-        '\xe7\xac\xac\xe4\xba\x8c\xe8\xa1\x8c\r\n' +
-        '\xe7\xac\xac\xe4\xb8\x89\xe8\xa1\x8c');
+    this.terminal.interpret('第一行\r\n第二行\r\n第三行');
     this.terminal.interpret('\x1b[5D' +
                             '\x1b[A' +
                             '\x1b[1KOO');
@@ -545,10 +542,7 @@ hterm.VT.Tests.addTest('erase-right', function(result, cx) {
  * Test the erase right command with widechar string.
  */
 hterm.VT.Tests.addTest('erase-right-widechar', function(result, cx) {
-    this.terminal.interpret(
-        '\xe7\xac\xac\xe4\xb8\x80\xe8\xa1\x8c\r\n' +
-        '\xe7\xac\xac\xe4\xba\x8c\xe8\xa1\x8c\r\n' +
-        '\xe7\xac\xac\xe4\xb8\x89\xe8\xa1\x8c');
+    this.terminal.interpret('第一行\r\n第二行\r\n第三行');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0KOO');
 

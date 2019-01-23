@@ -52,9 +52,6 @@ hterm.VT = function(terminal) {
   // The amount of time we're willing to wait for the end of an OSC sequence.
   this.oscTimeLimit_ = 20000;
 
-  // Decoder to maintain UTF-8 decode state.
-  this.utf8Decoder_ = new lib.UTF8Decoder();
-
   /**
    * Whether to accept the 8-bit control characters.
    *
@@ -527,7 +524,7 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
  * The buffer will be decoded according to the 'receive-encoding' preference.
  */
 hterm.VT.prototype.interpret = function(buf) {
-  this.parseState_.resetBuf(this.decode(buf));
+  this.parseState_.resetBuf(buf);
 
   while (!this.parseState_.isComplete()) {
     var func = this.parseState_.func;
@@ -541,16 +538,6 @@ hterm.VT.prototype.interpret = function(buf) {
       throw 'Parser did not alter the state!';
     }
   }
-};
-
-/**
- * Decode a string according to the 'receive-encoding' preference.
- */
-hterm.VT.prototype.decode = function(str) {
-  if (this.characterEncoding == 'utf-8')
-    return this.utf8Decoder_.decode(str);
-
-  return str;
 };
 
 /**

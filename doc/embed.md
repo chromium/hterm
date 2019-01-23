@@ -213,14 +213,17 @@ always runs in the equivalent `raw` mode.
 
 When passing data to hterm to interpret, strings should be in [UTF-16] encoding.
 This covers `hterm.Terminal.IO`'s `print`, `writeUTF16`, `println`, and
-`writelnUTF16` APIs.
+`writelnUTF16` APIs as well as `hterm.Terminal`'s `interpret`.
 
 A few APIs are also provided to pass in [UTF-16] strings with [UTF-8]
 [code unit]s, but those are deprecated and should be avoided.
 This covers `hterm.Terminal.IO`'s `writeUTF8` and `writelnUTF8` APIs.
 
-The `hterm.Terminal.interpret` API currently expects [UTF-8] [code unit]s.
-We plan on changing this to [UTF-16] encoding.
+***note
+Note: <=hterm-1.84 required `hterm.Terminal.interpret`'s argument to be a string
+of [UTF-8] [code unit]s when the `receive-encoding` was set to `utf-8`.
+With >=hterm-1.85, `hterm.Terminal.interpret` always uses [UTF-16] strings.
+***
 
 
 [ArrayBuffer]: https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer

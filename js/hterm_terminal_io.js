@@ -35,6 +35,9 @@ hterm.Terminal.IO = function(terminal) {
 
   // Any data this object accumulated while not active.
   this.buffered_ = '';
+
+  // Decoder to maintain UTF-8 decode state.
+  this.utf8Decoder_ = new lib.UTF8Decoder();
 };
 
 /**
@@ -189,6 +192,9 @@ hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
     this.buffered_ += string;
     return;
   }
+
+  if (this.terminal_.characterEncoding != 'raw')
+    string = this.utf8Decoder_.decode(string);
 
   this.terminal_.interpret(string);
 };
