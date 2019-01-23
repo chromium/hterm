@@ -1887,8 +1887,11 @@ hterm.VT.OSC['52'] = function(parseState) {
     return;
 
   var data = window.atob(args[1]);
+  if (this.characterEncoding == 'utf-8') {
+    data = lib.decodeUTF8(data);
+  }
   if (data)
-    this.terminal.copyStringToClipboard(this.decode(data));
+    this.terminal.copyStringToClipboard(data);
 };
 
 /**
