@@ -147,14 +147,51 @@ hterm.VT.Tests.addTest('utf8', function(result, cx) {
                                '\xed\xae\x80' +  // DC00
                                '\xed\xbf\xbf');  // DFFF
 
-    var text = this.terminal.getRowsText(0, 3);
+    // Write some text to finish flushing the decoding stream.
+    this.terminal.io.writeUTF8('\r\ndone');
+
+    var text = this.terminal.getRowsText(0, 4);
     result.assertEQ(text,
                     '\u2019\n' +
                     'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
-                    '\ufffd\ufffd\ufffd\ufffd');
+                    '\ufffd'.repeat(12) +
+                    '\ndone');
 
     result.pass();
   });
+
+/**
+ * Verify we can write ArrayBuffers of UTF-8 data.
+ */
+hterm.VT.Tests.addTest('utf8-arraybuffer', function(result, cx) {
+  // Test splitting a single code point over multiple writes.
+  let data = new Uint8Array([0xe2, 0x80, 0x99, 0xd, 0xa]);
+  for (let i = 0; i < data.length; ++i) {
+    this.terminal.io.writeUTF8(data.subarray(i, i + 1));
+  }
+
+  // Interpret some invalid UTF-8. xterm and gnome-terminal are
+  // inconsistent about the number of replacement characters. We
+  // match xterm.
+  data = new Uint8Array([0x61, 0xf1, 0x80, 0x80, 0xe1, 0x80, 0xc2, 0x62, 0x80,
+                         0x63, 0x80, 0xbf, 0x64]);
+  this.terminal.io.writelnUTF8(data);
+
+  // Surrogate pairs turn into replacements.
+  data = new Uint8Array([0xed, 0xa0, 0x80,    // D800
+                         0xed, 0xad, 0xbf,    // D87F
+                         0xed, 0xae, 0x80,    // DC00
+                         0xed, 0xbf, 0xbf]);  // DFFF
+  this.terminal.io.writelnUTF8(data);
+
+  const text = this.terminal.getRowsText(0, 3);
+  result.assertEQ('\u2019\n' +
+                  'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
+                  '\ufffd'.repeat(12),
+                  text);
+
+  result.pass();
+});
 
 /**
  * Verify we don't drop combining characters.

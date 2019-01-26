@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.encodeUTF8');
-
 /**
  * Input/Output interface used by commands to communicate with the terminal.
  *
@@ -37,7 +35,7 @@ hterm.Terminal.IO = function(terminal) {
   this.buffered_ = '';
 
   // Decoder to maintain UTF-8 decode state.
-  this.utf8Decoder_ = new lib.UTF8Decoder();
+  this.textDecoder_ = new TextDecoder();
 };
 
 /**
@@ -185,8 +183,20 @@ hterm.Terminal.IO.prototype.onTerminalResize = function(width, height) {
  * @param {string} string The UTF-8 encoded string to print.
  */
 hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
-  if (this.terminal_.characterEncoding != 'raw')
-    string = this.utf8Decoder_.decode(string);
+  if (string instanceof ArrayBuffer || ArrayBuffer.isView(string)) {
+    // Handle array buffers & typed arrays by normalizing into a typed array.
+    const u8 = new Uint8Array(string);
+    if (this.terminal_.characterEncoding == 'raw') {
+      string = lib.codec.codeUnitArrayToString(u8);
+    } else {
+      string = this.textDecoder_.decode(u8, {stream: true});
+    }
+  } else {
+    if (this.terminal_.characterEncoding != 'raw') {
+      const bytes = lib.codec.stringToCodeUnitArray(string, Uint8Array);
+      string = this.textDecoder_.decode(bytes, {stream: true});
+    }
+  }
 
   this.print(string);
 };
@@ -197,7 +207,9 @@ hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
  * @param {string} string The UTF-8 encoded string to print.
  */
 hterm.Terminal.IO.prototype.writelnUTF8 = function(string) {
-  this.writeUTF8(string + '\r\n');
+  this.writeUTF8(string);
+  // We need to use writeUTF8 to make sure we flush the decoder state.
+  this.writeUTF8('\r\n');
 };
 
 /**
