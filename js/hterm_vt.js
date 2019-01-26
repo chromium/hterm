@@ -4,8 +4,7 @@
 
 'use strict';
 
-lib.rtdep('lib.colors', 'lib.f', 'lib.UTF8Decoder',
-          'hterm.VT.CharacterMap');
+lib.rtdep('lib.colors', 'lib.f', 'hterm.VT.CharacterMap');
 
 /**
  * Constructor for the VT escape sequence interpreter.
@@ -1878,7 +1877,9 @@ hterm.VT.OSC['52'] = function(parseState) {
 
   var data = window.atob(args[1]);
   if (this.characterEncoding == 'utf-8') {
-    data = lib.decodeUTF8(data);
+    const decoder = new TextDecoder();
+    const bytes = lib.codec.stringToCodeUnitArray(data, Uint8Array);
+    data = decoder.decode(bytes);
   }
   if (data)
     this.terminal.copyStringToClipboard(data);
