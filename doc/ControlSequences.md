@@ -751,6 +751,10 @@ If you're unsure which encoding to select, then use SGR.
 
 ##### X10
 
+***note
+In >=hterm-1.85, we limit to 95 rows and columns due to encoding limitations.
+***
+
 There is a limit of 223 rows and columns due to the protocol encoding:
 they made sure that each byte of data was printable, so 32 was added
 (which is the first printable ASCII character).
