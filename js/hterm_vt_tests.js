@@ -2793,6 +2793,14 @@ hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
   terminal.vt.onTerminalMouse_(e);
   result.assertEQ('\x1b[M   ', resultString);
 
+  // Check the 7-bit limit.
+  e = MockTerminalMouseEvent('mousedown', {terminalRow: 95, terminalColumn: 94});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[M \x7e\x7f', resultString);
+
+/*
+  These are disabled because we currently clamp X10 reporting to 7-bit.
+
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
@@ -2812,6 +2820,7 @@ hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 300, terminalColumn: 300});
   terminal.vt.onTerminalMouse_(e);
   result.assertEQ('\x1b[M \xff\xff', resultString);
+*/
 
   result.pass();
 });
@@ -3254,6 +3263,14 @@ hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
   terminal.vt.onTerminalMouse_(e);
   result.assertEQ('\x1b[Ma  ', resultString);
 
+  // Check the 7-bit limit.
+  e = MockTerminalMouseEvent('wheel', {terminalRow: 95, terminalColumn: 94});
+  terminal.vt.onTerminalMouse_(e);
+  result.assertEQ('\x1b[Ma\x7e\x7f', resultString);
+
+/*
+  These are disabled because we currently clamp X10 reporting to 7-bit.
+
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
@@ -3273,6 +3290,7 @@ hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
   e = MockTerminalMouseEvent('wheel', {terminalRow: 300, terminalColumn: 300});
   terminal.vt.onTerminalMouse_(e);
   result.assertEQ('\x1b[Ma\xff\xff', resultString);
+*/
 
   result.pass();
 });

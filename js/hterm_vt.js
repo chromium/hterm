@@ -398,7 +398,8 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
   let x;
   let y;
   // Normally X10 has a limit of 255, but since we only want to emit UTF-8 valid
-  // streams, we limit ourselves to 127 to avoid setting the 8th bit.
+  // streams, we limit ourselves to 127 to avoid setting the 8th bit.  If we do
+  // re-enable this, we should re-enable the hterm_vt_tests.js too.
   let limit = 127;
   switch (this.mouseCoordinates) {
     case this.MOUSE_COORDINATES_UTF8:
