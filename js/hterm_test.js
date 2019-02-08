@@ -72,7 +72,9 @@ window.onload = function() {
     // JS console.
     testRun.maxFailures = 1;
 
-    testRun.selectPattern(testRun.ALL_TESTS);
+    const params = new URLSearchParams(document.location.search);
+    const pattern = params.get('pattern');
+    testRun.selectPattern(new RegExp(pattern ? pattern : '.'));
     testRun.run();
 
   }), console.log.bind(console));
