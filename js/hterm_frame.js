@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.f');
-
 /**
  * First draft of the interface between the terminal and a third party dialog.
  *

@@ -8,8 +8,6 @@ var testManager;
 var testRun;
 
 window.onload = function() {
-  lib.rtdep(hterm.testDeps);
-
   hterm.defaultStorage = new lib.Storage.Memory();
 
   lib.init(lib.f.alarm(function() {

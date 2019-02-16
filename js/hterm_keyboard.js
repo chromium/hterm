@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('hterm.Keyboard.KeyMap');
-
 /**
  * Keyboard handler.
  *

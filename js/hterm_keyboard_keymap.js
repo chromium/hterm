@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('hterm.Keyboard.KeyActions');
-
 /**
  * The default key map for hterm.
  *

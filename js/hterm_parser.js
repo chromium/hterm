@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('hterm.Keyboard.KeyActions');
-
 /**
  * @constructor
  * Parses the key definition syntax used for user keyboard customizations.

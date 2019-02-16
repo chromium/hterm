@@ -4,11 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.colors', 'lib.PreferenceManager', 'lib.resource', 'lib.wc',
-          'lib.f', 'hterm.AccessibilityReader', 'hterm.Keyboard',
-          'hterm.Options', 'hterm.PreferenceManager', 'hterm.Screen',
-          'hterm.ScrollPort', 'hterm.Size', 'hterm.TextAttributes', 'hterm.VT');
-
 /**
  * Constructor for the Terminal class.
  *

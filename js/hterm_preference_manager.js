@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.f', 'lib.Storage');
-
 /**
  * PreferenceManager subclass managing global NaSSH preferences.
  *

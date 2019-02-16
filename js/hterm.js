@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.Storage');
-
 /**
  * @fileoverview Declares the hterm.* namespace and some basic shared utilities
  * that are too small to deserve dedicated files.
@@ -55,15 +53,6 @@ hterm.notifyCopyMessage = '\u2702';
  * be replaced by the terminal title.
  */
 hterm.desktopNotificationTitle = '\u266A %(title) \u266A';
-
-/**
- * List of known hterm test suites.
- *
- * A test harness should ensure that they all exist before running.
- */
-hterm.testDeps = ['hterm.AccessibilityReader.Tests', 'hterm.ScrollPort.Tests',
-                  'hterm.Screen.Tests', 'hterm.Terminal.Tests',
-                  'hterm.VT.Tests', 'hterm.VT.CannedTests'];
 
 /**
  * The hterm init function, registered with lib.registerInit().

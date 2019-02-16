@@ -4,9 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.f', 'lib.wc',
-          'hterm.RowCol', 'hterm.Size', 'hterm.TextAttributes');
-
 /**
  * @fileoverview This class represents a single terminal screen full of text.
  *

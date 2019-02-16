@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.f');
-
 /**
  * @fileoverview Unit tests for the hterm.Screen class.
  */

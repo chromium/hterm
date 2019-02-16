@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.f');
-
 /**
  * Character map object.
  *

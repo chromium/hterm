@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.colors');
-
 /**
  * Constructor for TextAttribute objects.
  *

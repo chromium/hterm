@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.f', 'hterm.PubSub', 'hterm.Size');
-
 /**
  * A 'viewport' view of fixed-height rows with support for selection and
  * copy-to-clipboard.

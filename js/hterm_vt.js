@@ -4,8 +4,6 @@
 
 'use strict';
 
-lib.rtdep('lib.colors', 'lib.f', 'hterm.VT.CharacterMap');
-
 /**
  * Constructor for the VT escape sequence interpreter.
  *
