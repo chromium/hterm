@@ -10,7 +10,7 @@ var testRun;
 window.onload = function() {
   hterm.defaultStorage = new lib.Storage.Memory();
 
-  lib.init(lib.f.alarm(function() {
+  lib.init(function() {
     testManager = new lib.TestManager();
     testManager.log.save = true;
 
@@ -75,5 +75,5 @@ window.onload = function() {
     testRun.selectPattern(new RegExp(pattern ? pattern : '.'));
     testRun.run();
 
-  }), console.log.bind(console));
+  }, console.log.bind(console));
 };
