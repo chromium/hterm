@@ -186,7 +186,7 @@ hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
   // We can't use instanceof here on string to see if it's an ArrayBuffer as it
   // might be constructed in a different runtime context whose ArrayBuffer was
   // not the same.  See https://crbug.com/930171#5 for more details.
-  if (typeof type == 'string') {
+  if (typeof string == 'string') {
     if (this.terminal_.characterEncoding != 'raw') {
       const bytes = lib.codec.stringToCodeUnitArray(string, Uint8Array);
       string = this.textDecoder_.decode(bytes, {stream: true});
