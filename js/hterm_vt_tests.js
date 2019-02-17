@@ -2287,8 +2287,7 @@ hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
     result.assertEQ('auto', options.height);
     result.assertEQ('left', options.align);
     result.assertEQ(undefined, options.uri);
-    result.assertEQ(new ArrayBuffer([81, 50, 99, 57, 80, 81, 61, 61]),
-                    options.buffer);
+    result.assertEQ(new Uint8Array([10]).buffer, options.buffer);
     result.pass();
   };
 
