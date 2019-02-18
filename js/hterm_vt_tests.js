@@ -117,9 +117,9 @@ hterm.VT.Tests.addTest('sanity', function(result, cx) {
                             '7\r\n8\r\n9\r\n10\r\n11\r\n12');
 
     var text = this.terminal.getRowsText(0, 13);
-    result.assertEQ(text, '0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
+    assert.equal(text, '0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
 
-    result.assertEQ(this.terminal.scrollbackRows_.length, 7);
+    assert.equal(this.terminal.scrollbackRows_.length, 7);
 
     result.pass();
   });
@@ -149,11 +149,11 @@ hterm.VT.Tests.addTest('utf8', function(result, cx) {
     this.terminal.io.writeUTF8('\r\ndone');
 
     var text = this.terminal.getRowsText(0, 4);
-    result.assertEQ(text,
-                    '\u2019\n' +
-                    'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
-                    '\ufffd'.repeat(12) +
-                    '\ndone');
+    assert.equal(text,
+                 '\u2019\n' +
+                 'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
+                 '\ufffd'.repeat(12) +
+                 '\ndone');
 
     result.pass();
   });
@@ -183,10 +183,10 @@ hterm.VT.Tests.addTest('utf8-arraybuffer', function(result, cx) {
   this.terminal.io.writelnUTF8(data);
 
   const text = this.terminal.getRowsText(0, 3);
-  result.assertEQ('\u2019\n' +
-                  'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
-                  '\ufffd'.repeat(12),
-                  text);
+  assert.equal('\u2019\n' +
+               'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
+               '\ufffd'.repeat(12),
+               text);
 
   result.pass();
 });
@@ -205,7 +205,7 @@ hterm.VT.Tests.addTest('utf8-arraybuffer', function(result, cx) {
 hterm.VT.Tests.addTest('utf8-combining', function(result, cx) {
     this.terminal.interpret('abc\b\b\u{302}\n');
     var text = this.terminal.getRowsText(0, 1);
-    result.assertEQ(text, 'a\u{302}bc');
+    assert.equal(text, 'a\u{302}bc');
     result.pass();
   });
 
@@ -223,7 +223,7 @@ hterm.VT.Tests.addTest('cursor-relative', function(result, cx) {
                             '\x1b[2B' +
                             '\x1b[Cthree');
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text, 'line one\nline two\nline three');
+    assert.equal(text, 'line one\nline two\nline three');
     result.pass();
   });
 
@@ -238,7 +238,7 @@ hterm.VT.Tests.addTest('cursor-absolute', function(result, cx) {
                             '\x1b[1;5f one');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text, 'line one\nline two\nline three');
+    assert.equal(text, 'line one\nline two\nline three');
 
     result.pass();
   });
@@ -254,7 +254,7 @@ hterm.VT.Tests.addTest('line-position', function(result, cx) {
                             '\x1b[E\x1b[Eline three');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text, 'line one\nline two\nline three');
+    assert.equal(text, 'line one\nline two\nline three');
     result.pass();
   });
 
@@ -274,7 +274,7 @@ hterm.VT.Tests.addTest('partial-sequence', function(result, cx) {
     this.terminal.interpret('D\x1b[Aone');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text, 'line one\nline two\nline three');
+    assert.equal(text, 'line one\nline two\nline three');
     result.pass();
   });
 
@@ -287,7 +287,7 @@ hterm.VT.Tests.addTest('double-sequence', function(result, cx) {
     this.terminal.interpret('\x1b[\x1b[Dthree');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text, 'line one\nline two\nline three');
+    assert.equal(text, 'line one\nline two\nline three');
     result.pass();
   });
 
@@ -302,30 +302,30 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
       title = t || 'XXX';
     };
 
-    result.assertEQ(this.terminal.vt.enable8BitControl, false);
+    assert.isFalse(this.terminal.vt.enable8BitControl);
 
     // Send a "set window title" command using a disabled 8-bit
     // control. It's a C1 control, so we interpret it after UTF-8
     // decoding.
     this.terminal.interpret('\u{9d}0;test title\x07!!');
 
-    result.assertEQ(title, null);
-    result.assertEQ(this.terminal.getRowsText(0, 1), '0;test title!!');
+    assert.isNull(title);
+    assert.equal(this.terminal.getRowsText(0, 1), '0;test title!!');
 
     // Try again with the two-byte version of the code.
     title = null;
     this.terminal.reset();
     this.terminal.interpret('\x1b]0;test title\x07!!');
-    result.assertEQ(title, 'test title');
-    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
+    assert.equal(title, 'test title');
+    assert.equal(this.terminal.getRowsText(0, 1), '!!');
 
     // Now enable 8-bit control and see how it goes.
     title = null;
     this.terminal.reset();
     this.terminal.vt.enable8BitControl = true;
     this.terminal.interpret('\u{9d}0;test title\x07!!');
-    result.assertEQ(title, 'test title');
-    result.assertEQ(this.terminal.getRowsText(0, 1), '!!');
+    assert.equal(title, 'test title');
+    assert.equal(this.terminal.getRowsText(0, 1), '!!');
 
     result.pass();
   });
@@ -348,14 +348,14 @@ hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
       // We get all the data at once with a terminated sequence.
       terminal.reset();
       this.terminal.interpret('\x1b]0;asdf\x1b x ' + seq);
-      result.assertEQ(title, null);
+      assert.isNull(title);
 
       // We get the data in pieces w/a terminated sequence.
       terminal.reset();
       this.terminal.interpret('\x1b]0;asdf');
       this.terminal.interpret('\x1b');
       this.terminal.interpret(' x ' + seq);
-      result.assertEQ(title, null);
+      assert.isNull(title);
     });
 
     // We get the data in pieces but no terminating sequence.
@@ -363,7 +363,7 @@ hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
     this.terminal.interpret('\x1b]0;asdf');
     this.terminal.interpret('\x1b');
     this.terminal.interpret(' ');
-    result.assertEQ(title, null);
+    assert.isNull(title);
 
     result.pass();
   });
@@ -382,7 +382,7 @@ hterm.VT.Tests.addTest('split-ST-sequence', function(result, cx) {
     // We get the first half of the ST with the base.
     this.terminal.interpret('\x1b]0;asdf\x1b');
     this.terminal.interpret('\\');
-    result.assertEQ(title, 'asdf');
+    assert.equal(title, 'asdf');
 
     // We get the first half of the ST one byte at a time.
     title = null;
@@ -390,7 +390,7 @@ hterm.VT.Tests.addTest('split-ST-sequence', function(result, cx) {
     this.terminal.interpret('\x1b]0;asdf');
     this.terminal.interpret('\x1b');
     this.terminal.interpret('\\');
-    result.assertEQ(title, 'asdf');
+    assert.equal(title, 'asdf');
 
     result.pass();
   });
@@ -399,44 +399,42 @@ hterm.VT.Tests.addTest('dec-screen-test', function(result, cx) {
     this.terminal.interpret('\x1b#8');
 
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    'EEEEEEEEEEEEEEE\n' +
-                    'EEEEEEEEEEEEEEE\n' +
-                    'EEEEEEEEEEEEEEE\n' +
-                    'EEEEEEEEEEEEEEE\n' +
-                    'EEEEEEEEEEEEEEE\n' +
-                    'EEEEEEEEEEEEEEE');
+    assert.equal(text,
+                 'EEEEEEEEEEEEEEE\n' +
+                 'EEEEEEEEEEEEEEE\n' +
+                 'EEEEEEEEEEEEEEE\n' +
+                 'EEEEEEEEEEEEEEE\n' +
+                 'EEEEEEEEEEEEEEE\n' +
+                 'EEEEEEEEEEEEEEE');
     result.pass();
 
   });
 
 hterm.VT.Tests.addTest('newlines-1', function(result, cx) {
     // Should be off by default.
-    result.assertEQ(this.terminal.options_.autoCarriageReturn, false);
+    assert.isFalse(this.terminal.options_.autoCarriageReturn);
 
     // 0d: newline, 0b: vertical tab, 0c: form feed.
     this.terminal.interpret('newline\x0dvtab\x0bff\x0cbye');
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'vtabine\n' +
-                    '    ff\n' +
-                    '      bye'
-                    );
+    assert.equal(text,
+                 'vtabine\n' +
+                 '    ff\n' +
+                 '      bye');
 
     result.pass();
   });
 
 hterm.VT.Tests.addTest('newlines-2', function(result, cx) {
     this.terminal.interpret('\x1b[20h');
-    result.assertEQ(this.terminal.options_.autoCarriageReturn, true);
+    assert.isTrue(this.terminal.options_.autoCarriageReturn);
 
     this.terminal.interpret('newline\x0dvtab\x0bff\x0cbye');
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'vtabine\n' +
-                    'ff\n' +
-                    'bye'
-                    );
+    assert.equal(text,
+                 'vtabine\n' +
+                 'ff\n' +
+                 'bye');
 
     result.pass();
   });
@@ -452,14 +450,13 @@ hterm.VT.Tests.addTest('tabs', function(result, cx) {
     this.terminal.interpret('1\t2\td\r\n');
     this.terminal.interpret('1\t2\te');
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    '123456789012345\n' +
-                    '1       2     a\n' +
-                    '1       2     b\n' +
-                    '1       2     c\n' +
-                    '1       2     d\n' +
-                    '1       2     e'
-                    );
+    assert.equal(text,
+                 '123456789012345\n' +
+                 '1       2     a\n' +
+                 '1       2     b\n' +
+                 '1       2     c\n' +
+                 '1       2     d\n' +
+                 '1       2     e');
 
     result.pass();
   });
@@ -484,42 +481,42 @@ hterm.VT.Tests.addTest('reset', function(result, cx) {
 
     var ta;
 
-    result.assertEQ(this.terminal.tabStops_.length, 0);
+    assert.equal(this.terminal.tabStops_.length, 0);
 
     ta = this.terminal.primaryScreen_.textAttributes;
-    result.assert(ta.foreground != ta.DEFAULT_COLOR);
-    result.assert(ta.background != ta.DEFAULT_COLOR);
+    assert.notStrictEqual(ta.foreground, ta.DEFAULT_COLOR);
+    assert.notStrictEqual(ta.background, ta.DEFAULT_COLOR);
 
     ta = this.terminal.alternateScreen_.textAttributes;
-    result.assert(ta.foreground != ta.DEFAULT_COLOR);
-    result.assert(ta.background != ta.DEFAULT_COLOR);
+    assert.notStrictEqual(ta.foreground, ta.DEFAULT_COLOR);
+    assert.notStrictEqual(ta.background, ta.DEFAULT_COLOR);
 
-    result.assertEQ(ta.bold, true);
+    assert.isTrue(ta.bold);
 
-    result.assertEQ(this.terminal.vtScrollTop_, 1);
-    result.assertEQ(this.terminal.vtScrollBottom_, 3);
-    result.assertEQ(this.terminal.screen_.cursorPosition.row, 4);
-    result.assertEQ(this.terminal.screen_.cursorPosition.column, 5);
+    assert.equal(this.terminal.vtScrollTop_, 1);
+    assert.equal(this.terminal.vtScrollBottom_, 3);
+    assert.equal(this.terminal.screen_.cursorPosition.row, 4);
+    assert.equal(this.terminal.screen_.cursorPosition.column, 5);
 
     // Reset.
     this.terminal.interpret('\x1bc');
 
-    result.assertEQ(this.terminal.tabStops_.length, 1);
+    assert.equal(this.terminal.tabStops_.length, 1);
 
     ta = this.terminal.primaryScreen_.textAttributes;
-    result.assertEQ(ta.foreground, ta.DEFAULT_COLOR);
-    result.assertEQ(ta.background, ta.DEFAULT_COLOR);
+    assert.strictEqual(ta.foreground, ta.DEFAULT_COLOR);
+    assert.strictEqual(ta.background, ta.DEFAULT_COLOR);
 
     ta = this.terminal.alternateScreen_.textAttributes;
-    result.assertEQ(ta.foreground, ta.DEFAULT_COLOR);
-    result.assertEQ(ta.background, ta.DEFAULT_COLOR);
+    assert.strictEqual(ta.foreground, ta.DEFAULT_COLOR);
+    assert.strictEqual(ta.background, ta.DEFAULT_COLOR);
 
-    result.assertEQ(ta.bold, false);
+    assert.isFalse(ta.bold);
 
-    result.assertEQ(this.terminal.vtScrollTop_, null);
-    result.assertEQ(this.terminal.vtScrollBottom_, null);
-    result.assertEQ(this.terminal.screen_.cursorPosition.row, 0);
-    result.assertEQ(this.terminal.screen_.cursorPosition.column, 0);
+    assert.isNull(this.terminal.vtScrollTop_);
+    assert.isNull(this.terminal.vtScrollBottom_);
+    assert.equal(this.terminal.screen_.cursorPosition.row, 0);
+    assert.equal(this.terminal.screen_.cursorPosition.column, 0);
 
     result.pass();
   });
@@ -533,10 +530,10 @@ hterm.VT.Tests.addTest('erase-left', function(result, cx) {
                             '\x1b[1Ktw');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    '     two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 '     two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -550,10 +547,10 @@ hterm.VT.Tests.addTest('erase-left-widechar', function(result, cx) {
                             '\x1b[1KOO');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ('\u7b2c\u4e00\u884c\n' +
-                    ' OO \u884c\n' +
-                    '\u7b2c\u4e09\u884c',
-                    text);
+    assert.equal('\u7b2c\u4e00\u884c\n' +
+                 ' OO \u884c\n' +
+                 '\u7b2c\u4e09\u884c',
+                 text);
     result.pass();
   });
 
@@ -566,10 +563,10 @@ hterm.VT.Tests.addTest('erase-right', function(result, cx) {
                             '\x1b[0Ktwo');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -582,10 +579,10 @@ hterm.VT.Tests.addTest('erase-right-widechar', function(result, cx) {
                             '\x1b[0KOO');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ('\u7b2c\u4e00\u884c\n' +
-                    ' OO\n' +
-                    '\u7b2c\u4e09\u884c',
-                    text);
+    assert.equal('\u7b2c\u4e00\u884c\n' +
+                 ' OO\n' +
+                 '\u7b2c\u4e09\u884c',
+                 text);
     result.pass();
   });
 
@@ -598,10 +595,10 @@ hterm.VT.Tests.addTest('erase-line', function(result, cx) {
                             '\x1b[2Ktwo');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    '     two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 '     two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -614,10 +611,10 @@ hterm.VT.Tests.addTest('erase-above', function(result, cx) {
                             '\x1b[1Jtw');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    '\n' +
-                    '     two\n' +
-                    'line three');
+    assert.equal(text,
+                 '\n' +
+                 '     two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -630,10 +627,9 @@ hterm.VT.Tests.addTest('erase-all', function(result, cx) {
                             '\x1b[2Jtwo');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    '\n' +
-                    '     two\n' +
-                    '');
+    assert.equal(text,
+                 '\n' +
+                 '     two\n');
     result.pass();
   });
 
@@ -646,10 +642,9 @@ hterm.VT.Tests.addTest('erase-below', function(result, cx) {
                             '\x1b[0Jtwo');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    '');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n');
     result.pass();
   });
 
@@ -663,18 +658,18 @@ hterm.VT.Tests.addTest('erase-char', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 3);
     // See TODO in hterm.Terminal.prototype.eraseToRight for the extra space.
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
 
     this.terminal.interpret('\x1b[3D' +
                             '\x1b[X');
     text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line  wo\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line  wo\n' +
+                 'line three');
     result.pass();
   });
 
@@ -687,10 +682,10 @@ hterm.VT.Tests.addTest('insert-line', function(result, cx) {
                             'line one');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -703,10 +698,10 @@ hterm.VT.Tests.addTest('insert-lines', function(result, cx) {
                             'line one\r\nline two');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -719,12 +714,11 @@ hterm.VT.Tests.addTest('insert-toomany-lines', function(result, cx) {
                             'line one\r\nline two\r\nline three');
 
     var text = this.terminal.getRowsText(0, 5);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three\n' +
-                    '\n' +
-                    '');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three\n' +
+                 '\n');
     result.pass();
   });
 
@@ -738,10 +732,10 @@ hterm.VT.Tests.addTest('delete-line', function(result, cx) {
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[Mthree');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -755,10 +749,10 @@ hterm.VT.Tests.addTest('delete-lines', function(result, cx) {
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2Mthree');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -770,10 +764,10 @@ hterm.VT.Tests.addTest('insert-space', function(result, cx) {
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[@');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -785,10 +779,10 @@ hterm.VT.Tests.addTest('insert-spaces', function(result, cx) {
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[3@');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line   two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line   two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -800,10 +794,10 @@ hterm.VT.Tests.addTest('delete-chars', function(result, cx) {
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[4Ptwo');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -815,10 +809,10 @@ hterm.VT.Tests.addTest('delete-toomany', function(result, cx) {
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[20Ptwo');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -830,10 +824,10 @@ hterm.VT.Tests.addTest('scroll-up', function(result, cx) {
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2Sthree');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -845,12 +839,12 @@ hterm.VT.Tests.addTest('scroll-down', function(result, cx) {
     this.terminal.interpret('     \x1b[Tthree');
 
     var text = this.terminal.getRowsText(0, 5);
-    result.assertEQ(text,
-                    '\n' +
-                    'line one\n' +
-                    'line two\n' +
-                    'line three\n' +
-                    '     ');
+    assert.equal(text,
+                 '\n' +
+                 'line one\n' +
+                 'line two\n' +
+                 'line three\n' +
+                 '     ');
     result.pass();
   });
 
@@ -864,10 +858,10 @@ hterm.VT.Tests.addTest('line-position-absolute', function(result, cx) {
     this.terminal.interpret('\x1b[1done');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
     result.pass();
   });
 
@@ -880,7 +874,7 @@ hterm.VT.Tests.addTest('device-attributes', function(result, cx) {
 
     this.terminal.interpret('\x1b[c');
 
-    result.assertEQ(resultString, '\x1b[?1;2c');
+    assert.equal(resultString, '\x1b[?1;2c');
     result.pass();
   });
 
@@ -910,23 +904,23 @@ hterm.VT.Tests.addTest('color-change', function(result, cx) {
                             '[mbright-bold. [96;1mHi');
 
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    'plain....... Hi\n' +
-                    'italic...... Hi\n' +
-                    'bright...... Hi\n' +
-                    'bold........ Hi\n' +
-                    'bold-bright. Hi\n' +
-                    'bright-bold. Hi');
+    assert.equal(text,
+                 'plain....... Hi\n' +
+                 'italic...... Hi\n' +
+                 'bright...... Hi\n' +
+                 'bold........ Hi\n' +
+                 'bold-bright. Hi\n' +
+                 'bright-bold. Hi');
 
     for (var i = 0; i < 6; i++) {
       var row = this.terminal.getRowNode(i);
-      result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
-      result.assertEQ(row.childNodes[0].nodeType, Node.TEXT_NODE, 'i: ' + i);
-      result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
-      result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
-      result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
-      result.assert(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
-      result.assertEQ(
+      assert.equal(row.childNodes.length, 2, 'i: ' + i);
+      assert.equal(row.childNodes[0].nodeType, Node.TEXT_NODE, 'i: ' + i);
+      assert.equal(row.childNodes[0].length, 13, 'i: ' + i);
+      assert.equal(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
+      assert.isTrue(!!row.childNodes[1].style.color, 'i: ' + i);
+      assert.isTrue(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
+      assert.equal(
           row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
           'i: ' + i);
     }
@@ -943,23 +937,23 @@ hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
                            '[mbright-bold. [96;1m中');
 
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    'plain....... \u4E2D\n' +
-                    'italic...... \u4E2D\n' +
-                    'bright...... \u4E2D\n' +
-                    'bold........ \u4E2D\n' +
-                    'bold-bright. \u4E2D\n' +
-                    'bright-bold. \u4E2D');
+    assert.equal(text,
+                 'plain....... \u4E2D\n' +
+                 'italic...... \u4E2D\n' +
+                 'bright...... \u4E2D\n' +
+                 'bold........ \u4E2D\n' +
+                 'bold-bright. \u4E2D\n' +
+                 'bright-bold. \u4E2D');
 
     for (var i = 0; i < 6; i++) {
       var row = this.terminal.getRowNode(i);
-      result.assertEQ(row.childNodes.length, 2, 'i: ' + i);
-      result.assertEQ(row.childNodes[0].nodeType, Node.TEXT_NODE, 'i: ' + i);
-      result.assertEQ(row.childNodes[0].length, 13, 'i: ' + i);
-      result.assertEQ(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
-      result.assert(!!row.childNodes[1].style.color, 'i: ' + i);
-      result.assert(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
-      result.assertEQ(
+      assert.equal(row.childNodes.length, 2, 'i: ' + i);
+      assert.equal(row.childNodes[0].nodeType, Node.TEXT_NODE, 'i: ' + i);
+      assert.equal(row.childNodes[0].length, 13, 'i: ' + i);
+      assert.equal(row.childNodes[1].nodeName, 'SPAN', 'i: ' + i);
+      assert.isTrue(!!row.childNodes[1].style.color, 'i: ' + i);
+      assert.isTrue(!!row.childNodes[1].style.fontWeight == (i > 2), 'i: ' + i);
+      assert.equal(
           row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
           'i: ' + i);
     }
@@ -980,35 +974,35 @@ hterm.VT.Tests.addTest('bold-as-bright', function(result, cx) {
                             '[mbright-bold. [96;1mHi');
 
     var text = this.terminal.getRowsText(0, 5);
-    result.assertEQ(text,
-                    'plain....... Hi\n' +
-                    'bright...... Hi\n' +
-                    'bold........ Hi\n' +
-                    'bold-bright. Hi\n' +
-                    'bright-bold. Hi');
+    assert.equal(text,
+                 'plain....... Hi\n' +
+                 'bright...... Hi\n' +
+                 'bold........ Hi\n' +
+                 'bold-bright. Hi\n' +
+                 'bright-bold. Hi');
 
     var fg = attrs.colorPalette[6];
     var fg_bright = attrs.colorPalette[14];
 
     var row_plain = this.terminal.getRowNode(0);
-    result.assertEQ(row_plain.childNodes[1].style.color, fg,
-                    'plain color');
+    assert.equal(row_plain.childNodes[1].style.color, fg,
+                 'plain color');
 
     var row_bright = this.terminal.getRowNode(1);
-    result.assertEQ(row_bright.childNodes[1].style.color, fg_bright,
-                    'bright color');
+    assert.equal(row_bright.childNodes[1].style.color, fg_bright,
+                 'bright color');
 
     var row_bold = this.terminal.getRowNode(2);
-    result.assertEQ(row_bold.childNodes[1].style.color, fg_bright,
-                    'bold color');
+    assert.equal(row_bold.childNodes[1].style.color, fg_bright,
+                 'bold color');
 
     var row_bold_bright = this.terminal.getRowNode(3);
-    result.assertEQ(row_bold_bright.childNodes[1].style.color, fg_bright,
-                    'bold bright color');
+    assert.equal(row_bold_bright.childNodes[1].style.color, fg_bright,
+                 'bold bright color');
 
     var row_bright_bold = this.terminal.getRowNode(4);
-    result.assertEQ(row_bright_bold.childNodes[1].style.color, fg_bright,
-                    'bright bold color');
+    assert.equal(row_bright_bold.childNodes[1].style.color, fg_bright,
+                 'bright bold color');
 
     result.pass();
   });
@@ -1026,35 +1020,35 @@ hterm.VT.Tests.addTest('disable-bold-as-bright', function(result, cx) {
                             '[mbright-bold. [96;1mHi');
 
     var text = this.terminal.getRowsText(0, 5);
-    result.assertEQ(text,
-                    'plain....... Hi\n' +
-                    'bright...... Hi\n' +
-                    'bold........ Hi\n' +
-                    'bold-bright. Hi\n' +
-                    'bright-bold. Hi');
+    assert.equal(text,
+                 'plain....... Hi\n' +
+                 'bright...... Hi\n' +
+                 'bold........ Hi\n' +
+                 'bold-bright. Hi\n' +
+                 'bright-bold. Hi');
 
     var fg = attrs.colorPalette[6];
     var fg_bright = attrs.colorPalette[14];
 
     var row_plain = this.terminal.getRowNode(0);
-    result.assertEQ(row_plain.childNodes[1].style.color, fg,
-		    'plain color');
+    assert.equal(row_plain.childNodes[1].style.color, fg,
+                 'plain color');
 
     var row_bright = this.terminal.getRowNode(1);
-    result.assertEQ(row_bright.childNodes[1].style.color, fg_bright,
-		    'bright color');
+    assert.equal(row_bright.childNodes[1].style.color, fg_bright,
+                 'bright color');
 
     var row_bold = this.terminal.getRowNode(2);
-    result.assertEQ(row_bold.childNodes[1].style.color, fg,
-		    'bold color');
+    assert.equal(row_bold.childNodes[1].style.color, fg,
+                 'bold color');
 
     var row_bold_bright = this.terminal.getRowNode(3);
-    result.assertEQ(row_bold_bright.childNodes[1].style.color, fg_bright,
-		    'bold bright color');
+    assert.equal(row_bold_bright.childNodes[1].style.color, fg_bright,
+                 'bold bright color');
 
     var row_bright_bold = this.terminal.getRowNode(4);
-    result.assertEQ(row_bright_bold.childNodes[1].style.color, fg_bright,
-		    'bright bold color');
+    assert.equal(row_bright_bold.childNodes[1].style.color, fg_bright,
+                 'bright bold color');
 
     result.pass();
   });
@@ -1067,20 +1061,20 @@ hterm.VT.Tests.addTest('status-report', function(result, cx) {
     terminal.io.sendString = (str) => resultString = str;
 
     this.terminal.interpret('\x1b[5n');
-    result.assertEQ(resultString, '\x1b0n');
+    assert.equal(resultString, '\x1b0n');
 
     resultString = '';
 
     this.terminal.interpret('line one\r\nline two\r\nline three');
     // Reposition the cursor and ask for a position report.
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[6n');
-    result.assertEQ(resultString, '\x1b[2;6R');
+    assert.equal(resultString, '\x1b[2;6R');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
 
     result.pass();
   });
@@ -1092,96 +1086,96 @@ hterm.VT.Tests.addTest('status-report', function(result, cx) {
  */
 hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.interpret('\x1b[?1h');
-    result.assertEQ(this.terminal.keyboard.applicationCursor, true);
+    assert.isTrue(this.terminal.keyboard.applicationCursor);
 
     this.terminal.interpret('\x1b[?1l');
-    result.assertEQ(this.terminal.keyboard.applicationCursor, false);
+    assert.isFalse(this.terminal.keyboard.applicationCursor);
 
     var fg = this.terminal.prefs_.get('foreground-color');
     var bg = this.terminal.prefs_.get('background-color');
 
     this.terminal.interpret('\x1b[?5h');
-    result.assertEQ(this.terminal.scrollPort_.getForegroundColor(), bg);
-    result.assertEQ(this.terminal.scrollPort_.getBackgroundColor(), fg);
+    assert.equal(this.terminal.scrollPort_.getForegroundColor(), bg);
+    assert.equal(this.terminal.scrollPort_.getBackgroundColor(), fg);
 
     this.terminal.interpret('\x1b[?5l');
-    result.assertEQ(this.terminal.scrollPort_.getForegroundColor(), fg);
-    result.assertEQ(this.terminal.scrollPort_.getBackgroundColor(), bg);
+    assert.equal(this.terminal.scrollPort_.getForegroundColor(), fg);
+    assert.equal(this.terminal.scrollPort_.getBackgroundColor(), bg);
 
     this.terminal.interpret('\x1b[?5l');
-    result.assertEQ(this.terminal.scrollPort_.getForegroundColor(), fg);
-    result.assertEQ(this.terminal.scrollPort_.getBackgroundColor(), bg);
+    assert.equal(this.terminal.scrollPort_.getForegroundColor(), fg);
+    assert.equal(this.terminal.scrollPort_.getBackgroundColor(), bg);
 
     this.terminal.interpret('\x1b[?6h');
-    result.assertEQ(this.terminal.options_.originMode, true);
+    assert.isTrue(this.terminal.options_.originMode);
 
     this.terminal.interpret('\x1b[?6l');
-    result.assertEQ(this.terminal.options_.originMode, false);
+    assert.isFalse(this.terminal.options_.originMode);
 
     this.terminal.interpret('\x1b[4h');
-    result.assertEQ(this.terminal.options_.insertMode, true);
+    assert.isTrue(this.terminal.options_.insertMode);
 
     this.terminal.interpret('\x1b[4l');
-    result.assertEQ(this.terminal.options_.insertMode, false);
+    assert.isFalse(this.terminal.options_.insertMode);
 
     this.terminal.interpret('\x1b[?7h');
-    result.assertEQ(this.terminal.options_.wraparound, true);
+    assert.isTrue(this.terminal.options_.wraparound);
 
     this.terminal.interpret('\x1b[?7l');
-    result.assertEQ(this.terminal.options_.wraparound, false);
+    assert.isFalse(this.terminal.options_.wraparound);
 
     // DEC mode 12 is disabled by default.
     this.terminal.vt.enableDec12 = true;
 
     this.terminal.interpret('\x1b[?12h');
-    result.assertEQ(this.terminal.options_.cursorBlink, true);
-    result.assert('cursorBlink' in this.terminal.timeouts_);
+    assert.isTrue(this.terminal.options_.cursorBlink);
+    assert.property(this.terminal.timeouts_, 'cursorBlink');
 
     this.terminal.interpret('\x1b[?12l');
-    result.assertEQ(this.terminal.options_.cursorBlink, false);
-    result.assert(!('cursorBlink' in this.terminal.timeouts_));
+    assert.isFalse(this.terminal.options_.cursorBlink);
+    assert.notProperty(this.terminal.timeouts_, 'cursorBlink');
 
     // Make sure that enableDec12 is respected.
     this.terminal.vt.enableDec12 = false;
 
     this.terminal.interpret('\x1b[?12h');
-    result.assertEQ(this.terminal.options_.cursorBlink, false);
-    result.assert(!('cursorBlink' in this.terminal.timeouts_));
+    assert.isFalse(this.terminal.options_.cursorBlink);
+    assert.notProperty(this.terminal.timeouts_, 'cursorBlink');
 
     this.terminal.interpret('\x1b[?25l');
-    result.assertEQ(this.terminal.options_.cursorVisible, false);
-    result.assertEQ(this.terminal.cursorNode_.style.opacity, '0');
+    assert.isFalse(this.terminal.options_.cursorVisible);
+    assert.equal(this.terminal.cursorNode_.style.opacity, '0');
 
     this.terminal.interpret('\x1b[?25h');
-    result.assertEQ(this.terminal.options_.cursorVisible, true);
+    assert.isTrue(this.terminal.options_.cursorVisible);
 
     // Turn off blink so we know the cursor should be on.
     this.terminal.interpret('\x1b[?12l');
-    result.assertEQ(this.terminal.cursorNode_.style.opacity, '1');
+    assert.equal(this.terminal.cursorNode_.style.opacity, '1');
 
     this.terminal.interpret('\x1b[?45h');
-    result.assertEQ(this.terminal.options_.reverseWraparound, true);
+    assert.isTrue(this.terminal.options_.reverseWraparound);
 
     this.terminal.interpret('\x1b[?45l');
-    result.assertEQ(this.terminal.options_.reverseWraparound, false);
+    assert.isFalse(this.terminal.options_.reverseWraparound);
 
     this.terminal.interpret('\x1b[?67h');
-    result.assertEQ(this.terminal.keyboard.backspaceSendsBackspace, true);
+    assert.isTrue(this.terminal.keyboard.backspaceSendsBackspace);
 
     this.terminal.interpret('\x1b[?67l');
-    result.assertEQ(this.terminal.keyboard.backspaceSendsBackspace, false);
+    assert.isFalse(this.terminal.keyboard.backspaceSendsBackspace);
 
     this.terminal.interpret('\x1b[?1004h]');
-    result.assertEQ(this.terminal.reportFocus, true);
+    assert.isTrue(this.terminal.reportFocus);
 
     this.terminal.interpret('\x1b[?1004l]');
-    result.assertEQ(this.terminal.reportFocus, false);
+    assert.isFalse(this.terminal.reportFocus);
 
     this.terminal.interpret('\x1b[?1036h');
-    result.assertEQ(this.terminal.keyboard.metaSendsEscape, true);
+    assert.isTrue(this.terminal.keyboard.metaSendsEscape);
 
     this.terminal.interpret('\x1b[?1036l');
-    result.assertEQ(this.terminal.keyboard.metaSendsEscape, false);
+    assert.isFalse(this.terminal.keyboard.metaSendsEscape);
 
     // Save the altSendsWhat setting and change the current setting to something
     // other than 'escape'.
@@ -1189,24 +1183,21 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
     this.terminal.keyboard.altSendsWhat = '8-bit';
 
     this.terminal.interpret('\x1b[?1039h');
-    result.assertEQ(this.terminal.keyboard.altSendsWhat, 'escape');
+    assert.equal(this.terminal.keyboard.altSendsWhat, 'escape');
 
     this.terminal.interpret('\x1b[?1039l');
-    result.assertEQ(this.terminal.keyboard.altSendsWhat, '8-bit');
+    assert.equal(this.terminal.keyboard.altSendsWhat, '8-bit');
 
     // Restore the previous altSendsWhat setting.
     this.terminal.keyboard.altSendsWhat = previousAltSendsWhat;
 
-    result.assertEQ(this.terminal.screen_,
-                    this.terminal.primaryScreen_);
+    assert(this.terminal.screen_ === this.terminal.primaryScreen_);
 
     this.terminal.interpret('\x1b[?1049h');
-    result.assertEQ(this.terminal.screen_,
-                    this.terminal.alternateScreen_);
+    assert(this.terminal.screen_ === this.terminal.alternateScreen_);
 
     this.terminal.interpret('\x1b[?1049l');
-    result.assertEQ(this.terminal.screen_,
-                    this.terminal.primaryScreen_);
+    assert(this.terminal.screen_ === this.terminal.primaryScreen_);
 
     result.pass();
   });
@@ -1218,19 +1209,19 @@ hterm.VT.Tests.addTest('parsestate-parseint', function(result, cx) {
   const parserState = new hterm.VT.ParseState();
 
   // Check default arg handling.
-  result.assertEQ(0, parserState.parseInt(''));
-  result.assertEQ(0, parserState.parseInt('', 0));
-  result.assertEQ(1, parserState.parseInt('', 1));
+  assert.equal(0, parserState.parseInt(''));
+  assert.equal(0, parserState.parseInt('', 0));
+  assert.equal(1, parserState.parseInt('', 1));
 
   // Check default arg handling when explicitly zero.
-  result.assertEQ(0, parserState.parseInt('0'));
-  result.assertEQ(0, parserState.parseInt('0', 0));
-  result.assertEQ(1, parserState.parseInt('0', 1));
+  assert.equal(0, parserState.parseInt('0'));
+  assert.equal(0, parserState.parseInt('0', 0));
+  assert.equal(1, parserState.parseInt('0', 1));
 
   // Check non-default args.
-  result.assertEQ(5, parserState.parseInt('5'));
-  result.assertEQ(5, parserState.parseInt('5', 0));
-  result.assertEQ(5, parserState.parseInt('5', 1));
+  assert.equal(5, parserState.parseInt('5'));
+  assert.equal(5, parserState.parseInt('5', 0));
+  assert.equal(5, parserState.parseInt('5', 1));
 
   result.pass();
 });
@@ -1242,17 +1233,17 @@ hterm.VT.Tests.addTest('parsestate-iarg', function(result, cx) {
   const parserState = new hterm.VT.ParseState();
 
   // Check unset args.
-  result.assertEQ(0, parserState.iarg(10));
-  result.assertEQ(1, parserState.iarg(10, 1));
+  assert.equal(0, parserState.iarg(10));
+  assert.equal(1, parserState.iarg(10, 1));
 
   // Check set args.
   parserState.args = [0, 5];
-  result.assertEQ(0, parserState.iarg(10));
-  result.assertEQ(1, parserState.iarg(10, 1));
-  result.assertEQ(0, parserState.iarg(0));
-  result.assertEQ(1, parserState.iarg(0, 1));
-  result.assertEQ(5, parserState.iarg(1));
-  result.assertEQ(5, parserState.iarg(1, 1));
+  assert.equal(0, parserState.iarg(10));
+  assert.equal(1, parserState.iarg(10, 1));
+  assert.equal(0, parserState.iarg(0));
+  assert.equal(1, parserState.iarg(0, 1));
+  assert.equal(5, parserState.iarg(1));
+  assert.equal(5, parserState.iarg(1, 1));
 
   result.pass();
 });
@@ -1264,13 +1255,13 @@ hterm.VT.Tests.addTest('parsestate-subargs', function(result, cx) {
   const parserState = new hterm.VT.ParseState();
 
   // Check initial/null state.
-  result.assert(!parserState.argHasSubargs(0));
-  result.assert(!parserState.argHasSubargs(1000));
+  assert.isTrue(!parserState.argHasSubargs(0));
+  assert.isTrue(!parserState.argHasSubargs(1000));
 
   // Mark one arg as having subargs.
   parserState.argSetSubargs(1);
-  result.assert(!parserState.argHasSubargs(0));
-  result.assert(parserState.argHasSubargs(1));
+  assert.isTrue(!parserState.argHasSubargs(0));
+  assert.isTrue(parserState.argHasSubargs(1));
 
   result.pass();
 });
@@ -1329,8 +1320,8 @@ hterm.VT.Tests.addTest('sgr-extended-colors-parser', function(result, cx) {
       parserState.subargs[i] = args[i].includes(':');
 
     const ret = this.terminal.vt.parseSgrExtendedColors(parserState, i, ta);
-    result.assertEQ(expSkipCount, ret.skipCount, input);
-    result.assertEQ(expColor, ret.color, input);
+    assert.equal(expSkipCount, ret.skipCount, input);
+    assert.equal(expColor, ret.color, input);
   });
 
   result.pass();
@@ -1348,60 +1339,60 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
 
   // Check fully semi-colon delimited: 38;2;R;G;Bm
   this.terminal.interpret('\x1b[38;2;110;120;130;48;2;10;20;30;4mHI1');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(110, 120, 130)', style.color);
-  result.assertEQ('rgb(10, 20, 30)', style.backgroundColor);
+  assert.equal('rgb(110, 120, 130)', style.color);
+  assert.equal('rgb(10, 20, 30)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI1', text);
+  assert.equal('HI1', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
 
   // Check fully colon delimited (xterm-specific): 38:2:R:G:Bm
   this.terminal.interpret('\x1b[38:2:170:180:190;48:2:70:80:90;4mHI2');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(170, 180, 190)', style.color);
-  result.assertEQ('rgb(70, 80, 90)', style.backgroundColor);
+  assert.equal('rgb(170, 180, 190)', style.color);
+  assert.equal('rgb(70, 80, 90)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI2', text);
+  assert.equal('HI2', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
 
   // Check fully colon delimited (ISO 8613-6): 38:2::R:G:Bm
   this.terminal.interpret('\x1b[38:2::171:181:191;48:2::71:81:91;4mHI3');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(171, 181, 191)', style.color);
-  result.assertEQ('rgb(71, 81, 91)', style.backgroundColor);
+  assert.equal('rgb(171, 181, 191)', style.color);
+  assert.equal('rgb(71, 81, 91)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI3', text);
+  assert.equal('HI3', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
 
   // Check fully colon delimited w/extra args (ISO 8613-6): 38:2::R:G:B::m
   this.terminal.interpret('\x1b[38:2::172:182:192::;48:2::72:82:92::;4mHI4');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(172, 182, 192)', style.color);
-  result.assertEQ('rgb(72, 82, 92)', style.backgroundColor);
+  assert.equal('rgb(172, 182, 192)', style.color);
+  assert.equal('rgb(72, 82, 92)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI4', text);
+  assert.equal('HI4', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
 
   // Check fully colon delimited w/too few args (ISO 8613-6): 38:2::R
   this.terminal.interpret('\x1b[38:2::33;48:2::44;4mHI5');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('', style.color);
-  result.assertEQ('', style.backgroundColor);
+  assert.equal('', style.color);
+  assert.equal('', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI5', text);
+  assert.equal('HI5', text);
 
   result.pass();
 });
@@ -1416,24 +1407,24 @@ hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
 
   // Check fully semi-colon delimited: 38;5;Pm
   this.terminal.interpret('\x1b[38;5;10;48;5;20;4mHI1');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(0, 186, 19)', style.color);
-  result.assertEQ('rgb(0, 0, 215)', style.backgroundColor);
+  assert.equal('rgb(0, 186, 19)', style.color);
+  assert.equal('rgb(0, 0, 215)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI1', text);
+  assert.equal('HI1', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
 
   // Check fully colon delimited: 38:5:Pm
   this.terminal.interpret('\x1b[38:5:50;48:5:60;4mHI2');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(0, 255, 215)', style.color);
-  result.assertEQ('rgb(95, 95, 135)', style.backgroundColor);
+  assert.equal('rgb(0, 255, 215)', style.color);
+  assert.equal('rgb(95, 95, 135)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI2', text);
+  assert.equal('HI2', text);
 
   result.pass();
 });
@@ -1469,13 +1460,13 @@ hterm.VT.Tests.addTest('true-color-mode', function(result, cx) {
                                 ' and ' + colors[j][0] + '\r\n');
 
         var text = this.terminal.getRowText(6*i+j,1);
-        result.assertEQ(text, 'True Color Test ' + colors[i][0] + ' and ' +
-                        colors[j][0]);
+        assert.equal(text, 'True Color Test ' + colors[i][0] + ' and ' +
+                     colors[j][0]);
 
         var bg = getRGB(colors[j]);
         var style = this.terminal.getRowNode(6*i+j).childNodes[1].style;
-        result.assertEQ(style.color,fg);
-        result.assertEQ(style.backgroundColor,bg);
+        assert.equal(style.color, fg);
+        assert.equal(style.backgroundColor, bg);
       }
     }
 
@@ -1505,24 +1496,24 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
                           // Enable underline.
                           '4' +
                           'mHI1');
-  result.assertEQ(true, ta.bold);
-  result.assertEQ(true, ta.italic);
-  result.assertEQ('solid', ta.underline);
-  result.assertEQ(false, ta.faint);
-  result.assertEQ(false, ta.strikethrough);
+  assert.isTrue(ta.bold);
+  assert.isTrue(ta.italic);
+  assert.equal('solid', ta.underline);
+  assert.isFalse(ta.faint);
+  assert.isFalse(ta.strikethrough);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(11, 22, 33)', style.color);
-  result.assertEQ('rgb(33, 22, 11)', style.backgroundColor);
+  assert.equal('rgb(11, 22, 33)', style.color);
+  assert.equal('rgb(33, 22, 11)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI1', text);
+  assert.equal('HI1', text);
 
   this.terminal.reset();
   this.terminal.clearHome();
-  result.assertEQ(false, ta.bold);
-  result.assertEQ(false, ta.italic);
-  result.assertEQ(false, ta.underline);
-  result.assertEQ(false, ta.faint);
-  result.assertEQ(false, ta.strikethrough);
+  assert.isFalse(ta.bold);
+  assert.isFalse(ta.italic);
+  assert.isFalse(ta.underline);
+  assert.isFalse(ta.faint);
+  assert.isFalse(ta.strikethrough);
 
   // Check 256 color parsing.
   this.terminal.interpret('\x1b[' +
@@ -1539,16 +1530,16 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
                           // Enable underline.
                           '4' +
                           'mHI2');
-  result.assertEQ(true, ta.bold);
-  result.assertEQ(true, ta.italic);
-  result.assertEQ('solid', ta.underline);
-  result.assertEQ(false, ta.faint);
-  result.assertEQ(false, ta.strikethrough);
+  assert.isTrue(ta.bold);
+  assert.isTrue(ta.italic);
+  assert.equal('solid', ta.underline);
+  assert.isFalse(ta.faint);
+  assert.isFalse(ta.strikethrough);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  result.assertEQ('rgb(252, 233, 79)', style.color);
-  result.assertEQ('rgb(0, 95, 0)', style.backgroundColor);
+  assert.equal('rgb(252, 233, 79)', style.color);
+  assert.equal('rgb(0, 95, 0)', style.backgroundColor);
   text = this.terminal.getRowText(0);
-  result.assertEQ('HI2', text);
+  assert.equal('HI2', text);
 
   result.pass();
 });
@@ -1561,45 +1552,45 @@ hterm.VT.Tests.addTest('underline-sgr', function(result, cx) {
 
   // Default mode 4: plain underline.
   this.terminal.interpret('\x1b[0;4m');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
 
   // 0 subarg turns it off.
   this.terminal.interpret('\x1b[0;4:0m');
-  result.assertEQ(false, ta.underline);
+  assert.isFalse(ta.underline);
 
   // 1 subarg is a single underline.
   this.terminal.interpret('\x1b[0;4:1m');
-  result.assertEQ('solid', ta.underline);
+  assert.equal('solid', ta.underline);
 
   // 2 subarg is double underline.
   this.terminal.interpret('\x1b[0;4:2m');
-  result.assertEQ('double', ta.underline);
+  assert.equal('double', ta.underline);
 
   // 3 subarg is wavy underline.
   this.terminal.interpret('\x1b[0;4:3m');
-  result.assertEQ('wavy', ta.underline);
+  assert.equal('wavy', ta.underline);
 
   // 4 subarg is dotted underline.
   this.terminal.interpret('\x1b[0;4:4m');
-  result.assertEQ('dotted', ta.underline);
+  assert.equal('dotted', ta.underline);
 
   // 5 subarg is dashed underline.
   this.terminal.interpret('\x1b[0;4:5m');
-  result.assertEQ('dashed', ta.underline);
+  assert.equal('dashed', ta.underline);
 
   // 6 subarg is unknown -> none.
   this.terminal.interpret('\x1b[0;4:6m');
-  result.assertEQ(false, ta.underline);
+  assert.isFalse(ta.underline);
 
   // Check coloring (lightly as SGR 38/48 tests cover it).
   this.terminal.interpret('\x1b[0;4;58:2:10:20:30m');
-  result.assertEQ('solid', ta.underline);
-  result.assertEQ('rgb(10, 20, 30)', ta.underlineSource);
+  assert.equal('solid', ta.underline);
+  assert.equal('rgb(10, 20, 30)', ta.underlineSource);
 
   // Check reset behavior.
   this.terminal.interpret('\x1b[0m');
-  result.assertEQ(false, ta.underline);
-  result.assertEQ(ta.SRC_DEFAULT, ta.underlineSource);
+  assert.isFalse(ta.underline);
+  assert.equal(ta.SRC_DEFAULT, ta.underlineSource);
 
   result.pass();
 });
@@ -1615,7 +1606,7 @@ hterm.VT.Tests.disableTest('origin-mode', function(result, cx) {
  */
 hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
     // Should be off by default.
-    result.assertEQ(this.terminal.options_.insertMode, false);
+    assert.isFalse(this.terminal.options_.insertMode);
 
     this.terminal.interpret('\x1b[4h');
     this.terminal.interpret(' one\x1b[4Dline\r\n');
@@ -1627,10 +1618,10 @@ hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
     this.terminal.interpret(' three\x1b[6Dline');
 
     var text = this.terminal.getRowsText(0, 3);
-    result.assertEQ(text,
-                    'line one\n' +
-                    'line two\n' +
-                    'line three');
+    assert.equal(text,
+                 'line one\n' +
+                 'line two\n' +
+                 'line three');
 
     result.pass();
   });
@@ -1640,7 +1631,7 @@ hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
  */
 hterm.VT.Tests.addTest('wraparound-mode-on', function(result, cx) {
     // Should be on by default.
-    result.assertEQ(this.terminal.options_.wraparound, true);
+    assert.isTrue(this.terminal.options_.wraparound);
 
     this.terminal.interpret('-----  1  ----a');
     this.terminal.interpret('-----  2  ----b');
@@ -1650,23 +1641,23 @@ hterm.VT.Tests.addTest('wraparound-mode-on', function(result, cx) {
     this.terminal.interpret('-----  6  ----f');
 
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    '-----  1  ----a' +
-                    '-----  2  ----b' +
-                    '-----  3  ----c' +
-                    '-----  4  ----d' +
-                    '-----  5  ----e' +
-                    '-----  6  ----f');
+    assert.equal(text,
+                 '-----  1  ----a' +
+                 '-----  2  ----b' +
+                 '-----  3  ----c' +
+                 '-----  4  ----d' +
+                 '-----  5  ----e' +
+                 '-----  6  ----f');
 
-    result.assertEQ(this.terminal.getCursorRow(), 5);
-    result.assertEQ(this.terminal.getCursorColumn(), 14);
+    assert.equal(this.terminal.getCursorRow(), 5);
+    assert.equal(this.terminal.getCursorColumn(), 14);
 
     result.pass();
   });
 
 hterm.VT.Tests.addTest('wraparound-mode-off', function(result, cx) {
     this.terminal.interpret('\x1b[?7l');
-    result.assertEQ(this.terminal.options_.wraparound, false);
+    assert.isFalse(this.terminal.options_.wraparound);
 
     this.terminal.interpret('-----  1  ----a');
     this.terminal.interpret('-----  2  ----b');
@@ -1676,16 +1667,15 @@ hterm.VT.Tests.addTest('wraparound-mode-off', function(result, cx) {
     this.terminal.interpret('-----  6  ----f');
 
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    '-----  1  ----f\n' +
-                    '\n' +
-                    '\n' +
-                    '\n' +
-                    '\n' +
-                    '');
+    assert.equal(text,
+                 '-----  1  ----f\n' +
+                 '\n' +
+                 '\n' +
+                 '\n' +
+                 '\n');
 
-    result.assertEQ(this.terminal.getCursorRow(), 0);
-    result.assertEQ(this.terminal.getCursorColumn(), 14);
+    assert.equal(this.terminal.getCursorRow(), 0);
+    assert.equal(this.terminal.getCursorColumn(), 14);
 
     result.pass();
   });
@@ -1695,7 +1685,7 @@ hterm.VT.Tests.addTest('wraparound-mode-off', function(result, cx) {
  */
 hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
     // Should be on by default.
-    result.assertEQ(this.terminal.options_.wraparound, true);
+    assert.isTrue(this.terminal.options_.wraparound);
 
     this.terminal.interpret('' + // Insert off, wrap on (default).
                             '[15GAAAA[1GXX\r\n' +
@@ -1706,12 +1696,12 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
                             '[4l[?7l' +  // Insert off, wrap off.
                             '[15GAAAA[1GXX');
 
-    result.assertEQ(this.terminal.getRowText(0), '              A');
-    result.assertEQ(this.terminal.getRowText(1), 'XXA');
-    result.assertEQ(this.terminal.getRowText(2), 'XX             ');
-    result.assertEQ(this.terminal.getRowText(3), '              A');
-    result.assertEQ(this.terminal.getRowText(4), 'XXAAA');
-    result.assertEQ(this.terminal.getRowText(5), 'XX            A');
+    assert.equal(this.terminal.getRowText(0), '              A');
+    assert.equal(this.terminal.getRowText(1), 'XXA');
+    assert.equal(this.terminal.getRowText(2), 'XX             ');
+    assert.equal(this.terminal.getRowText(3), '              A');
+    assert.equal(this.terminal.getRowText(4), 'XXAAA');
+    assert.equal(this.terminal.getRowText(5), 'XX            A');
 
     result.pass();
   });
@@ -1726,9 +1716,9 @@ hterm.VT.Tests.addTest('long-wrap', function(result, cx) {
 
     this.terminal.interpret(str);
 
-    result.assertEQ(this.terminal.getRowText(0), 'XXXXXXXXXXXXXXX');
-    result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
-    result.assertEQ(this.terminal.getRowText(2), 'XXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(0), 'XXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(2), 'XXXXXXXXXXXXXXX');
 
     result.pass();
   });
@@ -1753,34 +1743,34 @@ hterm.VT.Tests.addTest('reverse-wrap', function(result, cx) {
     // row.
     this.terminal.interpret(str);
 
-    result.assertEQ(this.terminal.getRowText(0), 'AAAA');
-    result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
-    result.assertEQ(this.terminal.getRowText(2), 'BBXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(0), 'AAAA');
+    assert.equal(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(2), 'BBXXXXXXXXXXXXX');
 
     // With reverse wraparound, we'll back up to the previous row.
     this.terminal.clearHome();
     this.terminal.interpret('\x1b[?45h' + str);
 
-    result.assertEQ(this.terminal.getRowText(0), 'AAAA');
-    result.assertEQ(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXB');
-    result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(0), 'AAAA');
+    assert.equal(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXB');
+    assert.equal(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
 
     // Reverse wrapping should always go the the final column of the previous
     // row, even if that row was not full of text.
     this.terminal.interpret('\r\b\r\bCC');
 
-    result.assertEQ(this.terminal.getRowText(0), 'AAAA          C');
-    result.assertEQ(this.terminal.getRowText(1), 'CXXXXXXXXXXXXXB');
-    result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(0), 'AAAA          C');
+    assert.equal(this.terminal.getRowText(1), 'CXXXXXXXXXXXXXB');
+    assert.equal(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
 
     // Reverse wrapping past the first row should put us at the last row.
     this.terminal.interpret('\r\b\r\bX');
-    result.assertEQ(this.terminal.getRowText(0), 'AAAA          C');
-    result.assertEQ(this.terminal.getRowText(1), 'CXXXXXXXXXXXXXB');
-    result.assertEQ(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
-    result.assertEQ(this.terminal.getRowText(3), '');
-    result.assertEQ(this.terminal.getRowText(4), '');
-    result.assertEQ(this.terminal.getRowText(5), '              X');
+    assert.equal(this.terminal.getRowText(0), 'AAAA          C');
+    assert.equal(this.terminal.getRowText(1), 'CXXXXXXXXXXXXXB');
+    assert.equal(this.terminal.getRowText(2), 'BXXXXXXXXXXXXXX');
+    assert.equal(this.terminal.getRowText(3), '');
+    assert.equal(this.terminal.getRowText(4), '');
+    assert.equal(this.terminal.getRowText(5), '              X');
 
     result.pass();
   });
@@ -1791,7 +1781,7 @@ hterm.VT.Tests.addTest('reverse-wrap', function(result, cx) {
  */
 hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
     // Should be on by default.
-    result.assertEQ(this.terminal.options_.wraparound, true);
+    assert.isTrue(this.terminal.options_.wraparound);
 
     // Fill a row with the last hyphen wrong, then run a command that
     // modifies the screen, then add a hyphen. The wrap bit should be
@@ -1821,16 +1811,16 @@ hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
     this.terminal.interpret('\x1b[M-');  // DL
 
     var text = this.terminal.getRowsText(0, 6);
-    result.assertEQ(text,
-                    '-----  1  ----X' +
-                    '-----  2  -----' +
-                    '-----  3  -----' +
-                    '-----  4  -----' +
-                    '-----  5  ----X' +
-                    '              -');
+    assert.equal(text,
+                 '-----  1  ----X' +
+                 '-----  2  -----' +
+                 '-----  3  -----' +
+                 '-----  4  -----' +
+                 '-----  5  ----X' +
+                 '              -');
 
-    result.assertEQ(this.terminal.getCursorRow(), 5);
-    result.assertEQ(this.terminal.getCursorColumn(), 14);
+    assert.equal(this.terminal.getCursorRow(), 5);
+    assert.equal(this.terminal.getCursorColumn(), 14);
 
     result.pass();
   });
@@ -1839,34 +1829,34 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     this.terminal.interpret('1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10');
     this.terminal.interpret('\x1b[3;3f');  // Leave the cursor at (3,3)
     var text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
+    assert.equal(text, '1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
 
     // Switch to alternate screen.
     this.terminal.interpret('\x1b[?1049h');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\n\n\n\n\n');
+    assert.equal(text, '1\n2\n3\n4\n\n\n\n\n\n');
 
     this.terminal.interpret('\r\nhi');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\n\n\nhi\n\n');
+    assert.equal(text, '1\n2\n3\n4\n\n\n\nhi\n\n');
 
     // Switch back to primary screen.
     this.terminal.interpret('\x1b[?1049l');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
+    assert.equal(text, '1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
 
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n5\n6\n7 XX\n8\n9\n10');
+    assert.equal(text, '1\n2\n3\n4\n5\n6\n7 XX\n8\n9\n10');
 
     // And back to alternate screen.
     this.terminal.interpret('\x1b[?1049h');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\n\n\n\n\n');
+    assert.equal(text, '1\n2\n3\n4\n\n\n\n\n\n');
 
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
-    result.assertEQ(text, '1\n2\n3\n4\n\n\n    XX\n\n\n');
+    assert.equal(text, '1\n2\n3\n4\n\n\n    XX\n\n\n');
 
     result.pass();
   });
@@ -1878,29 +1868,29 @@ hterm.VT.Tests.addTest('OSC-8', function(result, cx) {
   const tattrs = this.terminal.getTextAttributes();
 
   // Start with links off.
-  result.assertEQ(null, tattrs.uriId);
-  result.assertEQ(null, tattrs.uri);
+  assert.isNull(tattrs.uriId);
+  assert.isNull(tattrs.uri);
 
   // Start to linkify some text.
   this.terminal.interpret('\x1b]8;id=foo;http://foo\x07');
-  result.assertEQ('foo', tattrs.uriId);
-  result.assertEQ('http://foo', tattrs.uri);
+  assert.equal('foo', tattrs.uriId);
+  assert.equal('http://foo', tattrs.uri);
 
   // Add the actual text.
   this.terminal.interpret('click me');
 
   // Stop the link.
   this.terminal.interpret('\x1b]8;\x07');
-  result.assertEQ(null, tattrs.uriId);
-  result.assertEQ(null, tattrs.uri);
+  assert.isNull(tattrs.uriId);
+  assert.isNull(tattrs.uri);
 
   // Check the link.
   // XXX: Can't check the URI target due to binding via event listener.
   const row = this.terminal.getRowNode(0);
   const span = row.childNodes[0];
-  result.assertEQ('foo', span.uriId);
-  result.assertEQ('click me', span.textContent);
-  result.assertEQ('uri-node', span.className);
+  assert.equal('foo', span.uriId);
+  assert.equal('click me', span.textContent);
+  assert.equal('uri-node', span.className);
 
   result.pass();
 });
@@ -1913,16 +1903,16 @@ hterm.VT.Tests.addTest('OSC-8-blank-id', function(result, cx) {
 
   // Create a link with a blank id.
   this.terminal.interpret('\x1b]8;;http://foo\x07click\x1b]8;\x07');
-  result.assertEQ(null, tattrs.uriId);
-  result.assertEQ(null, tattrs.uri);
+  assert.isNull(tattrs.uriId);
+  assert.isNull(tattrs.uri);
 
   // Check the link.
   // XXX: Can't check the URI target due to binding via event listener.
   const row = this.terminal.getRowNode(0);
   const span = row.childNodes[0];
-  result.assertEQ('', span.uriId);
-  result.assertEQ('click', span.textContent);
-  result.assertEQ('uri-node', span.className);
+  assert.equal('', span.uriId);
+  assert.equal('click', span.textContent);
+  assert.equal('uri-node', span.className);
 
   result.pass();
 });
@@ -1936,21 +1926,21 @@ hterm.VT.Tests.addTest('OSC-8-switch-uri', function(result, cx) {
   // Create a link then change it.
   this.terminal.interpret(
       '\x1b]8;id=foo;http://foo\x07click\x1b]8;;http://bar\x07bat\x1b]8;\x07');
-  result.assertEQ(null, tattrs.uriId);
-  result.assertEQ(null, tattrs.uri);
+  assert.isNull(tattrs.uriId);
+  assert.isNull(tattrs.uri);
 
   // Check the links.
   // XXX: Can't check the URI target due to binding via event listener.
   const row = this.terminal.getRowNode(0);
   let span = row.childNodes[0];
-  result.assertEQ('foo', span.uriId);
-  result.assertEQ('click', span.textContent);
-  result.assertEQ('uri-node', span.className);
+  assert.equal('foo', span.uriId);
+  assert.equal('click', span.textContent);
+  assert.equal('uri-node', span.className);
 
   span = row.childNodes[1];
-  result.assertEQ('', span.uriId);
-  result.assertEQ('bat', span.textContent);
-  result.assertEQ('uri-node', span.className);
+  assert.equal('', span.uriId);
+  assert.equal('bat', span.textContent);
+  assert.equal('uri-node', span.className);
 
   result.pass();
 });
@@ -1959,20 +1949,20 @@ hterm.VT.Tests.addTest('OSC-8-switch-uri', function(result, cx) {
  * Test iTerm2 growl notifications.
  */
 hterm.VT.Tests.addTest('OSC-9', function(result, cx) {
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, Notification.count);
 
     // We don't test the title as it's generated, and the iTerm2 API doesn't
     // support changing it.
 
     // An empty notification.
     this.terminal.interpret('\x1b]9;\x07');
-    result.assertEQ(1, Notification.count);
-    result.assertEQ('', Notification.call.body);
+    assert.equal(1, Notification.count);
+    assert.equal('', Notification.call.body);
 
     // A random notification.
     this.terminal.interpret('\x1b]9;this is a title\x07');
-    result.assertEQ(2, Notification.count);
-    result.assertEQ('this is a title', Notification.call.body);
+    assert.equal(2, Notification.count);
+    assert.equal('this is a title', Notification.call.body);
 
     result.pass();
   });
@@ -1986,14 +1976,14 @@ hterm.VT.Tests.addTest('OSC-10', function(result, cx) {
     const cursorColor = this.terminal.getCursorColor();
 
     this.terminal.interpret('\x1b]10;red\x07');
-    result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+    assert.equal('rgb(255, 0, 0)', this.terminal.getForegroundColor());
 
     this.terminal.interpret('\x1b]10;white\x07');
-    result.assertEQ('rgb(255, 255, 255)', this.terminal.getForegroundColor());
+    assert.equal('rgb(255, 255, 255)', this.terminal.getForegroundColor());
 
     // Make sure other colors aren't changed by accident.
-    result.assertEQ(backColor, this.terminal.getBackgroundColor());
-    result.assertEQ(cursorColor, this.terminal.getCursorColor());
+    assert.equal(backColor, this.terminal.getBackgroundColor());
+    assert.equal(cursorColor, this.terminal.getCursorColor());
 
     result.pass();
   });
@@ -2007,14 +1997,14 @@ hterm.VT.Tests.addTest('OSC-11', function(result, cx) {
     const cursorColor = this.terminal.getCursorColor();
 
     this.terminal.interpret('\x1b]11;red\x07');
-    result.assertEQ('rgb(255, 0, 0)', this.terminal.getBackgroundColor());
+    assert.equal('rgb(255, 0, 0)', this.terminal.getBackgroundColor());
 
     this.terminal.interpret('\x1b]11;white\x07');
-    result.assertEQ('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
+    assert.equal('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
 
     // Make sure other colors aren't changed by accident.
-    result.assertEQ(foreColor, this.terminal.getForegroundColor());
-    result.assertEQ(cursorColor, this.terminal.getCursorColor());
+    assert.equal(foreColor, this.terminal.getForegroundColor());
+    assert.equal(cursorColor, this.terminal.getCursorColor());
 
     result.pass();
   });
@@ -2028,14 +2018,14 @@ hterm.VT.Tests.addTest('OSC-12', function(result, cx) {
     const backColor = this.terminal.getBackgroundColor();
 
     this.terminal.interpret('\x1b]12;red\x07');
-    result.assertEQ('rgb(255, 0, 0)', this.terminal.getCursorColor());
+    assert.equal('rgb(255, 0, 0)', this.terminal.getCursorColor());
 
     this.terminal.interpret('\x1b]12;white\x07');
-    result.assertEQ('rgb(255, 255, 255)', this.terminal.getCursorColor());
+    assert.equal('rgb(255, 255, 255)', this.terminal.getCursorColor());
 
     // Make sure other colors aren't changed by accident.
-    result.assertEQ(foreColor, this.terminal.getForegroundColor());
-    result.assertEQ(backColor, this.terminal.getBackgroundColor());
+    assert.equal(foreColor, this.terminal.getForegroundColor());
+    assert.equal(backColor, this.terminal.getBackgroundColor());
 
     result.pass();
   });
@@ -2046,15 +2036,15 @@ hterm.VT.Tests.addTest('OSC-12', function(result, cx) {
 hterm.VT.Tests.addTest('OSC-10-11-12', function(result, cx) {
     // Set 10-11-12 at once.
     this.terminal.interpret('\x1b]10;red;green;blue\x07');
-    result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
-    result.assertEQ('rgb(0, 255, 0)', this.terminal.getBackgroundColor());
-    result.assertEQ('rgb(0, 0, 255)', this.terminal.getCursorColor());
+    assert.equal('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+    assert.equal('rgb(0, 255, 0)', this.terminal.getBackgroundColor());
+    assert.equal('rgb(0, 0, 255)', this.terminal.getCursorColor());
 
     // Set 11-12 at once (and 10 stays the same).
     this.terminal.interpret('\x1b]11;white;black\x07');
-    result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
-    result.assertEQ('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
-    result.assertEQ('rgb(0, 0, 0)', this.terminal.getCursorColor());
+    assert.equal('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+    assert.equal('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
+    assert.equal('rgb(0, 0, 0)', this.terminal.getCursorColor());
 
     result.pass();
   });
@@ -2068,7 +2058,7 @@ hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
     var old_cCSTC = hterm.copySelectionToClipboard;
     hterm.copySelectionToClipboard = function(document, str) {
       hterm.copySelectionToClipboard = old_cCSTC;
-      result.assertEQ(str, 'copypasta!');
+      assert.equal(str, 'copypasta!');
       result.pass();
     };
 
@@ -2086,7 +2076,7 @@ hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
     var old_cCSTC = hterm.copySelectionToClipboard;
     hterm.copySelectionToClipboard = function(document, str) {
       hterm.copySelectionToClipboard = old_cCSTC;
-      result.assertEQ(str, expect);
+      assert.equal(str, expect);
       result.pass();
     };
 
@@ -2117,15 +2107,15 @@ hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
     this.terminal.interpret('\x1b]4;1;?;2;?\x07');
     // The values go through some normalization, so what we read isn't
     // *exactly* what went in.
-    result.assertEQ(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
-                    '2;rgb:bebe/bebe/bebe\x07');
+    assert.equal(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
+                               '2;rgb:bebe/bebe/bebe\x07');
 
     // Round trip the normalized values, to check that the normalization is
     // idempotent.
     this.terminal.interpret('\x1b]4;1;rgb:0101/0101/0101;2;' +
                             'rgb:bebe/bebe/bebe\x07');
-    result.assertEQ(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
-                    '2;rgb:bebe/bebe/bebe\x07');
+    assert.equal(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
+                               '2;rgb:bebe/bebe/bebe\x07');
     result.pass();
   });
 
@@ -2133,29 +2123,29 @@ hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
  * Test the cursor shape changes using OSC 50.
  */
 hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
 
     this.terminal.interpret('\x1b]50;CursorShape=1\x07');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BEAM);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BEAM);
 
     this.terminal.interpret('\x1b]50;CursorShape=0\x07');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
 
     this.terminal.interpret('\x1b]50;CursorShape=2\x07');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.UNDERLINE);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.UNDERLINE);
 
     // Invalid shape, should be set cursor to block
     this.terminal.interpret('\x1b]50;CursorShape=a\x07');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
 
     result.pass();
   });
@@ -2169,14 +2159,14 @@ hterm.VT.Tests.addTest('OSC-110', function(result, cx) {
   const cursorColor = this.terminal.getCursorColor();
 
   this.terminal.interpret('\x1b]10;red\x07');
-  result.assertEQ('rgb(255, 0, 0)', this.terminal.getForegroundColor());
+  assert.equal('rgb(255, 0, 0)', this.terminal.getForegroundColor());
 
   this.terminal.interpret('\x1b]110;\x07');
-  result.assertEQ('rgb(240, 240, 240)', this.terminal.getForegroundColor());
+  assert.equal('rgb(240, 240, 240)', this.terminal.getForegroundColor());
 
   // Make sure other colors aren't changed by accident.
-  result.assertEQ(backColor, this.terminal.getBackgroundColor());
-  result.assertEQ(cursorColor, this.terminal.getCursorColor());
+  assert.equal(backColor, this.terminal.getBackgroundColor());
+  assert.equal(cursorColor, this.terminal.getCursorColor());
 
   result.pass();
 });
@@ -2190,14 +2180,14 @@ hterm.VT.Tests.addTest('OSC-111', function(result, cx) {
   const cursorColor = this.terminal.getCursorColor();
 
   this.terminal.interpret('\x1b]11;red\x07');
-  result.assertEQ('rgb(255, 0, 0)', this.terminal.getBackgroundColor());
+  assert.equal('rgb(255, 0, 0)', this.terminal.getBackgroundColor());
 
   this.terminal.interpret('\x1b]111;\x07');
-  result.assertEQ('rgb(16, 16, 16)', this.terminal.getBackgroundColor());
+  assert.equal('rgb(16, 16, 16)', this.terminal.getBackgroundColor());
 
   // Make sure other colors aren't changed by accident.
-  result.assertEQ(foreColor, this.terminal.getForegroundColor());
-  result.assertEQ(cursorColor, this.terminal.getCursorColor());
+  assert.equal(foreColor, this.terminal.getForegroundColor());
+  assert.equal(cursorColor, this.terminal.getCursorColor());
 
   result.pass();
 });
@@ -2211,14 +2201,14 @@ hterm.VT.Tests.addTest('OSC-112', function(result, cx) {
   const backColor = this.terminal.getBackgroundColor();
 
   this.terminal.interpret('\x1b]12;red\x07');
-  result.assertEQ('rgb(255, 0, 0)', this.terminal.getCursorColor());
+  assert.equal('rgb(255, 0, 0)', this.terminal.getCursorColor());
 
   this.terminal.interpret('\x1b]112;\x07');
-  result.assertEQ('rgba(255, 0, 0, 0.5)', this.terminal.getCursorColor());
+  assert.equal('rgba(255, 0, 0, 0.5)', this.terminal.getCursorColor());
 
   // Make sure other colors aren't changed by accident.
-  result.assertEQ(foreColor, this.terminal.getForegroundColor());
-  result.assertEQ(backColor, this.terminal.getBackgroundColor());
+  assert.equal(foreColor, this.terminal.getForegroundColor());
+  assert.equal(backColor, this.terminal.getBackgroundColor());
 
   result.pass();
 });
@@ -2227,37 +2217,37 @@ hterm.VT.Tests.addTest('OSC-112', function(result, cx) {
  * Test URxvt notify module.
  */
 hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, Notification.count);
 
     // An empty notification.  We don't test the title as it's generated.
     this.terminal.interpret('\x1b]777;notify\x07');
-    result.assertEQ(1, Notification.count);
-    result.assert(Notification.call.title != '');
-    result.assertEQ(undefined, Notification.call.body);
+    assert.equal(1, Notification.count);
+    assert.notEqual(Notification.call.title, '');
+    assert.isUndefined(Notification.call.body);
 
     // Same as above, but covers slightly different parsing.
     this.terminal.interpret('\x1b]777;notify;\x07');
-    result.assertEQ(2, Notification.count);
-    result.assert(Notification.call.title != '');
-    result.assertEQ(undefined, Notification.call.body);
+    assert.equal(2, Notification.count);
+    assert.notEqual(Notification.call.title, '');
+    assert.isUndefined(Notification.call.body);
 
     // A notification with a title.
     this.terminal.interpret('\x1b]777;notify;my title\x07');
-    result.assertEQ(3, Notification.count);
-    result.assert(Notification.call.title.includes('my title'));
-    result.assertEQ(undefined, Notification.call.body);
+    assert.equal(3, Notification.count);
+    assert.include(Notification.call.title, 'my title');
+    assert.isUndefined(Notification.call.body);
 
     // A notification with a title & body.
     this.terminal.interpret('\x1b]777;notify;my title;my body\x07');
-    result.assertEQ(4, Notification.count);
-    result.assert(Notification.call.title.includes('my title'));
-    result.assert(Notification.call.body.includes('my body'));
+    assert.equal(4, Notification.count);
+    assert.include(Notification.call.title, 'my title');
+    assert.include(Notification.call.body, 'my body');
 
     // A notification with a title & body, covering more parsing.
     this.terminal.interpret('\x1b]777;notify;my title;my body;and a semi\x07');
-    result.assertEQ(5, Notification.count);
-    result.assert(Notification.call.title.includes('my title'));
-    result.assert(Notification.call.body.includes('my body;and a semi'));
+    assert.equal(5, Notification.count);
+    assert.include(Notification.call.title, 'my title');
+    assert.include(Notification.call.body, 'my body;and a semi');
 
     result.pass();
   });
@@ -2267,7 +2257,7 @@ hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {
  */
 hterm.VT.Tests.addTest('OSC-1337-ignore', function(result, cx) {
   this.terminal.displayImage =
-      () => result.fail('Unknown should not trigger file display');
+      () => assert.fail('Unknown should not trigger file display');
 
   this.terminal.interpret('\x1b]1337;CursorShape=1\x07');
 
@@ -2279,15 +2269,15 @@ hterm.VT.Tests.addTest('OSC-1337-ignore', function(result, cx) {
  */
 hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
   this.terminal.displayImage = (options) => {
-    result.assertEQ('', options.name);
-    result.assertEQ(0, options.size);
-    result.assertEQ(true, options.preserveAspectRatio);
-    result.assertEQ(false, options.inline);
-    result.assertEQ('auto', options.width);
-    result.assertEQ('auto', options.height);
-    result.assertEQ('left', options.align);
-    result.assertEQ(undefined, options.uri);
-    result.assertEQ(new Uint8Array([10]).buffer, options.buffer);
+    assert.equal('', options.name);
+    assert.equal(0, options.size);
+    assert.isTrue(options.preserveAspectRatio);
+    assert.isFalse(options.inline);
+    assert.equal('auto', options.width);
+    assert.equal('auto', options.height);
+    assert.equal('left', options.align);
+    assert.isUndefined(options.uri);
+    assert.deepStrictEqual(new Uint8Array([10]).buffer, options.buffer);
     result.pass();
   };
 
@@ -2299,9 +2289,9 @@ hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
  */
 hterm.VT.Tests.addTest('OSC-1337-file-invalid', function(result, cx) {
   this.terminal.displayImage = (options) => {
-    result.assertEQ('', options.name);
-    result.assertEQ(1, options.size);
-    result.assertEQ(undefined, options.unk);
+    assert.equal('', options.name);
+    assert.equal(1, options.size);
+    assert.isUndefined(options.unk);
     result.pass();
   };
 
@@ -2321,27 +2311,27 @@ hterm.VT.Tests.addTest('OSC-1337-file-invalid', function(result, cx) {
 hterm.VT.Tests.addTest('OSC-1337-file-valid', function(result, cx) {
   // Check "false" values.
   this.terminal.displayImage = (options) => {
-    result.assertEQ(false, options.preserveAspectRatio);
-    result.assertEQ(false, options.inline);
+    assert.isFalse(options.preserveAspectRatio);
+    assert.isFalse(options.inline);
   };
   this.terminal.interpret(
       '\x1b]1337;File=preserveAspectRatio=0;inline=0:Cg==\x07');
 
   // Check "true" values.
   this.terminal.displayImage = (options) => {
-    result.assertEQ(true, options.preserveAspectRatio);
-    result.assertEQ(true, options.inline);
+    assert.isTrue(options.preserveAspectRatio);
+    assert.isTrue(options.inline);
   };
   this.terminal.interpret(
       '\x1b]1337;File=preserveAspectRatio=1;inline=1:Cg==\x07');
 
   // Check the rest.
   this.terminal.displayImage = (options) => {
-    result.assertEQ('yes', options.name);
-    result.assertEQ(1234, options.size);
-    result.assertEQ('12px', options.width);
-    result.assertEQ('50%', options.height);
-    result.assertEQ('center', options.align);
+    assert.equal('yes', options.name);
+    assert.equal(1234, options.size);
+    assert.equal('12px', options.width);
+    assert.equal('50%', options.height);
+    assert.equal('center', options.align);
 
     result.pass();
   };
@@ -2365,7 +2355,7 @@ hterm.VT.Tests.addTest('OSC-1337-file-queue', function(result, cx) {
   this.terminal.displayImage = () => {};
   this.terminal.interpret('\x1b]1337;File=:Cg==\x07OK');
   text = this.terminal.getRowsText(0, 1);
-  result.assertEQ('OK', text);
+  assert.equal('OK', text);
 
   // For inline files, things should be delayed.
   // The io/timeout logic is supposed to mock the normal behavior.
@@ -2374,14 +2364,14 @@ hterm.VT.Tests.addTest('OSC-1337-file-queue', function(result, cx) {
     setTimeout(() => {
       io.pop();
       text = this.getRowsText(0, 1);
-      result.assertEQ('OK', text);
+      assert.equal('OK', text);
       result.pass();
     }, 0);
   };
   this.terminal.clearHome();
   this.terminal.interpret('\x1b]1337;File=inline=1:Cg==\x07OK');
   text = this.terminal.getRowsText(0, 1);
-  result.assertEQ('', text);
+  assert.equal('', text);
 
   result.requestTime(200);
 });
@@ -2390,39 +2380,39 @@ hterm.VT.Tests.addTest('OSC-1337-file-queue', function(result, cx) {
  * Test the cursor shape changes using DECSCUSR.
  */
 hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
-    result.assertEQ(this.terminal.options_.cursorBlink, false);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
+    assert.isFalse(this.terminal.options_.cursorBlink);
 
     this.terminal.interpret('\x1b[ 3q');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.UNDERLINE);
-    result.assertEQ(this.terminal.options_.cursorBlink, true);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.UNDERLINE);
+    assert.isTrue(this.terminal.options_.cursorBlink);
 
     this.terminal.interpret('\x1b[ 0q');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
-    result.assertEQ(this.terminal.options_.cursorBlink, true);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
+    assert.isTrue(this.terminal.options_.cursorBlink);
 
     this.terminal.interpret('\x1b[ 1q');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
-    result.assertEQ(this.terminal.options_.cursorBlink, true);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
+    assert.isTrue(this.terminal.options_.cursorBlink);
 
     this.terminal.interpret('\x1b[ 4q');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.UNDERLINE);
-    result.assertEQ(this.terminal.options_.cursorBlink, false);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.UNDERLINE);
+    assert.isFalse(this.terminal.options_.cursorBlink);
 
     this.terminal.interpret('\x1b[ 2q');
     this.terminal.syncCursorPosition_();
-    result.assertEQ(this.terminal.getCursorShape(),
-                    hterm.Terminal.cursorShape.BLOCK);
-    result.assertEQ(this.terminal.options_.cursorBlink, false);
+    assert.strictEqual(this.terminal.getCursorShape(),
+                       hterm.Terminal.cursorShape.BLOCK);
+    assert.isFalse(this.terminal.options_.cursorBlink);
 
     result.pass();
   });
@@ -2431,19 +2421,19 @@ hterm.VT.Tests.addTest('bracketed-paste', function(result, cx) {
     var resultString;
     terminal.io.sendString = (str) => resultString = str;
 
-    result.assertEQ(this.terminal.options_.bracketedPaste, false);
+    assert.isFalse(this.terminal.options_.bracketedPaste);
 
     this.terminal.interpret('\x1b[?2004h');
-    result.assertEQ(this.terminal.options_.bracketedPaste, true);
+    assert.isTrue(this.terminal.options_.bracketedPaste);
 
     this.terminal.onPaste_({text: 'hello world'});
-    result.assertEQ(resultString, '\x1b[200~hello world\x1b[201~');
+    assert.equal(resultString, '\x1b[200~hello world\x1b[201~');
 
     this.terminal.interpret('\x1b[?2004l');
-    result.assertEQ(this.terminal.options_.bracketedPaste, false);
+    assert.isFalse(this.terminal.options_.bracketedPaste);
 
     this.terminal.onPaste_({text: 'hello world'});
-    result.assertEQ(resultString, 'hello world');
+    assert.equal(resultString, 'hello world');
 
     result.pass();
   });
@@ -2484,7 +2474,7 @@ hterm.VT.Tests.addTest('character-maps', function(result, cx) {
     // Start with sanity check -- no translations are active.
     this.terminal.clearHome();
     this.terminal.interpret(line);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.equal(this.terminal.getRowText(0), line);
 
     // Loop through all the maps.
     var map, gl;
@@ -2497,7 +2487,7 @@ hterm.VT.Tests.addTest('character-maps', function(result, cx) {
       // Point G0 to the specified map (and assume GL points to G0).
       this.terminal.clearHome();
       this.terminal.interpret('\x1b(' + map + line);
-      result.assertEQ(this.terminal.getRowText(0), gl(line));
+      assert.equal(this.terminal.getRowText(0), gl(line));
     }
 
     result.pass();
@@ -2516,57 +2506,57 @@ hterm.VT.Tests.addTest('docs', function(result, cx) {
     this.terminal.setWidth(line.length);
 
     // Check the default encoding (ECMA-35).
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, false);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
+    assert.isFalse(this.terminal.vt.codingSystemUtf8_);
+    assert.isFalse(this.terminal.vt.codingSystemLocked_);
     this.terminal.clearHome();
     this.terminal.interpret(line);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.equal(this.terminal.getRowText(0), line);
 
     // Switch to the graphics map and make sure it translates.
     this.terminal.clearHome();
     this.terminal.interpret('\x1b(0' + line);
-    result.assertEQ(this.terminal.getRowText(0), graphicsLine);
+    assert.equal(this.terminal.getRowText(0), graphicsLine);
 
     // Switch to UTF-8 encoding.  The graphics map should not translate.
     this.terminal.clearHome();
     this.terminal.interpret('\x1b%G' + line);
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+    assert.isFalse(this.terminal.vt.codingSystemLocked_);
+    assert.equal(this.terminal.getRowText(0), line);
 
     // Switch to ECMA-35 encoding.  The graphics map should translate.
     this.terminal.clearHome();
     this.terminal.interpret('\x1b%@' + line);
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, false);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
-    result.assertEQ(this.terminal.getRowText(0), graphicsLine);
+    assert.isFalse(this.terminal.vt.codingSystemUtf8_);
+    assert.isFalse(this.terminal.vt.codingSystemLocked_);
+    assert.equal(this.terminal.getRowText(0), graphicsLine);
 
     // Switch to UTF-8 encoding (and lock).
     this.terminal.clearHome();
     this.terminal.interpret('\x1b%/G' + line);
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+    assert.isTrue(this.terminal.vt.codingSystemLocked_);
+    assert.equal(this.terminal.getRowText(0), line);
 
     // Switching back to ECMA-35 should not work now.
     this.terminal.clearHome();
     this.terminal.interpret('\x1b%@' + line);
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+    assert.isTrue(this.terminal.vt.codingSystemLocked_);
+    assert.equal(this.terminal.getRowText(0), line);
 
     // Try other UTF-8 modes (although they're the same as /G).
     this.terminal.clearHome();
     this.terminal.interpret('\x1b%/H' + line);
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+    assert.isTrue(this.terminal.vt.codingSystemLocked_);
+    assert.equal(this.terminal.getRowText(0), line);
 
     this.terminal.clearHome();
     this.terminal.interpret('\x1b%/I' + line);
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, true);
-    result.assertEQ(this.terminal.getRowText(0), line);
+    assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+    assert.isTrue(this.terminal.vt.codingSystemLocked_);
+    assert.equal(this.terminal.getRowText(0), line);
 
     result.pass();
   });
@@ -2576,8 +2566,8 @@ hterm.VT.Tests.addTest('docs', function(result, cx) {
  */
 hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
     // Check the default encoding (ECMA-35).
-    result.assertEQ(this.terminal.vt.codingSystemUtf8_, false);
-    result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
+    assert.isFalse(this.terminal.vt.codingSystemUtf8_);
+    assert.isFalse(this.terminal.vt.codingSystemLocked_);
 
     // Try switching to a random set of invalid escapes.
     var ch;
@@ -2585,26 +2575,26 @@ hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
       // First in ECMA-35 encoding.
       this.terminal.interpret('\x1b%@');
       this.terminal.interpret('\x1b%' + ch);
-      result.assertEQ(this.terminal.vt.codingSystemUtf8_, false);
-      result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
-      result.assertEQ(this.terminal.getRowText(0), '');
+      assert.isFalse(this.terminal.vt.codingSystemUtf8_);
+      assert.isFalse(this.terminal.vt.codingSystemLocked_);
+      assert.equal(this.terminal.getRowText(0), '');
 
       this.terminal.interpret('\x1b%/' + ch);
-      result.assertEQ(this.terminal.vt.codingSystemUtf8_, false);
-      result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
-      result.assertEQ(this.terminal.getRowText(0), '');
+      assert.isFalse(this.terminal.vt.codingSystemUtf8_);
+      assert.isFalse(this.terminal.vt.codingSystemLocked_);
+      assert.equal(this.terminal.getRowText(0), '');
 
       // Then in UTF-8 encoding.
       this.terminal.interpret('\x1b%G');
       this.terminal.interpret('\x1b%' + ch);
-      result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-      result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
-      result.assertEQ(this.terminal.getRowText(0), '');
+      assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+      assert.isFalse(this.terminal.vt.codingSystemLocked_);
+      assert.equal(this.terminal.getRowText(0), '');
 
       this.terminal.interpret('\x1b%/' + ch);
-      result.assertEQ(this.terminal.vt.codingSystemUtf8_, true);
-      result.assertEQ(this.terminal.vt.codingSystemLocked_, false);
-      result.assertEQ(this.terminal.getRowText(0), '');
+      assert.isTrue(this.terminal.vt.codingSystemUtf8_);
+      assert.isFalse(this.terminal.vt.codingSystemLocked_);
+      assert.equal(this.terminal.getRowText(0), '');
     });
 
     result.pass();
@@ -2622,27 +2612,27 @@ hterm.VT.Tests.addTest('cursor-save-restore', function(result, cx) {
   // Change cursor attributes.
   this.terminal.interpret('\x1b[1;4m');
   tattrs = this.terminal.getTextAttributes();
-  result.assertEQ(true, tattrs.bold);
-  result.assertEQ('solid', tattrs.underline);
+  assert.isTrue(tattrs.bold);
+  assert.equal('solid', tattrs.underline);
 
   // Change color palette a bit.
-  result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
-  result.assertEQ('rgb(204, 0, 0)', tattrs.colorPalette[1]);
+  assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
+  assert.equal('rgb(204, 0, 0)', tattrs.colorPalette[1]);
   this.terminal.interpret('\x1b]4;1;#112233;\x07');
-  result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
-  result.assertEQ('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+  assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
+  assert.equal('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
 
   // Restore the saved cursor state.
   this.terminal.interpret('\x1b[?1048l');
 
   // Check attributes were restored correctly.
   tattrs = this.terminal.getTextAttributes();
-  result.assertEQ(false, tattrs.bold);
-  result.assertEQ(false, tattrs.underline);
+  assert.isFalse(tattrs.bold);
+  assert.isFalse(tattrs.underline);
 
   // Make sure color palette did not change.
-  result.assertEQ('rgb(0, 0, 0)', tattrs.colorPalette[0]);
-  result.assertEQ('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+  assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
+  assert.equal('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
 
   result.pass();
 });
@@ -2654,8 +2644,8 @@ hterm.VT.Tests.addTest('mouse-switching', function(result, cx) {
   const terminal = this.terminal;
 
   const assertMouse = (report, coordinates) => {
-    result.assertEQ(report, terminal.vt.mouseReport);
-    result.assertEQ(coordinates, terminal.vt.mouseCoordinates);
+    assert.strictEqual(report, terminal.vt.mouseReport);
+    assert.strictEqual(coordinates, terminal.vt.mouseCoordinates);
   };
 
   // Mouse reporting is turned off by default (and in legacy X10).
@@ -2720,7 +2710,7 @@ hterm.VT.Tests.addTest('mouse-disabled', function(result, cx) {
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
 
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
   result.pass();
 });
 
@@ -2740,18 +2730,18 @@ hterm.VT.Tests.addTest('mouse-report-press', function(result, cx) {
   // Send a mousedown event and check the report.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M   ', resultString);
+  assert.equal('\x1b[M   ', resultString);
   resultString = undefined;
 
   // Mouse move events should be ignored.
   e = MockTerminalMouseEvent('mousemove', {terminalRow: 1, buttons: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   // Mouse up events should be ignored.
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   result.pass();
 });
@@ -2777,33 +2767,33 @@ hterm.VT.Tests.addTest('mouse-report-press-keyboard', function(result, cx) {
   // Check left mouse w/no keyboard.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
 
   // Check various key combos are not reported.
   e = MockTerminalMouseEvent('mousedown', {shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
 
   e = MockTerminalMouseEvent('mousedown', {altKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
 
   e = MockTerminalMouseEvent('mousedown', {metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
 
   e = MockTerminalMouseEvent('mousedown', {ctrlKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
 
   e = MockTerminalMouseEvent('mousedown', {shiftKey: true, metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
 
   result.pass();
@@ -2825,12 +2815,12 @@ hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
   // Check 0,0 cell.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M   ', resultString);
+  assert.equal('\x1b[M   ', resultString);
 
   // Check the 7-bit limit.
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 95, terminalColumn: 94});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \x7e\x7f', resultString);
+  assert.equal('\x1b[M \x7e\x7f', resultString);
 
 /*
   These are disabled because we currently clamp X10 reporting to 7-bit.
@@ -2838,22 +2828,22 @@ hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \x84\xb6', resultString);
+  assert.equal('\x1b[M \x84\xb6', resultString);
 
   // Check 222,222 cell (just below max range).
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 222, terminalColumn: 222});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \xfe\xfe', resultString);
+  assert.equal('\x1b[M \xfe\xfe', resultString);
 
   // Check 223,223 cell (max range).
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 223, terminalColumn: 223});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \xff\xff', resultString);
+  assert.equal('\x1b[M \xff\xff', resultString);
 
   // Check 300,300 cell (out of range).
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 300, terminalColumn: 300});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \xff\xff', resultString);
+  assert.equal('\x1b[M \xff\xff', resultString);
 */
 
   result.pass();
@@ -2878,36 +2868,36 @@ hterm.VT.Tests.addTest('mouse-press-utf8-coord', function(result, cx) {
   // Check 0,0 cell.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M   ', resultString);
+  assert.equal('\x1b[M   ', resultString);
 
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \x84\xb6', resultString);
+  assert.equal('\x1b[M \x84\xb6', resultString);
 
   // Check 2000,2000 cell.
   e = MockTerminalMouseEvent(
       'mousedown', {terminalRow: 2000, terminalColumn: 2000});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \u07f0\u07f0', resultString);
+  assert.equal('\x1b[M \u07f0\u07f0', resultString);
 
   // Check 2014,2014 cell (just below max range).
   e = MockTerminalMouseEvent(
       'mousedown', {terminalRow: 2014, terminalColumn: 2014});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \u07fe\u07fe', resultString);
+  assert.equal('\x1b[M \u07fe\u07fe', resultString);
 
   // Check 2015,2015 cell (max range).
   e = MockTerminalMouseEvent(
       'mousedown', {terminalRow: 2015, terminalColumn: 2015});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \u07ff\u07ff', resultString);
+  assert.equal('\x1b[M \u07ff\u07ff', resultString);
 
   // Check 3000,3000 cell (out of range).
   e = MockTerminalMouseEvent(
       'mousedown', {terminalRow: 3000, terminalColumn: 3000});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M \u07ff\u07ff', resultString);
+  assert.equal('\x1b[M \u07ff\u07ff', resultString);
 
   result.pass();
 });
@@ -2931,24 +2921,24 @@ hterm.VT.Tests.addTest('mouse-press-sgr-coord', function(result, cx) {
   // Check 0,0 cell.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
 
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;100;150M', resultString);
+  assert.equal('\x1b[<0;100;150M', resultString);
 
   // Check 2000,3000 cell.
   e = MockTerminalMouseEvent(
       'mousedown', {terminalRow: 2000, terminalColumn: 3000});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;3000;2000M', resultString);
+  assert.equal('\x1b[<0;3000;2000M', resultString);
 
   // Check 99999,55555 cell.
   e = MockTerminalMouseEvent(
       'mousedown', {terminalRow: 99999, terminalColumn: 55555});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;55555;99999M', resultString);
+  assert.equal('\x1b[<0;55555;99999M', resultString);
 
   result.pass();
 });
@@ -2969,18 +2959,18 @@ hterm.VT.Tests.addTest('mouse-report-click', function(result, cx) {
   // Send a mousedown event and check the report.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M   ', resultString);
+  assert.equal('\x1b[M   ', resultString);
   resultString = undefined;
 
   // Mouse move events should be ignored.
   e = MockTerminalMouseEvent('mousemove', {terminalRow: 1, buttons: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   // Mouse up events should be reported.
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M#  ', resultString);
+  assert.equal('\x1b[M#  ', resultString);
 
   result.pass();
 });
@@ -3008,53 +2998,53 @@ hterm.VT.Tests.addTest('mouse-report-click-buttons', function(result, cx) {
   // Check left mouse w/no keyboard.
   e = MockTerminalMouseEvent('mousedown', {button: 0, buttons: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {button: 0, buttons: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
 
   // Check right mouse w/no keyboard.
   e = MockTerminalMouseEvent('mousedown', {button: 2, buttons: 2});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<2;0;0M', resultString);
+  assert.equal('\x1b[<2;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {button: 2, buttons: 2});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<2;0;0m', resultString);
+  assert.equal('\x1b[<2;0;0m', resultString);
 
   // Check middle mouse w/no keyboard.
   e = MockTerminalMouseEvent('mousedown', {button: 1, buttons: 4});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<1;0;0M', resultString);
+  assert.equal('\x1b[<1;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {button: 1, buttons: 4});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<1;0;0m', resultString);
+  assert.equal('\x1b[<1;0;0m', resultString);
 
   // Check pressing multiple buttons and then releasing them.
   e = MockTerminalMouseEvent('mousedown', {button: 0, buttons: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
   e = MockTerminalMouseEvent('mousedown', {button: 2, buttons: 3});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<2;0;0M', resultString);
+  assert.equal('\x1b[<2;0;0M', resultString);
   e = MockTerminalMouseEvent('mousedown', {button: 1, buttons: 7});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<1;0;0M', resultString);
+  assert.equal('\x1b[<1;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {button: 0, buttons: 7});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
   e = MockTerminalMouseEvent('mouseup', {button: 0, buttons: 6});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
   e = MockTerminalMouseEvent('mouseup', {button: 2, buttons: 4});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<2;0;0m', resultString);
+  assert.equal('\x1b[<2;0;0m', resultString);
   e = MockTerminalMouseEvent('mouseup', {button: 1, buttons: 0});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<1;0;0m', resultString);
+  assert.equal('\x1b[<1;0;0m', resultString);
 
   result.pass();
 });
@@ -3078,59 +3068,59 @@ hterm.VT.Tests.addTest('mouse-report-click-keyboard', function(result, cx) {
   // Check left mouse w/no keyboard.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
 
   // Check mouse down w/various key combos.
   e = MockTerminalMouseEvent('mousedown', {shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<4;0;0M', resultString);
+  assert.equal('\x1b[<4;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousedown', {altKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0M', resultString);
+  assert.equal('\x1b[<0;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousedown', {metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<8;0;0M', resultString);
+  assert.equal('\x1b[<8;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousedown', {ctrlKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<16;0;0M', resultString);
+  assert.equal('\x1b[<16;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousedown', {shiftKey: true, metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<12;0;0M', resultString);
+  assert.equal('\x1b[<12;0;0M', resultString);
 
   // Check buttons & keys together.
   e = MockTerminalMouseEvent('mousedown', {button: 2, shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<6;0;0M', resultString);
+  assert.equal('\x1b[<6;0;0M', resultString);
 
   // Check mouse up doesn't report any key combos, only mouse buttons.
   e = MockTerminalMouseEvent('mouseup', {shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {altKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {ctrlKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
 
   e = MockTerminalMouseEvent('mouseup', {shiftKey: true, metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<0;0;0m', resultString);
+  assert.equal('\x1b[<0;0;0m', resultString);
 
   // Check buttons & keys together.
   e = MockTerminalMouseEvent('mouseup', {button: 2, shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<2;0;0m', resultString);
+  assert.equal('\x1b[<2;0;0m', resultString);
 
   result.pass();
 });
@@ -3151,22 +3141,22 @@ hterm.VT.Tests.addTest('mouse-report-drag', function(result, cx) {
   // Send a mousedown event and check the report.
   e = MockTerminalMouseEvent('mousedown');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M   ', resultString);
+  assert.equal('\x1b[M   ', resultString);
 
   // Mouse move events should be reported.
   e = MockTerminalMouseEvent('mousemove', {terminalRow: 1, buttons: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M@ !', resultString);
+  assert.equal('\x1b[M@ !', resultString);
 
   // Duplicate move events should not be reported.
   resultString = undefined;
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   // Mouse up events should be reported.
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M#  ', resultString);
+  assert.equal('\x1b[M#  ', resultString);
 
   result.pass();
 });
@@ -3190,19 +3180,19 @@ hterm.VT.Tests.addTest('mouse-report-drag-buttons', function(result, cx) {
   // Check mouse button priority.
   e = MockTerminalMouseEvent('mousemove', {buttons: 8});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<35;0;0M', resultString);
+  assert.equal('\x1b[<35;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousemove', {buttons: 2});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<34;0;0M', resultString);
+  assert.equal('\x1b[<34;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousemove', {buttons: 6});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<33;0;0M', resultString);
+  assert.equal('\x1b[<33;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousemove', {buttons: 7});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<32;0;0M', resultString);
+  assert.equal('\x1b[<32;0;0M', resultString);
 
   result.pass();
 });
@@ -3226,29 +3216,29 @@ hterm.VT.Tests.addTest('mouse-report-drag-keyboard', function(result, cx) {
   // Check various key combos.
   e = MockTerminalMouseEvent('mousemove', {buttons: 1, shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<36;0;0M', resultString);
+  assert.equal('\x1b[<36;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousemove', {buttons: 1, altKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<32;0;0M', resultString);
+  assert.equal('\x1b[<32;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousemove', {buttons: 1, metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<40;0;0M', resultString);
+  assert.equal('\x1b[<40;0;0M', resultString);
 
   e = MockTerminalMouseEvent('mousemove', {buttons: 1, ctrlKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<48;0;0M', resultString);
+  assert.equal('\x1b[<48;0;0M', resultString);
 
   e = MockTerminalMouseEvent(
       'mousemove', {buttons: 1, shiftKey: true, ctrlKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<52;0;0M', resultString);
+  assert.equal('\x1b[<52;0;0M', resultString);
 
   e = MockTerminalMouseEvent(
       'mousemove', {buttons: 1, shiftKey: true, ctrlKey: true, metaKey: true});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<60;0;0M', resultString);
+  assert.equal('\x1b[<60;0;0M', resultString);
 
   result.pass();
 });
@@ -3269,12 +3259,12 @@ hterm.VT.Tests.addTest('mouse-report-wheel', function(result, cx) {
   // Send a wheel down event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaY: 1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma  ', resultString);
+  assert.equal('\x1b[Ma  ', resultString);
 
   // Send a wheel up event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaY: -1});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[M`  ', resultString);
+  assert.equal('\x1b[M`  ', resultString);
 
   result.pass();
 });
@@ -3295,12 +3285,12 @@ hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
   // Check 0,0 cell.
   e = MockTerminalMouseEvent('wheel');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma  ', resultString);
+  assert.equal('\x1b[Ma  ', resultString);
 
   // Check the 7-bit limit.
   e = MockTerminalMouseEvent('wheel', {terminalRow: 95, terminalColumn: 94});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\x7e\x7f', resultString);
+  assert.equal('\x1b[Ma\x7e\x7f', resultString);
 
 /*
   These are disabled because we currently clamp X10 reporting to 7-bit.
@@ -3308,22 +3298,22 @@ hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\x84\xb6', resultString);
+  assert.equal('\x1b[Ma\x84\xb6', resultString);
 
   // Check 222,222 cell (just below max range).
   e = MockTerminalMouseEvent('wheel', {terminalRow: 222, terminalColumn: 222});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\xfe\xfe', resultString);
+  assert.equal('\x1b[Ma\xfe\xfe', resultString);
 
   // Check 223,223 cell (max range).
   e = MockTerminalMouseEvent('wheel', {terminalRow: 223, terminalColumn: 223});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\xff\xff', resultString);
+  assert.equal('\x1b[Ma\xff\xff', resultString);
 
   // Check 300,300 cell (out of range).
   e = MockTerminalMouseEvent('wheel', {terminalRow: 300, terminalColumn: 300});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\xff\xff', resultString);
+  assert.equal('\x1b[Ma\xff\xff', resultString);
 */
 
   result.pass();
@@ -3348,36 +3338,36 @@ hterm.VT.Tests.addTest('mouse-wheel-utf8-coord', function(result, cx) {
   // Check 0,0 cell.
   e = MockTerminalMouseEvent('wheel');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma  ', resultString);
+  assert.equal('\x1b[Ma  ', resultString);
 
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\x84\xb6', resultString);
+  assert.equal('\x1b[Ma\x84\xb6', resultString);
 
   // Check 2000,2000 cell.
   e = MockTerminalMouseEvent(
       'wheel', {terminalRow: 2000, terminalColumn: 2000});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\u07f0\u07f0', resultString);
+  assert.equal('\x1b[Ma\u07f0\u07f0', resultString);
 
   // Check 2014,2014 cell (just below max range).
   e = MockTerminalMouseEvent(
       'wheel', {terminalRow: 2014, terminalColumn: 2014});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\u07fe\u07fe', resultString);
+  assert.equal('\x1b[Ma\u07fe\u07fe', resultString);
 
   // Check 2015,2015 cell (max range).
   e = MockTerminalMouseEvent(
       'wheel', {terminalRow: 2015, terminalColumn: 2015});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\u07ff\u07ff', resultString);
+  assert.equal('\x1b[Ma\u07ff\u07ff', resultString);
 
   // Check 3000,3000 cell (out of range).
   e = MockTerminalMouseEvent(
       'wheel', {terminalRow: 3000, terminalColumn: 3000});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[Ma\u07ff\u07ff', resultString);
+  assert.equal('\x1b[Ma\u07ff\u07ff', resultString);
 
   result.pass();
 });
@@ -3401,24 +3391,24 @@ hterm.VT.Tests.addTest('mouse-wheel-sgr-coord', function(result, cx) {
   // Check 0,0 cell.
   e = MockTerminalMouseEvent('wheel');
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<65;0;0M', resultString);
+  assert.equal('\x1b[<65;0;0M', resultString);
 
   // Check 150,100 cell.
   e = MockTerminalMouseEvent('wheel', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<65;100;150M', resultString);
+  assert.equal('\x1b[<65;100;150M', resultString);
 
   // Check 2000,3000 cell.
   e = MockTerminalMouseEvent(
       'wheel', {terminalRow: 2000, terminalColumn: 3000});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<65;3000;2000M', resultString);
+  assert.equal('\x1b[<65;3000;2000M', resultString);
 
   // Check 99999,55555 cell.
   e = MockTerminalMouseEvent(
       'wheel', {terminalRow: 99999, terminalColumn: 55555});
   terminal.vt.onTerminalMouse_(e);
-  result.assertEQ('\x1b[<65;55555;99999M', resultString);
+  assert.equal('\x1b[<65;55555;99999M', resultString);
 
   result.pass();
 });
@@ -3439,29 +3429,29 @@ hterm.VT.Tests.addTest('csi-j-0', function(result, cx) {
 
   // Move to the middle of the screen.
   terminal.setCursorPosition(3, 1);
-  result.assertEQ('ab9', terminal.getRowText(9));
-  result.assertEQ('ab10', terminal.getRowText(10));
+  assert.equal('ab9', terminal.getRowText(9));
+  assert.equal('ab10', terminal.getRowText(10));
 
   // Clear after & including the cursor (implicit arg=0).
   terminal.interpret('\x1b[J');
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(1, terminal.getCursorColumn());
-  result.assertEQ('ab9', terminal.getRowText(9));
-  result.assertEQ('a', terminal.getRowText(10));
-  result.assertEQ('', terminal.getRowText(11));
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(1, terminal.getCursorColumn());
+  assert.equal('ab9', terminal.getRowText(9));
+  assert.equal('a', terminal.getRowText(10));
+  assert.equal('', terminal.getRowText(11));
 
   // Move up and clear after & including the cursor (explicit arg=0).
   terminal.setCursorPosition(2, 1);
   terminal.interpret('\x1b[0J');
-  result.assertEQ(2, terminal.getCursorRow());
-  result.assertEQ(1, terminal.getCursorColumn());
-  result.assertEQ('ab8', terminal.getRowText(8));
-  result.assertEQ('a', terminal.getRowText(9));
-  result.assertEQ('', terminal.getRowText(10));
+  assert.equal(2, terminal.getCursorRow());
+  assert.equal(1, terminal.getCursorColumn());
+  assert.equal('ab8', terminal.getRowText(8));
+  assert.equal('a', terminal.getRowText(9));
+  assert.equal('', terminal.getRowText(10));
 
   // The scrollback should stay intact.
-  result.assertEQ('ab0', terminal.getRowText(0));
-  result.assertEQ(rowCount, terminal.getRowCount());
+  assert.equal('ab0', terminal.getRowText(0));
+  assert.equal(rowCount, terminal.getRowCount());
 
   result.pass();
 });
@@ -3482,20 +3472,20 @@ hterm.VT.Tests.addTest('csi-j-1', function(result, cx) {
 
   // Move to the middle of the screen.
   terminal.setCursorPosition(3, 1);
-  result.assertEQ('ab9', terminal.getRowText(9));
-  result.assertEQ('ab10', terminal.getRowText(10));
+  assert.equal('ab9', terminal.getRowText(9));
+  assert.equal('ab10', terminal.getRowText(10));
 
   // Clear before & including the cursor (arg=1).
   terminal.interpret('\x1b[1J');
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(1, terminal.getCursorColumn());
-  result.assertEQ('', terminal.getRowText(9));
-  result.assertEQ('  10', terminal.getRowText(10));
-  result.assertEQ('ab11', terminal.getRowText(11));
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(1, terminal.getCursorColumn());
+  assert.equal('', terminal.getRowText(9));
+  assert.equal('  10', terminal.getRowText(10));
+  assert.equal('ab11', terminal.getRowText(11));
 
   // The scrollback should stay intact.
-  result.assertEQ('ab0', terminal.getRowText(0));
-  result.assertEQ(rowCount, terminal.getRowCount());
+  assert.equal('ab0', terminal.getRowText(0));
+  assert.equal(rowCount, terminal.getRowCount());
 
   result.pass();
 });
@@ -3516,20 +3506,20 @@ hterm.VT.Tests.addTest('csi-j-2', function(result, cx) {
 
   // Move to the middle of the screen.
   terminal.setCursorPosition(3, 1);
-  result.assertEQ('ab9', terminal.getRowText(9));
-  result.assertEQ('ab10', terminal.getRowText(10));
+  assert.equal('ab9', terminal.getRowText(9));
+  assert.equal('ab10', terminal.getRowText(10));
 
   // Clear the screen (arg=2).
   terminal.interpret('\x1b[2J');
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(1, terminal.getCursorColumn());
-  result.assertEQ('', terminal.getRowText(9));
-  result.assertEQ('', terminal.getRowText(10));
-  result.assertEQ('', terminal.getRowText(11));
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(1, terminal.getCursorColumn());
+  assert.equal('', terminal.getRowText(9));
+  assert.equal('', terminal.getRowText(10));
+  assert.equal('', terminal.getRowText(11));
 
   // The scrollback should stay intact.
-  result.assertEQ('ab0', terminal.getRowText(0));
-  result.assertEQ(rowCount, terminal.getRowCount());
+  assert.equal('ab0', terminal.getRowText(0));
+  assert.equal(rowCount, terminal.getRowCount());
 
   result.pass();
 });
@@ -3550,16 +3540,16 @@ hterm.VT.Tests.addTest('csi-j-3', function(result, cx) {
 
   // Move to the middle of the screen.
   terminal.setCursorPosition(3, 1);
-  result.assertEQ('ab9', terminal.getRowText(9));
-  result.assertEQ('ab10', terminal.getRowText(10));
+  assert.equal('ab9', terminal.getRowText(9));
+  assert.equal('ab10', terminal.getRowText(10));
 
   // Disable this feature.  It should make it a nop.
   terminal.vt.enableCsiJ3 = false;
   terminal.interpret('\x1b[3J');
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(1, terminal.getCursorColumn());
-  result.assertEQ('ab0', terminal.getRowText(0));
-  result.assertEQ(rowCount, terminal.getRowCount());
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(1, terminal.getCursorColumn());
+  assert.equal('ab0', terminal.getRowText(0));
+  assert.equal(rowCount, terminal.getRowCount());
 
   // Re-enable the feature.
   terminal.vt.enableCsiJ3 = true;
@@ -3567,15 +3557,15 @@ hterm.VT.Tests.addTest('csi-j-3', function(result, cx) {
   // Clear the scrollback (arg=3).
   // The current screen should stay intact.
   terminal.interpret('\x1b[3J');
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(1, terminal.getCursorColumn());
-  result.assertEQ('ab7', terminal.getRowText(0));
-  result.assertEQ('ab8', terminal.getRowText(1));
-  result.assertEQ('ab11', terminal.getRowText(this.visibleRowCount - 2));
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(1, terminal.getCursorColumn());
+  assert.equal('ab7', terminal.getRowText(0));
+  assert.equal('ab8', terminal.getRowText(1));
+  assert.equal('ab11', terminal.getRowText(this.visibleRowCount - 2));
 
   // The scrollback should be gone.
-  result.assertEQ(this.visibleRowCount, terminal.getRowCount());
-  result.assertEQ([], terminal.scrollbackRows_);
+  assert.equal(this.visibleRowCount, terminal.getRowCount());
+  assert.deepStrictEqual([], terminal.scrollbackRows_);
 
   result.pass();
 });

@@ -31,8 +31,9 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
             ([msgId, nasshMsg]) => {
               if (msgId.startsWith('HTERM_PREF_')) {
                 const key = msgIdToHelpId(msgId);
-                result.assert(key in hterm.PreferenceManager.defaultPreferences,
-                              `stale ${msgId} help translation for key ${key}`);
+                assert.property(
+                    hterm.PreferenceManager.defaultPreferences, key,
+                    `stale ${msgId} help translation for key ${key}`);
               }
 
               if (msgId.startsWith('HTERM_TITLE_PREF_')) {
@@ -41,14 +42,15 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
                   if (msgId == 'HTERM_' + titleIdToMsgId(def.id))
                     found = true;
                 });
-                result.assert(found,
+                assert.isTrue(found,
                               `stale ${msgId} translation for category`);
               }
 
               if (msgId.startsWith('HTERM_NAME_PREF_')) {
                 const key = msgIdToNameId(msgId);
-                result.assert(key in hterm.PreferenceManager.defaultPreferences,
-                              `stale ${msgId} name translation for key ${key}`);
+                assert.property(
+                    hterm.PreferenceManager.defaultPreferences, key,
+                    `stale ${msgId} name translation for key ${key}`);
               }
             });
 
@@ -59,13 +61,13 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
               const nameId = nameIdToMsgId(key);
               const htermNameMsg = entry['name'];
               const nasshNameMsg = hterm.msg(nameId);
-              result.assertEQ(htermNameMsg, nasshNameMsg, nameId);
+              assert.equal(htermNameMsg, nasshNameMsg, nameId);
 
               // Check the help text.
               const helpId = helpIdToMsgId(key);
               const htermHelpMsg = entry['help'];
               const nasshHelpMsg = hterm.msg(helpId);
-              result.assertEQ(htermHelpMsg, nasshHelpMsg, helpId);
+              assert.equal(htermHelpMsg, nasshHelpMsg, helpId);
             });
 
         // Walk the hterm categories and make sure they match the nassh copy.
@@ -73,7 +75,7 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
           const msgId = titleIdToMsgId(def.id);
           const htermMsg = def.text;
           const nasshMsg = hterm.msg(msgId);
-          result.assertEQ(htermMsg, nasshMsg, msgId);
+          assert.equal(htermMsg, nasshMsg, msgId);
         });
 
         result.pass();

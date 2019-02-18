@@ -157,7 +157,7 @@ hterm.VT.CannedTests.prototype.loadCannedData = function(
     if (this.readyState != 4)
       return;
 
-    result.assert(this.status == 200 || this.status == 0);
+    assert(this.status == 200 || this.status == 0);
     callback(result, this.responseText);
   };
 
@@ -173,17 +173,17 @@ hterm.VT.CannedTests.prototype.loadCannedData = function(
  */
 hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
   // Make sure we got some data.
-  result.assert(!!data, 'canned data is not empty');
+  assert.isTrue(!!data, 'canned data is not empty');
 
   var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/);
   // And that it has optional lead-in comments followed by a header.
-  result.assert(!!m, 'data has a header');
+  assert.isTrue(!!m, 'data has a header');
 
   var headerStart = m[0].length;
 
   // And that the header has an ending.
   m = data.match(/^@@ HEADER_END\r?\n/m);
-  result.assert(!!m, 'header ends');
+  assert.isTrue(!!m, 'header ends');
 
   var header = data.substring(headerStart, m.index);
   data = data.substr(headerStart + header.length + m[0].length);
@@ -200,7 +200,7 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
 
     var ary = line.match(
         /^@@\s+OFFSET:(\d+)\s+LINES:(\d+)\s+CURSOR:(\d+),(\d+)\s*$/);
-    result.assert(!!ary, 'header line: ' + line);
+    assert.isTrue(!!ary, 'header line: ' + line);
 
     var endOffset = Number(ary[1]);
     result.println('Playing to offset: ' + endOffset);
@@ -209,14 +209,14 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
     var lineCount = Number(ary[2]);
     for (var rowIndex = 0; rowIndex < lineCount; rowIndex++) {
       headerIndex++;
-      result.assertEQ(this.terminal.getRowText(rowIndex),
-                      headerLines[headerIndex],
-                      'row:' + rowIndex);
+      assert.equal(this.terminal.getRowText(rowIndex),
+                   headerLines[headerIndex],
+                   'row:' + rowIndex);
     }
 
-    result.assertEQ(this.terminal.getCursorRow(), Number(ary[3]), 'cursor row');
-    result.assertEQ(this.terminal.getCursorColumn(), Number(ary[4]),
-                    'cursor column');
+    assert.equal(this.terminal.getCursorRow(), Number(ary[3]), 'cursor row');
+    assert.equal(this.terminal.getCursorColumn(), Number(ary[4]),
+                 'cursor column');
 
     startOffset = endOffset;
   }

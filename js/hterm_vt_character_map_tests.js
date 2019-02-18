@@ -16,8 +16,8 @@ hterm.VT.CharacterMap.Tests =
 hterm.VT.CharacterMap.Tests.addTest('null-map', function(result, cx) {
   var map = new hterm.VT.CharacterMap('foo', null);
 
-  result.assertEQ(map.description, 'foo');
-  result.assertEQ(map.GL, null);
+  assert.equal(map.description, 'foo');
+  assert.isNull(map.GL);
 
   result.pass();
 });
@@ -28,8 +28,8 @@ hterm.VT.CharacterMap.Tests.addTest('null-map', function(result, cx) {
 hterm.VT.CharacterMap.Tests.addTest('empty-map', function(result, cx) {
   var map = new hterm.VT.CharacterMap('foo bar', {});
 
-  result.assertEQ(map.description, 'foo bar');
-  result.assertEQ(typeof map.GL, 'function');
+  assert.equal(map.description, 'foo bar');
+  assert.equal(typeof map.GL, 'function');
 
   result.pass();
 });
@@ -40,9 +40,9 @@ hterm.VT.CharacterMap.Tests.addTest('empty-map', function(result, cx) {
 hterm.VT.CharacterMap.Tests.addTest('gl-translate', function(result, cx) {
   var map = new hterm.VT.CharacterMap('test', {'a': 'b'});
 
-  result.assertEQ(map.GL('a'), 'b');
-  result.assertEQ(map.GL('b'), 'b');
-  result.assertEQ(map.GL('c'), 'c');
+  assert.equal(map.GL('a'), 'b');
+  assert.equal(map.GL('b'), 'b');
+  assert.equal(map.GL('c'), 'c');
 
   result.pass();
 });
@@ -54,24 +54,24 @@ hterm.VT.CharacterMap.Tests.addTest('overrides', function(result, cx) {
   var map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
 
   // Verify things start off sane.
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(map.GL('c'), 'c');
-  result.assertEQ(map.GL('d'), 'd');
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(map.GL('c'), 'c');
+  assert.equal(map.GL('d'), 'd');
 
   // The override will update existing mappings.
   map.setOverrides({'a': 'A', 'c': 'C'});
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(map.GL('c'), 'C');
-  result.assertEQ(map.GL('d'), 'd');
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(map.GL('c'), 'C');
+  assert.equal(map.GL('d'), 'd');
 
   // Do the same thing again!
   map.setOverrides({'a': 'Z', 'd': 'D'});
-  result.assertEQ(map.GL('a'), 'Z');
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(map.GL('c'), 'c');
-  result.assertEQ(map.GL('d'), 'D');
+  assert.equal(map.GL('a'), 'Z');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(map.GL('c'), 'c');
+  assert.equal(map.GL('d'), 'D');
 
   result.pass();
 });
@@ -83,24 +83,24 @@ hterm.VT.CharacterMap.Tests.addTest('resets', function(result, cx) {
   var map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
 
   // Verify things start off sane.
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(map.GL('c'), 'c');
-  result.assert(map.glmap_ === map.glmapBase_);
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(map.GL('c'), 'c');
+  assert.strictEqual(map.glmap_, map.glmapBase_);
 
   // The override will generate a new internal mapping.
   map.setOverrides({'a': 'A', 'c': 'C'});
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(map.GL('c'), 'C');
-  result.assert(map.glmap_ !== map.glmapBase_);
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(map.GL('c'), 'C');
+  assert.notStrictEqual(map.glmap_, map.glmapBase_);
 
   // Resetting will get the old mapping, and object state.
   map.reset();
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(map.GL('c'), 'c');
-  result.assert(map.glmap_ === map.glmapBase_);
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(map.GL('c'), 'c');
+  assert.strictEqual(map.glmap_, map.glmapBase_);
 
   result.pass();
 });
@@ -113,15 +113,15 @@ hterm.VT.CharacterMap.Tests.addTest('clone', function(result, cx) {
   var dup = map.clone();
 
   // Make sure the dupe behaves the same, but isn't the same.
-  result.assertEQ(map.description, dup.description);
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(dup.GL('a'), 'A');
+  assert.equal(map.description, dup.description);
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(dup.GL('a'), 'A');
 
   dup.setOverrides({'b': 'C', 'x': 'X'});
-  result.assertEQ(map.GL('b'), 'B');
-  result.assertEQ(dup.GL('b'), 'C');
-  result.assertEQ(map.GL('x'), 'x');
-  result.assertEQ(dup.GL('X'), 'X');
+  assert.equal(map.GL('b'), 'B');
+  assert.equal(dup.GL('b'), 'C');
+  assert.equal(map.GL('x'), 'x');
+  assert.equal(dup.GL('X'), 'X');
 
   result.pass();
 });
@@ -136,13 +136,13 @@ hterm.VT.CharacterMaps.Tests.addTest('basic', function(result, cx) {
   var maps = new hterm.VT.CharacterMaps();
 
   // The default mapping should pass through to the default table.
-  result.assert(maps.maps_ === maps.mapsBase_);
-  result.assert(maps.maps_ === hterm.VT.CharacterMaps.DefaultMaps);
+  assert.strictEqual(maps.maps_, maps.mapsBase_);
+  assert.strictEqual(maps.maps_, hterm.VT.CharacterMaps.DefaultMaps);
 
   // Reset works.
   maps.reset();
-  result.assert(maps.maps_ === maps.mapsBase_);
-  result.assert(maps.maps_ === hterm.VT.CharacterMaps.DefaultMaps);
+  assert.strictEqual(maps.maps_, maps.mapsBase_);
+  assert.strictEqual(maps.maps_, hterm.VT.CharacterMaps.DefaultMaps);
 
   result.pass();
 });
@@ -153,9 +153,9 @@ hterm.VT.CharacterMaps.Tests.addTest('basic', function(result, cx) {
 hterm.VT.CharacterMaps.Tests.addTest('getMap', function(result, cx) {
   var maps = new hterm.VT.CharacterMaps();
 
-  result.assert(maps.getMap('X') === undefined);
-  result.assert(maps.getMap('0') !== undefined);
-  result.assert(maps.getMap('0') === hterm.VT.CharacterMaps.DefaultMaps['0']);
+  assert.isUndefined(maps.getMap('X'));
+  assert.isDefined(maps.getMap('0'));
+  assert.strictEqual(maps.getMap('0'), hterm.VT.CharacterMaps.DefaultMaps['0']);
 
   result.pass();
 });
@@ -168,19 +168,19 @@ hterm.VT.CharacterMaps.Tests.addTest('new-map', function(result, cx) {
   var map = new hterm.VT.CharacterMap('test', {});
 
   // Add a new map to the table.
-  result.assert(maps.getMap('X') === undefined);
+  assert.isUndefined(maps.getMap('X'));
   maps.addMap('X', map);
-  result.assert(maps.getMap('X') === map);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['X'] === undefined);
+  assert.strictEqual(maps.getMap('X'), map);
+  assert.isUndefined(hterm.VT.CharacterMaps.DefaultMaps['X']);
 
   // The mapping table should be updated now.
-  result.assert(maps.maps_ !== maps.mapsBase_);
-  result.assert(maps.maps_ !== hterm.VT.CharacterMaps.DefaultMaps);
+  assert.notStrictEqual(maps.maps_, maps.mapsBase_);
+  assert.notStrictEqual(maps.maps_, hterm.VT.CharacterMaps.DefaultMaps);
 
   // Reset works.
   maps.reset();
-  result.assert(maps.maps_ === maps.mapsBase_);
-  result.assert(maps.maps_ === hterm.VT.CharacterMaps.DefaultMaps);
+  assert.strictEqual(maps.maps_, maps.mapsBase_);
+  assert.strictEqual(maps.maps_, hterm.VT.CharacterMaps.DefaultMaps);
 
   result.pass();
 });
@@ -193,19 +193,19 @@ hterm.VT.CharacterMaps.Tests.addTest('update-map', function(result, cx) {
   var map = new hterm.VT.CharacterMap('test', {});
 
   // Update a mapping in the table.
-  result.assert(maps.getMap('0') !== undefined);
+  assert.isDefined(maps.getMap('0'));
   maps.addMap('0', map);
-  result.assert(maps.getMap('0') === map);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['0'] !== map);
+  assert.strictEqual(maps.getMap('0'), map);
+  assert.notStrictEqual(hterm.VT.CharacterMaps.DefaultMaps['0'], map);
 
   // The mapping table should be updated now.
-  result.assert(maps.maps_ !== maps.mapsBase_);
-  result.assert(maps.maps_ !== hterm.VT.CharacterMaps.DefaultMaps);
+  assert.notStrictEqual(maps.maps_, maps.mapsBase_);
+  assert.notStrictEqual(maps.maps_, hterm.VT.CharacterMaps.DefaultMaps);
 
   // Reset works.
   maps.reset();
-  result.assert(maps.maps_ === maps.mapsBase_);
-  result.assert(maps.maps_ === hterm.VT.CharacterMaps.DefaultMaps);
+  assert.strictEqual(maps.maps_, maps.mapsBase_);
+  assert.strictEqual(maps.maps_, hterm.VT.CharacterMaps.DefaultMaps);
 
   result.pass();
 });
@@ -218,10 +218,10 @@ hterm.VT.CharacterMaps.Tests.addTest('overrides', function(result, cx) {
   var map;
 
   // Check the default mappings.
-  result.assert(maps.getMap('U') === undefined);
-  result.assert(maps.getMap('V') === undefined);
-  result.assert(maps.getMap('X') === undefined);
-  result.assert(maps.getMap('0') !== undefined);
+  assert.isUndefined(maps.getMap('U'));
+  assert.isUndefined(maps.getMap('V'));
+  assert.isUndefined(maps.getMap('X'));
+  assert.isDefined(maps.getMap('0'));
 
   // Update some maps and check the results.
   maps.setOverrides({
@@ -232,36 +232,37 @@ hterm.VT.CharacterMaps.Tests.addTest('overrides', function(result, cx) {
   });
 
   map = maps.getMap('U');
-  result.assert(map !== undefined);
-  result.assert(map.GL === null);
+  assert.isDefined(map);
+  assert.isNull(map.GL);
 
   map = maps.getMap('V');
-  result.assert(map !== undefined);
-  result.assertEQ(map.GL('a'), 'a');
+  assert.isDefined(map);
+  assert.equal(map.GL('a'), 'a');
 
   map = maps.getMap('X');
-  result.assert(map !== undefined);
-  result.assertEQ(map.GL('a'), 'A');
+  assert.isDefined(map);
+  assert.equal(map.GL('a'), 'A');
 
   map = maps.getMap('0');
-  result.assert(map !== undefined);
-  result.assertEQ(map.GL('a'), 'A');
-  result.assertEQ(map.GL('\x60'), '\u25c6');
+  assert.isDefined(map);
+  assert.equal(map.GL('a'), 'A');
+  assert.equal(map.GL('\x60'), '\u25c6');
 
   // Now verify the default maps are sane.
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['U'] === undefined);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['V'] === undefined);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['X'] === undefined);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['0'] !== undefined);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['0'] !== maps.getMap('0'));
+  assert.isUndefined(hterm.VT.CharacterMaps.DefaultMaps['U']);
+  assert.isUndefined(hterm.VT.CharacterMaps.DefaultMaps['V']);
+  assert.isUndefined(hterm.VT.CharacterMaps.DefaultMaps['X']);
+  assert.isDefined(hterm.VT.CharacterMaps.DefaultMaps['0']);
+  assert.notStrictEqual(
+      hterm.VT.CharacterMaps.DefaultMaps['0'], maps.getMap('0'));
 
   // Now reset the things back.
   maps.reset();
-  result.assert(maps.getMap('U') === undefined);
-  result.assert(maps.getMap('V') === undefined);
-  result.assert(maps.getMap('X') === undefined);
-  result.assert(maps.getMap('0') !== undefined);
-  result.assert(hterm.VT.CharacterMaps.DefaultMaps['0'] === maps.getMap('0'));
+  assert.isUndefined(maps.getMap('U'));
+  assert.isUndefined(maps.getMap('V'));
+  assert.isUndefined(maps.getMap('X'));
+  assert.isDefined(maps.getMap('0'));
+  assert.strictEqual(hterm.VT.CharacterMaps.DefaultMaps['0'], maps.getMap('0'));
 
   result.pass();
 });

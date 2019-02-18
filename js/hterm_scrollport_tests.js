@@ -72,16 +72,15 @@ hterm.ScrollPort.Tests.prototype.preamble = function(result, cx) {
  */
 hterm.ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
     var topRow = this.scrollPort.getTopRowIndex();
-    result.assertEQ(topRow, 0);
-    result.assertEQ(this.scrollPort.getBottomRowIndex(topRow),
-                    this.visibleRowCount - 1);
+    assert.equal(topRow, 0);
+    assert.equal(this.scrollPort.getBottomRowIndex(topRow),
+                 this.visibleRowCount - 1);
 
     this.scrollPort.scrollRowToBottom(this.totalRowCount);
     topRow = this.scrollPort.getTopRowIndex();
-    result.assertEQ(topRow,
-                    this.totalRowCount - this.visibleRowCount);
-    result.assertEQ(this.scrollPort.getBottomRowIndex(topRow),
-                    this.totalRowCount - 1);
+    assert.equal(topRow, this.totalRowCount - this.visibleRowCount);
+    assert.equal(this.scrollPort.getBottomRowIndex(topRow),
+                 this.totalRowCount - 1);
 
     result.pass();
   });
@@ -103,7 +102,7 @@ hterm.ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
     var count = this.rowProvider.getCallCount('getRowNode');
 
     // Scrolling from 0 to 1 should result in only one call to getRowNode.
-    result.assertEQ(count,  1);
+    assert.equal(count, 1);
 
     result.pass();
   });
@@ -147,15 +146,15 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     for (var i = 0; i < this.visibleRowCount; i++) {
       this.scrollPort.scrollRowToTop(50 - i);
       this.scrollPort.redraw_();
-      result.assertEQ(anchorNode, s.anchorNode);
-      result.assertEQ(focusNode, s.focusNode);
+      assert.strictEqual(anchorNode, s.anchorNode);
+      assert.strictEqual(focusNode, s.focusNode);
     }
 
     for (var i = 0; i < this.visibleRowCount; i++) {
       this.scrollPort.scrollRowToTop(50 + i);
       this.scrollPort.redraw_();
-      result.assertEQ(anchorNode, s.anchorNode);
-      result.assertEQ(focusNode, s.focusNode);
+      assert.strictEqual(anchorNode, s.anchorNode);
+      assert.strictEqual(focusNode, s.focusNode);
     }
 
     result.pass();
@@ -187,9 +186,9 @@ hterm.ScrollPort.Tests.addTest(
   range.collapse(true);
   s.addRange(range);
 
-  result.assertEQ(anchorNode, s.anchorNode);
-  result.assertEQ(anchorNode, s.focusNode);
-  result.assert(s.isCollapsed);
+  assert.strictEqual(anchorNode, s.anchorNode);
+  assert.strictEqual(anchorNode, s.focusNode);
+  assert.isTrue(s.isCollapsed);
 
   // When accessibility is enabled, the selection should be preserved after
   // scrolling.
@@ -200,15 +199,15 @@ hterm.ScrollPort.Tests.addTest(
   for (let i = 0; i < this.visibleRowCount; i++) {
     this.scrollPort.scrollRowToTop(50 - i);
     this.scrollPort.redraw_();
-    result.assertEQ(anchorNode, s.anchorNode);
-    result.assertEQ(anchorNode, s.focusNode);
+    assert.strictEqual(anchorNode, s.anchorNode);
+    assert.strictEqual(anchorNode, s.focusNode);
   }
 
   for (let i = 0; i < this.visibleRowCount; i++) {
     this.scrollPort.scrollRowToTop(50 + i);
     this.scrollPort.redraw_();
-    result.assertEQ(anchorNode, s.anchorNode);
-    result.assertEQ(anchorNode, s.focusNode);
+    assert.strictEqual(anchorNode, s.anchorNode);
+    assert.strictEqual(anchorNode, s.focusNode);
   }
 
   // When accessibility isn't enabled, the selection shouldn't be preserved
@@ -225,8 +224,8 @@ hterm.ScrollPort.Tests.addTest(
     this.scrollPort.redraw_();
   }
 
-  result.assert(anchorNode != s.anchorNode);
-  result.assert(anchorNode != s.focusNode);
+  assert.notStrictEqual(anchorNode, s.anchorNode);
+  assert.notStrictEqual(anchorNode, s.focusNode);
 
   result.pass();
 });
@@ -236,9 +235,9 @@ hterm.ScrollPort.Tests.addTest(
  */
 hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {
     this.scrollPort.selectAll();
-    result.assertEQ(0, this.scrollPort.selection.startRow.rowIndex);
-    result.assertEQ(this.totalRowCount - 1,
-                    this.scrollPort.selection.endRow.rowIndex);
+    assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
+    assert.equal(this.totalRowCount - 1,
+                 this.scrollPort.selection.endRow.rowIndex);
     result.pass();
   });
 
@@ -257,7 +256,7 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
   const selection = doc.getSelection();
 
   const pageUp = doc.getElementById('hterm:a11y:page-up');
-  result.assert(pageUp.getBoundingClientRect().bottom <= 0);
+  assert.isAtMost(pageUp.getBoundingClientRect().bottom, 0);
 
   selection.removeAllRanges();
   let range = document.createRange();
@@ -265,11 +264,11 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
-  result.assert(pageUp.getBoundingClientRect().top >= 0);
+  assert.isAtLeast(pageUp.getBoundingClientRect().top, 0);
 
   const pageDown = doc.getElementById('hterm:a11y:page-down');
-  result.assert(pageDown.getBoundingClientRect().top >=
-                this.scrollPort.getScreenHeight());
+  assert.isAtLeast(pageDown.getBoundingClientRect().top,
+                   this.scrollPort.getScreenHeight());
 
   selection.removeAllRanges();
   range = document.createRange();
@@ -277,8 +276,8 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
-  result.assert(pageDown.getBoundingClientRect().bottom <=
-                this.scrollPort.getScreenHeight());
+  assert.isAtMost(pageDown.getBoundingClientRect().bottom,
+                  this.scrollPort.getScreenHeight());
 
   result.pass();
 });
@@ -299,7 +298,7 @@ hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
   const selection = doc.getSelection();
 
   const pageUp = doc.getElementById('hterm:a11y:page-up');
-  result.assert(pageUp.getBoundingClientRect().bottom <= 0);
+  assert.isAtMost(pageUp.getBoundingClientRect().bottom, 0);
 
   selection.removeAllRanges();
   let range = document.createRange();
@@ -307,11 +306,11 @@ hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
-  result.assert(pageUp.getBoundingClientRect().bottom <= 0);
+  assert.isAtMost(pageUp.getBoundingClientRect().bottom, 0);
 
   const pageDown = doc.getElementById('hterm:a11y:page-down');
-  result.assert(pageDown.getBoundingClientRect().top >=
-                this.scrollPort.getScreenHeight());
+  assert.isAtLeast(pageDown.getBoundingClientRect().top,
+                   this.scrollPort.getScreenHeight());
 
   selection.removeAllRanges();
   range = document.createRange();
@@ -319,8 +318,8 @@ hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
-  result.assert(pageDown.getBoundingClientRect().top >=
-                this.scrollPort.getScreenHeight());
+  assert.isAtLeast(pageDown.getBoundingClientRect().top,
+                   this.scrollPort.getScreenHeight());
 
   result.pass();
 });
@@ -333,15 +332,15 @@ hterm.ScrollPort.Tests.addTest('page-up-down-scroll', function(result, cx) {
 
   const topRow = 50;
   this.scrollPort.scrollRowToTop(topRow);
-  result.assertEQ(this.scrollPort.getTopRowIndex(), topRow);
+  assert.equal(this.scrollPort.getTopRowIndex(), topRow);
 
   const pageDown = doc.getElementById('hterm:a11y:page-down');
   pageDown.dispatchEvent(new Event('click'));
-  result.assertEQ(this.scrollPort.getTopRowIndex(), topRow + 24);
+  assert.equal(this.scrollPort.getTopRowIndex(), topRow + 24);
 
   const pageUp = doc.getElementById('hterm:a11y:page-up');
   pageUp.dispatchEvent(new Event('click'));
-  result.assertEQ(this.scrollPort.getTopRowIndex(), topRow);
+  assert.equal(this.scrollPort.getTopRowIndex(), topRow);
 
   result.pass();
 });
@@ -357,18 +356,18 @@ hterm.ScrollPort.Tests.addTest('page-up-down-state', function(result, cx) {
 
   this.scrollPort.scrollRowToTop(0);
   this.scrollPort.redraw_();
-  result.assertEQ(pageUp.getAttribute('aria-disabled'), 'true');
-  result.assertEQ(pageDown.getAttribute('aria-disabled'), 'false');
+  assert.equal(pageUp.getAttribute('aria-disabled'), 'true');
+  assert.equal(pageDown.getAttribute('aria-disabled'), 'false');
 
   this.scrollPort.scrollRowToTop(50);
   this.scrollPort.redraw_();
-  result.assertEQ(pageUp.getAttribute('aria-disabled'), 'false');
-  result.assertEQ(pageDown.getAttribute('aria-disabled'), 'false');
+  assert.equal(pageUp.getAttribute('aria-disabled'), 'false');
+  assert.equal(pageDown.getAttribute('aria-disabled'), 'false');
 
   this.scrollPort.scrollRowToTop(10000);
   this.scrollPort.redraw_();
-  result.assertEQ(pageUp.getAttribute('aria-disabled'), 'false');
-  result.assertEQ(pageDown.getAttribute('aria-disabled'), 'true');
+  assert.equal(pageUp.getAttribute('aria-disabled'), 'false');
+  assert.equal(pageDown.getAttribute('aria-disabled'), 'true');
 
   result.pass();
 });
@@ -386,7 +385,7 @@ hterm.ScrollPort.Tests.addTest('page-up-down-announce', function(result, cx) {
 
   const pageDown = doc.getElementById('hterm:a11y:page-down');
   pageDown.dispatchEvent(new Event('click'));
-  result.assertEQ(
+  assert.equal(
       mockAccessibilityReader.lastStringAnnounced,
       '0% scrolled,\n' +
       'This is line 24 red green yellow blue magenta cyan\n' +
@@ -443,17 +442,17 @@ hterm.ScrollPort.Tests.addTest('page-up-down-announce', function(result, cx) {
       'This is line 22 red green yellow blue magenta cyan\n' +
       'This is line 23 red green yellow blue magenta cyan\n' +
       'This is line 24 red green yellow blue magenta cyan\n'
-  result.assertEQ(mockAccessibilityReader.lastStringAnnounced,
-                  linesOneToTwentyFive);
+  assert.equal(mockAccessibilityReader.lastStringAnnounced,
+               linesOneToTwentyFive);
 
   // Test that other forms of scrolling won't cause announcements.
   this.scrollPort.scrollRowToTop(2000);
-  result.assertEQ(mockAccessibilityReader.lastStringAnnounced,
-                  linesOneToTwentyFive);
+  assert.equal(mockAccessibilityReader.lastStringAnnounced,
+               linesOneToTwentyFive);
 
   // Ensure the percentage is computed correctly.
   pageDown.dispatchEvent(new Event('click'));
-  result.assertEQ(
+  assert.equal(
       mockAccessibilityReader.lastStringAnnounced,
       '20% scrolled,\n' +
       'This is line 2024 red green yellow blue magenta cyan\n' +
@@ -499,12 +498,12 @@ hterm.ScrollPort.Tests.addTest(
 
   const pageUp = doc.getElementById('hterm:a11y:page-up');
   pageUp.dispatchEvent(new Event('click'));
-  result.assertEQ(mockAccessibilityReader.lastStringAnnounced, '');
+  assert.equal(mockAccessibilityReader.lastStringAnnounced, '');
 
   this.scrollPort.scrollRowToTop(10000);
   const pageDown = doc.getElementById('hterm:a11y:page-down');
   pageDown.dispatchEvent(new Event('click'));
-  result.assertEQ(mockAccessibilityReader.lastStringAnnounced, '');
+  assert.equal(mockAccessibilityReader.lastStringAnnounced, '');
 
   result.pass();
 });
@@ -537,10 +536,10 @@ hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
 
     var divSize = hterm.getClientSize(div);
 
-    result.assert(divSize.height > 0);
-    result.assert(divSize.width > 0);
-    result.assertEQ(divSize.height,
-                    hterm.getClientHeight(this.scrollPort.iframe_));
+    assert.isAbove(divSize.height, 0);
+    assert.isAbove(divSize.width, 0);
+    assert.equal(divSize.height,
+                 hterm.getClientHeight(this.scrollPort.iframe_));
 
     result.pass();
   });
@@ -585,26 +584,26 @@ hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
     return doc.defaultView.getComputedStyle(row).getPropertyValue('visibility');
   };
 
-  result.assert(getVisibility(anchorRow) != 'hidden');
-  result.assert(getVisibility(focusRow) != 'hidden');
+  assert.notEqual(getVisibility(anchorRow), 'hidden');
+  assert.notEqual(getVisibility(focusRow), 'hidden');
 
   this.scrollPort.scrollRowToTop(0);
   this.scrollPort.redraw_();
 
-  result.assertEQ(getVisibility(anchorRow), 'hidden');
-  result.assertEQ(getVisibility(focusRow), 'hidden');
+  assert.equal(getVisibility(anchorRow), 'hidden');
+  assert.equal(getVisibility(focusRow), 'hidden');
 
   this.scrollPort.scrollRowToTop(1000);
   this.scrollPort.redraw_();
 
-  result.assert(getVisibility(anchorRow) != 'hidden');
-  result.assert(getVisibility(focusRow) != 'hidden');
+  assert.notEqual(getVisibility(anchorRow), 'hidden');
+  assert.notEqual(getVisibility(focusRow), 'hidden');
 
   this.scrollPort.scrollRowToTop(2000);
   this.scrollPort.redraw_();
 
-  result.assertEQ(getVisibility(anchorRow), 'hidden');
-  result.assertEQ(getVisibility(focusRow), 'hidden');
+  assert.equal(getVisibility(anchorRow), 'hidden');
+  assert.equal(getVisibility(focusRow), 'hidden');
 
   result.pass();
 });
@@ -637,7 +636,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text', function(result, cx)
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
-    result.assertEQ('plain', e.text);
+    assert.equal('plain', e.text);
     result.pass();
   });
   this.scrollPort.onDragAndDrop_(e);
@@ -654,7 +653,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-no-shift', function(re
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
-    result.assertEQ('plain', e.text);
+    assert.equal('plain', e.text);
     result.pass();
   });
   this.scrollPort.onDragAndDrop_(e);
@@ -671,7 +670,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-shift', function(resul
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
-    result.assertEQ('html', e.text);
+    assert.equal('html', e.text);
     result.pass();
   });
   this.scrollPort.onDragAndDrop_(e);
@@ -688,7 +687,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-no-shift', fu
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
-    result.assertEQ('plain', e.text);
+    assert.equal('plain', e.text);
     result.pass();
   });
   this.scrollPort.onDragAndDrop_(e);
@@ -705,7 +704,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-shift', funct
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
-    result.assertEQ('plain', e.text);
+    assert.equal('plain', e.text);
     result.pass();
   });
   this.scrollPort.onDragAndDrop_(e);
@@ -718,7 +717,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-shift', funct
  */
 hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-disabled', function(result, cx) {
   const e = new MockDragEvent();
-  this.scrollPort.subscribe('paste', () => result.fail());
+  this.scrollPort.subscribe('paste', assert.fail);
 
   this.scrollPort.setPasteOnDrop(false);
 
@@ -734,7 +733,7 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-disabled', function(result,
  */
 hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-unusable', function(result, cx) {
   const e = new MockDragEvent();
-  this.scrollPort.subscribe('paste', () => result.fail());
+  this.scrollPort.subscribe('paste', assert.fail);
 
   // Binary only data shouldn't trigger an event.
   e.dataTransfer.setData('application/x-executable', 'plain');

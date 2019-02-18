@@ -52,7 +52,7 @@ hterm.ContextMenu.Tests.addTest('contextmenu-separator', function(result, cx) {
   menu.setItems([[hterm.ContextMenu.SEPARATOR]]);
 
   // Check the entries.
-  result.assertEQ('separator', menu.element_.firstElementChild.className);
+  assert.equal('separator', menu.element_.firstElementChild.className);
 
   // Show/hide this menu.
   menu.show({clientX: 0, clientY: 0});

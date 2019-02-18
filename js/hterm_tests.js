@@ -37,14 +37,14 @@ hterm.notify.Tests.addTest('default-notification', function(result, cx) {
   var n;
 
   // Create a default notification.
-  result.assertEQ(0, Notification.count);
+  assert.equal(0, Notification.count);
   n = hterm.notify();
-  result.assertEQ(1, Notification.count);
+  assert.equal(1, Notification.count);
 
   // Check the parameters.
-  result.assertEQ(typeof n.title, 'string');
-  result.assert(n.title != '');
-  result.assertEQ(n.body, '');
+  assert.equal(typeof n.title, 'string');
+  assert.notEqual(n.title, '');
+  assert.equal(n.body, '');
 
   result.pass();
 });
@@ -56,13 +56,13 @@ hterm.notify.Tests.addTest('notification-fields', function(result, cx) {
   var n;
 
   // Create the notification.
-  result.assertEQ(0, Notification.count);
+  assert.equal(0, Notification.count);
   n = hterm.notify({'title': 'title', 'body': 'body'});
-  result.assertEQ(1, Notification.count);
+  assert.equal(1, Notification.count);
 
   // Check the parameters.
-  result.assert(n.title.includes('title'));
-  result.assertEQ(n.body, 'body');
+  assert.include(n.title, 'title');
+  assert.equal(n.body, 'body');
 
   result.pass();
 });
@@ -78,10 +78,10 @@ hterm.notify.Tests.addTest('copy-execCommand', function(result, cx) {
   doc.execCommand = (cmd) => {
     doc.execCommand = oldExec;
 
-    result.assertEQ('copy', cmd);
+    assert.equal('copy', cmd);
 
     const s = doc.getSelection();
-    result.assertEQ('copypasta!', s.toString());
+    assert.equal('copypasta!', s.toString());
     result.pass();
   };
 

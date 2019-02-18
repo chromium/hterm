@@ -12,13 +12,7 @@ hterm.PubSub.Tests = new lib.TestManager.Suite('hterm.PubSub.Tests');
 hterm.PubSub.Tests.addTest('methods', function(result, cx) {
     var obj = {};
     hterm.PubSub.addBehavior(obj);
-
-    result.assertEQ(3, Object.keys(obj).length);
-
-    var methodNames = ['subscribe', 'unsubscribe', 'publish'];
-    for (var i in methodNames.length) {
-      result.assert(methodNames[i] in obj, methodNames[i]);
-    }
+    assert.hasAllKeys(obj, ['subscribe', 'unsubscribe', 'publish']);
 
     result.pass();
   });
@@ -29,10 +23,10 @@ hterm.PubSub.Tests.addTest('methods', function(result, cx) {
 hterm.PubSub.Tests.addTest('publish-order', function(result, cx) {
     var callbackCount = 0;
 
-    function one() { result.assertEQ(1, ++callbackCount); }
-    function two() { result.assertEQ(2, ++callbackCount); }
-    function three() { result.assertEQ(3, ++callbackCount); }
-    function last() { result.assertEQ(4, ++callbackCount); result.pass(); }
+    function one() { assert.equal(1, ++callbackCount); }
+    function two() { assert.equal(2, ++callbackCount); }
+    function three() { assert.equal(3, ++callbackCount); }
+    function last() { assert.equal(4, ++callbackCount); result.pass(); }
 
     var obj = {};
     hterm.PubSub.addBehavior(obj);
@@ -52,10 +46,10 @@ hterm.PubSub.Tests.addTest('publish-order', function(result, cx) {
 hterm.PubSub.Tests.addTest('parameter', function(result, cx) {
     var expected = {};
 
-    function one(param) { result.assertEQ(expected, param); }
-    function two(param) { result.assertEQ(expected, param); }
-    function three(param) { result.assertEQ(expected, param); }
-    function last(param) { result.assertEQ(expected, param); result.pass(); }
+    function one(param) { assert.deepStrictEqual(expected, param); }
+    function two(param) { assert.deepStrictEqual(expected, param); }
+    function three(param) { assert.deepStrictEqual(expected, param); }
+    function last(param) { assert.deepStrictEqual(expected, param); result.pass(); }
 
     var obj = {};
     hterm.PubSub.addBehavior(obj);
@@ -86,7 +80,7 @@ hterm.PubSub.Tests.addTest('forever-alone', function(result, cx) {
     obj.publish('test', null, last);
 
     setTimeout(function() {
-        result.assert(calledLast);
+        assert.isTrue(calledLast);
         console.log('PASS');
         result.pass();
       }, 100);
@@ -118,9 +112,9 @@ hterm.PubSub.Tests.addTest('exception', function(result, cx) {
     result.expectErrorMessage('EXPECTED_EXCEPTION');
 
     setTimeout(function() {
-        result.assert(calledFoo == false);
-        result.assert(calledBar);
-        result.assert(calledLast);
+        assert.isFalse(calledFoo);
+        assert.isTrue(calledBar);
+        assert.isTrue(calledLast);
         result.pass();
       }, 100);
 

@@ -13,16 +13,12 @@ hterm.Parser.Tests.prototype.negKeySeq = function(result, input, pattern) {
     p.reset(input);
     p.parseKeySequence(input);
   } catch(ex) {
-    result.assert(!!ex);
-    if (!ex.message.match(pattern)) {
-      result.fail('Expected error matching: ' + pattern + ', got: ' +
-          ex.message);
-    }
-
+    assert.isTrue(!!ex);
+    assert.match(ex.message, pattern);
     return;
   }
 
-  result.fail('Expected failure for: ' + input);
+  assert.fail(`Expected failure for: ${input}`);
 };
 
 hterm.Parser.Tests.addTest('sequence-identifiers', function(result) {
@@ -31,11 +27,11 @@ hterm.Parser.Tests.addTest('sequence-identifiers', function(result) {
   var checkResult = function(input, output) {
     p.reset(input);
     var rv = p.parseKeySequence();
-    result.assertEQ(rv.keyCode, output);
-    result.assertEQ(rv.shift, false);
-    result.assertEQ(rv.ctrl, false);
-    result.assertEQ(rv.alt, false);
-    result.assertEQ(rv.meta, false);
+    assert.equal(rv.keyCode, output);
+    assert.isFalse(rv.shift);
+    assert.isFalse(rv.ctrl);
+    assert.isFalse(rv.alt);
+    assert.isFalse(rv.meta);
   };
 
   checkResult('X', 88);
@@ -55,11 +51,11 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   var checkResult = function(input, shift, ctrl, alt, meta) {
     p.reset(input);
     var rv = p.parseKeySequence();
-    result.assertEQ(rv.keyCode, 88);
-    result.assertEQ(rv.shift, shift);
-    result.assertEQ(rv.ctrl, ctrl);
-    result.assertEQ(rv.alt, alt);
-    result.assertEQ(rv.meta, meta);
+    assert.equal(rv.keyCode, 88);
+    assert.equal(rv.shift, shift);
+    assert.equal(rv.ctrl, ctrl);
+    assert.equal(rv.alt, alt);
+    assert.equal(rv.meta, meta);
   };
 
   checkResult('Shift-X', true, false, false, false);
@@ -106,11 +102,11 @@ hterm.Parser.Tests.addTest('keycodes', function(result) {
   var checkResult = function(input, target, shift, ctrl, alt, meta) {
     p.reset(input);
     var rv = p.parseKeySequence();
-    result.assertEQ(rv.keyCode, target);
-    result.assertEQ(rv.shift, shift);
-    result.assertEQ(rv.ctrl, ctrl);
-    result.assertEQ(rv.alt, alt);
-    result.assertEQ(rv.meta, meta);
+    assert.equal(rv.keyCode, target);
+    assert.equal(rv.shift, shift);
+    assert.equal(rv.ctrl, ctrl);
+    assert.equal(rv.alt, alt);
+    assert.equal(rv.meta, meta);
   };
 
   checkResult('88', 88, false, false, false, false);
@@ -143,7 +139,7 @@ hterm.Parser.Tests.addTest('actions', function(result) {
     p.reset(input);
     var rv = p.parseKeyAction();
 
-    result.assertEQ(rv, output);
+    assert.strictEqual(rv, output);
   };
 
   checkResult('CANCEL', hterm.Keyboard.KeyActions.CANCEL);

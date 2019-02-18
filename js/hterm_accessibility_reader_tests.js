@@ -46,11 +46,11 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+  assert.equal('', this.liveElement.getAttribute('aria-label'));
 
   const observer = new MutationObserver(() => {
-    result.assertEQ('Some test output Some other test output\nMore output',
-                    this.liveElement.getAttribute('aria-label'));
+    assert.equal('Some test output Some other test output\nMore output',
+                 this.liveElement.getAttribute('aria-label'));
     observer.disconnect();
     result.pass();
   });
@@ -73,11 +73,11 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+  assert.equal('', this.liveElement.getAttribute('aria-label'));
 
   const checkFirstAnnounce = () => {
-    result.assertEQ('Some test output Some other test output\nMore output',
-                    this.liveElement.getAttribute('aria-label'));
+    assert.equal('Some test output Some other test output\nMore output',
+                 this.liveElement.getAttribute('aria-label'));
 
     this.accessibilityReader.announce('more text');
     this.accessibilityReader.newLine();
@@ -86,8 +86,8 @@ hterm.AccessibilityReader.Tests.addTest(
   };
 
   const checkSecondAnnounce = () => {
-    result.assertEQ('more text\n...and more',
-                    this.liveElement.getAttribute('aria-label'));
+    assert.equal('more text\n...and more',
+                 this.liveElement.getAttribute('aria-label'));
     return true;
   };
 
@@ -118,19 +118,19 @@ hterm.AccessibilityReader.Tests.addTest(
     'a11y-live-region-duplicate-text', function(result, cx) {
   this.accessibilityReader.announce('Some test output');
 
-  result.assertEQ('', this.liveElement.getAttribute('aria-label'));
+  assert.equal('', this.liveElement.getAttribute('aria-label'));
 
   const checkFirstAnnounce = () => {
-    result.assertEQ('Some test output',
-                    this.liveElement.getAttribute('aria-label'));
+    assert.equal('Some test output',
+                 this.liveElement.getAttribute('aria-label'));
 
     this.accessibilityReader.announce('Some test output');
     return true;
   };
 
   const checkSecondAnnounce = () => {
-    result.assertEQ('\nSome test output',
-                    this.liveElement.getAttribute('aria-label'));
+    assert.equal('\nSome test output',
+                 this.liveElement.getAttribute('aria-label'));
     return true;
   };
 
@@ -159,11 +159,10 @@ hterm.AccessibilityReader.Tests.addTest(
 hterm.AccessibilityReader.Tests.addTest(
     'a11y-assertive-live-region', function(result, cx) {
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  'Some test output');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+               'Some test output');
   this.accessibilityReader.clear();
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
   result.pass();
 });
 
@@ -174,11 +173,11 @@ hterm.AccessibilityReader.Tests.addTest(
 hterm.AccessibilityReader.Tests.addTest(
     'a11y-assertive-live-region-duplicate-text', function(result, cx) {
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  'Some test output');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+               'Some test output');
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  '\nSome test output');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+               '\nSome test output');
   result.pass();
 });
 
@@ -193,8 +192,8 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.liveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // The live element should not change because we interrupt it. It should only
   // announce the 'PASS' string which comes after all the output above.
@@ -202,14 +201,14 @@ hterm.AccessibilityReader.Tests.addTest(
     if (this.liveElement.getAttribute('aria-label') == 'PASS') {
       result.pass();
     } else {
-      result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+      assert.equal(this.liveElement.getAttribute('aria-label'), '');
     }
   });
   observer.observe(this.liveElement, {attributes: true});
 
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  'Some test output');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+               'Some test output');
 
   this.accessibilityReader.announce('PASS');
 
@@ -228,7 +227,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+  assert.equal(this.liveElement.getAttribute('aria-label'), '');
 
   // Only 'Other output' should be announced now.
   this.accessibilityReader.setAccessibilityEnabled(true);
@@ -238,7 +237,7 @@ hterm.AccessibilityReader.Tests.addTest(
     if (this.liveElement.getAttribute('aria-label') == 'Other output') {
       result.pass();
     } else {
-      result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+      assert.equal(this.liveElement.getAttribute('aria-label'), '');
     }
   });
   observer.observe(this.liveElement, {attributes: true});
@@ -256,7 +255,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+  assert.equal(this.liveElement.getAttribute('aria-label'), '');
 
   // The live element should not change because accessibility is disabled. It
   // should only announce the 'PASS' string which comes after all the output
@@ -265,7 +264,7 @@ hterm.AccessibilityReader.Tests.addTest(
     if (this.liveElement.getAttribute('aria-label') == 'PASS') {
       result.pass();
     } else {
-      result.assertEQ(this.liveElement.getAttribute('aria-label'), '');
+      assert.equal(this.liveElement.getAttribute('aria-label'), '');
     }
   });
   observer.observe(this.liveElement, {attributes: true});
@@ -289,14 +288,14 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.setAccessibilityEnabled(false);
 
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  'Some test output');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+               'Some test output');
 
   this.accessibilityReader.setAccessibilityEnabled(true);
 
   this.accessibilityReader.assertiveAnnounce('More test output');
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'),
-                  'More test output');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+               'More test output');
 
   result.pass();
 });
@@ -325,56 +324,56 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Move the cursor left 1 character.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
 
   // Move the cursor right 1 character with wide chars in the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へどabc', 0, 0);
   this.accessibilityReader.afterCursorChange('匂へどabc', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '匂');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '匂');
 
   // Move the cursor left 1 character with wide chars in the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へどabc', 0, 9);
   this.accessibilityReader.afterCursorChange('匂へどabc', 0, 8);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Move the cursor to the end of the output.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 3);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
 
   // Move the cursor to the start of the output.
   this.assertiveLiveElement.setAttribute('aria-label', '');
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('abc', 0, 0);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
 
   // Don't move the cursor at all.
   this.assertiveLiveElement.setAttribute('aria-label', '');
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 0);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but without a user gesture.
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but have the output change at the same time.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abcd', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but have the output change elsewhere on the
   // screen at the same time.
@@ -382,13 +381,13 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce('foo bar');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Move the cursor 1 character but have the row change as well.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 1, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   result.pass();
 });
@@ -406,7 +405,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Do this again but 'foo bar' is announced during the cursor change.
   this.assertiveLiveElement.setAttribute('aria-label', '');
@@ -414,7 +413,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce('foo bar');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // We check that the space gets consumed and isn't announced but 'foo bar'
   // still gets announced.
@@ -438,19 +437,19 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Backspace a character at the end of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Backspace a wide character.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へど', 0, 6);
   this.accessibilityReader.afterCursorChange('匂へ', 0, 4);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'ど');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'ど');
 
   // Do this again but add an empty space in place of the deleted character. The
   // terminal may do this as spaces are no different from empty space in the
@@ -459,7 +458,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab ', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Do the same thing but add other text as well. The backspace shouldn't be
   // announced.
@@ -467,32 +466,31 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab e ', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Backspace a character in the middle of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ac', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
 
   // Delete a character at the start of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Delete a character at the end of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Delete the entire end of the line of text.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc: xyzabc', 0, 11);
   this.accessibilityReader.afterCursorChange('abc: ', 0, 5);
-  result.assertEQ(
-      this.assertiveLiveElement.getAttribute('aria-label'), 'xyzabc');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'xyzabc');
 
   // Do this again but add an empty space in place of the deleted character. The
   // terminal may do this as spaces are no different from empty space in the
@@ -501,7 +499,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab ', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
 
   // Do the same thing but add other text as well. The delete shouldn't be
   // announced.
@@ -509,19 +507,19 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab e ', 0, 2);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // Delete a character in the middle of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('ac', 0, 1);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
 
   // Backspace a character without a user gesture.
   this.assertiveLiveElement.setAttribute('aria-label', '');
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   result.pass();
 });
@@ -540,7 +538,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.announce('bc');
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
 
   // Announce something afterward to ensure the mutation observer fires and
   // avoid timing out the test..
@@ -565,8 +563,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);
-  result.assertEQ(
-      this.assertiveLiveElement.getAttribute('aria-label'), 'Space');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'Space');
 
   // No space announced if the cursor doesn't move.
   this.assertiveLiveElement.setAttribute('aria-label', '');
@@ -574,7 +571,7 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 3);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // No space announced if a space is not printed to the screen.
   this.assertiveLiveElement.setAttribute('aria-label', '');
@@ -582,15 +579,14 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc ', 0, 4);
   this.accessibilityReader.announce('d');
   this.accessibilityReader.afterCursorChange('dabc ', 0, 5);
-  result.assertEQ(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   // No space announced if there's not a user gesture.
   this.assertiveLiveElement.setAttribute('aria-label', '');
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);
-  result.assertEQ(
-      this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
 
   result.pass();
 });

@@ -55,16 +55,16 @@ hterm.Terminal.IO.Tests.prototype.preamble = function(result, cx) {
  */
 hterm.Terminal.IO.Tests.addTest('print', function(result, cx) {
   this.io.print('');
-  result.assertEQ('', this.mockTerm.buffer);
+  assert.equal('', this.mockTerm.buffer);
 
   this.io.print('a');
-  result.assertEQ('a', this.mockTerm.buffer);
+  assert.equal('a', this.mockTerm.buffer);
 
   this.io.print('');
-  result.assertEQ('a', this.mockTerm.buffer);
+  assert.equal('a', this.mockTerm.buffer);
 
   this.io.print('bc');
-  result.assertEQ('abc', this.mockTerm.buffer);
+  assert.equal('abc', this.mockTerm.buffer);
 
   result.pass();
 });
@@ -74,13 +74,13 @@ hterm.Terminal.IO.Tests.addTest('print', function(result, cx) {
  */
 hterm.Terminal.IO.Tests.addTest('println', function(result, cx) {
   this.io.println('a');
-  result.assertEQ('a\r\n', this.mockTerm.buffer);
+  assert.equal('a\r\n', this.mockTerm.buffer);
 
   this.io.print('bc');
-  result.assertEQ('a\r\nbc', this.mockTerm.buffer);
+  assert.equal('a\r\nbc', this.mockTerm.buffer);
 
   this.io.println('');
-  result.assertEQ('a\r\nbc\r\n', this.mockTerm.buffer);
+  assert.equal('a\r\nbc\r\n', this.mockTerm.buffer);
 
   result.pass();
 });
@@ -91,19 +91,19 @@ hterm.Terminal.IO.Tests.addTest('println', function(result, cx) {
 hterm.Terminal.IO.Tests.addTest('push-pop', function(result, cx) {
   const io1 = this.io.push();
   io1.print('Hello');
-  result.assertEQ('Hello', this.mockTerm.buffer);
+  assert.equal('Hello', this.mockTerm.buffer);
 
   const io2 = io1.push();
   io2.print('World');
-  result.assertEQ('HelloWorld', this.mockTerm.buffer);
+  assert.equal('HelloWorld', this.mockTerm.buffer);
   io2.pop();
 
   io1.print('ItsMe');
-  result.assertEQ('HelloWorldItsMe', this.mockTerm.buffer);
+  assert.equal('HelloWorldItsMe', this.mockTerm.buffer);
   io1.pop();
 
   this.io.print('Bye');
-  result.assertEQ('HelloWorldItsMeBye', this.mockTerm.buffer);
+  assert.equal('HelloWorldItsMeBye', this.mockTerm.buffer);
 
   result.pass();
 });
@@ -112,10 +112,10 @@ hterm.Terminal.IO.Tests.addTest('push-pop', function(result, cx) {
  * Verify profile selection.
  */
 hterm.Terminal.IO.Tests.addTest('profile-selection', function(result, cx) {
-  result.assertEQ('', this.mockTerm.profileName);
+  assert.equal('', this.mockTerm.profileName);
 
   this.io.setTerminalProfile('foo');
-  result.assertEQ('foo', this.mockTerm.profileName);
+  assert.equal('foo', this.mockTerm.profileName);
 
   result.pass();
 });
@@ -126,27 +126,27 @@ hterm.Terminal.IO.Tests.addTest('profile-selection', function(result, cx) {
 hterm.Terminal.IO.Tests.addTest('overlay', function(result, cx) {
   // Start with default timeout.
   this.io.showOverlay('msg');
-  result.assertEQ(1, this.mockTerm.showCount);
-  result.assertEQ(false, this.mockTerm.overlayVisible);
-  result.assertEQ('msg', this.mockTerm.overlayMessage);
+  assert.equal(1, this.mockTerm.showCount);
+  assert.isFalse(this.mockTerm.overlayVisible);
+  assert.equal('msg', this.mockTerm.overlayMessage);
 
   // A short message to "hide" it.
   this.io.showOverlay('', 1);
-  result.assertEQ(2, this.mockTerm.showCount);
-  result.assertEQ(false, this.mockTerm.overlayVisible);
-  result.assertEQ('', this.mockTerm.overlayMessage);
+  assert.equal(2, this.mockTerm.showCount);
+  assert.isFalse(this.mockTerm.overlayVisible);
+  assert.equal('', this.mockTerm.overlayMessage);
 
   // Keep the overlay up forever.
   this.io.showOverlay('hi', null);
-  result.assertEQ(3, this.mockTerm.showCount);
-  result.assertEQ(true, this.mockTerm.overlayVisible);
-  result.assertEQ('hi', this.mockTerm.overlayMessage);
+  assert.equal(3, this.mockTerm.showCount);
+  assert.isTrue(this.mockTerm.overlayVisible);
+  assert.equal('hi', this.mockTerm.overlayMessage);
 
   // Hide it immediately.
   this.io.hideOverlay();
-  result.assertEQ(3, this.mockTerm.showCount);
-  result.assertEQ(false, this.mockTerm.overlayVisible);
-  result.assertEQ('hi', this.mockTerm.overlayMessage);
+  assert.equal(3, this.mockTerm.showCount);
+  assert.isFalse(this.mockTerm.overlayVisible);
+  assert.equal('hi', this.mockTerm.overlayMessage);
 
   result.pass();
 });
@@ -158,19 +158,19 @@ hterm.Terminal.IO.Tests.addTest('buffer-background', function(result, cx) {
   // Create a new foreground IO and show some stuff.
   const io = this.io.push();
   io.print('Fore');
-  result.assertEQ('Fore', this.mockTerm.buffer);
+  assert.equal('Fore', this.mockTerm.buffer);
 
   // Try to display something with the background IO.
   this.io.print('Back');
-  result.assertEQ('Fore', this.mockTerm.buffer);
+  assert.equal('Fore', this.mockTerm.buffer);
 
   // Unload the foreground IO at which point the background should flush.
   io.pop();
-  result.assertEQ('ForeBack', this.mockTerm.buffer);
+  assert.equal('ForeBack', this.mockTerm.buffer);
 
   // And we should resume OK.
   this.io.print('Done');
-  result.assertEQ('ForeBackDone', this.mockTerm.buffer);
+  assert.equal('ForeBackDone', this.mockTerm.buffer);
 
   result.pass();
 });

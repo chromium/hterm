@@ -101,18 +101,18 @@ hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
     var innerWidth = Math.round(
         divSize.width - scrollPort.currentScrollbarWidthPx);
 
-    result.assertEQ(innerWidth, Math.round(scrollPort.getScreenWidth()));
-    result.assertEQ(Math.round(divSize.height),
-                    Math.round(scrollPort.getScreenHeight()));
+    assert.equal(innerWidth, Math.round(scrollPort.getScreenWidth()));
+    assert.equal(Math.round(divSize.height),
+                 Math.round(scrollPort.getScreenHeight()));
 
-    result.assertEQ(Math.floor(innerWidth / scrollPort.characterSize.width),
-                    this.visibleColumnCount);
-    result.assertEQ(
+    assert.equal(Math.floor(innerWidth / scrollPort.characterSize.width),
+                 this.visibleColumnCount);
+    assert.equal(
         Math.round(divSize.height / scrollPort.characterSize.height),
         this.visibleRowCount);
 
-    result.assertEQ(this.terminal.screen_.getWidth(), this.visibleColumnCount);
-    result.assertEQ(this.terminal.screen_.getHeight(), this.visibleRowCount);
+    assert.equal(this.terminal.screen_.getWidth(), this.visibleColumnCount);
+    assert.equal(this.terminal.screen_.getHeight(), this.visibleRowCount);
 
     result.pass();
   });
@@ -193,39 +193,39 @@ hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
     this.terminal.document_.hasFocus = function() { return true; };
 
     // Ring the bell, but nothing shows up.
-    result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, this.terminal.bellNotificationList_.length);
+    assert.equal(0, Notification.count);
     this.terminal.ringBell();
     this.terminal.ringBell();
     this.terminal.ringBell();
     this.terminal.ringBell();
-    result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, this.terminal.bellNotificationList_.length);
+    assert.equal(0, Notification.count);
 
     // If we don't have focus, then notifications should show.
     this.terminal.document_.hasFocus = function() { return false; };
 
     // Gaining focus closes all desktop notifications.
-    result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, this.terminal.bellNotificationList_.length);
+    assert.equal(0, Notification.count);
     this.terminal.ringBell();
-    result.assertEQ(1, this.terminal.bellNotificationList_.length);
-    result.assertEQ(1, Notification.count);
+    assert.equal(1, this.terminal.bellNotificationList_.length);
+    assert.equal(1, Notification.count);
     this.terminal.ringBell();
-    result.assertEQ(2, this.terminal.bellNotificationList_.length);
-    result.assertEQ(2, Notification.count);
+    assert.equal(2, this.terminal.bellNotificationList_.length);
+    assert.equal(2, Notification.count);
     this.terminal.onFocusChange_(true);
-    result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, this.terminal.bellNotificationList_.length);
+    assert.equal(0, Notification.count);
 
     // A user click closes all desktop notifications.
     this.terminal.ringBell();
     this.terminal.ringBell();
-    result.assertEQ(2, this.terminal.bellNotificationList_.length);
-    result.assertEQ(2, Notification.count);
+    assert.equal(2, this.terminal.bellNotificationList_.length);
+    assert.equal(2, Notification.count);
     this.terminal.bellNotificationList_[0].onclick(null);
-    result.assertEQ(0, this.terminal.bellNotificationList_.length);
-    result.assertEQ(0, Notification.count);
+    assert.equal(0, this.terminal.bellNotificationList_.length);
+    assert.equal(0, Notification.count);
 
     result.pass();
   });
@@ -237,10 +237,10 @@ hterm.Terminal.Tests.addTest('show-overlay-announce', function(result, cx) {
   const liveElement = this.terminal.accessibilityReader_.assertiveLiveElement_;
 
   this.terminal.showOverlay('test');
-  result.assertEQ('test', liveElement.getAttribute('aria-label'));
+  assert.equal('test', liveElement.getAttribute('aria-label'));
 
   this.terminal.showOverlay('hello');
-  result.assertEQ('hello', liveElement.getAttribute('aria-label'));
+  assert.equal('hello', liveElement.getAttribute('aria-label'));
 
   result.pass();
 });
@@ -256,8 +256,8 @@ hterm.Terminal.Tests.addTest('sync-collapsed-selection', function(result, cx) {
   // Wait for selection to sync to the caret.
   setTimeout(() => {
     const selection = this.terminal.document_.getSelection();
-    result.assertEQ('bar', selection.anchorNode.textContent);
-    result.assertEQ(3, selection.anchorOffset);
+    assert.equal('bar', selection.anchorNode.textContent);
+    assert.equal(3, selection.anchorOffset);
     result.pass();
   });
 
@@ -280,10 +280,10 @@ hterm.Terminal.Tests.addTest('sync-uncollapsed-selection', function(result, cx) 
   // Wait for selection to sync to the caret.
   setTimeout(() => {
     const selection = this.terminal.document_.getSelection();
-    result.assertEQ('foo', selection.anchorNode.textContent);
-    result.assertEQ(0, selection.anchorOffset);
-    result.assertEQ('foo', selection.focusNode.textContent);
-    result.assertEQ(3, selection.focusOffset);
+    assert.equal('foo', selection.anchorNode.textContent);
+    assert.equal(0, selection.anchorOffset);
+    assert.equal('foo', selection.focusNode.textContent);
+    assert.equal(3, selection.focusOffset);
     result.pass();
   });
 
@@ -310,8 +310,8 @@ hterm.Terminal.Tests.addTest('sync-uncollapsed-selection-a11y',
   // Wait for selection to sync to the caret.
   setTimeout(() => {
     const selection = this.terminal.document_.getSelection();
-    result.assertEQ('bar', selection.anchorNode.textContent);
-    result.assertEQ(3, selection.anchorOffset);
+    assert.equal('bar', selection.anchorNode.textContent);
+    assert.equal(3, selection.anchorOffset);
     result.pass();
   });
 
@@ -334,8 +334,8 @@ hterm.Terminal.Tests.addTest('scrollport-focus-cursor', function(result, cx) {
     this.terminal.scrollPort_.focus();
     setTimeout(() => {
       const selection = this.terminal.document_.getSelection();
-      result.assertEQ('bar', selection.anchorNode.textContent);
-      result.assertEQ(3, selection.anchorOffset);
+      assert.equal('bar', selection.anchorNode.textContent);
+      assert.equal(3, selection.anchorOffset);
       result.pass();
     });
   });
@@ -354,17 +354,17 @@ hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
   this.terminal.interpret('\x1b[?1004h');
 
   this.terminal.onFocusChange_(false);
-  result.assertEQ(resultString, '\x1b[O');
+  assert.equal(resultString, '\x1b[O');
   this.terminal.onFocusChange_(true);
-  result.assertEQ(resultString, '\x1b[I');
+  assert.equal(resultString, '\x1b[I');
 
   resultString = '';
   this.terminal.interpret('\x1b[?1004l');
 
   this.terminal.onFocusChange_(false);
-  result.assertEQ(resultString, '');
+  assert.equal(resultString, '');
   this.terminal.onFocusChange_(true);
-  result.assertEQ(resultString, '');
+  assert.equal(resultString, '');
 
   result.pass();
 });
@@ -380,66 +380,66 @@ hterm.Terminal.Tests.addTest('per-screen-cursor-state', function(result, cx) {
   terminal.setAlternateMode(false);
   // This should be the default cursor state.
   terminal.restoreCursorAndState();
-  result.assertEQ(0, terminal.getCursorRow());
-  result.assertEQ(0, terminal.getCursorColumn());
-  result.assertEQ('G0', vt.GL);
-  result.assertEQ('G0', vt.GR);
+  assert.equal(0, terminal.getCursorRow());
+  assert.equal(0, terminal.getCursorColumn());
+  assert.equal('G0', vt.GL);
+  assert.equal('G0', vt.GR);
   // Change the primary cursor a bit and save it.
   vt.GL = 'G1';
   vt.GR = 'G2';
   terminal.setAbsoluteCursorPosition(3, 4);
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(4, terminal.getCursorColumn());
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(4, terminal.getCursorColumn());
   terminal.saveCursorAndState();
 
   // Switch to the alternative screen.
   terminal.setAlternateMode(true);
   // Cursor state should not be changed.
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(4, terminal.getCursorColumn());
-  result.assertEQ('G1', vt.GL);
-  result.assertEQ('G2', vt.GR);
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(4, terminal.getCursorColumn());
+  assert.equal('G1', vt.GL);
+  assert.equal('G2', vt.GR);
   // This should be the default cursor state.
   terminal.restoreCursorAndState();
-  result.assertEQ(0, terminal.getCursorRow());
-  result.assertEQ(0, terminal.getCursorColumn());
-  result.assertEQ('G0', vt.GL);
-  result.assertEQ('G0', vt.GR);
+  assert.equal(0, terminal.getCursorRow());
+  assert.equal(0, terminal.getCursorColumn());
+  assert.equal('G0', vt.GL);
+  assert.equal('G0', vt.GR);
   // Change the alternate cursor a bit and save it.
   vt.GL = 'G2';
   vt.GR = 'G3';
   terminal.setAbsoluteCursorPosition(7, 8);
-  result.assertEQ(7, terminal.getCursorRow());
-  result.assertEQ(8, terminal.getCursorColumn());
+  assert.equal(7, terminal.getCursorRow());
+  assert.equal(8, terminal.getCursorColumn());
   terminal.saveCursorAndState();
 
   // Switch back to the primary scren.
   terminal.setAlternateMode(false);
   // Cursor state should not be changed.
-  result.assertEQ(7, terminal.getCursorRow());
-  result.assertEQ(8, terminal.getCursorColumn());
-  result.assertEQ('G2', vt.GL);
-  result.assertEQ('G3', vt.GR);
+  assert.equal(7, terminal.getCursorRow());
+  assert.equal(8, terminal.getCursorColumn());
+  assert.equal('G2', vt.GL);
+  assert.equal('G3', vt.GR);
   // This should be the primary cursor state we set up earlier.
   terminal.restoreCursorAndState();
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(4, terminal.getCursorColumn());
-  result.assertEQ('G1', vt.GL);
-  result.assertEQ('G2', vt.GR);
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(4, terminal.getCursorColumn());
+  assert.equal('G1', vt.GL);
+  assert.equal('G2', vt.GR);
 
   // Finally back to the alternate scren.
   terminal.setAlternateMode(true);
   // Cursor state should not be changed.
-  result.assertEQ(3, terminal.getCursorRow());
-  result.assertEQ(4, terminal.getCursorColumn());
-  result.assertEQ('G1', vt.GL);
-  result.assertEQ('G2', vt.GR);
+  assert.equal(3, terminal.getCursorRow());
+  assert.equal(4, terminal.getCursorColumn());
+  assert.equal('G1', vt.GL);
+  assert.equal('G2', vt.GR);
   // This should be the alternate cursor state we set up earlier.
   terminal.restoreCursorAndState();
-  result.assertEQ(7, terminal.getCursorRow());
-  result.assertEQ(8, terminal.getCursorColumn());
-  result.assertEQ('G2', vt.GL);
-  result.assertEQ('G3', vt.GR);
+  assert.equal(7, terminal.getCursorRow());
+  assert.equal(8, terminal.getCursorColumn());
+  assert.equal('G2', vt.GL);
+  assert.equal('G3', vt.GR);
 
   result.pass();
 });
@@ -452,7 +452,7 @@ hterm.Terminal.Tests.addTest('display-img-disabled', function(result, cx) {
 
   this.terminal.displayImage({uri: ''});
   const text = this.terminal.getRowsText(0, 1);
-  result.assertEQ('Inline Images Disabled', text);
+  assert.equal('Inline Images Disabled', text);
 
   result.pass();
 });
@@ -466,8 +466,8 @@ hterm.Terminal.Tests.addTest('display-img-prompt', function(result, cx) {
   // Search for the block & allow buttons.
   this.terminal.displayImage({uri: ''});
   const text = this.terminal.getRowsText(0, 1);
-  result.assert(text.toLowerCase().includes('block'));
-  result.assert(text.toLowerCase().includes('allow'));
+  assert.include(text.toLowerCase(), 'block');
+  assert.include(text.toLowerCase(), 'allow');
 
   result.pass();
 });
@@ -480,13 +480,13 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
 
   // Callback when loading finishes.
   const onLoad = () => {
-    result.assertEQ(1, this.terminal.getCursorRow());
+    assert.equal(1, this.terminal.getCursorRow());
     const row = this.terminal.getRowNode(0);
     const container = row.childNodes[1];
     const img = container.childNodes[0];
 
-    result.assertEQ('center', container.style.textAlign);
-    result.assertEQ(2, img.clientHeight);
+    assert.equal('center', container.style.textAlign);
+    assert.equal(2, img.clientHeight);
 
     result.pass();
   };
@@ -497,7 +497,7 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
     inline: true,
     align: 'center',
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
-  }, onLoad, (e) => result.fail(e));
+  }, onLoad, assert.fail);
 
   result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
@@ -510,19 +510,19 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
 
   // Callback when loading finishes.
   const onLoad = () => {
-    result.assertEQ(4, this.terminal.getCursorRow());
+    assert.equal(4, this.terminal.getCursorRow());
     const row = this.terminal.getRowNode(3);
     const container = row.childNodes[1];
     const img = container.childNodes[0];
 
     // The image should be 4 rows tall.
-    result.assert(img.clientHeight ==
-                  this.terminal.scrollPort_.characterSize.height * 4);
+    assert.equal(img.clientHeight,
+                 this.terminal.scrollPort_.characterSize.height * 4);
 
     // Do a range check for the percentage width.
     const bodyWidth = this.terminal.document_.body.clientWidth;
-    result.assert(img.clientWidth > bodyWidth * 0.70);
-    result.assert(img.clientWidth < bodyWidth * 0.80);
+    assert.isAbove(img.clientWidth, bodyWidth * 0.70);
+    assert.isBelow(img.clientWidth, bodyWidth * 0.80);
 
     result.pass();
   };
@@ -533,7 +533,7 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
     width: '75%',
     inline: true,
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
-  }, onLoad, (e) => result.fail(e));
+  }, onLoad, assert.fail);
 
   result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
@@ -547,15 +547,15 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
   // Callback when loading finishes.
   const onLoad = () => {
     const rowNum = this.terminal.screen_.getHeight() - 1;
-    result.assertEQ(rowNum, this.terminal.getCursorRow());
+    assert.equal(rowNum, this.terminal.getCursorRow());
     const row = this.terminal.getRowNode(rowNum);
     const container = row.childNodes[1];
     const img = container.childNodes[0];
 
     // The image should take up the whole screen, but not more.
     const body = this.terminal.document_.body;
-    result.assertEQ(img.clientHeight, body.clientHeight);
-    result.assertEQ(img.clientWidth, body.clientWidth);
+    assert.equal(img.clientHeight, body.clientHeight);
+    assert.equal(img.clientWidth, body.clientWidth);
 
     result.pass();
   };
@@ -566,7 +566,7 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
     width: '1000',
     inline: true,
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
-  }, onLoad, (e) => result.fail(e));
+  }, onLoad, assert.fail);
 
   result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
 });
@@ -580,7 +580,7 @@ hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
   // Callback when loading finishes (i.e. failure triggers).
   const onError = () => {
     // The cursor should not have advanced.
-    result.assertEQ(0, this.terminal.getCursorRow());
+    assert.equal(0, this.terminal.getCursorRow());
     result.pass();
   };
 
@@ -588,7 +588,7 @@ hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
   this.terminal.displayImage({
     inline: true,
     uri: 'data:application/octet-stream;base64,asdf',
-  }, () => result.fail('image loading should have failed'), () => {
+  }, () => assert.fail('image loading should have failed'), () => {
      // We can't seem to run directly from the onError as JS doesn't like to
      // throw exceptions in there that our framework catches.
      // TODO(vapier): Should figure this out.
@@ -607,15 +607,15 @@ hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
 hterm.Terminal.Tests.addTest('text-blink', function(result, cx) {
   // Default blink state is enabled.
   this.terminal.setTextBlink();
-  result.assert('0' != this.terminal.getCssVar('blink-node-duration'));
+  assert.notEqual('0', this.terminal.getCssVar('blink-node-duration'));
 
   // Explicitly turn it off.
   this.terminal.setTextBlink(false);
-  result.assertEQ('0', this.terminal.getCssVar('blink-node-duration'));
+  assert.equal('0', this.terminal.getCssVar('blink-node-duration'));
 
   // Explicitly turn it back on.
   this.terminal.setTextBlink(true);
-  result.assert('0' != this.terminal.getCssVar('blink-node-duration'));
+  assert.notEqual('0', this.terminal.getCssVar('blink-node-duration'));
 
   result.pass();
 });
@@ -638,33 +638,33 @@ hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys', function(result, cx) {
   // Send a wheel event w/no delta and check the report.
   e = MockTerminalMouseEvent('wheel');
   terminal.onMouse_(e);
-  result.assertEQ('', resultString);
+  assert.equal('', resultString);
 
   // Send a wheel up event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaY: -1, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ('\x1bOA', resultString);
+  assert.equal('\x1bOA', resultString);
 
   // Send a wheel down event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaY: 1, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ('\x1bOB', resultString);
+  assert.equal('\x1bOB', resultString);
 
   // Send a wheel left event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaX: -1, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ('\x1bOD', resultString);
+  assert.equal('\x1bOD', resultString);
 
   // Send a wheel right event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaX: 1, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ('\x1bOC', resultString);
+  assert.equal('\x1bOC', resultString);
 
   // Send multiple combo reports.  The order doesn't matter, but reflects
   // how the code internally works atm.
   e = MockTerminalMouseEvent('wheel', {deltaY: 2, deltaX: 2, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ('\x1bOB\x1bOB\x1bOC\x1bOC', resultString);
+  assert.equal('\x1bOB\x1bOB\x1bOC\x1bOC', resultString);
 
   result.pass();
 });
@@ -687,17 +687,17 @@ hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys-primary', function(result, 
   // Send a wheel event w/no delta and check the report.
   e = MockTerminalMouseEvent('wheel');
   terminal.onMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   // Send a wheel up event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaY: -1, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   // Send a wheel down event and check the report.
   e = MockTerminalMouseEvent('wheel', {deltaY: 1, deltaMode: 1});
   terminal.onMouse_(e);
-  result.assertEQ(undefined, resultString);
+  assert.isUndefined(resultString);
 
   result.pass();
 });
