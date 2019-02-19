@@ -2000,7 +2000,7 @@ hterm.VT.OSC['1337'] = function(parseState) {
     const queued = parseState.peekRemainingBuf();
     parseState.advance(queued.length);
     this.terminal.displayImage(options);
-    io.writeUTF8(queued);
+    io.print(queued);
   } else
     this.terminal.displayImage(options);
 };
