@@ -11,10 +11,8 @@
 hterm.Terminal.Tests = new lib.TestManager.Suite('hterm.Terminal.Tests');
 
 hterm.Terminal.Tests.prototype.setup = function(cx) {
-  this.setDefaults(cx,
-      { visibleColumnCount: 80,
-        visibleRowCount: 24,
-      });
+  this.visibleColumnCount = 80;
+  this.visibleRowCount = 24;
 
   // This is a 16px x 8px gif.
   this.imageBase64 = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1' +

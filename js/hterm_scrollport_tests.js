@@ -26,11 +26,9 @@ MockAccessibilityReader.prototype.assertiveAnnounce = function(str) {
 hterm.ScrollPort.Tests = new lib.TestManager.Suite('hterm.ScrollPort.Tests');
 
 hterm.ScrollPort.Tests.prototype.setup = function(cx) {
-  this.setDefaults(cx,
-      { visibleColumnCount: 80,
-        visibleRowCount: 25,
-        totalRowCount: 10000
-      });
+  this.visibleColumnCount = 80;
+  this.visibleRowCount = 25;
+  this.totalRowCount = 10000;
 
   var document = cx.window.document;
 

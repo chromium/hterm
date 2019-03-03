@@ -15,10 +15,8 @@
 hterm.VT.Tests = new lib.TestManager.Suite('hterm.VT.Tests');
 
 hterm.VT.Tests.prototype.setup = function(cx) {
-  this.setDefaults(cx,
-      { visibleColumnCount: 15,
-        visibleRowCount: 6,
-      });
+  this.visibleColumnCount = 15;
+  this.visibleRowCount = 6;
 };
 
 /**
