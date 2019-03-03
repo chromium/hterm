@@ -73,10 +73,20 @@ hterm.notify.Tests.addTest('notification-fields', function(result, cx) {
 hterm.notify.Tests.addTest('copy-execCommand', function(result, cx) {
   const doc = cx.window.document;
 
+  // Mock out newer clipboard API to make sure we don't use it.
+  let oldClipboardWrite;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    oldClipboardWrite = navigator.clipboard.writeText;
+    navigator.clipboard.writeText = undefined;
+  }
+
   // Mock this out since we can't document.execCommand from the test harness.
   const oldExec = doc.execCommand;
   doc.execCommand = (cmd) => {
     doc.execCommand = oldExec;
+    if (oldClipboardWrite) {
+      navigator.clipboard.writeText = oldClipboardWrite;
+    }
 
     assert.equal('copy', cmd);
 
