@@ -28,8 +28,6 @@ hterm.AccessibilityReader.Tests.prototype.setup = function(cx) {
 hterm.AccessibilityReader.Tests.prototype.preamble = function(result, cx) {
   const document = cx.window.document;
 
-  document.body.innerHTML = '';
-
   const div = this.div = document.createElement('div');
   div.style.position = 'absolute';
   div.style.height = '100%';
@@ -41,6 +39,13 @@ hterm.AccessibilityReader.Tests.prototype.preamble = function(result, cx) {
   this.assertiveLiveElement = this.liveElement.nextSibling;
 
   document.body.appendChild(div);
+};
+
+/**
+ * Clean up the hterm.AccessibilityReader object.
+ */
+hterm.AccessibilityReader.Tests.prototype.postamble = function(result, cx) {
+  window.document.body.removeChild(this.div);
 };
 
 /**

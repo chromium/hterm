@@ -16,7 +16,6 @@ hterm.Screen.Tests = new lib.TestManager.Suite('hterm.Screen.Tests');
  * Called before each test case in this suite.
  */
 hterm.Screen.Tests.prototype.preamble = function(result, cx) {
-  cx.window.document.body.innerHTML = '';
   this.screen = new hterm.Screen();
   this.screen.setColumnCount(80);
 };
@@ -634,6 +633,8 @@ hterm.Screen.Tests.addTest('expand-selection', function(result, cx) {
   this.screen.expandSelectionForUrl(selection);
 
   assert.equal('https://www.google.com/', selection.toString());
+
+  document.body.removeChild(row);
 
   result.pass();
 });

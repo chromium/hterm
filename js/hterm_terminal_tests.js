@@ -31,8 +31,6 @@ hterm.Terminal.Tests.prototype.setup = function(cx) {
 hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
   var document = cx.window.document;
 
-  document.body.innerHTML = '';
-
   var div = this.div = document.createElement('div');
   div.style.position = 'absolute';
   div.style.height = '100%';
@@ -56,6 +54,8 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
  */
 hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
   MockNotification.stop();
+
+  document.body.removeChild(this.div);
 };
 
 /**

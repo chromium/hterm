@@ -28,8 +28,6 @@ hterm.VT.Tests.prototype.setup = function(cx) {
 hterm.VT.Tests.prototype.preamble = function(result, cx) {
   var document = cx.window.document;
 
-  document.body.innerHTML = '';
-
   var div = document.createElement('div');
   div.style.position = 'absolute';
   div.style.height = '100%';
@@ -53,6 +51,7 @@ hterm.VT.Tests.prototype.preamble = function(result, cx) {
  * Called after each test case in this suite.
  */
 hterm.VT.Tests.prototype.postamble = function(result, cx) {
+  document.body.removeChild(this.div);
   this.terminal.setCursorBlink(false);
 
   MockNotification.stop();

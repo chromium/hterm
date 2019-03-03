@@ -75,8 +75,6 @@ hterm.VT.CannedTests.prototype.setup = function(cx) {
 hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
   var document = cx.window.document;
 
-  document.body.innerHTML = '';
-
   var div = document.createElement('div');
   div.style.position = 'absolute';
   document.body.appendChild(div);
@@ -106,6 +104,8 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
  */
 hterm.VT.CannedTests.prototype.postamble = function(result, cx) {
   this.terminal.setCursorBlink(false);
+
+  document.body.removeChild(this.div);
 };
 
 /**

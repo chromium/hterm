@@ -601,9 +601,7 @@ hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
 hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
     var document = cx.window.document;
 
-    document.body.innerHTML = '';
-
-    this.rowProvider = new MockRowProvider(document, this.totalRowCount);
+    const rowProvider = new MockRowProvider(document, this.totalRowCount);
 
     var div = document.createElement('div');
     div.style.position = 'absolute';
@@ -611,18 +609,16 @@ hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
     div.style.width = '100%';
     document.body.appendChild(div);
 
-    this.scrollPort = new hterm.ScrollPort(this.rowProvider,
-                                           this.fontSize, this.lineHeight);
-    this.scrollPort.decorate(div);
-
-    cx.window.scrollPort = this.scrollPort;
+    const scrollPort = new hterm.ScrollPort(rowProvider);
+    scrollPort.decorate(div);
 
     var divSize = hterm.getClientSize(div);
 
     assert.isAbove(divSize.height, 0);
     assert.isAbove(divSize.width, 0);
-    assert.equal(divSize.height,
-                 hterm.getClientHeight(this.scrollPort.iframe_));
+    assert.equal(divSize.height, hterm.getClientHeight(scrollPort.iframe_));
+
+    document.body.removeChild(div);
 
     result.pass();
   });
