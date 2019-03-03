@@ -8,12 +8,12 @@
  * @fileoverview Preference manager tests.
  */
 
-hterm.PreferenceManager.Tests = new lib.TestManager.Suite('hterm.PreferenceManager.Tests');
+describe('hterm_preference_manager_tests.js', () => {
 
 /**
  * Make sure hterm translations are kept in sync with nassh.
  */
-hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx) {
+it('pref-messages-sync', () => {
   const toMsgId = (id) => id.replace(/-/g, '_').toUpperCase();
   const fromMsgId = (id) => id.replace(/_/g, '-').toLowerCase();
   const helpIdToMsgId = (id) => `PREF_${toMsgId(id)}`;
@@ -75,6 +75,6 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
     const nasshMsg = hterm.msg(msgId);
     assert.equal(htermMsg, nasshMsg, msgId);
   });
+});
 
-  result.pass();
 });

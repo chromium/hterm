@@ -8,9 +8,9 @@
  * @fileoverview hterm.Terminal unit tests.
  */
 
-hterm.Terminal.Tests = new lib.TestManager.Suite('hterm.Terminal.Tests');
+describe('hterm_terminal_tests.js', () => {
 
-hterm.Terminal.Tests.prototype.setup = function(cx) {
+before(function() {
   this.visibleColumnCount = 80;
   this.visibleRowCount = 24;
 
@@ -20,7 +20,7 @@ hterm.Terminal.Tests.prototype.setup = function(cx) {
   this.imageArrayBuffer = lib.codec.stringToCodeUnitArray(
       this.imageBase64, Uint8Array).buffer;
   this.imageBlob = new Blob([this.imageArrayBuffer]);
-};
+});
 
 /**
  * Clear out the current document and create a new hterm.Terminal object for
@@ -28,8 +28,8 @@ hterm.Terminal.Tests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.Terminal.Tests.prototype.preamble = function(result, cx, done) {
-  var document = cx.window.document;
+beforeEach(function(done) {
+  const document = window.document;
 
   var div = this.div = document.createElement('div');
   div.style.position = 'absolute';
@@ -38,7 +38,7 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx, done) {
 
   document.body.appendChild(div);
 
-  cx.window.terminal = this.terminal = new hterm.Terminal();
+  this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
   this.terminal.setHeight(this.visibleRowCount);
@@ -49,18 +49,17 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx, done) {
   };
 
   MockNotification.start();
-};
+});
 
 /**
  * Restore any mocked out objects.
  *
  * Called after each test case in this suite.
  */
-hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
+afterEach(function() {
   MockNotification.stop();
-
   document.body.removeChild(this.div);
-};
+});
 
 /**
  * How long to wait for image display tests to timeout.
@@ -69,13 +68,13 @@ hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
  * running in the background (e.g. the window/tab isn't focused), then Chrome
  * will deprioritize it causing JS/image loading/etc... to take longer.
  */
-hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT = 5000;
+const DISPLAY_IMAGE_TIMEOUT = 5000;
 
 /**
  * Checks that the dimensions of the scrollport match the dimensions of the
  * values that the Terminal was constructed with.
  */
-hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
+it('dimensions', function() {
     var divSize = hterm.getClientSize(this.div);
     var scrollPort = this.terminal.scrollPort_;
     var innerWidth = Math.round(
@@ -93,24 +92,19 @@ hterm.Terminal.Tests.addTest('dimensions', function(result, cx) {
 
     assert.equal(this.terminal.screen_.getWidth(), this.visibleColumnCount);
     assert.equal(this.terminal.screen_.getHeight(), this.visibleRowCount);
-
-    result.pass();
   });
 
 /**
  * Fill the screen with 'X' characters one character at a time, in a way
  * that should stress the cursor positioning code.
  */
-hterm.Terminal.Tests.addTest('plaintext-stress-cursor-ltr',
-                             function(result, cx) {
+it('plaintext-stress-cursor-ltr', function() {
     for (var col = 0; col < this.visibleColumnCount; col++) {
       for (var row = 0; row < this.visibleRowCount; row++) {
         this.terminal.screen_.setCursorPosition(row, col);
         this.terminal.screen_.insertString('X');
       }
     }
-
-    result.pass();
   });
 
 /**
@@ -118,16 +112,13 @@ hterm.Terminal.Tests.addTest('plaintext-stress-cursor-ltr',
  * that should stress the cursor positioning code and the overwriteString()
  * code.
  */
-hterm.Terminal.Tests.addTest('plaintext-stress-cursor-rtl',
-                             function(result, cx) {
+it('plaintext-stress-cursor-rtl', function() {
     for (var col = this.visibleColumnCount - 1; col >= 0; col--) {
       for (var row = 0; row < this.visibleRowCount; row++) {
         this.terminal.screen_.setCursorPosition(row, col);
         this.terminal.screen_.overwriteString('X');
       }
     }
-
-    result.pass();
   });
 
 /**
@@ -136,8 +127,7 @@ hterm.Terminal.Tests.addTest('plaintext-stress-cursor-rtl',
  * This test doesn't actually assert anything, but the timing data in the test
  * log is useful.
  */
-hterm.Terminal.Tests.addTest('plaintext-stress-insert',
-                             function(result, cx) {
+it('plaintext-stress-insert', function(done) {
     var chunkSize = 1000;
     var testCount = 10;
     var self = this;
@@ -151,9 +141,8 @@ hterm.Terminal.Tests.addTest('plaintext-stress-insert',
       }
 
       if (count + 1 >= testCount) {
-        result.pass();
+        done();
       } else {
-        result.requestTime(200);
         setTimeout(test, 0, count + 1);
       }
     }
@@ -165,8 +154,7 @@ hterm.Terminal.Tests.addTest('plaintext-stress-insert',
  * Test that accounting of desktop notifications works, and that they are
  * closed under the right circumstances.
  */
-hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
-                             function(result, cx) {
+it('desktop-notification-bell-test', function() {
     this.terminal.desktopNotificationBell_ = true;
 
     // If we have focus, then no notifications should show.
@@ -206,14 +194,12 @@ hterm.Terminal.Tests.addTest('desktop-notification-bell-test',
     this.terminal.bellNotificationList_[0].onclick(null);
     assert.equal(0, this.terminal.bellNotificationList_.length);
     assert.equal(0, Notification.count);
-
-    result.pass();
   });
 
 /**
  * Verify showing an overlay will also announce the message.
  */
-hterm.Terminal.Tests.addTest('show-overlay-announce', function(result, cx) {
+it('show-overlay-announce', function() {
   const liveElement = this.terminal.accessibilityReader_.assertiveLiveElement_;
 
   this.terminal.showOverlay('test');
@@ -221,14 +207,12 @@ hterm.Terminal.Tests.addTest('show-overlay-announce', function(result, cx) {
 
   this.terminal.showOverlay('hello');
   assert.equal('hello', liveElement.getAttribute('aria-label'));
-
-  result.pass();
 });
 
 /**
  * Selection should be sync'd to the cursor when the selection is collapsed.
  */
-hterm.Terminal.Tests.addTest('sync-collapsed-selection', function(result, cx) {
+it('sync-collapsed-selection', function(done) {
   this.terminal.print('foo');
   this.terminal.newLine();
   this.terminal.print('bar');
@@ -238,21 +222,19 @@ hterm.Terminal.Tests.addTest('sync-collapsed-selection', function(result, cx) {
     const selection = this.terminal.document_.getSelection();
     assert.equal('bar', selection.anchorNode.textContent);
     assert.equal(3, selection.anchorOffset);
-    result.pass();
+    done();
   });
-
-  result.requestTime(500);
 });
 
 /**
  * Selection should not be sync'd to the cursor when the selection is not
  * collapsed. This avoids clearing selection that has been set by the user.
  */
-hterm.Terminal.Tests.addTest('sync-uncollapsed-selection', function(result, cx) {
+it('sync-uncollapsed-selection', function(done) {
   this.terminal.print('foo');
   this.terminal.newLine();
   // Select the text 'foo'
-  const firstRow = terminal.getRowNode(0).firstChild;
+  const firstRow = this.terminal.getRowNode(0).firstChild;
   this.terminal.document_.getSelection().setBaseAndExtent(
       firstRow, 0, firstRow, 3);
   this.terminal.print('bar');
@@ -264,25 +246,22 @@ hterm.Terminal.Tests.addTest('sync-uncollapsed-selection', function(result, cx) 
     assert.equal(0, selection.anchorOffset);
     assert.equal('foo', selection.focusNode.textContent);
     assert.equal(3, selection.focusOffset);
-    result.pass();
+    done();
   });
-
-  result.requestTime(500);
 });
 
 /**
  * With accessibility enabled, selection should be sync'd to the cursor even
  * when the selection is not collapsed, as long as there is a user gesture.
  */
-hterm.Terminal.Tests.addTest('sync-uncollapsed-selection-a11y',
-    function(result, cx) {
+it('sync-uncollapsed-selection-a11y', function(done) {
   this.terminal.setAccessibilityEnabled(true);
   this.terminal.accessibilityReader_.hasUserGesture = true;
 
   this.terminal.print('foo');
   this.terminal.newLine();
   // Select the text 'foo'
-  const firstRow = terminal.getRowNode(0).firstChild;
+  const firstRow = this.terminal.getRowNode(0).firstChild;
   this.terminal.document_.getSelection().setBaseAndExtent(
       firstRow, 0, firstRow, 3);
   this.terminal.print('bar');
@@ -292,17 +271,15 @@ hterm.Terminal.Tests.addTest('sync-uncollapsed-selection-a11y',
     const selection = this.terminal.document_.getSelection();
     assert.equal('bar', selection.anchorNode.textContent);
     assert.equal(3, selection.anchorOffset);
-    result.pass();
+    done();
   });
-
-  result.requestTime(500);
 });
 
 /**
  * Ensure that focussing the scrollPort will cause the selection to sync to the
  * caret.
  */
-hterm.Terminal.Tests.addTest('scrollport-focus-cursor', function(result, cx) {
+it('scrollport-focus-cursor', function(done) {
   this.terminal.print('foo');
   this.terminal.newLine();
   this.terminal.print('bar');
@@ -310,24 +287,23 @@ hterm.Terminal.Tests.addTest('scrollport-focus-cursor', function(result, cx) {
   // Wait for selection to sync to the caret.
   setTimeout(() => {
     // Manually change the selection and trigger focus.
-    this.terminal.document_.getSelection().collapse(terminal.getRowNode(0), 0);
+    this.terminal.document_.getSelection().collapse(
+        this.terminal.getRowNode(0), 0);
     this.terminal.scrollPort_.focus();
     setTimeout(() => {
       const selection = this.terminal.document_.getSelection();
       assert.equal('bar', selection.anchorNode.textContent);
       assert.equal(3, selection.anchorOffset);
-      result.pass();
+      done();
     });
   });
-
-  result.requestTime(1000);
 });
 
 /**
  * Test that focus sequences are passed as expected when focus reporting is
  * turned on, and nothing is passed when reporting is off.
  */
-hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
+it('focus-reporting', function() {
   var resultString = '';
   this.terminal.io.sendString = (str) => resultString = str;
 
@@ -345,14 +321,12 @@ hterm.Terminal.Tests.addTest('focus-reporting', function(result, cx) {
   assert.equal(resultString, '');
   this.terminal.onFocusChange_(true);
   assert.equal(resultString, '');
-
-  result.pass();
 });
 
 /**
  * Verify saved cursors have per-screen state.
  */
-hterm.Terminal.Tests.addTest('per-screen-cursor-state', function(result, cx) {
+it('per-screen-cursor-state', function() {
   const terminal = this.terminal;
   const vt = terminal.vt;
 
@@ -420,27 +394,23 @@ hterm.Terminal.Tests.addTest('per-screen-cursor-state', function(result, cx) {
   assert.equal(8, terminal.getCursorColumn());
   assert.equal('G2', vt.GL);
   assert.equal('G3', vt.GR);
-
-  result.pass();
 });
 
 /**
  * Check image display handling when disabled.
  */
-hterm.Terminal.Tests.addTest('display-img-disabled', function(result, cx) {
+it('display-img-disabled', function() {
   this.terminal.allowImagesInline = false;
 
   this.terminal.displayImage({uri: ''});
   const text = this.terminal.getRowsText(0, 1);
   assert.equal('Inline Images Disabled', text);
-
-  result.pass();
 });
 
 /**
  * Check image display handling when not yet decided.
  */
-hterm.Terminal.Tests.addTest('display-img-prompt', function(result, cx) {
+it('display-img-prompt', function() {
   this.terminal.allowImagesInline = null;
 
   // Search for the block & allow buttons.
@@ -448,14 +418,12 @@ hterm.Terminal.Tests.addTest('display-img-prompt', function(result, cx) {
   const text = this.terminal.getRowsText(0, 1);
   assert.include(text.toLowerCase(), 'block');
   assert.include(text.toLowerCase(), 'allow');
-
-  result.pass();
 });
 
 /**
  * Check simple image display handling.
  */
-hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
+it('display-img-normal', function(done) {
   this.terminal.allowImagesInline = true;
 
   // Callback when loading finishes.
@@ -468,7 +436,7 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
     assert.equal('center', container.style.textAlign);
     assert.equal(2, img.clientHeight);
 
-    result.pass();
+    done();
   };
 
   // Display an image that only takes up one row.
@@ -478,14 +446,12 @@ hterm.Terminal.Tests.addTest('display-img-normal', function(result, cx) {
     align: 'center',
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
   }, onLoad, assert.fail);
-
-  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
-});
+}).timeout(DISPLAY_IMAGE_TIMEOUT);
 
 /**
  * Check handling of image dimensions.
  */
-hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
+it('display-img-dimensions', function(done) {
   this.terminal.allowImagesInline = true;
 
   // Callback when loading finishes.
@@ -504,7 +470,7 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
     assert.isAbove(img.clientWidth, bodyWidth * 0.70);
     assert.isBelow(img.clientWidth, bodyWidth * 0.80);
 
-    result.pass();
+    done();
   };
 
   // Display an image that only takes up one row.
@@ -514,14 +480,12 @@ hterm.Terminal.Tests.addTest('display-img-dimensions', function(result, cx) {
     inline: true,
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
   }, onLoad, assert.fail);
-
-  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
-});
+}).timeout(DISPLAY_IMAGE_TIMEOUT);
 
 /**
  * Check handling of max image dimensions.
  */
-hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) {
+it('display-img-max-dimensions', function(done) {
   this.terminal.allowImagesInline = true;
 
   // Callback when loading finishes.
@@ -537,7 +501,7 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
     assert.equal(img.clientHeight, body.clientHeight);
     assert.equal(img.clientWidth, body.clientWidth);
 
-    result.pass();
+    done();
   };
 
   // Display an image that only takes up one row.
@@ -547,21 +511,19 @@ hterm.Terminal.Tests.addTest('display-img-max-dimensions', function(result, cx) 
     inline: true,
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
   }, onLoad, assert.fail);
-
-  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
-});
+}).timeout(DISPLAY_IMAGE_TIMEOUT);
 
 /**
  * Check loading of invalid images doesn't wedge the terminal.
  */
-hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
+it('display-img-invalid', function(done) {
   this.terminal.allowImagesInline = true;
 
   // Callback when loading finishes (i.e. failure triggers).
   const onError = () => {
     // The cursor should not have advanced.
     assert.equal(0, this.terminal.getCursorRow());
-    result.pass();
+    done();
   };
 
   // The data is invalid image content.
@@ -574,9 +536,7 @@ hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
      // TODO(vapier): Should figure this out.
      setTimeout(onError, 0);
   });
-
-  result.requestTime(hterm.Terminal.Tests.DISPLAY_IMAGE_TIMEOUT);
-});
+}).timeout(DISPLAY_IMAGE_TIMEOUT);
 
 /**
  * Verify turning text blink on/off works.
@@ -584,7 +544,7 @@ hterm.Terminal.Tests.addTest('display-img-invalid', function(result, cx) {
  * This test isn't great.  Since we use CSS animations for everything, we
  * assume that part is working, so we just check the stored timing values.
  */
-hterm.Terminal.Tests.addTest('text-blink', function(result, cx) {
+it('text-blink', function() {
   // Default blink state is enabled.
   this.terminal.setTextBlink();
   assert.notEqual('0', this.terminal.getCssVar('blink-node-duration'));
@@ -596,14 +556,12 @@ hterm.Terminal.Tests.addTest('text-blink', function(result, cx) {
   // Explicitly turn it back on.
   this.terminal.setTextBlink(true);
   assert.notEqual('0', this.terminal.getCssVar('blink-node-duration'));
-
-  result.pass();
 });
 
 /**
  * Check mouse wheel emulation of arrow keys.
  */
-hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys', function(result, cx) {
+it('mouse-wheel-arrow-keys', function() {
   const terminal = this.terminal;
   let e;
 
@@ -645,14 +603,12 @@ hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys', function(result, cx) {
   e = MockTerminalMouseEvent('wheel', {deltaY: 2, deltaX: 2, deltaMode: 1});
   terminal.onMouse_(e);
   assert.equal('\x1bOB\x1bOB\x1bOC\x1bOC', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse wheel emulation of arrow keys are disabled on primary screen.
  */
-hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys-primary', function(result, cx) {
+it('mouse-wheel-arrow-keys-primary', function() {
   const terminal = this.terminal;
   let e;
 
@@ -678,6 +634,6 @@ hterm.Terminal.Tests.addTest('mouse-wheel-arrow-keys-primary', function(result, 
   e = MockTerminalMouseEvent('wheel', {deltaY: 1, deltaMode: 1});
   terminal.onMouse_(e);
   assert.isUndefined(resultString);
+});
 
-  result.pass();
 });

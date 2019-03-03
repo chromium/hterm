@@ -7,26 +7,25 @@
 /**
  * @fileoverview hterm.ContextMenu unit tests.
  */
-hterm.ContextMenu.Tests = new lib.TestManager.Suite('hterm.ContextMenu.Tests');
+
+describe('hterm_contextmenu_tests.js', () => {
 
 /**
  * Verify we can show/hide an empty menu.
  */
-hterm.ContextMenu.Tests.addTest('contextmenu-stub', function(result, cx) {
+it('contextmenu-stub', () => {
   const menu = new hterm.ContextMenu();
 
   // Show/hide this stub menu.  It should be fine.
   menu.show();
   menu.hide();
-
-  result.pass();
 });
 
 /**
  * Verify we can show/hide a simple menu.
  */
-hterm.ContextMenu.Tests.addTest('contextmenu-simple', function(result, cx) {
-  const document = cx.window.document;
+it('contextmenu-simple', () => {
+  const document = window.document;
   const menu = new hterm.ContextMenu();
   menu.setDocument(document);
 
@@ -36,15 +35,13 @@ hterm.ContextMenu.Tests.addTest('contextmenu-simple', function(result, cx) {
   // Show/hide this menu.
   menu.show({clientX: 0, clientY: 0});
   menu.hide();
-
-  result.pass();
 });
 
 /**
  * Check separator handling.
  */
-hterm.ContextMenu.Tests.addTest('contextmenu-separator', function(result, cx) {
-  const document = cx.window.document;
+it('contextmenu-separator', () => {
+  const document = window.document;
   const menu = new hterm.ContextMenu();
   menu.setDocument(document);
 
@@ -57,6 +54,6 @@ hterm.ContextMenu.Tests.addTest('contextmenu-separator', function(result, cx) {
   // Show/hide this menu.
   menu.show({clientX: 0, clientY: 0});
   menu.hide();
+});
 
-  result.pass();
 });

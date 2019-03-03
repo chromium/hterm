@@ -7,13 +7,13 @@
 /**
  * @fileoverview Unit tests for hterm.TextAttributes.
  */
-hterm.TextAttributes.Tests =
-    new lib.TestManager.Suite('hterm.TextAttributes.Tests');
+
+describe('hterm_text_attributes_tests.js', () => {
 
 /**
  * Make sure isDefault works sanely.
  */
-hterm.TextAttributes.Tests.addTest('isDefault', function(result, cx) {
+it('isDefault', () => {
   var tattrs = new hterm.TextAttributes();
 
   // We should be in the default state initially.
@@ -26,15 +26,13 @@ hterm.TextAttributes.Tests.addTest('isDefault', function(result, cx) {
   // But resetting it gets us back.
   tattrs.reset();
   assert.isTrue(tattrs.isDefault());
-
-  result.pass();
 });
 
 /**
  * Make sure createContainer works sanely.
  */
-hterm.TextAttributes.Tests.addTest('createContainer', function(result, cx) {
-  var tattrs = new hterm.TextAttributes(cx.window.document);
+it('createContainer', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
   var node;
 
   // We don't check all the fields currently.  Not clear it's worth the effort.
@@ -54,15 +52,13 @@ hterm.TextAttributes.Tests.addTest('createContainer', function(result, cx) {
   assert.equal(Node.ELEMENT_NODE, node.nodeType);
   assert.isTrue(node.blinkNode);
   assert.isTrue(node.asciiNode);
-
-  result.pass();
 });
 
 /**
  * Make sure matchesContainer works correctly.
  */
-hterm.TextAttributes.Tests.addTest('matchesContainer', function(result, cx) {
-  var tattrs = new hterm.TextAttributes(cx.window.document);
+it('matchesContainer', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
   var node;
 
   // For plain string, this is just isDefault.
@@ -78,15 +74,13 @@ hterm.TextAttributes.Tests.addTest('matchesContainer', function(result, cx) {
   node = tattrs.createContainer('asdf');
   assert.equal(Node.ELEMENT_NODE, node.nodeType);
   assert.isTrue(tattrs.matchesContainer(node));
-
-  result.pass();
 });
 
 /**
  * Check combination of text decorations.
  */
-hterm.TextAttributes.Tests.addTest('decoration-combos', function(result, cx) {
-  const tattrs = new hterm.TextAttributes(cx.window.document);
+it('decoration-combos', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
   let node;
 
   // Underline.
@@ -123,15 +117,13 @@ hterm.TextAttributes.Tests.addTest('decoration-combos', function(result, cx) {
   node = tattrs.createContainer('asdf');
   assert.equal('underline line-through', node.style.textDecorationLine);
   assert.equal('double', node.style.textDecorationStyle);
-
-  result.pass();
 });
 
 /**
  * Underline colors.
  */
-hterm.TextAttributes.Tests.addTest('underline-colors', function(result, cx) {
-  const tattrs = new hterm.TextAttributes(cx.window.document);
+it('underline-colors', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
   let node;
 
   tattrs.underline = 'solid';
@@ -157,15 +149,13 @@ hterm.TextAttributes.Tests.addTest('underline-colors', function(result, cx) {
   assert.equal('underline', node.style.textDecorationLine);
   assert.equal('solid', node.style.textDecorationStyle);
   assert.equal('rgb(1, 2, 3)', node.style.textDecorationColor);
-
-  result.pass();
 });
 
 /**
  * Inverse color processing.
  */
-hterm.TextAttributes.Tests.addTest('inverse-colors', function(result, cx) {
-  const tattrs = new hterm.TextAttributes(cx.window.document);
+it('inverse-colors', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
   let node;
 
   // Set an attribute to force a container (rather than a text node),
@@ -215,15 +205,13 @@ hterm.TextAttributes.Tests.addTest('inverse-colors', function(result, cx) {
   node = tattrs.createContainer('asdf');
   assert.equal(tattrs.backgroundSource, node.style.color);
   assert.equal(tattrs.foregroundSource, node.style.backgroundColor);
-
-  result.pass();
 });
 
 /**
  * Handling of invisible tags.
  */
-hterm.TextAttributes.Tests.addTest('invisible', function(result, cx) {
-  const tattrs = new hterm.TextAttributes(cx.window.document);
+it('invisible', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
   let node;
 
   // Set an attribute to force a container (rather than a text node),
@@ -241,15 +229,13 @@ hterm.TextAttributes.Tests.addTest('invisible', function(result, cx) {
   node = tattrs.createContainer('asdf');
   assert.equal(tattrs.backgroundSource, node.style.color);
   assert.equal(tattrs.backgroundSource, node.style.backgroundColor);
-
-  result.pass();
 });
 
 /**
  * Check color palette reset.
  */
-hterm.TextAttributes.Tests.addTest('reset-color-palette', function(result, cx) {
-  const tattrs = new hterm.TextAttributes(cx.window.document);
+it('reset-color-palette', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
 
   // The color entries we'll test.
   const indices = [0, 7, 15, 31, 63, 127, 255];
@@ -268,15 +254,13 @@ hterm.TextAttributes.Tests.addTest('reset-color-palette', function(result, cx) {
   indices.forEach((index) => {
     assert.isTrue(tattrs.colorPalette[index] != custom);
   });
-
-  result.pass();
 });
 
 /**
  * Check individual color reset.
  */
-hterm.TextAttributes.Tests.addTest('reset-color', function(result, cx) {
-  const tattrs = new hterm.TextAttributes(cx.window.document);
+it('reset-color', () => {
+  const tattrs = new hterm.TextAttributes(window.document);
 
   // The color entries we'll test.
   const indices = [0, 7, 15, 31, 63, 127, 255];
@@ -303,11 +287,9 @@ hterm.TextAttributes.Tests.addTest('reset-color', function(result, cx) {
 
   // Shouldn't do anything.
   tattrs.resetColor('alskdjf');
-
-  result.pass();
 });
 
-hterm.TextAttributes.Tests.addTest('splitWidecharString-ascii', function(result, cx) {
+it('splitWidecharString-ascii', () => {
   var text = 'abcdefghijklmn';
 
   var actual = hterm.TextAttributes.splitWidecharString(text);
@@ -315,11 +297,9 @@ hterm.TextAttributes.Tests.addTest('splitWidecharString-ascii', function(result,
   assert.equal(actual[0].str, text,
                "The text doesn't have enough content.");
   assert.isTrue(!actual[0].wcNode, "The text shouldn't be wide.");
-
-  result.pass();
 });
 
-hterm.TextAttributes.Tests.addTest('splitWidecharString-wide', function(result, cx) {
+it('splitWidecharString-wide', () => {
   var text = 'abcd\u3041\u3042def\u3043ghi';
 
   var actual = hterm.TextAttributes.splitWidecharString(text);
@@ -342,11 +322,9 @@ hterm.TextAttributes.Tests.addTest('splitWidecharString-wide', function(result, 
   assert.equal(actual[5].str, 'ghi',
                'Failed to obtain the sixth segment');
   assert.isTrue(!actual[5].wcNode, "Sixth segment shouldn't be wide");
-
-  result.pass();
 });
 
-hterm.TextAttributes.Tests.addTest('splitWidecharString-surrogates', function(result, cx) {
+it('splitWidecharString-surrogates', () => {
   var text = 'abc\uD834\uDD00\uD842\uDD9D';
 
   var actual = hterm.TextAttributes.splitWidecharString(text);
@@ -358,16 +336,14 @@ hterm.TextAttributes.Tests.addTest('splitWidecharString-surrogates', function(re
                'The second segment should be a wide character built by ' +
                'a surrogate pair');
   assert.isTrue(actual[1].wcNode, 'The second segment should be wide');
-
-  result.pass();
 });
 
-hterm.TextAttributes.Tests.addTest('splitWidecharString-ccs', function(result, cx) {
+it('splitWidecharString-ccs', () => {
   var text = 'xA\u030Ax';
 
   var actual = hterm.TextAttributes.splitWidecharString(text);
   assert.equal(actual.length, 1, 'Failed to split combining sequences.');
   assert.equal(actual[0].str, text);
+});
 
-  result.pass();
 });

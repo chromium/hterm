@@ -8,7 +8,7 @@
  * @fileoverview hterm.Terminal.IO unit tests.
  */
 
-hterm.Terminal.IO.Tests = new lib.TestManager.Suite('hterm.Terminal.IO.Tests');
+describe('hterm_terminal_io_tests.js', () => {
 
 /**
  * Simple mock Terminal object for an IO object's needs.
@@ -45,15 +45,15 @@ MockTerminalForIO.prototype.interpret = function(str) {
  *
  * Called before each test case in this suite.
  */
-hterm.Terminal.IO.Tests.prototype.preamble = function(result, cx) {
+beforeEach(function() {
   this.mockTerm = new MockTerminalForIO();
   this.io = this.mockTerm.io.push();
-};
+});
 
 /**
  * Check print functionality.
  */
-hterm.Terminal.IO.Tests.addTest('print', function(result, cx) {
+it('print', function() {
   this.io.print('');
   assert.equal('', this.mockTerm.buffer);
 
@@ -65,14 +65,12 @@ hterm.Terminal.IO.Tests.addTest('print', function(result, cx) {
 
   this.io.print('bc');
   assert.equal('abc', this.mockTerm.buffer);
-
-  result.pass();
 });
 
 /**
  * Check println functionality.
  */
-hterm.Terminal.IO.Tests.addTest('println', function(result, cx) {
+it('println', function() {
   this.io.println('a');
   assert.equal('a\r\n', this.mockTerm.buffer);
 
@@ -81,14 +79,12 @@ hterm.Terminal.IO.Tests.addTest('println', function(result, cx) {
 
   this.io.println('');
   assert.equal('a\r\nbc\r\n', this.mockTerm.buffer);
-
-  result.pass();
 });
 
 /**
  * Verify pushing/popping works.
  */
-hterm.Terminal.IO.Tests.addTest('push-pop', function(result, cx) {
+it('push-pop', function() {
   const io1 = this.io.push();
   io1.print('Hello');
   assert.equal('Hello', this.mockTerm.buffer);
@@ -104,26 +100,22 @@ hterm.Terminal.IO.Tests.addTest('push-pop', function(result, cx) {
 
   this.io.print('Bye');
   assert.equal('HelloWorldItsMeBye', this.mockTerm.buffer);
-
-  result.pass();
 });
 
 /**
  * Verify profile selection.
  */
-hterm.Terminal.IO.Tests.addTest('profile-selection', function(result, cx) {
+it('profile-selection', function() {
   assert.equal('', this.mockTerm.profileName);
 
   this.io.setTerminalProfile('foo');
   assert.equal('foo', this.mockTerm.profileName);
-
-  result.pass();
 });
 
 /**
  * Check overlay display.
  */
-hterm.Terminal.IO.Tests.addTest('overlay', function(result, cx) {
+it('overlay', function() {
   // Start with default timeout.
   this.io.showOverlay('msg');
   assert.equal(1, this.mockTerm.showCount);
@@ -147,14 +139,12 @@ hterm.Terminal.IO.Tests.addTest('overlay', function(result, cx) {
   assert.equal(3, this.mockTerm.showCount);
   assert.isFalse(this.mockTerm.overlayVisible);
   assert.equal('hi', this.mockTerm.overlayMessage);
-
-  result.pass();
 });
 
 /**
  * Check background IO objects.
  */
-hterm.Terminal.IO.Tests.addTest('buffer-background', function(result, cx) {
+it('buffer-background', function() {
   // Create a new foreground IO and show some stuff.
   const io = this.io.push();
   io.print('Fore');
@@ -171,6 +161,6 @@ hterm.Terminal.IO.Tests.addTest('buffer-background', function(result, cx) {
   // And we should resume OK.
   this.io.print('Done');
   assert.equal('ForeBackDone', this.mockTerm.buffer);
+});
 
-  result.pass();
 });

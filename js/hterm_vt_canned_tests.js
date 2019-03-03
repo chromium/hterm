@@ -59,12 +59,12 @@
  * ignored.
  */
 
-hterm.VT.CannedTests = new lib.TestManager.Suite('hterm.VT.CannedTests');
+describe('hterm_vt_canned_tests.js', () => {
 
-hterm.VT.CannedTests.prototype.setup = function(cx) {
+before(function() {
   this.visibleColumnCount = 80;
   this.visibleRowCount = 25;
-};
+});
 
 /**
  * Clear out the current document and create a new hterm.Terminal object for
@@ -72,8 +72,8 @@ hterm.VT.CannedTests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.VT.CannedTests.prototype.preamble = function(result, cx, done) {
-  var document = cx.window.document;
+beforeEach(function(done) {
+  const document = window.document;
 
   var div = document.createElement('div');
   div.style.position = 'absolute';
@@ -81,7 +81,7 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx, done) {
 
   this.div = div;
 
-  cx.window.terminal = this.terminal = new hterm.Terminal();
+  this.terminal = new hterm.Terminal();
 
   // Allow column width changes by default so the canned data can request a
   // known terminal width.
@@ -100,18 +100,17 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx, done) {
 
     done();
   };
-};
+});
 
 /**
  * Ensure that blink is off after the test so we don't have runaway timeouts.
  *
  * Called after each test case in this suite.
  */
-hterm.VT.CannedTests.prototype.postamble = function(result, cx) {
+afterEach(function() {
   this.terminal.setCursorBlink(false);
-
   document.body.removeChild(this.div);
-};
+});
 
 /**
  * Test a can of data.
@@ -120,7 +119,7 @@ hterm.VT.CannedTests.prototype.postamble = function(result, cx) {
  *     test.
  * @param {string} name The name of canned test.
  */
-hterm.VT.CannedTests.prototype.testCannedData = function(result, name) {
+const testData = function(terminal, name) {
   let data = lib.resource.getData(`hterm/test/canned/${name}`);
 
   var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/);
@@ -151,19 +150,19 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, name) {
     assert.isTrue(!!ary, 'header line: ' + line);
 
     var endOffset = Number(ary[1]);
-    result.println('Playing to offset: ' + endOffset);
-    this.terminal.interpret(data.substring(startOffset, endOffset));
+    //console.log(`Playing to offset: ${endOffset}`);
+    terminal.interpret(data.substring(startOffset, endOffset));
 
     var lineCount = Number(ary[2]);
     for (var rowIndex = 0; rowIndex < lineCount; rowIndex++) {
       headerIndex++;
-      assert.equal(this.terminal.getRowText(rowIndex),
+      assert.equal(terminal.getRowText(rowIndex),
                    headerLines[headerIndex],
                    'row:' + rowIndex);
     }
 
-    assert.equal(this.terminal.getCursorRow(), Number(ary[3]), 'cursor row');
-    assert.equal(this.terminal.getCursorColumn(), Number(ary[4]),
+    assert.equal(terminal.getCursorRow(), Number(ary[3]), 'cursor row');
+    assert.equal(terminal.getCursorColumn(), Number(ary[4]),
                  'cursor column');
 
     startOffset = endOffset;
@@ -171,20 +170,17 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, name) {
 
   terminal.setWidth(null);
   terminal.setHeight(null);
-  result.pass();
 };
 
-/**
- * A pre-recorded session of vttest menu option 1, 'Test of cursor movements'.
- */
-hterm.VT.CannedTests.addTest('vttest-01', function(result) {
-  this.testCannedData(result, 'vttest-01');
+[
+  // A pre-recorded session of vttest menu option 1, 'Test of cursor movements'.
+  'vttest-01',
+  'vttest-02',
+  'charsets',
+].forEach((name) => {
+  it(name, function() {
+    testData(this.terminal, name);
+  }).timeout(5000);
 });
 
-hterm.VT.CannedTests.addTest('vttest-02', function(result) {
-  this.testCannedData(result, 'vttest-02');
-});
-
-hterm.VT.CannedTests.addTest('charsets', function(result) {
-  this.testCannedData(result, 'charsets');
 });

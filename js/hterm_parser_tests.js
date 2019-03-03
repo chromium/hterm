@@ -8,8 +8,7 @@
  * @fileoverview hterm.Parser unit tests.
  */
 
-hterm.Parser.Tests =
-    new lib.TestManager.Suite('hterm.Parser.Tests');
+describe('hterm_parser_tests.js', () => {
 
 /**
  * Helper to check parseKeySequence failing behavior.
@@ -31,7 +30,7 @@ const negKeySeq = function(input, pattern) {
   assert.fail(`Expected failure for: ${input}`);
 };
 
-hterm.Parser.Tests.addTest('sequence-identifiers', function(result) {
+it('sequence-identifiers', () => {
   var p = new hterm.Parser();
 
   var checkResult = function(input, output) {
@@ -51,11 +50,9 @@ hterm.Parser.Tests.addTest('sequence-identifiers', function(result) {
   checkResult('esc', 27);
 
   negKeySeq('FOO', /Unknown key: FOO/);
-
-  result.pass();
 });
 
-hterm.Parser.Tests.addTest('modifiers', function(result) {
+it('modifiers', () => {
   var p = new hterm.Parser();
 
   var checkResult = function(input, shift, ctrl, alt, meta) {
@@ -102,11 +99,9 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   negKeySeq('Ctrl-', /Missing target key$/);
   negKeySeq('Ctrl-X-Alt', /Extra definition after target key$/);
   negKeySeq('toString-X', /Unknown key: toString$/);
-
-  result.pass();
 });
 
-hterm.Parser.Tests.addTest('keycodes', function(result) {
+it('keycodes', () => {
   var p = new hterm.Parser();
 
   var checkResult = function(input, target, shift, ctrl, alt, meta) {
@@ -138,11 +133,9 @@ hterm.Parser.Tests.addTest('keycodes', function(result) {
   checkResult('0xff', 255, false, false, false, false);
   checkResult('Ctrl-0xff', 255, false, true, false, false);
   checkResult('Ctrl-Alt-0xff', 255, false, true, true, false);
-
-  result.pass();
 });
 
-hterm.Parser.Tests.addTest('actions', function(result) {
+it('actions', () => {
   var p = new hterm.Parser();
 
   var checkResult = function(input, output) {
@@ -157,6 +150,6 @@ hterm.Parser.Tests.addTest('actions', function(result) {
   checkResult('DEFAULT', hterm.Keyboard.KeyActions.DEFAULT);
 
   checkResult('"123"', '123');
+});
 
-  result.pass();
 });

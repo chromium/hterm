@@ -12,56 +12,6 @@
  * the terminal to verify that everyone did the right thing.
  */
 
-hterm.VT.Tests = new lib.TestManager.Suite('hterm.VT.Tests');
-
-hterm.VT.Tests.prototype.setup = function(cx) {
-  this.visibleColumnCount = 15;
-  this.visibleRowCount = 6;
-};
-
-/**
- * Clear out the current document and create a new hterm.Terminal object for
- * testing.
- *
- * Called before each test case in this suite.
- */
-hterm.VT.Tests.prototype.preamble = function(result, cx, done) {
-  var document = cx.window.document;
-
-  var div = document.createElement('div');
-  div.style.position = 'absolute';
-  div.style.height = '100%';
-  div.style.width = '100%';
-  document.body.appendChild(div);
-
-  this.div = div;
-
-  cx.window.terminal = this.terminal = new hterm.Terminal();
-
-  this.terminal.decorate(div);
-  this.terminal.setWidth(this.visibleColumnCount);
-  this.terminal.setHeight(this.visibleRowCount);
-  this.terminal.onTerminalReady = () => {
-    this.terminal.setCursorPosition(0, 0);
-    this.terminal.setCursorVisible(true);
-    done();
-  };
-
-  MockNotification.start();
-};
-
-/**
- * Ensure that blink is off after the test so we don't have runaway timeouts.
- *
- * Called after each test case in this suite.
- */
-hterm.VT.Tests.prototype.postamble = function(result, cx) {
-  document.body.removeChild(this.div);
-  this.terminal.setCursorBlink(false);
-
-  MockNotification.stop();
-};
-
 /**
  * Create a MouseEvent/WheelEvent that the VT layer expects.
  *
@@ -87,11 +37,61 @@ const MockTerminalMouseEvent = function(type, options = {}) {
   return ret;
 };
 
+describe('hterm_vt_tests.js', () => {
+
+before(function() {
+  this.visibleColumnCount = 15;
+  this.visibleRowCount = 6;
+});
+
+/**
+ * Clear out the current document and create a new hterm.Terminal object for
+ * testing.
+ *
+ * Called before each test case in this suite.
+ */
+beforeEach(function(done) {
+  const document = window.document;
+
+  var div = document.createElement('div');
+  div.style.position = 'absolute';
+  div.style.height = '100%';
+  div.style.width = '100%';
+  document.body.appendChild(div);
+
+  this.div = div;
+
+  this.terminal = new hterm.Terminal();
+
+  this.terminal.decorate(div);
+  this.terminal.setWidth(this.visibleColumnCount);
+  this.terminal.setHeight(this.visibleRowCount);
+  this.terminal.onTerminalReady = () => {
+    this.terminal.setCursorPosition(0, 0);
+    this.terminal.setCursorVisible(true);
+    done();
+  };
+
+  MockNotification.start();
+});
+
+/**
+ * Ensure that blink is off after the test so we don't have runaway timeouts.
+ *
+ * Called after each test case in this suite.
+ */
+afterEach(function() {
+  document.body.removeChild(this.div);
+  this.terminal.setCursorBlink(false);
+
+  MockNotification.stop();
+});
+
 /**
  * Basic sanity test to make sure that when we insert plain text it appears
  * on the screen and scrolls into the scrollback buffer correctly.
  */
-hterm.VT.Tests.addTest('sanity', function(result, cx) {
+it('sanity', function() {
     this.terminal.interpret('0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n' +
                             '7\r\n8\r\n9\r\n10\r\n11\r\n12');
 
@@ -99,8 +99,6 @@ hterm.VT.Tests.addTest('sanity', function(result, cx) {
     assert.equal(text, '0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12');
 
     assert.equal(this.terminal.scrollbackRows_.length, 7);
-
-    result.pass();
   });
 
 /**
@@ -108,7 +106,7 @@ hterm.VT.Tests.addTest('sanity', function(result, cx) {
  * across writes and invalid sequences should result in replacement
  * characters.
  */
-hterm.VT.Tests.addTest('utf8', function(result, cx) {
+it('utf8', function() {
     // 11100010 10000000 10011001 split over two writes.
     this.terminal.io.writeUTF8('\xe2\x80');
     this.terminal.io.writeUTF8('\x99\r\n');
@@ -133,14 +131,12 @@ hterm.VT.Tests.addTest('utf8', function(result, cx) {
                  'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
                  '\ufffd'.repeat(12) +
                  '\ndone');
-
-    result.pass();
   });
 
 /**
  * Verify we can write ArrayBuffers of UTF-8 data.
  */
-hterm.VT.Tests.addTest('utf8-arraybuffer', function(result, cx) {
+it('utf8-arraybuffer', function() {
   // Test splitting a single code point over multiple writes.
   let data = new Uint8Array([0xe2, 0x80, 0x99, 0xd, 0xa]);
   for (let i = 0; i < data.length; ++i) {
@@ -166,8 +162,6 @@ hterm.VT.Tests.addTest('utf8-arraybuffer', function(result, cx) {
                'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
                '\ufffd'.repeat(12),
                text);
-
-  result.pass();
 });
 
 /**
@@ -181,11 +175,10 @@ hterm.VT.Tests.addTest('utf8-arraybuffer', function(result, cx) {
  * to make sure we don't significantly regress (like we have in the past) by
  * producing something like "âc".
  */
-hterm.VT.Tests.addTest('utf8-combining', function(result, cx) {
+it('utf8-combining', function() {
     this.terminal.interpret('abc\b\b\u{302}\n');
     var text = this.terminal.getRowsText(0, 1);
     assert.equal(text, 'a\u{302}bc');
-    result.pass();
   });
 
 /**
@@ -193,7 +186,7 @@ hterm.VT.Tests.addTest('utf8-combining', function(result, cx) {
  *
  * TODO(rginda): Test the VT52 variants too.
  */
-hterm.VT.Tests.addTest('cursor-relative', function(result, cx) {
+it('cursor-relative', function() {
     this.terminal.interpret('line 1\r\nline 2\r\nline 3');
     this.terminal.interpret('\x1b[A\x1b[Dtwo' +
                             '\x1b[3D' +
@@ -203,13 +196,12 @@ hterm.VT.Tests.addTest('cursor-relative', function(result, cx) {
                             '\x1b[Cthree');
     var text = this.terminal.getRowsText(0, 3);
     assert.equal(text, 'line one\nline two\nline three');
-    result.pass();
   });
 
 /**
  * Test absolute cursor positioning.
  */
-hterm.VT.Tests.addTest('cursor-absolute', function(result, cx) {
+it('cursor-absolute', function() {
     this.terminal.interpret('line 1\r\nline 2\r\nline 3');
 
     this.terminal.interpret('\x1b[1Gline three' +
@@ -218,14 +210,12 @@ hterm.VT.Tests.addTest('cursor-absolute', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 3);
     assert.equal(text, 'line one\nline two\nline three');
-
-    result.pass();
   });
 
 /**
  * Test line positioning.
  */
-hterm.VT.Tests.addTest('line-position', function(result, cx) {
+it('line-position', function() {
     this.terminal.interpret('line 1\r\nline 2\r\nline 3');
 
     this.terminal.interpret('\x1b[Fline two' +
@@ -234,14 +224,13 @@ hterm.VT.Tests.addTest('line-position', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 3);
     assert.equal(text, 'line one\nline two\nline three');
-    result.pass();
   });
 
 /**
  * Test that a partial sequence is buffered until the entire sequence is
  * received.
  */
-hterm.VT.Tests.addTest('partial-sequence', function(result, cx) {
+it('partial-sequence', function() {
     this.terminal.interpret('line 1\r\nline 2\r\nline three');
 
     this.terminal.interpret('\x1b');
@@ -254,26 +243,24 @@ hterm.VT.Tests.addTest('partial-sequence', function(result, cx) {
 
     var text = this.terminal.getRowsText(0, 3);
     assert.equal(text, 'line one\nline two\nline three');
-    result.pass();
   });
 
 /**
  * Test that two ESC characters in a row are handled properly.
  */
-hterm.VT.Tests.addTest('double-sequence', function(result, cx) {
+it('double-sequence', function() {
     this.terminal.interpret('line one\r\nline two\r\nline 3');
 
     this.terminal.interpret('\x1b[\x1b[Dthree');
 
     var text = this.terminal.getRowsText(0, 3);
     assert.equal(text, 'line one\nline two\nline three');
-    result.pass();
   });
 
 /**
  * Test that 8-bit control characters are properly ignored.
  */
-hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
+it('8-bit-control', function() {
     var title = null;
     this.terminal.setWindowTitle = function(t) {
       // Set a default title so we can catch the potential for this function
@@ -308,14 +295,12 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
     this.terminal.interpret('\u{9d}0;test title\x07!!');
     assert.equal(title, 'test title');
     assert.equal(this.terminal.getRowsText(0, 1), '!!');
-
-    result.pass();
   });
 
 /**
  * If we see embedded escape sequences, we should reject them.
  */
-hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
+it('embedded-escape-sequence', function() {
     var title = null;
     this.terminal.setWindowTitle = function(t) {
       // Set a default title so we can catch the potential for this function
@@ -328,12 +313,12 @@ hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
 
     ['\a', '\x1b\\'].forEach((seq) => {
       // We get all the data at once with a terminated sequence.
-      terminal.reset();
+      this.terminal.reset();
       this.terminal.interpret('\x1b]0;asdf\x1b x ' + seq);
       assert.isNull(title);
 
       // We get the data in pieces w/a terminated sequence.
-      terminal.reset();
+      this.terminal.reset();
       this.terminal.interpret('\x1b]0;asdf');
       this.terminal.interpret('\x1b');
       this.terminal.interpret(' x ' + seq);
@@ -341,19 +326,17 @@ hterm.VT.Tests.addTest('embedded-escape-sequence', function(result, cx) {
     });
 
     // We get the data in pieces but no terminating sequence.
-    terminal.reset();
+    this.terminal.reset();
     this.terminal.interpret('\x1b]0;asdf');
     this.terminal.interpret('\x1b');
     this.terminal.interpret(' ');
     assert.isNull(title);
-
-    result.pass();
   });
 
 /**
  * Verify that split ST sequences are buffered/handled correctly.
  */
-hterm.VT.Tests.addTest('split-ST-sequence', function(result, cx) {
+it('split-ST-sequence', function() {
     var title = null;
     this.terminal.setWindowTitle = function(t) {
       // Set a default title so we can catch the potential for this function
@@ -368,16 +351,14 @@ hterm.VT.Tests.addTest('split-ST-sequence', function(result, cx) {
 
     // We get the first half of the ST one byte at a time.
     title = null;
-    terminal.reset();
+    this.terminal.reset();
     this.terminal.interpret('\x1b]0;asdf');
     this.terminal.interpret('\x1b');
     this.terminal.interpret('\\');
     assert.equal(title, 'asdf');
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('dec-screen-test', function(result, cx) {
+it('dec-screen-test', function() {
     this.terminal.interpret('\x1b#8');
 
     var text = this.terminal.getRowsText(0, 6);
@@ -388,11 +369,9 @@ hterm.VT.Tests.addTest('dec-screen-test', function(result, cx) {
                  'EEEEEEEEEEEEEEE\n' +
                  'EEEEEEEEEEEEEEE\n' +
                  'EEEEEEEEEEEEEEE');
-    result.pass();
-
   });
 
-hterm.VT.Tests.addTest('newlines-1', function(result, cx) {
+it('newlines-1', function() {
     // Should be off by default.
     assert.isFalse(this.terminal.options_.autoCarriageReturn);
 
@@ -403,11 +382,9 @@ hterm.VT.Tests.addTest('newlines-1', function(result, cx) {
                  'vtabine\n' +
                  '    ff\n' +
                  '      bye');
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('newlines-2', function(result, cx) {
+it('newlines-2', function() {
     this.terminal.interpret('\x1b[20h');
     assert.isTrue(this.terminal.options_.autoCarriageReturn);
 
@@ -417,14 +394,12 @@ hterm.VT.Tests.addTest('newlines-2', function(result, cx) {
                  'vtabine\n' +
                  'ff\n' +
                  'bye');
-
-    result.pass();
   });
 
 /**
  * Test the default tab stops.
  */
-hterm.VT.Tests.addTest('tabs', function(result, cx) {
+it('tabs', function() {
     this.terminal.interpret('123456789012345\r\n');
     this.terminal.interpret('1\t2\ta\r\n');
     this.terminal.interpret('1\t2\tb\r\n');
@@ -439,14 +414,12 @@ hterm.VT.Tests.addTest('tabs', function(result, cx) {
                  '1       2     c\n' +
                  '1       2     d\n' +
                  '1       2     e');
-
-    result.pass();
   });
 
 /**
  * Test terminal reset.
  */
-hterm.VT.Tests.addTest('reset', function(result, cx) {
+it('reset', function() {
     this.terminal.interpret(
         // Switch to alternate screen and set some attributes.
         '\x1b[?47h\x1b[1;33;44m' +
@@ -499,14 +472,12 @@ hterm.VT.Tests.addTest('reset', function(result, cx) {
     assert.isNull(this.terminal.vtScrollBottom_);
     assert.equal(this.terminal.screen_.cursorPosition.row, 0);
     assert.equal(this.terminal.screen_.cursorPosition.column, 0);
-
-    result.pass();
   });
 
 /**
  * Test the erase left command.
  */
-hterm.VT.Tests.addTest('erase-left', function(result, cx) {
+it('erase-left', function() {
     this.terminal.interpret('line one\r\noooooooo\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[1Ktw');
@@ -516,13 +487,12 @@ hterm.VT.Tests.addTest('erase-left', function(result, cx) {
                  'line one\n' +
                  '     two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the erase left command with widechar string.
  */
-hterm.VT.Tests.addTest('erase-left-widechar', function(result, cx) {
+it('erase-left-widechar', function() {
     this.terminal.interpret('第一行\r\n第二行\r\n第三行');
     this.terminal.interpret('\x1b[5D' +
                             '\x1b[A' +
@@ -533,13 +503,12 @@ hterm.VT.Tests.addTest('erase-left-widechar', function(result, cx) {
                  ' OO \u884c\n' +
                  '\u7b2c\u4e09\u884c',
                  text);
-    result.pass();
   });
 
 /**
  * Test the erase right command.
  */
-hterm.VT.Tests.addTest('erase-right', function(result, cx) {
+it('erase-right', function() {
     this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0Ktwo');
@@ -549,13 +518,12 @@ hterm.VT.Tests.addTest('erase-right', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the erase right command with widechar string.
  */
-hterm.VT.Tests.addTest('erase-right-widechar', function(result, cx) {
+it('erase-right-widechar', function() {
     this.terminal.interpret('第一行\r\n第二行\r\n第三行');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0KOO');
@@ -565,13 +533,12 @@ hterm.VT.Tests.addTest('erase-right-widechar', function(result, cx) {
                  ' OO\n' +
                  '\u7b2c\u4e09\u884c',
                  text);
-    result.pass();
   });
 
 /**
  * Test the erase line command.
  */
-hterm.VT.Tests.addTest('erase-line', function(result, cx) {
+it('erase-line', function() {
     this.terminal.interpret('line one\r\nline twoo\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[2Ktwo');
@@ -581,13 +548,12 @@ hterm.VT.Tests.addTest('erase-line', function(result, cx) {
                  'line one\n' +
                  '     two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the erase above command.
  */
-hterm.VT.Tests.addTest('erase-above', function(result, cx) {
+it('erase-above', function() {
     this.terminal.interpret('line one\r\noooooooo\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[1Jtw');
@@ -597,13 +563,12 @@ hterm.VT.Tests.addTest('erase-above', function(result, cx) {
                  '\n' +
                  '     two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the erase all command.
  */
-hterm.VT.Tests.addTest('erase-all', function(result, cx) {
+it('erase-all', function() {
     this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[2Jtwo');
@@ -612,13 +577,12 @@ hterm.VT.Tests.addTest('erase-all', function(result, cx) {
     assert.equal(text,
                  '\n' +
                  '     two\n');
-    result.pass();
   });
 
 /**
  * Test the erase below command.
  */
-hterm.VT.Tests.addTest('erase-below', function(result, cx) {
+it('erase-below', function() {
     this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[0Jtwo');
@@ -627,13 +591,12 @@ hterm.VT.Tests.addTest('erase-below', function(result, cx) {
     assert.equal(text,
                  'line one\n' +
                  'line two\n');
-    result.pass();
   });
 
 /**
  * Test the erase character command.
  */
-hterm.VT.Tests.addTest('erase-char', function(result, cx) {
+it('erase-char', function() {
     this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A' +
                             '\x1b[4Xtwo');
@@ -652,13 +615,12 @@ hterm.VT.Tests.addTest('erase-char', function(result, cx) {
                  'line one\n' +
                  'line  wo\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the insert line command.
  */
-hterm.VT.Tests.addTest('insert-line', function(result, cx) {
+it('insert-line', function() {
     this.terminal.interpret('line two\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[L' +
                             'line one');
@@ -668,13 +630,12 @@ hterm.VT.Tests.addTest('insert-line', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the insert line command with an argument.
  */
-hterm.VT.Tests.addTest('insert-lines', function(result, cx) {
+it('insert-lines', function() {
     this.terminal.interpret('line three\r\n\r\n');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2L' +
                             'line one\r\nline two');
@@ -684,13 +645,12 @@ hterm.VT.Tests.addTest('insert-lines', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test that the insert line command handles overflow properly.
  */
-hterm.VT.Tests.addTest('insert-toomany-lines', function(result, cx) {
+it('insert-toomany-lines', function() {
     this.terminal.interpret('XXXXX');
     this.terminal.interpret('\x1b[6L' +
                             'line one\r\nline two\r\nline three');
@@ -701,13 +661,12 @@ hterm.VT.Tests.addTest('insert-toomany-lines', function(result, cx) {
                  'line two\n' +
                  'line three\n' +
                  '\n');
-    result.pass();
   });
 
 /**
  * Test the delete line command.
  */
-hterm.VT.Tests.addTest('delete-line', function(result, cx) {
+it('delete-line', function() {
     this.terminal.interpret('line one\r\nline two\r\n' +
                             'XXXXXXXX\r\n' +
                             'line XXXXX');
@@ -718,13 +677,12 @@ hterm.VT.Tests.addTest('delete-line', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the delete line command with an argument.
  */
-hterm.VT.Tests.addTest('delete-lines', function(result, cx) {
+it('delete-lines', function() {
     this.terminal.interpret('line one\r\nline two\r\n' +
                             'XXXXXXXX\r\nXXXXXXXX\r\n' +
                             'line XXXXX');
@@ -735,13 +693,12 @@ hterm.VT.Tests.addTest('delete-lines', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the insert space command.
  */
-hterm.VT.Tests.addTest('insert-space', function(result, cx) {
+it('insert-space', function() {
     this.terminal.interpret('line one\r\nlinetwo\r\nline three');
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[@');
 
@@ -750,13 +707,12 @@ hterm.VT.Tests.addTest('insert-space', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the insert space command with an argument.
  */
-hterm.VT.Tests.addTest('insert-spaces', function(result, cx) {
+it('insert-spaces', function() {
     this.terminal.interpret('line one\r\nlinetwo\r\nline three');
     this.terminal.interpret('\x1b[6D\x1b[A\x1b[3@');
 
@@ -765,13 +721,12 @@ hterm.VT.Tests.addTest('insert-spaces', function(result, cx) {
                  'line one\n' +
                  'line   two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the delete characters command.
  */
-hterm.VT.Tests.addTest('delete-chars', function(result, cx) {
+it('delete-chars', function() {
     this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[4Ptwo');
 
@@ -780,13 +735,12 @@ hterm.VT.Tests.addTest('delete-chars', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test that the delete characters command handles overflow properly.
  */
-hterm.VT.Tests.addTest('delete-toomany', function(result, cx) {
+it('delete-toomany', function() {
     this.terminal.interpret('line one\r\nline XXXX\r\nline three');
     this.terminal.interpret('\x1b[5D\x1b[A\x1b[20Ptwo');
 
@@ -795,13 +749,12 @@ hterm.VT.Tests.addTest('delete-toomany', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the scroll up command.
  */
-hterm.VT.Tests.addTest('scroll-up', function(result, cx) {
+it('scroll-up', function() {
     this.terminal.interpret('\r\n\r\nline one\r\nline two\r\nline XXXXX');
     this.terminal.interpret('\x1b[5D\x1b[2A\x1b[2Sthree');
 
@@ -810,13 +763,12 @@ hterm.VT.Tests.addTest('scroll-up', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the scroll down command.
  */
-hterm.VT.Tests.addTest('scroll-down', function(result, cx) {
+it('scroll-down', function() {
     this.terminal.interpret('line one\r\nline two\r\nline XXXXX\r\n');
     this.terminal.interpret('     \x1b[Tthree');
 
@@ -827,13 +779,12 @@ hterm.VT.Tests.addTest('scroll-down', function(result, cx) {
                  'line two\n' +
                  'line three\n' +
                  '     ');
-    result.pass();
   });
 
 /**
  * Test the absolute line positioning command.
  */
-hterm.VT.Tests.addTest('line-position-absolute', function(result, cx) {
+it('line-position-absolute', function() {
     this.terminal.interpret('line XXX\r\nline YYY\r\nline ZZZZZ\r\n');
     this.terminal.interpret('     \x1b[3dthree\x1b[5D');
     this.terminal.interpret('\x1b[2dtwo\x1b[3D');
@@ -844,40 +795,38 @@ hterm.VT.Tests.addTest('line-position-absolute', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-    result.pass();
   });
 
 /**
  * Test the device attributes command.
  */
-hterm.VT.Tests.addTest('device-attributes', function(result, cx) {
+it('device-attributes', function() {
     var resultString;
     this.terminal.io.sendString = (str) => resultString = str;
 
     this.terminal.interpret('\x1b[c');
 
     assert.equal(resultString, '\x1b[?1;2c');
-    result.pass();
   });
 
 /**
  * TODO(rginda): Test the clear tabstops on this line command.
  */
-hterm.VT.Tests.disableTest('clear-line-tabstops', function(result, cx) {
+it.skip('clear-line-tabstops', function() {
     '[0g';
   });
 
 /**
  * TODO(rginda): Test the clear all tabstops command.
  */
-hterm.VT.Tests.disableTest('clear-all-tabstops', function(result, cx) {
+it.skip('clear-all-tabstops', function() {
     '[3g';
   });
 
 /**
  * TODO(rginda): Test text attributes.
  */
-hterm.VT.Tests.addTest('color-change', function(result, cx) {
+it('color-change', function() {
     this.terminal.interpret('[mplain....... [0;36mHi\r\n' +
                             '[mitalic...... [3;36mHi\r\n' +
                             '[mbright...... [0;96mHi\r\n' +
@@ -906,11 +855,9 @@ hterm.VT.Tests.addTest('color-change', function(result, cx) {
           row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
           'i: ' + i);
     }
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
+it('color-change-wc', function() {
     this.terminal.io.print('[mplain....... [0;36m中\r\n' +
                            '[mitalic...... [3;36m中\r\n' +
                            '[mbright...... [0;96m中\r\n' +
@@ -939,11 +886,9 @@ hterm.VT.Tests.addTest('color-change-wc', function(result, cx) {
           row.childNodes[1].style.fontStyle, (i == 1 ? 'italic' : ''),
           'i: ' + i);
     }
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('bold-as-bright', function(result, cx) {
+it('bold-as-bright', function() {
     var attrs = this.terminal.primaryScreen_.textAttributes;
     var alt_attrs = this.terminal.alternateScreen_.textAttributes;
     attrs.enableBoldAsBright = true;
@@ -985,11 +930,9 @@ hterm.VT.Tests.addTest('bold-as-bright', function(result, cx) {
     var row_bright_bold = this.terminal.getRowNode(4);
     assert.equal(row_bright_bold.childNodes[1].style.color, fg_bright,
                  'bright bold color');
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('disable-bold-as-bright', function(result, cx) {
+it('disable-bold-as-bright', function() {
     var attrs = this.terminal.primaryScreen_.textAttributes;
     var alt_attrs = this.terminal.alternateScreen_.textAttributes;
     attrs.enableBoldAsBright = false;
@@ -1031,16 +974,14 @@ hterm.VT.Tests.addTest('disable-bold-as-bright', function(result, cx) {
     var row_bright_bold = this.terminal.getRowNode(4);
     assert.equal(row_bright_bold.childNodes[1].style.color, fg_bright,
                  'bright bold color');
-
-    result.pass();
   });
 
 /**
  * Test the status report command.
  */
-hterm.VT.Tests.addTest('status-report', function(result, cx) {
+it('status-report', function() {
     var resultString;
-    terminal.io.sendString = (str) => resultString = str;
+    this.terminal.io.sendString = (str) => resultString = str;
 
     this.terminal.interpret('\x1b[5n');
     assert.equal(resultString, '\x1b0n');
@@ -1057,8 +998,6 @@ hterm.VT.Tests.addTest('status-report', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-
-    result.pass();
   });
 
 /**
@@ -1066,7 +1005,7 @@ hterm.VT.Tests.addTest('status-report', function(result, cx) {
  *
  * Most of these should have more in-depth testing below.
  */
-hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
+it('mode-bits', function() {
     this.terminal.interpret('\x1b[?1h');
     assert.isTrue(this.terminal.keyboard.applicationCursor);
 
@@ -1180,14 +1119,12 @@ hterm.VT.Tests.addTest('mode-bits', function(result, cx) {
 
     this.terminal.interpret('\x1b[?1049l');
     assert(this.terminal.screen_ === this.terminal.primaryScreen_);
-
-    result.pass();
   });
 
 /**
  * Check parseInt behavior.
  */
-hterm.VT.Tests.addTest('parsestate-parseint', function(result, cx) {
+it('parsestate-parseint', function() {
   const parserState = new hterm.VT.ParseState();
 
   // Check default arg handling.
@@ -1204,14 +1141,12 @@ hterm.VT.Tests.addTest('parsestate-parseint', function(result, cx) {
   assert.equal(5, parserState.parseInt('5'));
   assert.equal(5, parserState.parseInt('5', 0));
   assert.equal(5, parserState.parseInt('5', 1));
-
-  result.pass();
 });
 
 /**
  * Check iarg handling.
  */
-hterm.VT.Tests.addTest('parsestate-iarg', function(result, cx) {
+it('parsestate-iarg', function() {
   const parserState = new hterm.VT.ParseState();
 
   // Check unset args.
@@ -1226,14 +1161,12 @@ hterm.VT.Tests.addTest('parsestate-iarg', function(result, cx) {
   assert.equal(1, parserState.iarg(0, 1));
   assert.equal(5, parserState.iarg(1));
   assert.equal(5, parserState.iarg(1, 1));
-
-  result.pass();
 });
 
 /**
  * Check handling of subargs.
  */
-hterm.VT.Tests.addTest('parsestate-subargs', function(result, cx) {
+it('parsestate-subargs', function() {
   const parserState = new hterm.VT.ParseState();
 
   // Check initial/null state.
@@ -1244,14 +1177,12 @@ hterm.VT.Tests.addTest('parsestate-subargs', function(result, cx) {
   parserState.argSetSubargs(1);
   assert.isTrue(!parserState.argHasSubargs(0));
   assert.isTrue(parserState.argHasSubargs(1));
-
-  result.pass();
 });
 
 /**
  * Check handling of extended ISO 8613-6 colors.
  */
-hterm.VT.Tests.addTest('sgr-extended-colors-parser', function(result, cx) {
+it('sgr-extended-colors-parser', function() {
   const parserState = new hterm.VT.ParseState();
   const ta = this.terminal.getTextAttributes();
 
@@ -1305,8 +1236,6 @@ hterm.VT.Tests.addTest('sgr-extended-colors-parser', function(result, cx) {
     assert.equal(expSkipCount, ret.skipCount, input);
     assert.equal(expColor, ret.color, input);
   });
-
-  result.pass();
 });
 
 /**
@@ -1314,7 +1243,7 @@ hterm.VT.Tests.addTest('sgr-extended-colors-parser', function(result, cx) {
  *
  * This also indirectly checks chaining SGR behavior.
  */
-hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
+it('true-color-colon', function() {
   let text;
   let style;
   const ta = this.terminal.getTextAttributes();
@@ -1375,14 +1304,12 @@ hterm.VT.Tests.addTest('true-color-colon', function(result, cx) {
   assert.equal('', style.backgroundColor);
   text = this.terminal.getRowText(0);
   assert.equal('HI5', text);
-
-  result.pass();
 });
 
 /**
  * Test setting of 256 color mode in colon delimited formats.
  */
-hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
+it('256-color-colon', function() {
   let text;
   let style;
   const ta = this.terminal.getTextAttributes();
@@ -1407,14 +1334,12 @@ hterm.VT.Tests.addTest('256-color-colon', function(result, cx) {
   assert.equal('rgb(95, 95, 135)', style.backgroundColor);
   text = this.terminal.getRowText(0);
   assert.equal('HI2', text);
-
-  result.pass();
 });
 
 /**
  * Test setting of true color mode on text
  */
-hterm.VT.Tests.addTest('true-color-mode', function(result, cx) {
+it('true-color-mode', function() {
     function getEscape(row, fg) {
       return  '\x1b[' + (fg == true ? 38 : 48) + ';2;' + row[1] + ';' +
               row[2] + ';' + row[3] + 'm';
@@ -1451,14 +1376,12 @@ hterm.VT.Tests.addTest('true-color-mode', function(result, cx) {
         assert.equal(style.backgroundColor, bg);
       }
     }
-
-    result.pass();
   });
 
 /**
  * Check chained SGR sequences.
  */
-hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
+it('chained-sgr', function() {
   let text;
   let style;
   const ta = this.terminal.getTextAttributes();
@@ -1522,14 +1445,12 @@ hterm.VT.Tests.addTest('chained-sgr', function(result, cx) {
   assert.equal('rgb(0, 95, 0)', style.backgroundColor);
   text = this.terminal.getRowText(0);
   assert.equal('HI2', text);
-
-  result.pass();
 });
 
 /**
  * Check various underline modes.
  */
-hterm.VT.Tests.addTest('underline-sgr', function(result, cx) {
+it('underline-sgr', function() {
   const ta = this.terminal.getTextAttributes();
 
   // Default mode 4: plain underline.
@@ -1573,20 +1494,18 @@ hterm.VT.Tests.addTest('underline-sgr', function(result, cx) {
   this.terminal.interpret('\x1b[0m');
   assert.isFalse(ta.underline);
   assert.equal(ta.SRC_DEFAULT, ta.underlineSource);
-
-  result.pass();
 });
 
 /**
  * TODO(rginda): Test origin mode.
  */
-hterm.VT.Tests.disableTest('origin-mode', function(result, cx) {
+it.skip('origin-mode', function() {
   });
 
 /**
  * Test insert/overwrite mode.
  */
-hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
+it('insert-mode', function() {
     // Should be off by default.
     assert.isFalse(this.terminal.options_.insertMode);
 
@@ -1604,14 +1523,12 @@ hterm.VT.Tests.addTest('insert-mode', function(result, cx) {
                  'line one\n' +
                  'line two\n' +
                  'line three');
-
-    result.pass();
   });
 
 /**
  * Test wraparound mode.
  */
-hterm.VT.Tests.addTest('wraparound-mode-on', function(result, cx) {
+it('wraparound-mode-on', function() {
     // Should be on by default.
     assert.isTrue(this.terminal.options_.wraparound);
 
@@ -1633,11 +1550,9 @@ hterm.VT.Tests.addTest('wraparound-mode-on', function(result, cx) {
 
     assert.equal(this.terminal.getCursorRow(), 5);
     assert.equal(this.terminal.getCursorColumn(), 14);
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('wraparound-mode-off', function(result, cx) {
+it('wraparound-mode-off', function() {
     this.terminal.interpret('\x1b[?7l');
     assert.isFalse(this.terminal.options_.wraparound);
 
@@ -1658,14 +1573,12 @@ hterm.VT.Tests.addTest('wraparound-mode-off', function(result, cx) {
 
     assert.equal(this.terminal.getCursorRow(), 0);
     assert.equal(this.terminal.getCursorColumn(), 14);
-
-    result.pass();
   });
 
 /**
  * Test the interactions between insert and wraparound modes.
  */
-hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
+it('insert-wrap', function() {
     // Should be on by default.
     assert.isTrue(this.terminal.options_.wraparound);
 
@@ -1684,14 +1597,12 @@ hterm.VT.Tests.addTest('insert-wrap', function(result, cx) {
     assert.equal(this.terminal.getRowText(3), '              A');
     assert.equal(this.terminal.getRowText(4), 'XXAAA');
     assert.equal(this.terminal.getRowText(5), 'XX            A');
-
-    result.pass();
   });
 
 /**
  * Test a line that is long enough to need to be wrapped more than once.
  */
-hterm.VT.Tests.addTest('long-wrap', function(result, cx) {
+it('long-wrap', function() {
     var str = '';
     for (var i = 0; i < this.visibleColumnCount * 3; i++)
       str += 'X';
@@ -1701,14 +1612,12 @@ hterm.VT.Tests.addTest('long-wrap', function(result, cx) {
     assert.equal(this.terminal.getRowText(0), 'XXXXXXXXXXXXXXX');
     assert.equal(this.terminal.getRowText(1), 'XXXXXXXXXXXXXXX');
     assert.equal(this.terminal.getRowText(2), 'XXXXXXXXXXXXXXX');
-
-    result.pass();
   });
 
 /**
  * Test reverse wraparound.
  */
-hterm.VT.Tests.addTest('reverse-wrap', function(result, cx) {
+it('reverse-wrap', function() {
     // A line ending with a hard CRLF.
     var str = 'AAAA\r\n';
 
@@ -1753,15 +1662,13 @@ hterm.VT.Tests.addTest('reverse-wrap', function(result, cx) {
     assert.equal(this.terminal.getRowText(3), '');
     assert.equal(this.terminal.getRowText(4), '');
     assert.equal(this.terminal.getRowText(5), '              X');
-
-    result.pass();
   });
 
 /**
  * Test interactions between the cursor overflow bit and various
  * escape sequences.
  */
-hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
+it('cursor-overflow', function() {
     // Should be on by default.
     assert.isTrue(this.terminal.options_.wraparound);
 
@@ -1803,11 +1710,9 @@ hterm.VT.Tests.addTest('cursor-overflow', function(result, cx) {
 
     assert.equal(this.terminal.getCursorRow(), 5);
     assert.equal(this.terminal.getCursorColumn(), 14);
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
+it('alternate-screen', function() {
     this.terminal.interpret('1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10');
     this.terminal.interpret('\x1b[3;3f');  // Leave the cursor at (3,3)
     var text = this.terminal.getRowsText(0, 10);
@@ -1839,14 +1744,12 @@ hterm.VT.Tests.addTest('alternate-screen', function(result, cx) {
     this.terminal.interpret('XX');
     text = this.terminal.getRowsText(0, 10);
     assert.equal(text, '1\n2\n3\n4\n\n\n    XX\n\n\n');
-
-    result.pass();
   });
 
 /**
  * Test basic hyperlinks.
  */
-hterm.VT.Tests.addTest('OSC-8', function(result, cx) {
+it('OSC-8', function() {
   const tattrs = this.terminal.getTextAttributes();
 
   // Start with links off.
@@ -1873,14 +1776,12 @@ hterm.VT.Tests.addTest('OSC-8', function(result, cx) {
   assert.equal('foo', span.uriId);
   assert.equal('click me', span.textContent);
   assert.equal('uri-node', span.className);
-
-  result.pass();
 });
 
 /**
  * Test hyperlinks with blank ids.
  */
-hterm.VT.Tests.addTest('OSC-8-blank-id', function(result, cx) {
+it('OSC-8-blank-id', function() {
   const tattrs = this.terminal.getTextAttributes();
 
   // Create a link with a blank id.
@@ -1895,14 +1796,12 @@ hterm.VT.Tests.addTest('OSC-8-blank-id', function(result, cx) {
   assert.equal('', span.uriId);
   assert.equal('click', span.textContent);
   assert.equal('uri-node', span.className);
-
-  result.pass();
 });
 
 /**
  * Test changing hyperlinks midstream.
  */
-hterm.VT.Tests.addTest('OSC-8-switch-uri', function(result, cx) {
+it('OSC-8-switch-uri', function() {
   const tattrs = this.terminal.getTextAttributes();
 
   // Create a link then change it.
@@ -1923,14 +1822,12 @@ hterm.VT.Tests.addTest('OSC-8-switch-uri', function(result, cx) {
   assert.equal('', span.uriId);
   assert.equal('bat', span.textContent);
   assert.equal('uri-node', span.className);
-
-  result.pass();
 });
 
 /**
  * Test iTerm2 growl notifications.
  */
-hterm.VT.Tests.addTest('OSC-9', function(result, cx) {
+it('OSC-9', function() {
     assert.equal(0, Notification.count);
 
     // We don't test the title as it's generated, and the iTerm2 API doesn't
@@ -1945,14 +1842,12 @@ hterm.VT.Tests.addTest('OSC-9', function(result, cx) {
     this.terminal.interpret('\x1b]9;this is a title\x07');
     assert.equal(2, Notification.count);
     assert.equal('this is a title', Notification.call.body);
-
-    result.pass();
   });
 
 /**
  * Verify setting text foreground color.
  */
-hterm.VT.Tests.addTest('OSC-10', function(result, cx) {
+it('OSC-10', function() {
     // Make sure other colors aren't changed by accident.
     const backColor = this.terminal.getBackgroundColor();
     const cursorColor = this.terminal.getCursorColor();
@@ -1966,14 +1861,12 @@ hterm.VT.Tests.addTest('OSC-10', function(result, cx) {
     // Make sure other colors aren't changed by accident.
     assert.equal(backColor, this.terminal.getBackgroundColor());
     assert.equal(cursorColor, this.terminal.getCursorColor());
-
-    result.pass();
   });
 
 /**
  * Verify setting text background color.
  */
-hterm.VT.Tests.addTest('OSC-11', function(result, cx) {
+it('OSC-11', function() {
     // Make sure other colors aren't changed by accident.
     const foreColor = this.terminal.getForegroundColor();
     const cursorColor = this.terminal.getCursorColor();
@@ -1987,14 +1880,12 @@ hterm.VT.Tests.addTest('OSC-11', function(result, cx) {
     // Make sure other colors aren't changed by accident.
     assert.equal(foreColor, this.terminal.getForegroundColor());
     assert.equal(cursorColor, this.terminal.getCursorColor());
-
-    result.pass();
   });
 
 /**
  * Verify setting text cursor color (not the mouse cursor).
  */
-hterm.VT.Tests.addTest('OSC-12', function(result, cx) {
+it('OSC-12', function() {
     // Make sure other colors aren't changed by accident.
     const foreColor = this.terminal.getForegroundColor();
     const backColor = this.terminal.getBackgroundColor();
@@ -2008,14 +1899,12 @@ hterm.VT.Tests.addTest('OSC-12', function(result, cx) {
     // Make sure other colors aren't changed by accident.
     assert.equal(foreColor, this.terminal.getForegroundColor());
     assert.equal(backColor, this.terminal.getBackgroundColor());
-
-    result.pass();
   });
 
 /**
  * Verify chaining color change requests.
  */
-hterm.VT.Tests.addTest('OSC-10-11-12', function(result, cx) {
+it('OSC-10-11-12', function() {
     // Set 10-11-12 at once.
     this.terminal.interpret('\x1b]10;red;green;blue\x07');
     assert.equal('rgb(255, 0, 0)', this.terminal.getForegroundColor());
@@ -2027,39 +1916,36 @@ hterm.VT.Tests.addTest('OSC-10-11-12', function(result, cx) {
     assert.equal('rgb(255, 0, 0)', this.terminal.getForegroundColor());
     assert.equal('rgb(255, 255, 255)', this.terminal.getBackgroundColor());
     assert.equal('rgb(0, 0, 0)', this.terminal.getCursorColor());
-
-    result.pass();
   });
 
 /**
  * Test that we can use OSC 52 to copy to the system clipboard.
  */
-hterm.VT.Tests.addTest('OSC-52', function(result, cx) {
+it('OSC-52', function(done) {
     // Mock this out since we can't document.execCommand from the
     // test harness.
     var old_cCSTC = hterm.copySelectionToClipboard;
     hterm.copySelectionToClipboard = function(document, str) {
       hterm.copySelectionToClipboard = old_cCSTC;
       assert.equal(str, 'copypasta!');
-      result.pass();
+      done();
     };
 
     this.terminal.interpret('\x1b]52;c;Y29weXBhc3RhIQ==\x07');
-    result.requestTime(200);
   });
 
 /**
  * Test that OSC 52 works when large strings are split across multiple interpret
  * calls.
  */
-hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
+it('OSC-52-big', function(done) {
     // Mock this out since we can't document.execCommand from the
     // test harness.
     var old_cCSTC = hterm.copySelectionToClipboard;
     hterm.copySelectionToClipboard = function(document, str) {
       hterm.copySelectionToClipboard = old_cCSTC;
       assert.equal(str, expect);
-      result.pass();
+      done();
     };
 
     var expect = '';
@@ -2076,10 +1962,9 @@ hterm.VT.Tests.addTest('OSC-52-big', function(result, cx) {
     this.terminal.interpret(encode);
     this.terminal.interpret(encode);
     this.terminal.interpret('\x07');
-    result.requestTime(200);
   });
 
-hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
+it('OSC-4', function() {
     var resultString;
 
     this.terminal.io.sendString = (str) => resultString = str;
@@ -2098,13 +1983,12 @@ hterm.VT.Tests.addTest('OSC-4', function(result, cx) {
                             'rgb:bebe/bebe/bebe\x07');
     assert.equal(resultString, '\x1b]4;1;rgb:0101/0101/0101;' +
                                '2;rgb:bebe/bebe/bebe\x07');
-    result.pass();
   });
 
 /**
  * Test the cursor shape changes using OSC 50.
  */
-hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
+it('OSC-50, cursor shapes', function() {
     assert.strictEqual(this.terminal.getCursorShape(),
                        hterm.Terminal.cursorShape.BLOCK);
 
@@ -2128,14 +2012,12 @@ hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
     this.terminal.syncCursorPosition_();
     assert.strictEqual(this.terminal.getCursorShape(),
                        hterm.Terminal.cursorShape.BLOCK);
-
-    result.pass();
   });
 
 /**
  * Verify resetting the color palette.
  */
-hterm.VT.Tests.addTest('OSC-104', function(result, cx) {
+it('OSC-104', function() {
   let resultString;
   this.terminal.io.sendString = (str) => resultString = str;
 
@@ -2153,14 +2035,12 @@ hterm.VT.Tests.addTest('OSC-104', function(result, cx) {
   // Verify it changed.
   this.terminal.interpret('\x1b]4;1;?\x07');
   assert.equal(resultString, '\x1b]4;1;rgb:cccc/0000/0000\x07');
-
-  result.pass();
 });
 
 /**
  * Verify resetting text foreground color.
  */
-hterm.VT.Tests.addTest('OSC-110', function(result, cx) {
+it('OSC-110', function() {
   // Make sure other colors aren't changed by accident.
   const backColor = this.terminal.getBackgroundColor();
   const cursorColor = this.terminal.getCursorColor();
@@ -2174,14 +2054,12 @@ hterm.VT.Tests.addTest('OSC-110', function(result, cx) {
   // Make sure other colors aren't changed by accident.
   assert.equal(backColor, this.terminal.getBackgroundColor());
   assert.equal(cursorColor, this.terminal.getCursorColor());
-
-  result.pass();
 });
 
 /**
  * Verify resetting text background color.
  */
-hterm.VT.Tests.addTest('OSC-111', function(result, cx) {
+it('OSC-111', function() {
   // Make sure other colors aren't changed by accident.
   const foreColor = this.terminal.getForegroundColor();
   const cursorColor = this.terminal.getCursorColor();
@@ -2195,14 +2073,12 @@ hterm.VT.Tests.addTest('OSC-111', function(result, cx) {
   // Make sure other colors aren't changed by accident.
   assert.equal(foreColor, this.terminal.getForegroundColor());
   assert.equal(cursorColor, this.terminal.getCursorColor());
-
-  result.pass();
 });
 
 /**
  * Verify resetting text cursor color (not the mouse cursor).
  */
-hterm.VT.Tests.addTest('OSC-112', function(result, cx) {
+it('OSC-112', function() {
   // Make sure other colors aren't changed by accident.
   const foreColor = this.terminal.getForegroundColor();
   const backColor = this.terminal.getBackgroundColor();
@@ -2216,14 +2092,12 @@ hterm.VT.Tests.addTest('OSC-112', function(result, cx) {
   // Make sure other colors aren't changed by accident.
   assert.equal(foreColor, this.terminal.getForegroundColor());
   assert.equal(backColor, this.terminal.getBackgroundColor());
-
-  result.pass();
 });
 
 /**
  * Test URxvt notify module.
  */
-hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {
+it('OSC-777-notify', function() {
     assert.equal(0, Notification.count);
 
     // An empty notification.  We don't test the title as it's generated.
@@ -2255,26 +2129,22 @@ hterm.VT.Tests.addTest('OSC-777-notify', function(result, cx) {
     assert.equal(5, Notification.count);
     assert.include(Notification.call.title, 'my title');
     assert.include(Notification.call.body, 'my body;and a semi');
-
-    result.pass();
   });
 
 /**
  * Test iTerm2 1337 non-file transfers.
  */
-hterm.VT.Tests.addTest('OSC-1337-ignore', function(result, cx) {
+it('OSC-1337-ignore', function() {
   this.terminal.displayImage =
       () => assert.fail('Unknown should not trigger file display');
 
   this.terminal.interpret('\x1b]1337;CursorShape=1\x07');
-
-  result.pass();
 });
 
 /**
  * Test iTerm2 1337 file transfer defaults.
  */
-hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
+it('OSC-1337-file-defaults', function(done) {
   this.terminal.displayImage = (options) => {
     assert.equal('', options.name);
     assert.equal(0, options.size);
@@ -2285,7 +2155,7 @@ hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
     assert.equal('left', options.align);
     assert.isUndefined(options.uri);
     assert.deepStrictEqual(new Uint8Array([10]).buffer, options.buffer);
-    result.pass();
+    done();
   };
 
   this.terminal.interpret('\x1b]1337;File=:Cg==\x07');
@@ -2294,12 +2164,12 @@ hterm.VT.Tests.addTest('OSC-1337-file-defaults', function(result, cx) {
 /**
  * Test iTerm2 1337 invalid values.
  */
-hterm.VT.Tests.addTest('OSC-1337-file-invalid', function(result, cx) {
+it('OSC-1337-file-invalid', function(done) {
   this.terminal.displayImage = (options) => {
     assert.equal('', options.name);
     assert.equal(1, options.size);
     assert.isUndefined(options.unk);
-    result.pass();
+    done();
   };
 
   this.terminal.interpret(
@@ -2315,7 +2185,7 @@ hterm.VT.Tests.addTest('OSC-1337-file-invalid', function(result, cx) {
 /**
  * Test iTerm2 1337 valid options.
  */
-hterm.VT.Tests.addTest('OSC-1337-file-valid', function(result, cx) {
+it('OSC-1337-file-valid', function(done) {
   // Check "false" values.
   this.terminal.displayImage = (options) => {
     assert.isFalse(options.preserveAspectRatio);
@@ -2340,7 +2210,7 @@ hterm.VT.Tests.addTest('OSC-1337-file-valid', function(result, cx) {
     assert.equal('50%', options.height);
     assert.equal('center', options.align);
 
-    result.pass();
+    done();
   };
   this.terminal.interpret(
       '\x1b]1337;File=' +
@@ -2355,7 +2225,7 @@ hterm.VT.Tests.addTest('OSC-1337-file-valid', function(result, cx) {
 /**
  * Test handling of extra data after an iTerm2 1337 file sequence.
  */
-hterm.VT.Tests.addTest('OSC-1337-file-queue', function(result, cx) {
+it('OSC-1337-file-queue', function(done) {
   let text;
 
   // For non-inline files, things will be processed right away.
@@ -2372,21 +2242,19 @@ hterm.VT.Tests.addTest('OSC-1337-file-queue', function(result, cx) {
       io.pop();
       text = this.getRowsText(0, 1);
       assert.equal('OK', text);
-      result.pass();
+      done();
     }, 0);
   };
   this.terminal.clearHome();
   this.terminal.interpret('\x1b]1337;File=inline=1:Cg==\x07OK');
   text = this.terminal.getRowsText(0, 1);
   assert.equal('', text);
-
-  result.requestTime(200);
 });
 
 /**
  * Test the cursor shape changes using DECSCUSR.
  */
-hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {
+it('DECSCUSR, cursor shapes', function() {
     assert.strictEqual(this.terminal.getCursorShape(),
                        hterm.Terminal.cursorShape.BLOCK);
     assert.isFalse(this.terminal.options_.cursorBlink);
@@ -2420,13 +2288,11 @@ hterm.VT.Tests.addTest('DECSCUSR, cursor shapes', function(result, cx) {
     assert.strictEqual(this.terminal.getCursorShape(),
                        hterm.Terminal.cursorShape.BLOCK);
     assert.isFalse(this.terminal.options_.cursorBlink);
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('bracketed-paste', function(result, cx) {
+it('bracketed-paste', function() {
     var resultString;
-    terminal.io.sendString = (str) => resultString = str;
+    this.terminal.io.sendString = (str) => resultString = str;
 
     assert.isFalse(this.terminal.options_.bracketedPaste);
 
@@ -2441,11 +2307,9 @@ hterm.VT.Tests.addTest('bracketed-paste', function(result, cx) {
 
     this.terminal.onPaste_({text: 'hello world'});
     assert.equal(resultString, 'hello world');
-
-    result.pass();
   });
 
-hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
+it('fullscreen', function(done) {
     this.div.style.height = '100%';
     this.div.style.width = '100%';
 
@@ -2461,16 +2325,14 @@ hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
                                   lib.f.getWhitespace(indent) + '*\n');
         }
 
-        result.pass();
+        done();
       }, 100);
-
-    result.requestTime(200);
   });
 
 /**
  * Verify switching character maps works.
  */
-hterm.VT.Tests.addTest('character-maps', function(result, cx) {
+it('character-maps', function() {
     // This test checks graphics handling in ISO-2022 mode.
     this.terminal.vt.setEncoding('iso-2022');
 
@@ -2499,14 +2361,12 @@ hterm.VT.Tests.addTest('character-maps', function(result, cx) {
       this.terminal.interpret('\x1b(' + map + line);
       assert.equal(this.terminal.getRowText(0), gl(line));
     }
-
-    result.pass();
   });
 
 /**
  * Verify DOCS (encoding) switching behavior.
  */
-hterm.VT.Tests.addTest('docs', function(result, cx) {
+it('docs', function() {
     // This test checks graphics handling in ISO-2022 mode.
     this.terminal.vt.setEncoding('iso-2022');
 
@@ -2570,14 +2430,12 @@ hterm.VT.Tests.addTest('docs', function(result, cx) {
     assert.isTrue(this.terminal.vt.codingSystemUtf8_);
     assert.isTrue(this.terminal.vt.codingSystemLocked_);
     assert.equal(this.terminal.getRowText(0), line);
-
-    result.pass();
   });
 
 /**
  * Verify DOCS (encoding) invalid escapes don't mess things up.
  */
-hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
+it('docs-invalid', function() {
     // This test checks graphics handling in ISO-2022 mode.
     this.terminal.vt.setEncoding('iso-2022');
 
@@ -2612,14 +2470,12 @@ hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
       assert.isFalse(this.terminal.vt.codingSystemLocked_);
       assert.equal(this.terminal.getRowText(0), '');
     });
-
-    result.pass();
   });
 
 /**
  * Check cursor save/restore behavior.
  */
-hterm.VT.Tests.addTest('cursor-save-restore', function(result, cx) {
+it('cursor-save-restore', function() {
   let tattrs;
 
   // Save the current cursor state.
@@ -2649,14 +2505,12 @@ hterm.VT.Tests.addTest('cursor-save-restore', function(result, cx) {
   // Make sure color palette did not change.
   assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
   assert.equal('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
-
-  result.pass();
 });
 
 /**
  * Check different mouse mode selection.
  */
-hterm.VT.Tests.addTest('mouse-switching', function(result, cx) {
+it('mouse-switching', function() {
   const terminal = this.terminal;
 
   const assertMouse = (report, coordinates) => {
@@ -2706,14 +2560,12 @@ hterm.VT.Tests.addTest('mouse-switching', function(result, cx) {
   terminal.interpret('\x1b[?1006h');
   assertMouse(terminal.vt.MOUSE_REPORT_PRESS,
               terminal.vt.MOUSE_COORDINATES_SGR);
-
-  result.pass();
 });
 
 /**
  * Check mouse behavior when reporting is disabled.
  */
-hterm.VT.Tests.addTest('mouse-disabled', function(result, cx) {
+it('mouse-disabled', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2727,13 +2579,12 @@ hterm.VT.Tests.addTest('mouse-disabled', function(result, cx) {
   terminal.vt.onTerminalMouse_(e);
 
   assert.isUndefined(resultString);
-  result.pass();
 });
 
 /**
  * Check mouse behavior when press reports are enabled.
  */
-hterm.VT.Tests.addTest('mouse-report-press', function(result, cx) {
+it('mouse-report-press', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2758,8 +2609,6 @@ hterm.VT.Tests.addTest('mouse-report-press', function(result, cx) {
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
   assert.isUndefined(resultString);
-
-  result.pass();
 });
 
 /**
@@ -2767,7 +2616,7 @@ hterm.VT.Tests.addTest('mouse-report-press', function(result, cx) {
  *
  * Namely, keyboard modifiers shouldn't be reported.
  */
-hterm.VT.Tests.addTest('mouse-report-press-keyboard', function(result, cx) {
+it('mouse-report-press-keyboard', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2811,14 +2660,12 @@ hterm.VT.Tests.addTest('mouse-report-press-keyboard', function(result, cx) {
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<0;0;0M', resultString);
   resultString = undefined;
-
-  result.pass();
 });
 
 /**
  * Check mouse press behavior in X10 coordinates.
  */
-hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
+it('mouse-press-x10-coord', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2861,14 +2708,12 @@ hterm.VT.Tests.addTest('mouse-press-x10-coord', function(result, cx) {
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \xff\xff', resultString);
 */
-
-  result.pass();
 });
 
 /**
  * Check mouse press behavior in UTF8 coordinates.
  */
-hterm.VT.Tests.addTest('mouse-press-utf8-coord', function(result, cx) {
+it('mouse-press-utf8-coord', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2914,14 +2759,12 @@ hterm.VT.Tests.addTest('mouse-press-utf8-coord', function(result, cx) {
       'mousedown', {terminalRow: 3000, terminalColumn: 3000});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \u07ff\u07ff', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse press behavior in SGR coordinates.
  */
-hterm.VT.Tests.addTest('mouse-press-sgr-coord', function(result, cx) {
+it('mouse-press-sgr-coord', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2955,14 +2798,12 @@ hterm.VT.Tests.addTest('mouse-press-sgr-coord', function(result, cx) {
       'mousedown', {terminalRow: 99999, terminalColumn: 55555});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<0;55555;99999M', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse behavior when press clicks are enabled.
  */
-hterm.VT.Tests.addTest('mouse-report-click', function(result, cx) {
+it('mouse-report-click', function() {
   const terminal = this.terminal;
   let e;
 
@@ -2987,8 +2828,6 @@ hterm.VT.Tests.addTest('mouse-report-click', function(result, cx) {
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M#  ', resultString);
-
-  result.pass();
 });
 
 /**
@@ -2998,7 +2837,7 @@ hterm.VT.Tests.addTest('mouse-report-click', function(result, cx) {
  * released ('mouseup') while saying it's still pressed ('buttons').  The
  * VT code doesn't check for this, so (ab)use this to simplify the test.
  */
-hterm.VT.Tests.addTest('mouse-report-click-buttons', function(result, cx) {
+it('mouse-report-click-buttons', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3061,14 +2900,12 @@ hterm.VT.Tests.addTest('mouse-report-click-buttons', function(result, cx) {
   e = MockTerminalMouseEvent('mouseup', {button: 1, buttons: 0});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<1;0;0m', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse click behavior with keyboard modifiers.
  */
-hterm.VT.Tests.addTest('mouse-report-click-keyboard', function(result, cx) {
+it('mouse-report-click-keyboard', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3137,14 +2974,12 @@ hterm.VT.Tests.addTest('mouse-report-click-keyboard', function(result, cx) {
   e = MockTerminalMouseEvent('mouseup', {button: 2, shiftKey: true});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<2;0;0m', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse behavior when drags are enabled.
  */
-hterm.VT.Tests.addTest('mouse-report-drag', function(result, cx) {
+it('mouse-report-drag', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3173,14 +3008,12 @@ hterm.VT.Tests.addTest('mouse-report-drag', function(result, cx) {
   e = MockTerminalMouseEvent('mouseup');
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M#  ', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse drag behavior with buttons.
  */
-hterm.VT.Tests.addTest('mouse-report-drag-buttons', function(result, cx) {
+it('mouse-report-drag-buttons', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3209,14 +3042,12 @@ hterm.VT.Tests.addTest('mouse-report-drag-buttons', function(result, cx) {
   e = MockTerminalMouseEvent('mousemove', {buttons: 7});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<32;0;0M', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse drag behavior with keyboard modifiers.
  */
-hterm.VT.Tests.addTest('mouse-report-drag-keyboard', function(result, cx) {
+it('mouse-report-drag-keyboard', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3255,14 +3086,12 @@ hterm.VT.Tests.addTest('mouse-report-drag-keyboard', function(result, cx) {
       'mousemove', {buttons: 1, shiftKey: true, ctrlKey: true, metaKey: true});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<60;0;0M', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse wheel behavior when reports are enabled.
  */
-hterm.VT.Tests.addTest('mouse-report-wheel', function(result, cx) {
+it('mouse-report-wheel', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3281,14 +3110,12 @@ hterm.VT.Tests.addTest('mouse-report-wheel', function(result, cx) {
   e = MockTerminalMouseEvent('wheel', {deltaY: -1});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M`  ', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse wheel behavior in X10 coordinates.
  */
-hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
+it('mouse-wheel-x10-coord', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3331,14 +3158,12 @@ hterm.VT.Tests.addTest('mouse-wheel-x10-coord', function(result, cx) {
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[Ma\xff\xff', resultString);
 */
-
-  result.pass();
 });
 
 /**
  * Check mouse wheel behavior in UTF8 coordinates.
  */
-hterm.VT.Tests.addTest('mouse-wheel-utf8-coord', function(result, cx) {
+it('mouse-wheel-utf8-coord', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3384,14 +3209,12 @@ hterm.VT.Tests.addTest('mouse-wheel-utf8-coord', function(result, cx) {
       'wheel', {terminalRow: 3000, terminalColumn: 3000});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[Ma\u07ff\u07ff', resultString);
-
-  result.pass();
 });
 
 /**
  * Check mouse wheel behavior in SGR coordinates.
  */
-hterm.VT.Tests.addTest('mouse-wheel-sgr-coord', function(result, cx) {
+it('mouse-wheel-sgr-coord', function() {
   const terminal = this.terminal;
   let e;
 
@@ -3425,14 +3248,12 @@ hterm.VT.Tests.addTest('mouse-wheel-sgr-coord', function(result, cx) {
       'wheel', {terminalRow: 99999, terminalColumn: 55555});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<65;55555;99999M', resultString);
-
-  result.pass();
 });
 
 /**
  * Verify CSI-J-0 (erase below) works.
  */
-hterm.VT.Tests.addTest('csi-j-0', function(result, cx) {
+it('csi-j-0', function() {
   const terminal = this.terminal;
 
   // Fill the screen with something useful.
@@ -3468,14 +3289,12 @@ hterm.VT.Tests.addTest('csi-j-0', function(result, cx) {
   // The scrollback should stay intact.
   assert.equal('ab0', terminal.getRowText(0));
   assert.equal(rowCount, terminal.getRowCount());
-
-  result.pass();
 });
 
 /**
  * Verify CSI-J-1 (erase above) works.
  */
-hterm.VT.Tests.addTest('csi-j-1', function(result, cx) {
+it('csi-j-1', function() {
   const terminal = this.terminal;
 
   // Fill the screen with something useful.
@@ -3502,14 +3321,12 @@ hterm.VT.Tests.addTest('csi-j-1', function(result, cx) {
   // The scrollback should stay intact.
   assert.equal('ab0', terminal.getRowText(0));
   assert.equal(rowCount, terminal.getRowCount());
-
-  result.pass();
 });
 
 /**
  * Verify CSI-J-2 (erase screen) works.
  */
-hterm.VT.Tests.addTest('csi-j-2', function(result, cx) {
+it('csi-j-2', function() {
   const terminal = this.terminal;
 
   // Fill the screen with something useful.
@@ -3536,14 +3353,12 @@ hterm.VT.Tests.addTest('csi-j-2', function(result, cx) {
   // The scrollback should stay intact.
   assert.equal('ab0', terminal.getRowText(0));
   assert.equal(rowCount, terminal.getRowCount());
-
-  result.pass();
 });
 
 /**
  * Verify CSI-J-3 (erase scrollback) works.
  */
-hterm.VT.Tests.addTest('csi-j-3', function(result, cx) {
+it('csi-j-3', function() {
   const terminal = this.terminal;
 
   // Fill the screen with something useful.
@@ -3582,6 +3397,6 @@ hterm.VT.Tests.addTest('csi-j-3', function(result, cx) {
   // The scrollback should be gone.
   assert.equal(this.visibleRowCount, terminal.getRowCount());
   assert.deepStrictEqual([], terminal.scrollbackRows_);
+});
 
-  result.pass();
 });

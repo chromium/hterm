@@ -7,7 +7,8 @@
 /**
  * @fileoverview Unit tests for the hterm.Screen class.
  */
-hterm.Screen.Tests = new lib.TestManager.Suite('hterm.Screen.Tests');
+
+describe('hterm_screen_tests.js', () => {
 
 /**
  * Clear out the current document and create a new hterm.Screen object for
@@ -15,15 +16,15 @@ hterm.Screen.Tests = new lib.TestManager.Suite('hterm.Screen.Tests');
  *
  * Called before each test case in this suite.
  */
-hterm.Screen.Tests.prototype.preamble = function(result, cx) {
+beforeEach(function() {
   this.screen = new hterm.Screen();
   this.screen.setColumnCount(80);
-};
+});
 
 /**
  * Test the push and pop functionality of the hterm.Screen.
  */
-hterm.Screen.Tests.addTest('push-pop', function(result, cx) {
+it('push-pop', function() {
     // Push one at a time.
     var ary = [];
     for (var i = 0; i < 10; i++) {
@@ -60,14 +61,12 @@ hterm.Screen.Tests.addTest('push-pop', function(result, cx) {
     for (var i = 0; i < 5; i++) {
       assert.equal(ary[i + 5], popary[i], 'i:' + i);
     }
-
-    result.pass();
   });
 
 /**
  * Test the unshift and shift functionality of the hterm.Screen.
  */
-hterm.Screen.Tests.addTest('unshift-shift', function(result, cx) {
+it('unshift-shift', function() {
     // Unshift one at a time.
     var ary = [];
     for (var i = 0; i < 10; i++) {
@@ -104,14 +103,12 @@ hterm.Screen.Tests.addTest('unshift-shift', function(result, cx) {
     for (var i = 0; i < 5; i++) {
       assert.equal(ary[i], shiftary[i], 'i:' + i);
     }
-
-    result.pass();
   });
 
 /**
  * Test cursor positioning functionality.
  */
-hterm.Screen.Tests.addTest('cursor-movement', function(result, cx) {
+it('cursor-movement', function() {
     var ary = [];
 
     for (var i = 0; i < 3; i++) {
@@ -201,14 +198,12 @@ hterm.Screen.Tests.addTest('cursor-movement', function(result, cx) {
     assert.strictEqual(this.screen.cursorRowNode_, ary[2]);
     assert.strictEqual(this.screen.cursorNode_, ary[2].childNodes[4]);
     assert.equal(this.screen.cursorOffset_, 10);
-
-    result.pass();
   });
 
 /**
  * Test character removal.
  */
-hterm.Screen.Tests.addTest('delete-chars', function(result, cx) {
+it('delete-chars', function() {
     var row = document.createElement('div');
     row.innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
     this.screen.pushRow(row);
@@ -246,15 +241,13 @@ hterm.Screen.Tests.addTest('delete-chars', function(result, cx) {
     this.screen.deleteChars(6);
 
     assert.equal(wc_row.innerHTML, '');
-
-    result.pass();
   });
 
 /**
  * Test replacing the start of a wide character with a narrow char.
  * https://crbug.com/577691
  */
-hterm.Screen.Tests.addTest('wide-to-narrow-char-start', function(result, cx) {
+it('wide-to-narrow-char-start', function() {
     const row = document.createElement('div');
     this.screen.pushRow(row);
 
@@ -273,15 +266,13 @@ hterm.Screen.Tests.addTest('wide-to-narrow-char-start', function(result, cx) {
     this.screen.setCursorPosition(0, 2);
     this.screen.overwriteString('x');
     assert.equal('abx ef', row.textContent);
-
-    result.pass();
   });
 
 /**
  * Test replacing the end of a wide character with a narrow char.
  * https://crbug.com/577691
  */
-hterm.Screen.Tests.addTest('wide-to-narrow-char-end', function(result, cx) {
+it('wide-to-narrow-char-end', function() {
     const row = document.createElement('div');
     this.screen.pushRow(row);
 
@@ -300,14 +291,12 @@ hterm.Screen.Tests.addTest('wide-to-narrow-char-end', function(result, cx) {
     this.screen.setCursorPosition(0, 3);
     this.screen.overwriteString('x');
     assert.equal('ab xef', row.textContent);
-
-    result.pass();
   });
 
 /**
  * Test the ability to insert text in a line.
  */
-hterm.Screen.Tests.addTest('insert', function(result, cx) {
+it('insert', function() {
     // Sample rows.  Row 0 is a simple, empty row.  Row 1 simulates rows with
     // mixed text attributes.
     var ary = [document.createElement('div'), document.createElement('div'),
@@ -403,14 +392,12 @@ hterm.Screen.Tests.addTest('insert', function(result, cx) {
                  '<span class="wc-node">\u6587</span>' +
                  '<span class="wc-node">\u5B57</span>' +
                  '<span class="wc-node">\u4E32</span>XX');
-
-    result.pass();
   });
 
 /**
  * Test the ability to overwrite test.
  */
-hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
+it('overwrite', function() {
     var ary = [];
     ary[0] = document.createElement('div');
     ary[0].innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
@@ -505,14 +492,12 @@ hterm.Screen.Tests.addTest('overwrite', function(result, cx) {
                  '    ' +
                  '<span class="wc-node">\u5B57</span>' +
                  '<span class="wc-node">\u4E32</span>');
-
-    result.pass();
   });
 
 /**
  * Check whitespace insertion handling.
  */
-hterm.Screen.Tests.addTest('whitespace-fill', function(result, cx) {
+it('whitespace-fill', function() {
   const ta = this.screen.textAttributes;
   const row = document.createElement('div');
   this.screen.pushRow(row);
@@ -593,15 +578,13 @@ hterm.Screen.Tests.addTest('whitespace-fill', function(result, cx) {
                'style: wavy; text-decoration-line: underline;">bye</span>');
   ta.reset();
   this.screen.clearCursorRow();
-
-  result.pass();
 });
 
 /**
  * Test expanding strings when selecting.
  */
-hterm.Screen.Tests.addTest('expand-selection', function(result, cx) {
-  const document = cx.window.document;
+it('expand-selection', function() {
+  const document = window.document;
   const row = document.createElement('x-row');
   document.body.appendChild(row);
 
@@ -635,6 +618,6 @@ hterm.Screen.Tests.addTest('expand-selection', function(result, cx) {
   assert.equal('https://www.google.com/', selection.toString());
 
   document.body.removeChild(row);
+});
 
-  result.pass();
 });

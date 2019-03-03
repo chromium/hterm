@@ -7,26 +7,25 @@
 /**
  * @fileoverview hterm.AccessibilityReader unit tests.
  */
-hterm.AccessibilityReader.Tests = new lib.TestManager.Suite(
-    'hterm.AccessibilityReader.Tests');
+
+describe('hterm_accessibility_reader_tests.js', () => {
 
 /**
  * Set up state for all the tests in this suite.
  */
-hterm.AccessibilityReader.Tests.prototype.setup = function(cx) {
+before(() => {
   // Stub out the delay loops.  We don't have to worry about waiting for input
   // from the user to accumulate as we don't do that.
   hterm.AccessibilityReader.DELAY = 0;
-};
+});
 
-/**
- * Clear out the current document and create a new hterm.AccessibilityReader
- * object for testing.
+/*
+ * Create a new hterm.AccessibilityReader object for testing.
  *
  * Called before each test case in this suite.
  */
-hterm.AccessibilityReader.Tests.prototype.preamble = function(result, cx) {
-  const document = cx.window.document;
+beforeEach(function() {
+  const document = window.document;
 
   const div = this.div = document.createElement('div');
   div.style.position = 'absolute';
@@ -39,22 +38,21 @@ hterm.AccessibilityReader.Tests.prototype.preamble = function(result, cx) {
   this.assertiveLiveElement = this.liveElement.nextSibling;
 
   document.body.appendChild(div);
-};
+});
 
 /**
  * Clean up the hterm.AccessibilityReader object.
  */
-hterm.AccessibilityReader.Tests.prototype.postamble = function(result, cx) {
+afterEach(function() {
   window.document.body.removeChild(this.div);
-};
+});
 
 /**
  * Test that printing text to the terminal will cause nodes to be added to the
  * live region for accessibility purposes. This shouldn't happen until after a
  * small delay has passed.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-live-region-single-delay', function(result, cx) {
+it('a11y-live-region-single-delay', function(done) {
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
   this.accessibilityReader.newLine();
@@ -66,13 +64,10 @@ hterm.AccessibilityReader.Tests.addTest(
     assert.equal('Some test output Some other test output\nMore output',
                  this.liveElement.getAttribute('aria-label'));
     observer.disconnect();
-    result.pass();
+    done();
   });
 
   observer.observe(this.liveElement, {attributes: true});
-  // This should only need to be 2x the initial delay but we wait longer to
-  // avoid flakiness.
-  result.requestTime(500);
 });
 
 
@@ -80,8 +75,7 @@ hterm.AccessibilityReader.Tests.addTest(
  * Test that after text has been added to the live region, there is again a
  * delay before adding more text.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-live-region-double-delay', function(result, cx) {
+it('a11y-live-region-double-delay', function(done) {
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
   this.accessibilityReader.newLine();
@@ -114,22 +108,18 @@ hterm.AccessibilityReader.Tests.addTest(
 
     if (checksToComplete.length == 0) {
       observer.disconnect();
-      result.pass();
+      done();
     }
   });
 
   observer.observe(this.liveElement, {attributes: true});
-  // This should only need to be 2x the initial delay but we wait longer to
-  // avoid flakiness.
-  result.requestTime(500);
 });
 
 /**
  * Test that adding the same text twice to the live region gets slightly
  * modified to trigger an attribute change.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-live-region-duplicate-text', function(result, cx) {
+it('a11y-live-region-duplicate-text', function(done) {
   this.accessibilityReader.announce('Some test output');
 
   assert.equal('', this.liveElement.getAttribute('aria-label'));
@@ -157,50 +147,42 @@ hterm.AccessibilityReader.Tests.addTest(
 
     if (checksToComplete.length == 0) {
       observer.disconnect();
-      result.pass();
+      done();
     }
   });
 
   observer.observe(this.liveElement, {attributes: true});
-  // This should only need to be 2x the initial delay but we wait longer to
-  // avoid flakiness.
-  result.requestTime(500);
 });
 
 /**
  * Test that adding text to the assertive live region works correctly.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-assertive-live-region', function(result, cx) {
+it('a11y-assertive-live-region', function() {
   this.accessibilityReader.assertiveAnnounce('Some test output');
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
                'Some test output');
   this.accessibilityReader.clear();
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
-  result.pass();
 });
 
 /**
  * Test that adding the same text twice to the assertive live region gets
  * slightly modified to trigger an attribute change.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-assertive-live-region-duplicate-text', function(result, cx) {
+it('a11y-assertive-live-region-duplicate-text', function() {
   this.accessibilityReader.assertiveAnnounce('Some test output');
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
                'Some test output');
   this.accessibilityReader.assertiveAnnounce('Some test output');
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
                '\nSome test output');
-  result.pass();
 });
 
 /**
  * Test that adding text to the assertive live region interrupts polite
  * announcements.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-assertive-live-region-interrupts-polite', function(result, cx) {
+it('a11y-assertive-live-region-interrupts-polite', function(done) {
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
   this.accessibilityReader.newLine();
@@ -213,7 +195,7 @@ hterm.AccessibilityReader.Tests.addTest(
   // announce the 'PASS' string which comes after all the output above.
   const observer = new MutationObserver(() => {
     if (this.liveElement.getAttribute('aria-label') == 'PASS') {
-      result.pass();
+      done();
     } else {
       assert.equal(this.liveElement.getAttribute('aria-label'), '');
     }
@@ -225,16 +207,12 @@ hterm.AccessibilityReader.Tests.addTest(
                'Some test output');
 
   this.accessibilityReader.announce('PASS');
-
-  // Wait a time to ensure that nothing is announced from liveElement.
-  result.requestTime(250);
 });
 
 /**
  * Test that nothing is announced when accessibility is disabled.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-disabled-enabled', function(result, cx) {
+it('a11y-disabled-enabled', function(done) {
   this.accessibilityReader.setAccessibilityEnabled(false);
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
@@ -249,21 +227,18 @@ hterm.AccessibilityReader.Tests.addTest(
 
   const observer = new MutationObserver(() => {
     if (this.liveElement.getAttribute('aria-label') == 'Other output') {
-      result.pass();
+      done();
     } else {
       assert.equal(this.liveElement.getAttribute('aria-label'), '');
     }
   });
   observer.observe(this.liveElement, {attributes: true});
-
-  result.requestTime(250);
 });
 
 /**
  * Test that when accessibility is disabled, nothing else will be announced.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-enabled-disabled', function(result, cx) {
+it('a11y-enabled-disabled', function(done) {
   this.accessibilityReader.announce('Some test output');
   this.accessibilityReader.announce('Some other test output');
   this.accessibilityReader.newLine();
@@ -276,7 +251,7 @@ hterm.AccessibilityReader.Tests.addTest(
   // above.
   const observer = new MutationObserver(() => {
     if (this.liveElement.getAttribute('aria-label') == 'PASS') {
-      result.pass();
+      done();
     } else {
       assert.equal(this.liveElement.getAttribute('aria-label'), '');
     }
@@ -287,9 +262,6 @@ hterm.AccessibilityReader.Tests.addTest(
 
   this.accessibilityReader.setAccessibilityEnabled(true);
   this.accessibilityReader.announce('PASS');
-
-  // Wait a time to ensure that nothing is announced from liveElement.
-  result.requestTime(250);
 });
 
 /**
@@ -297,8 +269,7 @@ hterm.AccessibilityReader.Tests.addTest(
  * These are not performance sensitive so they don't need to be gated on the
  * flag.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-assertive-disabled-enabled', function(result, cx) {
+it('a11y-assertive-disabled-enabled', function() {
   this.accessibilityReader.setAccessibilityEnabled(false);
 
   this.accessibilityReader.assertiveAnnounce('Some test output');
@@ -310,29 +281,23 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.assertiveAnnounce('More test output');
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
                'More test output');
-
-  result.pass();
 });
 
 /**
  * Regression test for a bug that is caused by adding 2 newlines and then
  * calling announce. In this case an exception was thrown.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-newlines-then-announce', function(result, cx) {
+it('a11y-newlines-then-announce', function() {
   this.accessibilityReader.newLine();
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('Some test output');
-
-  result.pass();
 });
 
 /**
  * Test that moving the cursor left/right through output will cause the output
  * to get assertively announced.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-selection-change-left-right', function(result, cx) {
+it('a11y-selection-change-left-right', function() {
   // Move the cursor right 1 character.
   // Simulatue a user gesture.
   this.accessibilityReader.hasUserGesture = true;
@@ -402,16 +367,13 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 1, 1);
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
-
-  result.pass();
 });
 
 /**
  * Test that other announcements are properly ignored or spoken when navigating
  * left and right through output.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-selection-change-left-right-with-announce', function(result, cx) {
+it('a11y-selection-change-left-right-with-announce', function(done) {
   // Move the cursor 1 character. In the process of doing this, a space
   // character is printed somewhere in the terminal. It should get consumed and
   // not announced as it may just be a side effect of the cursor change.
@@ -433,20 +395,17 @@ hterm.AccessibilityReader.Tests.addTest(
   // still gets announced.
   const observer = new MutationObserver(() => {
     if (this.liveElement.getAttribute('aria-label') == 'foo bar') {
-      result.pass();
+      done();
     }
   });
   observer.observe(this.liveElement, {attributes: true});
-
-  result.requestTime(250);
 });
 
 /**
  * Test that changes to the cursor due to backspace and deletion are properly
  * announced.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-selection-change-backspace-delete', function(result, cx) {
+it('a11y-selection-change-backspace-delete', function() {
   // Backspace a character at the start of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
@@ -534,16 +493,13 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
-
-  result.pass();
 });
 
 /**
  * Test that other output isn't announced during a backspace/deletion selection
  * change.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-selection-change-backspace-with-announce', function(result, cx) {
+it('a11y-selection-change-backspace-with-announce', function(done) {
   // Backspace a character. If other text is announced to the terminal in the
   // process, we ignore it. This is because lots of updates can happen during a
   // backspace (e.g. all the characers after the deleted character need to be
@@ -560,19 +516,16 @@ hterm.AccessibilityReader.Tests.addTest(
 
   const observer = new MutationObserver(() => {
     if (this.liveElement.getAttribute('aria-label') == 'foo') {
-      result.pass();
+      done();
     }
   });
   observer.observe(this.liveElement, {attributes: true});
-
-  result.requestTime(250);
 });
 
 /**
  * Test that entering a space character triggers 'Space' to be spoken.
  */
-hterm.AccessibilityReader.Tests.addTest(
-    'a11y-selection-space', function(result, cx) {
+it('a11y-selection-space', function() {
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
@@ -601,6 +554,6 @@ hterm.AccessibilityReader.Tests.addTest(
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);
   assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+});
 
-  result.pass();
 });

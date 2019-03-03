@@ -4,6 +4,10 @@
 
 'use strict';
 
+describe('hterm_scrollport_tests.js', () => {
+
+describe('scrollport', () => {
+
 /**
  * A mock accessibility reader which will simply record the last string passed
  * to assertiveAnnounce.
@@ -23,17 +27,15 @@ MockAccessibilityReader.prototype.assertiveAnnounce = function(str) {
   this.lastStringAnnounced = str;
 };
 
-hterm.ScrollPort.Tests = new lib.TestManager.Suite('hterm.ScrollPort.Tests');
-
 /**
  * Set up some common state.
  */
-hterm.ScrollPort.Tests.prototype.setup = function(cx) {
+before(function() {
   this.visibleColumnCount = 80;
   this.visibleRowCount = 25;
   this.totalRowCount = 10000;
 
-  var document = cx.window.document;
+  const document = window.document;
 
   this.rowProvider = new MockRowProvider(document, this.totalRowCount);
 
@@ -44,14 +46,21 @@ hterm.ScrollPort.Tests.prototype.setup = function(cx) {
   div.style.height = '100%';
   div.style.width = '100%';
   document.body.appendChild(div);
-};
+});
+
+/**
+ * Remove the scrollport we added earlier.
+ */
+after(function() {
+  document.body.removeChild(this.div);
+});
 
 /**
  * Ensure the selection is collapsed, row caching is on, and we've got a fresh
  * scrollport to test on.
  */
-hterm.ScrollPort.Tests.prototype.preamble = function(result, cx, done) {
-  var selection = cx.window.getSelection();
+beforeEach(function(done) {
+  const selection = window.getSelection();
   if (!selection.isCollapsed)
     selection.collapseToStart();
 
@@ -64,22 +73,22 @@ hterm.ScrollPort.Tests.prototype.preamble = function(result, cx, done) {
     this.scrollPort.resize();
     done();
   });
-};
+});
 
 /**
  * Delete the scrollport we created for the test.
  */
-hterm.ScrollPort.Tests.prototype.postamble = function(result, cx) {
+afterEach(function() {
   while (this.div.firstChild) {
     this.div.removeChild(this.div.firstChild);
   }
-};
+});
 
 /**
  * Basic test to make sure that the viewport contains the right number of
  * rows at the right places after some scrolling.
  */
-hterm.ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
+it('basic-scroll', function() {
     var topRow = this.scrollPort.getTopRowIndex();
     assert.equal(topRow, 0);
     assert.equal(this.scrollPort.getBottomRowIndex(topRow),
@@ -90,14 +99,12 @@ hterm.ScrollPort.Tests.addTest('basic-scroll', function(result, cx) {
     assert.equal(topRow, this.totalRowCount - this.visibleRowCount);
     assert.equal(this.scrollPort.getBottomRowIndex(topRow),
                  this.totalRowCount - 1);
-
-    result.pass();
   });
 
 /**
  * Do not scroll for prevented, or non-cancelable wheel events.
  */
-hterm.ScrollPort.Tests.addTest('scroll-cancelable', function(result, cx) {
+it('scroll-cancelable', function() {
   assert.equal(this.scrollPort.getTopRowIndex(), 0);
   const rowsToScroll = 10;
   const rowAfterEvent = (options) => {
@@ -116,14 +123,12 @@ hterm.ScrollPort.Tests.addTest('scroll-cancelable', function(result, cx) {
 
   // Scroll if not prevented, and cancelable.
   assert.equal(rowAfterEvent({cancelable: true}), rowsToScroll);
-
-  result.pass();
 });
 
 /**
  * Make sure the hterm.ScrollPort is reusing the same row nodes when it can.
  */
-hterm.ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
+it('node-recycler', function() {
     // Force a sync redraw before we get started so we know we're done
     // calling getRowNode.
     this.scrollPort.redraw_();
@@ -138,14 +143,12 @@ hterm.ScrollPort.Tests.addTest('node-recycler', function(result, cx) {
 
     // Scrolling from 0 to 1 should result in only one call to getRowNode.
     assert.equal(count, 1);
-
-    result.pass();
   });
 
 /**
  * Make sure the selection is maintained even after scrolling off screen.
  */
-hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
+it('scroll-selection', function() {
     var doc = this.scrollPort.getDocument();
 
     var s = doc.getSelection();
@@ -153,7 +156,7 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
     // an approximation using addRange, but it automatically merges sibling
     // ranges and selects the parent node.  Ignore this test on IE for now.
     if (!s.extend) {
-      result.pass();
+      return;
     }
 
     // Scroll into a part of the buffer that can be scrolled off the top
@@ -190,15 +193,12 @@ hterm.ScrollPort.Tests.addTest('scroll-selection', function(result, cx) {
       assert.strictEqual(anchorNode, s.anchorNode);
       assert.strictEqual(focusNode, s.focusNode);
     }
-
-    result.pass();
   });
 
 /**
  * Make sure the selection is maintained for a collapsed selection.
  */
-hterm.ScrollPort.Tests.addTest(
-    'scroll-selection-collapsed', function(result, cx) {
+it('scroll-selection-collapsed', function() {
   const doc = this.scrollPort.getDocument();
 
   const s = doc.getSelection();
@@ -260,26 +260,23 @@ hterm.ScrollPort.Tests.addTest(
 
   assert.notStrictEqual(anchorNode, s.anchorNode);
   assert.notStrictEqual(anchorNode, s.focusNode);
-
-  result.pass();
 });
 
 /**
  * Test the select-all function.
  */
-hterm.ScrollPort.Tests.addTest('select-all', function(result, cx) {
+it('select-all', function() {
     this.scrollPort.selectAll();
     assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
     assert.equal(this.totalRowCount - 1,
                  this.scrollPort.selection.endRow.rowIndex);
-    result.pass();
   });
 
 /**
  * Test that the page up/down buttons are onscreen when selected but offscreen
  * otherwise.
  */
-hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
+it('page-up-down-visible', function() {
   const doc = this.scrollPort.getDocument();
 
   this.scrollPort.allowScrollButtonsToDisplay_ = true;
@@ -312,8 +309,6 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
 
   assert.isAtMost(pageDown.getBoundingClientRect().bottom,
                   this.scrollPort.getScreenHeight());
-
-  result.pass();
 });
 
 /**
@@ -321,7 +316,7 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
  * isn't enabled.
  *
  */
-hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
+it('page-up-down-hidden', function() {
   const doc = this.scrollPort.getDocument();
 
   this.scrollPort.allowScrollButtonsToDisplay_ = true;
@@ -354,14 +349,12 @@ hterm.ScrollPort.Tests.addTest('page-up-down-hidden', function(result, cx) {
 
   assert.isAtLeast(pageDown.getBoundingClientRect().top,
                    this.scrollPort.getScreenHeight());
-
-  result.pass();
 });
 
 /**
  * Test that clicking page up/down causes the viewport to scroll up/down.
  */
-hterm.ScrollPort.Tests.addTest('page-up-down-scroll', function(result, cx) {
+it('page-up-down-scroll', function() {
   const doc = this.scrollPort.getDocument();
 
   const topRow = 50;
@@ -375,15 +368,13 @@ hterm.ScrollPort.Tests.addTest('page-up-down-scroll', function(result, cx) {
   const pageUp = doc.getElementById('hterm:a11y:page-up');
   pageUp.dispatchEvent(new Event('click'));
   assert.equal(this.scrollPort.getTopRowIndex(), topRow);
-
-  result.pass();
 });
 
 /**
  * Test that the page up/down buttons are enabled/disabled correctly at the top
  * and bottom of the scrollport.
  */
-hterm.ScrollPort.Tests.addTest('page-up-down-state', function(result, cx) {
+it('page-up-down-state', function() {
   const doc = this.scrollPort.getDocument();
   const pageUp = doc.getElementById('hterm:a11y:page-up');
   const pageDown = doc.getElementById('hterm:a11y:page-down');
@@ -402,15 +393,13 @@ hterm.ScrollPort.Tests.addTest('page-up-down-state', function(result, cx) {
   this.scrollPort.redraw_();
   assert.equal(pageUp.getAttribute('aria-disabled'), 'false');
   assert.equal(pageDown.getAttribute('aria-disabled'), 'true');
-
-  result.pass();
 });
 
 /**
  * Test that paging up/down causes the screen contents to be announced
  * correctly.
  */
-hterm.ScrollPort.Tests.addTest('page-up-down-announce', function(result, cx) {
+it('page-up-down-announce', function() {
   const doc = this.scrollPort.getDocument();
 
   this.scrollPort.scrollRowToTop(0);
@@ -514,16 +503,13 @@ hterm.ScrollPort.Tests.addTest('page-up-down-announce', function(result, cx) {
       'This is line 2046 red green yellow blue magenta cyan\n' +
       'This is line 2047 red green yellow blue magenta cyan\n' +
       'This is line 2048 red green yellow blue magenta cyan\n');
-
-  result.pass();
 });
 
 /**
  * Test that paging up/down when at the top/bottom of the screen doesn't trigger
  * any announcement.
  */
-hterm.ScrollPort.Tests.addTest(
-    'page-up-down-dont-announce', function(result, cx) {
+it('page-up-down-dont-announce', function() {
   const doc = this.scrollPort.getDocument();
 
   this.scrollPort.scrollRowToTop(0);
@@ -538,14 +524,12 @@ hterm.ScrollPort.Tests.addTest(
   const pageDown = doc.getElementById('hterm:a11y:page-down');
   pageDown.dispatchEvent(new Event('click'));
   assert.equal(mockAccessibilityReader.lastStringAnnounced, '');
-
-  result.pass();
 });
 
 /**
  * Make sure that offscreen elements are marked aria-hidden.
  */
-hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
+it('scroll-selection-hidden', function() {
   const doc = this.scrollPort.getDocument();
 
   const s = doc.getSelection();
@@ -553,7 +537,6 @@ hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
   // an approximation using addRange, but it automatically merges sibling
   // ranges and selects the parent node.  Ignore this test on IE for now.
   if (!s.extend) {
-    result.pass();
     return;
   }
 
@@ -598,8 +581,6 @@ hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
 
   assert.equal(anchorRow.getAttribute('aria-hidden'), 'true');
   assert.equal(focusRow.getAttribute('aria-hidden'), 'true');
-
-  result.pass();
 });
 
 /**
@@ -609,8 +590,8 @@ hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
  * This should always be the last test of the suite, since it leaves the user
  * with a full page scrollPort to poke at.
  */
-hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
-    var document = cx.window.document;
+it('fullscreen', function() {
+    const document = window.document;
 
     const rowProvider = new MockRowProvider(document, this.totalRowCount);
 
@@ -630,12 +611,11 @@ hterm.ScrollPort.Tests.addTest('fullscreen', function(result, cx) {
     assert.equal(divSize.height, hterm.getClientHeight(scrollPort.iframe_));
 
     document.body.removeChild(div);
-
-    result.pass();
   });
 
-hterm.ScrollPort.DragAndDropTests =
-    new lib.TestManager.Suite('hterm.ScrollPort.DragAndDrop.Tests');
+});
+
+describe('DragAndDrop', () => {
 
 /**
  * We can't generate useful DragEvents as the dataTransfer member is forced
@@ -648,100 +628,90 @@ const MockDragEvent = function(shift) {
   this.preventDefault = () => {};
 };
 
-hterm.ScrollPort.DragAndDropTests.prototype.preamble = function(cx) {
+beforeEach(function() {
   // Create a new port since so the subscribe event doesn't stick to
   // this.scrollPort across multiple tests.
   this.scrollPort = new hterm.ScrollPort();
-};
+});
 
 /**
  * A single text/plain element.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text', function(result, cx) {
+it('drag-drop-text', function(done) {
   const e = new MockDragEvent();
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
     assert.equal('plain', e.text);
-    result.pass();
+    done();
   });
   this.scrollPort.onDragAndDrop_(e);
-
-  result.requestTime(200);
 });
 
 /**
  * Pick between text & html based on shift key not pressed.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-no-shift', function(result, cx) {
+it('drag-drop-text-no-shift', function(done) {
   const e = new MockDragEvent();
   e.dataTransfer.setData('text/html', 'html');
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
     assert.equal('plain', e.text);
-    result.pass();
+    done();
   });
   this.scrollPort.onDragAndDrop_(e);
-
-  result.requestTime(200);
 });
 
 /**
  * Pick between text & html based on shift key pressed.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-shift', function(result, cx) {
+it('drag-drop-text-shift', function(done) {
   const e = new MockDragEvent(true /* shift */);
   e.dataTransfer.setData('text/html', 'html');
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
     assert.equal('html', e.text);
-    result.pass();
+    done();
   });
   this.scrollPort.onDragAndDrop_(e);
-
-  result.requestTime(200);
 });
 
 /**
  * Verify fallback when first source is empty & shift key is not pressed.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-no-shift', function(result, cx) {
+it('drag-drop-text-fallback-no-shift', function(done) {
   const e = new MockDragEvent();
   e.dataTransfer.setData('text/html', '');
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
     assert.equal('plain', e.text);
-    result.pass();
+    done();
   });
   this.scrollPort.onDragAndDrop_(e);
-
-  result.requestTime(200);
 });
 
 /**
  * Verify fallback when first source is empty & shift key is pressed.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-text-fallback-shift', function(result, cx) {
+it('drag-drop-text-fallback-shift', function(done) {
   const e = new MockDragEvent(true /* shift */);
   e.dataTransfer.setData('text/html', '');
   e.dataTransfer.setData('text/plain', 'plain');
 
   this.scrollPort.subscribe('paste', (e) => {
     assert.equal('plain', e.text);
-    result.pass();
+    done();
   });
   this.scrollPort.onDragAndDrop_(e);
-
-  result.requestTime(200);
 });
 
 /**
  * Verify paste doesn't happen if it's disabled.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-disabled', function(result, cx) {
+it('drag-drop-disabled', function() {
   const e = new MockDragEvent();
   this.scrollPort.subscribe('paste', assert.fail);
 
@@ -749,15 +719,12 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-disabled', function(result,
 
   e.dataTransfer.setData('text/plain', 'plain');
   this.scrollPort.onDragAndDrop_(e);
-
-  result.requestTime(1000);
-  setTimeout(() => result.pass(), 100);
 });
 
 /**
  * Verify bad sources don't trigger paste events.
  */
-hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-unusable', function(result, cx) {
+it('drag-drop-unusable', function() {
   const e = new MockDragEvent();
   this.scrollPort.subscribe('paste', assert.fail);
 
@@ -768,7 +735,8 @@ hterm.ScrollPort.DragAndDropTests.addTest('drag-drop-unusable', function(result,
   // Neither should empty text.
   e.dataTransfer.setData('text/plain', '');
   this.scrollPort.onDragAndDrop_(e);
+});
 
-  result.requestTime(1000);
-  setTimeout(() => result.pass(), 100);
+});
+
 });

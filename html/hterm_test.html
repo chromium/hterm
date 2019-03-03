@@ -5,6 +5,10 @@
 
     <!-- npm modules -->
     <script src='../../node_modules/chai/chai.js'></script>
+    <script src='../../node_modules/mocha/mocha.js'></script>
+
+    <!-- initialize the test framework; this must come first -->
+    <script src='../js/hterm_test.js'></script>
 
     <script src='../dist/js/hterm_deps.js'></script>
     <script src='../dist/js/hterm_resources.js'></script>
@@ -32,7 +36,6 @@
     <script src='../js/hterm_vt.js'></script>
     <script src='../js/hterm_vt_character_map.js'></script>
 
-    <script src='../../libdot/js/lib_test_manager.js'></script>
     <script src='../js/hterm_mock_row_provider.js'></script>
     <script src='../js/hterm_mock_notification.js'></script>
 
@@ -54,32 +57,10 @@
     <script src='../js/hterm_vt_canned_tests.js'></script>
     <script src='../js/hterm_vt_character_map_tests.js'></script>
 
-    <script src='../js/hterm_test.js'></script>
-
-    <style>
-      body {
-        color: white;
-        background-color: black;
-        font-family: sans-serif;
-        font-size: larger;
-      }
-      .good {
-        color: green;
-      }
-      .bad {
-        color: red;
-      }
-      pre#log {
-        white-space: pre-wrap;
-      }
-    </style>
+    <link href='../../node_modules/mocha/mocha.css' rel='stylesheet'/>
   </head>
 
   <body>
-    <p>Check JavaScript console for test log/status.</p>
-    <p id='status'>Running...</p>
-    <p id='passed' class='good'></p>
-    <p id='failed' class='bad'></p>
-    <pre id='log'></pre>
+    <div id='mocha'></div>
   </body>
 </html>

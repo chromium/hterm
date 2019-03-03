@@ -8,32 +8,30 @@
  * @fileoverview hterm unit tests.  Specifically for core/high-level functions.
  */
 
-hterm.Tests = new lib.TestManager.Suite('hterm.Tests');
-
-hterm.notify.Tests = new lib.TestManager.Suite('hterm.notify.Tests');
+describe('hterm_tests.js', () => {
 
 /**
  * Mock out notifications.
  *
  * Called before each test case in this suite.
  */
-hterm.notify.Tests.prototype.preamble = function(result, cx) {
+beforeEach(() => {
   MockNotification.start();
-};
+});
 
 /**
  * Restore any mocked out objects.
  *
  * Called after each test case in this suite.
  */
-hterm.notify.Tests.prototype.postamble = function(result, cx) {
+afterEach(() => {
   MockNotification.stop();
-};
+});
 
 /**
  * Test that basic notifications work.
  */
-hterm.notify.Tests.addTest('default-notification', function(result, cx) {
+it('default-notification', () => {
   var n;
 
   // Create a default notification.
@@ -45,14 +43,12 @@ hterm.notify.Tests.addTest('default-notification', function(result, cx) {
   assert.equal(typeof n.title, 'string');
   assert.notEqual(n.title, '');
   assert.equal(n.body, '');
-
-  result.pass();
 });
 
 /**
  * Test that various notifications arguments work.
  */
-hterm.notify.Tests.addTest('notification-fields', function(result, cx) {
+it('notification-fields', () => {
   var n;
 
   // Create the notification.
@@ -63,15 +59,13 @@ hterm.notify.Tests.addTest('notification-fields', function(result, cx) {
   // Check the parameters.
   assert.include(n.title, 'title');
   assert.equal(n.body, 'body');
-
-  result.pass();
 });
 
 /**
  * Test copying content via execCommand.
  */
-hterm.notify.Tests.addTest('copy-execCommand', function(result, cx) {
-  const doc = cx.window.document;
+it('copy-execCommand', (done) => {
+  const doc = window.document;
 
   // Mock out newer clipboard API to make sure we don't use it.
   let oldClipboardWrite;
@@ -92,9 +86,13 @@ hterm.notify.Tests.addTest('copy-execCommand', function(result, cx) {
 
     const s = doc.getSelection();
     assert.equal('copypasta!', s.toString());
-    result.pass();
+    done();
   };
 
+  // Mock the newer API too.
+  navigator.clipboard.writeText = undefined;
+
   hterm.copySelectionToClipboard(doc, 'copypasta!');
-  result.requestTime(500);
+});
+
 });
