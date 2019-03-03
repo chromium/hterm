@@ -67,9 +67,6 @@ hterm.PubSub.Tests.addTest('parameter', function(result, cx) {
  * Test that the final callback is invoked, even if nobody has subscribed.
  */
 hterm.PubSub.Tests.addTest('forever-alone', function(result, cx) {
-    result.pass();
-    return;
-
     var calledLast = false;
 
     function last(param) { calledLast = true; }
@@ -79,11 +76,14 @@ hterm.PubSub.Tests.addTest('forever-alone', function(result, cx) {
 
     obj.publish('test', null, last);
 
-    setTimeout(function() {
-        assert.isTrue(calledLast);
-        console.log('PASS');
+    const check = () => {
+      if (calledLast) {
         result.pass();
-      }, 100);
+      } else {
+        setTimeout(check, 1);
+      }
+    };
+    check();
 
     result.requestTime(200);
   });
@@ -111,12 +111,17 @@ hterm.PubSub.Tests.addTest('exception', function(result, cx) {
 
     result.expectErrorMessage('EXPECTED_EXCEPTION');
 
-    setTimeout(function() {
+    const check = () => {
+      if (calledLast) {
         assert.isFalse(calledFoo);
         assert.isTrue(calledBar);
         assert.isTrue(calledLast);
         result.pass();
-      }, 100);
+      } else {
+        setTimeout(check, 1);
+      }
+    };
+    check();
 
     result.requestTime(200);
   });
