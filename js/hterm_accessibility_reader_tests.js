@@ -11,6 +11,15 @@ hterm.AccessibilityReader.Tests = new lib.TestManager.Suite(
     'hterm.AccessibilityReader.Tests');
 
 /**
+ * Set up state for all the tests in this suite.
+ */
+hterm.AccessibilityReader.Tests.prototype.setup = function(cx) {
+  // Stub out the delay loops.  We don't have to worry about waiting for input
+  // from the user to accumulate as we don't do that.
+  hterm.AccessibilityReader.DELAY = 0;
+};
+
+/**
  * Clear out the current document and create a new hterm.AccessibilityReader
  * object for testing.
  *
