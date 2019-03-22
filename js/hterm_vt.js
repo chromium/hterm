@@ -1353,7 +1353,7 @@ hterm.VT.ESC[']'] = function(parseState) {
     }
 
     // We're done.
-    var ary = parseState.args[0].match(/^(\d+);(.*)$/);
+    var ary = parseState.args[0].match(/^(\d+);?(.*)$/);
     if (ary) {
       parseState.args[0] = ary[2];
       this.dispatch('OSC', ary[1], parseState);

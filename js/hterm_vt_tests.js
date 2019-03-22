@@ -2149,6 +2149,31 @@ hterm.VT.Tests.addTest('OSC-50, cursor shapes', function(result, cx) {
   });
 
 /**
+ * Verify resetting the color palette.
+ */
+hterm.VT.Tests.addTest('OSC-104', function(result, cx) {
+  let resultString;
+  this.terminal.io.sendString = (str) => resultString = str;
+
+  // Change the terminal palette.
+  this.terminal.interpret('\x1b]4;1;rgb:0100/0100/0100\x07');
+
+  // Verify it changed.
+  this.terminal.interpret('\x1b]4;1;?\x07');
+  assert.equal(resultString, '\x1b]4;1;rgb:0101/0101/0101\x07');
+
+  // Reset it.  We omit the ; here on purpose.
+  resultString = '';
+  this.terminal.interpret('\x1b]104\x07');
+
+  // Verify it changed.
+  this.terminal.interpret('\x1b]4;1;?\x07');
+  assert.equal(resultString, '\x1b]4;1;rgb:cccc/0000/0000\x07');
+
+  result.pass();
+});
+
+/**
  * Verify resetting text foreground color.
  */
 hterm.VT.Tests.addTest('OSC-110', function(result, cx) {
