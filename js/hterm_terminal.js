@@ -2948,7 +2948,7 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
     });
   }
 
-  this.zoomWarningNode_.textContent = lib.MessageManager.replaceReferences(
+  this.zoomWarningNode_.textContent = lib.i18n.replaceReferences(
       hterm.zoomWarningMessage,
       [parseInt(this.scrollPort_.characterSize.zoomFactor * 100)]);
 
