@@ -606,7 +606,7 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
 hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;
   if (!maxLength)
-    return [str];
+    return;
 
   if (wcwidth === undefined)
     wcwidth = lib.wc.strWidth(str);
