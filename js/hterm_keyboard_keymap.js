@@ -283,7 +283,11 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [221, ']}',    DEFAULT,             ctl(']'),  DEFAULT, DEFAULT],
     [220, '\\|',   DEFAULT,             ctl('\\'), DEFAULT, DEFAULT],
 
-    // Fourth row. (We let Ctrl-Shift-J pass for Chrome DevTools.)
+    // Fourth row. We let Ctrl-Shift-J pass for Chrome DevTools.
+    // To be compliant with xterm's behavior for modifiers on Enter
+    // would mean maximizing the window with Alt-Enter... so we don't
+    // want to do that. Our behavior on Enter is what most other
+    // modern emulators do.
     [20,  '[CAPS]',  PASS,    PASS,                           PASS,    DEFAULT],
     [65,  'aA',      DEFAULT, ctl('A'),                       DEFAULT, DEFAULT],
     [83,  'sS',      DEFAULT, ctl('S'),                       DEFAULT, DEFAULT],
@@ -296,7 +300,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     [76,  'lL',      DEFAULT, sh(ctl('L'), PASS),             DEFAULT, DEFAULT],
     [keycapSC, ';:', DEFAULT, STRIP,                          DEFAULT, DEFAULT],
     [222, '\'"',     DEFAULT, STRIP,                          DEFAULT, DEFAULT],
-    [13,  '[ENTER]', '\r',    CANCEL,                         CANCEL,  DEFAULT],
+    [13,  '[ENTER]', '\r',    DEFAULT,                        DEFAULT, DEFAULT],
 
     // Fifth row.  This includes the copy/paste shortcuts.  On some
     // platforms it's Ctrl-C/V, on others it's Meta-C/V.  We assume either
