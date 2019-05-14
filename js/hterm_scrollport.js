@@ -98,6 +98,10 @@ hterm.ScrollPort = function(rowProvider) {
 
   this.observers_ = {};
 
+  // Offscreen selection rows that are set with 'aria-hidden'.
+  // They must be unset when selection changes or the rows are visible.
+  this.ariaHiddenSelectionRows_ = [];
+
   this.DEBUG_ = false;
 };
 
@@ -1051,6 +1055,7 @@ hterm.ScrollPort.prototype.redraw_ = function() {
   this.drawTopFold_(topRowIndex);
   this.drawBottomFold_(bottomRowIndex);
   this.drawVisibleRows_(topRowIndex, bottomRowIndex);
+  this.ariaHideOffscreenSelectionRows_(topRowIndex, bottomRowIndex);
 
   this.syncRowNodesDimensions_();
 
@@ -1278,6 +1283,36 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
 
   if (node != this.bottomFold_)
     removeUntilNode(node, bottomFold);
+};
+
+/**
+ * Ensure aria-hidden is set on any selection rows that are offscreen.
+ *
+ * The attribute aria-hidden is set to 'true' so that hidden rows are ignored
+ * by screen readers.  We keep a list of currently hidden rows so they can be
+ * reset each time this function is called as the selection and/or scrolling
+ * may have changed.
+ *
+ * @param {number} topRowIndex Index of top row on screen.
+ * @param {number} bottomRowIndex Index of bottom row on screen.
+ */
+hterm.ScrollPort.prototype.ariaHideOffscreenSelectionRows_ = function(
+    topRowIndex, bottomRowIndex) {
+  // Reset previously hidden selection rows.
+  const hiddenRows = this.ariaHiddenSelectionRows_;
+  let row;
+  while (row = hiddenRows.pop()) {
+    row.removeAttribute('aria-hidden');
+  }
+
+  function checkRow(row) {
+    if (row && (row.rowIndex < topRowIndex || row.rowIndex > bottomRowIndex)) {
+      row.setAttribute('aria-hidden', 'true');
+      hiddenRows.push(row);
+    }
+  }
+  checkRow(this.selection.startRow);
+  checkRow(this.selection.endRow);
 };
 
 /**

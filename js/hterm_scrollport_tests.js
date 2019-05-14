@@ -506,6 +506,66 @@ hterm.ScrollPort.Tests.addTest(
 });
 
 /**
+ * Make sure that offscreen elements are marked aria-hidden.
+ */
+hterm.ScrollPort.Tests.addTest('scroll-selection-hidden', function(result, cx) {
+  const doc = this.scrollPort.getDocument();
+
+  const s = doc.getSelection();
+  // IE does not supposed the extend method on selections.  They support
+  // an approximation using addRange, but it automatically merges sibling
+  // ranges and selects the parent node.  Ignore this test on IE for now.
+  if (!s.extend) {
+    result.pass();
+    return;
+  }
+
+  // Scroll into a part of the buffer that can be scrolled off the top
+  // and the bottom of the screen.
+  this.scrollPort.scrollRowToTop(1000);
+
+  // Force a synchronous redraw.  We'll need to DOM to be correct in order
+  // to alter the selection.
+  this.scrollPort.redraw_();
+
+  // And select some text in the middle of the visible range.
+  const anchorRow = this.rowProvider.getRowNode(1003);
+  let anchorNode = anchorRow;
+  while (anchorNode.firstChild)
+    anchorNode = anchorNode.firstChild;
+  s.collapse(anchorNode, 0);
+
+  const focusRow = this.rowProvider.getRowNode(1004);
+  let focusNode = focusRow;
+  while (focusNode.lastChild)
+    focusNode = focusNode.lastChild;
+  s.extend(focusNode, focusNode.length || 0);
+
+  assert.isNull(anchorRow.getAttribute('aria-hidden'));
+  assert.isNull(focusRow.getAttribute('aria-hidden'));
+
+  this.scrollPort.scrollRowToTop(0);
+  this.scrollPort.redraw_();
+
+  assert.equal(anchorRow.getAttribute('aria-hidden'), 'true');
+  assert.equal(focusRow.getAttribute('aria-hidden'), 'true');
+
+  this.scrollPort.scrollRowToTop(1000);
+  this.scrollPort.redraw_();
+
+  assert.isNull(anchorRow.getAttribute('aria-hidden'));
+  assert.isNull(focusRow.getAttribute('aria-hidden'));
+
+  this.scrollPort.scrollRowToTop(2000);
+  this.scrollPort.redraw_();
+
+  assert.equal(anchorRow.getAttribute('aria-hidden'), 'true');
+  assert.equal(focusRow.getAttribute('aria-hidden'), 'true');
+
+  result.pass();
+});
+
+/**
  * Remove the scrollPort that was set up and leave the user with a full-page
  * scroll port.
  *
