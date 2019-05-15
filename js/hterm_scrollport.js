@@ -473,11 +473,7 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
     const accessibilityEnabled = this.accessibilityReader_ &&
         this.accessibilityReader_.accessibilityEnabled;
 
-    const selection = this.document_.getSelection();
-    let selectedElement;
-    if (selection.anchorNode && selection.anchorNode.parentElement) {
-      selectedElement = selection.anchorNode.parentElement;
-    }
+    const selectedElement = this.document_.getSelection().anchorNode;
     if (accessibilityEnabled && selectedElement == this.scrollUpButton_) {
       this.scrollUpButton_.style.top = '0px';
     } else {

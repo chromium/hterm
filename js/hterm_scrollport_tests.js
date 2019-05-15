@@ -257,7 +257,7 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
 
   selection.removeAllRanges();
   let range = document.createRange();
-  range.selectNodeContents(pageUp.firstChild);
+  range.selectNodeContents(pageUp);
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
@@ -269,7 +269,7 @@ hterm.ScrollPort.Tests.addTest('page-up-down-visible', function(result, cx) {
 
   selection.removeAllRanges();
   range = document.createRange();
-  range.selectNodeContents(pageDown.firstChild);
+  range.selectNodeContents(pageDown);
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
