@@ -72,7 +72,7 @@ hterm.VT.CannedTests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
+hterm.VT.CannedTests.prototype.preamble = function(result, cx, done) {
   var document = cx.window.document;
 
   var div = document.createElement('div');
@@ -94,6 +94,11 @@ hterm.VT.CannedTests.prototype.preamble = function(result, cx) {
     // The canned tests want access to graphics charsets, so make sure the
     // encoding is not utf-8 (as we might default to).
     this.terminal.vt.setEncoding('iso-2022');
+
+    this.terminal.setCursorPosition(0, 0);
+    this.terminal.setCursorVisible(true);
+
+    done();
   };
 };
 
@@ -121,8 +126,6 @@ hterm.VT.CannedTests.addTest = function(fileName) {
   function testProxy(result, cx) {
     var self = this;
     setTimeout(function() {
-        self.terminal.setCursorPosition(0, 0);
-        self.terminal.setCursorVisible(true);
         self.loadCannedData(result, fileName, self.testCannedData.bind(self));
       }, 0);
 

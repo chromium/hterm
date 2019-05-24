@@ -25,7 +25,7 @@ hterm.VT.Tests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.VT.Tests.prototype.preamble = function(result, cx) {
+hterm.VT.Tests.prototype.preamble = function(result, cx, done) {
   var document = cx.window.document;
 
   var div = document.createElement('div');
@@ -41,6 +41,11 @@ hterm.VT.Tests.prototype.preamble = function(result, cx) {
   this.terminal.decorate(div);
   this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.setHeight(this.visibleRowCount);
+  this.terminal.onTerminalReady = () => {
+    this.terminal.setCursorPosition(0, 0);
+    this.terminal.setCursorVisible(true);
+    done();
+  };
 
   MockNotification.start();
 };
@@ -55,29 +60,6 @@ hterm.VT.Tests.prototype.postamble = function(result, cx) {
   this.terminal.setCursorBlink(false);
 
   MockNotification.stop();
-};
-
-/**
- * Overridden addTest method.
- *
- * Every test in this suite needs to wait for the terminal initialization to
- * complete asynchronously.  Rather than stick a bunch of boilerplate into each
- * test case, we use this overridden addTest method to add a proxy around the
- * actual test.
- */
-hterm.VT.Tests.addTest = function(name, callback) {
-  function testProxy(result, cx) {
-    var self = this;
-    setTimeout(function() {
-        self.terminal.setCursorPosition(0, 0);
-        self.terminal.setCursorVisible(true);
-        callback.apply(self, [result, cx]);
-      }, 0);
-
-    result.requestTime(200);
-  }
-
-  lib.TestManager.Suite.addTest.apply(this, [name, testProxy]);
 };
 
 /**
@@ -298,6 +280,9 @@ hterm.VT.Tests.addTest('8-bit-control', function(result, cx) {
       // to be called on accident with no parameter.
       title = t || 'XXX';
     };
+
+    // This test checks 8-bit handling in ISO-2022 mode.
+    this.terminal.vt.setEncoding('iso-2022');
 
     assert.isFalse(this.terminal.vt.enable8BitControl);
 
@@ -2486,6 +2471,9 @@ hterm.VT.Tests.addTest('fullscreen', function(result, cx) {
  * Verify switching character maps works.
  */
 hterm.VT.Tests.addTest('character-maps', function(result, cx) {
+    // This test checks graphics handling in ISO-2022 mode.
+    this.terminal.vt.setEncoding('iso-2022');
+
     // Create a line with all the printable characters.
     var i, line = '';
     for (i = 0x20; i < 0x7f; ++i)
@@ -2519,6 +2507,9 @@ hterm.VT.Tests.addTest('character-maps', function(result, cx) {
  * Verify DOCS (encoding) switching behavior.
  */
 hterm.VT.Tests.addTest('docs', function(result, cx) {
+    // This test checks graphics handling in ISO-2022 mode.
+    this.terminal.vt.setEncoding('iso-2022');
+
     // Create a line with all the printable characters.
     var i, graphicsLine, line = '';
     for (i = 0x20; i < 0x7f; ++i)
@@ -2587,6 +2578,9 @@ hterm.VT.Tests.addTest('docs', function(result, cx) {
  * Verify DOCS (encoding) invalid escapes don't mess things up.
  */
 hterm.VT.Tests.addTest('docs-invalid', function(result, cx) {
+    // This test checks graphics handling in ISO-2022 mode.
+    this.terminal.vt.setEncoding('iso-2022');
+
     // Check the default encoding (ECMA-35).
     assert.isFalse(this.terminal.vt.codingSystemUtf8_);
     assert.isFalse(this.terminal.vt.codingSystemLocked_);

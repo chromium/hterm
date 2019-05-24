@@ -28,7 +28,7 @@ hterm.Terminal.Tests.prototype.setup = function(cx) {
  *
  * Called before each test case in this suite.
  */
-hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
+hterm.Terminal.Tests.prototype.preamble = function(result, cx, done) {
   var document = cx.window.document;
 
   var div = this.div = document.createElement('div');
@@ -43,6 +43,10 @@ hterm.Terminal.Tests.prototype.preamble = function(result, cx) {
   this.terminal.decorate(div);
   this.terminal.setHeight(this.visibleRowCount);
   this.terminal.setWidth(this.visibleColumnCount);
+  this.terminal.onTerminalReady = () => {
+    this.terminal.setCursorPosition(0, 0);
+    done();
+  };
 
   MockNotification.start();
 };
@@ -56,28 +60,6 @@ hterm.Terminal.Tests.prototype.postamble = function(result, cx) {
   MockNotification.stop();
 
   document.body.removeChild(this.div);
-};
-
-/**
- * Overridden addTest method.
- *
- * Every test in this suite needs to wait for the terminal initialization to
- * complete asynchronously.  Rather than stick a bunch of boilerplate into each
- * test case, we use this overridden addTest method to add a proxy around the
- * actual test.
- */
-hterm.Terminal.Tests.addTest = function(name, callback) {
-  function testProxy(result, cx) {
-    var self = this;
-    setTimeout(function() {
-        self.terminal.setCursorPosition(0, 0);
-        callback.apply(self, [result, cx]);
-      }, 0);
-
-    result.requestTime(200);
-  }
-
-  lib.TestManager.Suite.addTest.apply(this, [name, testProxy]);
 };
 
 /**
