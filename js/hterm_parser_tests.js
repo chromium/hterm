@@ -4,10 +4,20 @@
 
 'use strict';
 
+/**
+ * @fileoverview hterm.Parser unit tests.
+ */
+
 hterm.Parser.Tests =
     new lib.TestManager.Suite('hterm.Parser.Tests');
 
-hterm.Parser.Tests.prototype.negKeySeq = function(result, input, pattern) {
+/**
+ * Helper to check parseKeySequence failing behavior.
+ *
+ * @param {string} input The key sequence to parse.
+ * @param {RegExp} pattern The error message checker.
+ */
+const negKeySeq = function(input, pattern) {
   try {
     var p = new hterm.Parser();
     p.reset(input);
@@ -40,7 +50,7 @@ hterm.Parser.Tests.addTest('sequence-identifiers', function(result) {
   checkResult('Ent', 13);
   checkResult('esc', 27);
 
-  this.negKeySeq(result, 'FOO', /Unknown key: FOO/);
+  negKeySeq('FOO', /Unknown key: FOO/);
 
   result.pass();
 });
@@ -81,17 +91,17 @@ hterm.Parser.Tests.addTest('modifiers', function(result) {
   checkResult('Shift-Ctrl-Alt-*-X', true, true, true, '*');
   checkResult('Shift-Ctrl-Alt-Meta-*-X', true, true, true, true);
 
-  this.negKeySeq(result, 'shft-X', /Unknown key: shft$/);
-  this.negKeySeq(result, 'SHFT-X', /Unknown key: SHFT$/);
-  this.negKeySeq(result, 'Foo-X', /Unknown key: Foo$/);
-  this.negKeySeq(result, 'Ctrl-Foo-X', /Unknown key: Foo$/);
-  this.negKeySeq(result, 'Ctrl-Ctrl-X', /Duplicate modifier: Ctrl$/);
-  this.negKeySeq(result, 'Control-Ctrl-X', /Duplicate modifier: Ctrl$/);
-  this.negKeySeq(result, 'Ctrl', /Missing target key$/);
-  this.negKeySeq(result, 'Ctrl-Alt"', /Missing target key$/);
-  this.negKeySeq(result, 'Ctrl-', /Missing target key$/);
-  this.negKeySeq(result, 'Ctrl-X-Alt', /Extra definition after target key$/);
-  this.negKeySeq(result, 'toString-X', /Unknown key: toString$/);
+  negKeySeq('shft-X', /Unknown key: shft$/);
+  negKeySeq('SHFT-X', /Unknown key: SHFT$/);
+  negKeySeq('Foo-X', /Unknown key: Foo$/);
+  negKeySeq('Ctrl-Foo-X', /Unknown key: Foo$/);
+  negKeySeq('Ctrl-Ctrl-X', /Duplicate modifier: Ctrl$/);
+  negKeySeq('Control-Ctrl-X', /Duplicate modifier: Ctrl$/);
+  negKeySeq('Ctrl', /Missing target key$/);
+  negKeySeq('Ctrl-Alt"', /Missing target key$/);
+  negKeySeq('Ctrl-', /Missing target key$/);
+  negKeySeq('Ctrl-X-Alt', /Extra definition after target key$/);
+  negKeySeq('toString-X', /Unknown key: toString$/);
 
   result.pass();
 });
