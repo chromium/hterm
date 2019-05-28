@@ -245,6 +245,14 @@ hterm.PreferenceManager.defaultPreferences = {
       `should be on, second is how long it should be off.`
   ),
 
+  'cursor-shape': hterm.PreferenceManager.definePref_(
+      'Text cursor shape',
+      hterm.PreferenceManager.categories.Appearance,
+      'BLOCK', ['BLOCK', 'BEAM', 'UNDERLINE'],
+      `The shape of the visible text cursor. This can be toggled at ` +
+      `runtime via terminal escape sequences.`
+  ),
+
   'cursor-color': hterm.PreferenceManager.definePref_(
       'Text cursor color',
       hterm.PreferenceManager.categories.Appearance,

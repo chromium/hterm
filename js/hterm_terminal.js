@@ -305,6 +305,10 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.setCursorBlink(!!v);
     },
 
+    'cursor-shape': function(v) {
+      terminal.setCursorShape(v);
+    },
+
     'cursor-blink-cycle': function(v) {
         if (v instanceof Array &&
             typeof v[0] == 'number' &&
