@@ -2861,22 +2861,18 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
 
   switch (shape) {
     case hterm.Terminal.cursorShape.BEAM:
-      style.height = 'var(--hterm-charsize-height)';
       style.backgroundColor = 'transparent';
       style.borderBottomStyle = null;
       style.borderLeftStyle = 'solid';
       break;
 
     case hterm.Terminal.cursorShape.UNDERLINE:
-      style.height = this.scrollPort_.characterSize.baseline + 'px';
       style.backgroundColor = 'transparent';
       style.borderBottomStyle = 'solid';
-      // correct the size to put it exactly at the baseline
       style.borderLeftStyle = null;
       break;
 
     default:
-      style.height = 'var(--hterm-charsize-height)';
       style.backgroundColor = 'var(--hterm-cursor-color)';
       style.borderBottomStyle = null;
       style.borderLeftStyle = null;

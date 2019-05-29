@@ -874,7 +874,6 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
                             rulerSize.height / numberOfLines);
 
   this.ruler_.appendChild(this.rulerBaseline_);
-  size.baseline = this.rulerBaseline_.offsetTop;
   this.ruler_.removeChild(this.rulerBaseline_);
 
   this.rowNodes_.removeChild(this.ruler_);
