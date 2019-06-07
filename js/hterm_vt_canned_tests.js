@@ -114,67 +114,14 @@ hterm.VT.CannedTests.prototype.postamble = function(result, cx) {
 };
 
 /**
- * Overridden addTest method.
- *
- * This takes only a filename, and constructs a test function that will load
- * the specified canned data and test it out.
- *
- * @param {string} fileName The path to the file containing the canned data
- *     to test.
- */
-hterm.VT.CannedTests.addTest = function(fileName) {
-  function testProxy(result, cx) {
-    var self = this;
-    setTimeout(function() {
-        self.loadCannedData(result, fileName, self.testCannedData.bind(self));
-      }, 0);
-
-    result.requestTime(5000);
-  }
-
-  var ary = fileName.match(/([^\/.]+)(\.[^.]+)?$/);
-  lib.TestManager.Suite.addTest.apply(this, [ary[1], testProxy]);
-};
-
-/**
- * Load canned data using XMLHttpRequest.
- *
- * If the data fails to load the test case will fail.
- *
- * @param {TestManager.Result} result The result object associated with this
- *     test.
- * @param {string} fileName The path to the file containing the canned data
- *     load.
- * @param {function} callback The function to call when the data has been
- *     loaded.
- */
-hterm.VT.CannedTests.prototype.loadCannedData = function(
-    result, fileName, callback) {
-  var xhr = new XMLHttpRequest();
-  window.xhr = xhr;
-
-  xhr.open('GET', fileName);
-  xhr.onreadystatechange = function() {
-    if (this.readyState != 4)
-      return;
-
-    assert(this.status == 200 || this.status == 0);
-    callback(result, this.responseText);
-  };
-
-  xhr.send(null);
-};
-
-/**
  * Test a can of data.
  *
  * @param {TestManager.Result} result The result object associated with this
  *     test.
- * @param {string} data The canned data, including header.
+ * @param {string} name The name of canned test.
  */
-hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
-  // Make sure we got some data.
-  assert.isTrue(!!data, 'canned data is not empty');
+hterm.VT.CannedTests.prototype.testCannedData = function(result, name) {
+  let data = lib.resource.getData(`hterm/test/canned/${name}`);
 
   var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/);
   // And that it has optional lead-in comments followed by a header.
@@ -230,8 +177,14 @@ hterm.VT.CannedTests.prototype.testCannedData = function(result, data) {
 /**
  * A pre-recorded session of vttest menu option 1, 'Test of cursor movements'.
  */
-hterm.VT.CannedTests.addTest('../test_data/vttest-01.log');
+hterm.VT.CannedTests.addTest('vttest-01', function(result) {
+  this.testCannedData(result, 'vttest-01');
+});
 
-hterm.VT.CannedTests.addTest('../test_data/vttest-02.log');
+hterm.VT.CannedTests.addTest('vttest-02', function(result) {
+  this.testCannedData(result, 'vttest-02');
+});
 
-hterm.VT.CannedTests.addTest('../test_data/charsets.log');
+hterm.VT.CannedTests.addTest('charsets', function(result) {
+  this.testCannedData(result, 'charsets');
+});

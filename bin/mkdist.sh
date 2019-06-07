@@ -26,12 +26,13 @@ cd "${BIN_DIR}/.."
 
 function do_concat() {
   local outdir="$1"
-  local concat=( concat )
 
-  insist "${concat[@]}" -i ./concat/hterm_deps.concat -o "$outdir/hterm_deps.js"
-  insist "${concat[@]}" -i ./concat/hterm_resources.concat -o \
+  insist concat -i ./concat/hterm_deps.concat -o "$outdir/hterm_deps.js"
+  insist concat -i ./concat/hterm_resources.concat -o \
     "$outdir/hterm_resources.js"
-  insist "${concat[@]}" -i ./concat/hterm.concat -o "$outdir/hterm.js"
+  insist concat -i ./concat/hterm.concat -o "$outdir/hterm.js"
+  insist concat -i ./concat/hterm_test_resources.concat -o \
+    "$outdir/hterm_test_resources.js"
 
   cat "$outdir/hterm_deps.js" "$outdir/hterm_resources.js" \
     "$outdir/hterm.js" > "$outdir/hterm_all.js"

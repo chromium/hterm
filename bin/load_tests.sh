@@ -45,7 +45,6 @@ fi
 # such a request.
 "${CHROME_BIN}" \
   "file:///$(pwd)/html/hterm_test.html" \
-  --allow-file-access-from-files \
   --unlimited-quota-for-files \
   --user-data-dir="${CHROME_TEST_PROFILE}" \
   &>/dev/null </dev/null &

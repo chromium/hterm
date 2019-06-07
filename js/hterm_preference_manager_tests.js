@@ -23,68 +23,58 @@ hterm.PreferenceManager.Tests.addTest('pref-messages-sync', function(result, cx)
   const titleIdToMsgId = (id) => `TITLE_PREF_${toMsgId(id)}`;
 
   // Load the translations database from nassh.
-  hterm.messageManager.loadMessages(
-      '../../nassh/_locales/en/messages.json',
-      () => {
-        // Walk the loaded message ids and check for stale entries.
-        Object.entries(hterm.messageManager.messages).forEach(
-            ([msgId, nasshMsg]) => {
-              if (msgId.startsWith('HTERM_PREF_')) {
-                const key = msgIdToHelpId(msgId);
-                assert.property(
-                    hterm.PreferenceManager.defaultPreferences, key,
-                    `stale ${msgId} help translation for key ${key}`);
-              }
+  const messages = lib.resource.getData('hterm/test/messages');
+  hterm.messageManager.addMessages(messages);
 
-              if (msgId.startsWith('HTERM_TITLE_PREF_')) {
-                let found = false;
-                hterm.PreferenceManager.categoryDefinitions.forEach((def) => {
-                  if (msgId == 'HTERM_' + titleIdToMsgId(def.id))
-                    found = true;
-                });
-                assert.isTrue(found,
-                              `stale ${msgId} translation for category`);
-              }
+  // Walk the loaded message ids and check for stale entries.
+  Object.entries(hterm.messageManager.messages).forEach(
+      ([msgId, nasshMsg]) => {
+        if (msgId.startsWith('HTERM_PREF_')) {
+          const key = msgIdToHelpId(msgId);
+          assert.property(hterm.PreferenceManager.defaultPreferences, key,
+                          `stale ${msgId} help translation for key ${key}`);
+        }
 
-              if (msgId.startsWith('HTERM_NAME_PREF_')) {
-                const key = msgIdToNameId(msgId);
-                assert.property(
-                    hterm.PreferenceManager.defaultPreferences, key,
-                    `stale ${msgId} name translation for key ${key}`);
-              }
-            });
+        if (msgId.startsWith('HTERM_TITLE_PREF_')) {
+          let found = false;
+          hterm.PreferenceManager.categoryDefinitions.forEach((def) => {
+            if (msgId == 'HTERM_' + titleIdToMsgId(def.id)) {
+              found = true;
+            }
+          });
+          assert.isTrue(found, `stale ${msgId} translation for category`);
+        }
 
-        // Walk the local hterm prefs and make sure they match the nassh copy.
-        Object.entries(hterm.PreferenceManager.defaultPreferences).forEach(
-            ([key, entry]) => {
-              // Check the pref name text.
-              const nameId = nameIdToMsgId(key);
-              const htermNameMsg = entry['name'];
-              const nasshNameMsg = hterm.msg(nameId);
-              assert.equal(htermNameMsg, nasshNameMsg, nameId);
+        if (msgId.startsWith('HTERM_NAME_PREF_')) {
+          const key = msgIdToNameId(msgId);
+          assert.property(hterm.PreferenceManager.defaultPreferences, key,
+                          `stale ${msgId} name translation for key ${key}`);
+        }
+      });
 
-              // Check the help text.
-              const helpId = helpIdToMsgId(key);
-              const htermHelpMsg = entry['help'];
-              const nasshHelpMsg = hterm.msg(helpId);
-              assert.equal(htermHelpMsg, nasshHelpMsg, helpId);
-            });
+  // Walk the local hterm prefs and make sure they match the nassh copy.
+  Object.entries(hterm.PreferenceManager.defaultPreferences).forEach(
+      ([key, entry]) => {
+        // Check the pref name text.
+        const nameId = nameIdToMsgId(key);
+        const htermNameMsg = entry['name'];
+        const nasshNameMsg = hterm.msg(nameId);
+        assert.equal(htermNameMsg, nasshNameMsg, nameId);
 
-        // Walk the hterm categories and make sure they match the nassh copy.
-        hterm.PreferenceManager.categoryDefinitions.forEach((def) => {
-          const msgId = titleIdToMsgId(def.id);
-          const htermMsg = def.text;
-          const nasshMsg = hterm.msg(msgId);
-          assert.equal(htermMsg, nasshMsg, msgId);
-        });
+        // Check the help text.
+        const helpId = helpIdToMsgId(key);
+        const htermHelpMsg = entry['help'];
+        const nasshHelpMsg = hterm.msg(helpId);
+        assert.equal(htermHelpMsg, nasshHelpMsg, helpId);
+      });
 
-        result.pass();
-      },
-      (xhr) => {
-        console.warn('skipping test: unable to load messages.json');
-        result.pass();
-      }
-  );
+  // Walk the hterm categories and make sure they match the nassh copy.
+  hterm.PreferenceManager.categoryDefinitions.forEach((def) => {
+    const msgId = titleIdToMsgId(def.id);
+    const htermMsg = def.text;
+    const nasshMsg = hterm.msg(msgId);
+    assert.equal(htermMsg, nasshMsg, msgId);
+  });
 
-  result.requestTime(200);
+  result.pass();
 });

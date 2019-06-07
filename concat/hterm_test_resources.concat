@@ -1,0 +1,10 @@
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file lists the hterm test dependencies.
+
+@resource hterm/test/messages raw < ../../nassh/_locales/en/messages.json
+@resource hterm/test/canned/charsets text/plain < ../test_data/charsets.log
+@resource hterm/test/canned/vttest-01 text/plain < ../test_data/vttest-01.log
+@resource hterm/test/canned/vttest-02 text/plain < ../test_data/vttest-02.log
