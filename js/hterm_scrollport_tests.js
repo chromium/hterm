@@ -25,6 +25,9 @@ MockAccessibilityReader.prototype.assertiveAnnounce = function(str) {
 
 hterm.ScrollPort.Tests = new lib.TestManager.Suite('hterm.ScrollPort.Tests');
 
+/**
+ * Set up some common state.
+ */
 hterm.ScrollPort.Tests.prototype.setup = function(cx) {
   this.visibleColumnCount = 80;
   this.visibleRowCount = 25;
@@ -32,36 +35,44 @@ hterm.ScrollPort.Tests.prototype.setup = function(cx) {
 
   var document = cx.window.document;
 
-  document.body.innerHTML = '';
-
   this.rowProvider = new MockRowProvider(document, this.totalRowCount);
 
+  // The scrollport will attach to this.
   var div = document.createElement('div');
+  this.div = div;
   div.style.position = 'relative';
   div.style.height = '100%';
   div.style.width = '100%';
   document.body.appendChild(div);
-
-  this.scrollPort = new hterm.ScrollPort(this.rowProvider);
-  this.scrollPort.decorate(div);
-  div.style.height = (this.scrollPort.characterSize.height *
-                      this.visibleRowCount + 1 + 'px');
-  this.scrollPort.resize();
 };
 
 /**
- * Ensure the selection is collapsed, row caching is on, and we're at the
- * top of the scroll port.
+ * Ensure the selection is collapsed, row caching is on, and we've got a fresh
+ * scrollport to test on.
  */
-hterm.ScrollPort.Tests.prototype.preamble = function(result, cx) {
+hterm.ScrollPort.Tests.prototype.preamble = function(result, cx, done) {
   var selection = cx.window.getSelection();
   if (!selection.isCollapsed)
     selection.collapseToStart();
 
   this.rowProvider.setCacheEnabled(true);
 
-  this.scrollPort.scrollRowToBottom(this.totalRowCount);
-  this.scrollPort.scrollRowToTop(0);
+  this.scrollPort = new hterm.ScrollPort(this.rowProvider);
+  this.scrollPort.decorate(this.div, () => {
+    this.div.style.height = (this.scrollPort.characterSize.height *
+                             this.visibleRowCount + 1 + 'px');
+    this.scrollPort.resize();
+    done();
+  });
+};
+
+/**
+ * Delete the scrollport we created for the test.
+ */
+hterm.ScrollPort.Tests.prototype.postamble = function(result, cx) {
+  while (this.div.firstChild) {
+    this.div.removeChild(this.div.firstChild);
+  }
 };
 
 /**
