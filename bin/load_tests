@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Run unittests in a new browser."""
+
+from __future__ import print_function
+
+import os
+import subprocess
+import sys
+
+import hterm
+import libdot
+
+
+# Path to our html test page.
+TEST_PAGE = os.path.join(hterm.DIR, 'html', 'hterm_test.html')
+
+
+def main(argv):
+    """The main func!"""
+    subprocess.check_call([os.path.join(hterm.BIN_DIR, 'mkdist.sh')])
+    return libdot.html_test_runner_main(argv, 'file://%s' % (TEST_PAGE,))
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

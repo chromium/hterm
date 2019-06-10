@@ -41,7 +41,7 @@ See the [libapps hacking document](../../HACK.md) for details.
 
 # Tests
 
-The `./bin/load_tests.sh` script can be used to launch a new instance of Chrome
+The `./bin/load_tests` script can be used to launch a new instance of Chrome
 in an isolated profile, with the necessary command line arguments, and load the
 hterm test cases.  Test results will appear in the JavaScript console.
 
