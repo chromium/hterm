@@ -9,4 +9,4 @@
 @resource hterm/concat/date text/plain date %a, %d %b %Y %H:%M:%S +0000
 @resource hterm/changelog/version text/plain changelog version
 @resource hterm/changelog/date text/plain changelog date
-@resource hterm/git/HEAD text/plain $ echo ${VCSID:-$(git rev-parse HEAD 2>/dev/null)}
+@resource hterm/git/HEAD text/plain git-rev HEAD
