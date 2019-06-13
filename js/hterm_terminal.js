@@ -1065,14 +1065,22 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
  * @param {number} rowCount The number of rows.
  */
 hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
-  if (columnCount != this.screenSize.width)
-    this.realizeWidth_(columnCount);
+  let notify = false;
 
-  if (rowCount != this.screenSize.height)
+  if (columnCount != this.screenSize.width) {
+    notify = true;
+    this.realizeWidth_(columnCount);
+  }
+
+  if (rowCount != this.screenSize.height) {
+    notify = true;
     this.realizeHeight_(rowCount);
+  }
 
   // Send new terminal size to plugin.
-  this.io.onTerminalResize_(columnCount, rowCount);
+  if (notify) {
+    this.io.onTerminalResize_(columnCount, rowCount);
+  }
 };
 
 /**
@@ -1093,6 +1101,10 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
     throw new Error('Attempt to realize bad width: ' + columnCount);
 
   var deltaColumns = columnCount - this.screen_.getWidth();
+  if (deltaColumns == 0) {
+    // No change, so don't bother recalculating things.
+    return;
+  }
 
   this.screenSize.width = columnCount;
   this.screen_.setColumnCount(columnCount);
@@ -1130,6 +1142,10 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
     throw new Error('Attempt to realize bad height: ' + rowCount);
 
   var deltaRows = rowCount - this.screen_.getHeight();
+  if (deltaRows == 0) {
+    // No change, so don't bother recalculating things.
+    return;
+  }
 
   this.screenSize.height = rowCount;
 
