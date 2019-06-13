@@ -39,19 +39,19 @@
  *
  * The screen initially has no rows and a maximum column count of 0.
  *
- * @param {integer} opt_columnCount The maximum number of columns for this
+ * @param {integer=} columnCount The maximum number of columns for this
  *    screen.  See insertString() and overwriteString() for information about
  *    what happens when too many characters are added too a row.  Defaults to
  *    0 if not provided.
  */
-hterm.Screen = function(opt_columnCount) {
+hterm.Screen = function(columnCount=0) {
   /**
    * Public, read-only access to the rows in this screen.
    */
   this.rowsArray = [];
 
   // The max column width for this screen.
-  this.columnCount_ = opt_columnCount || 80;
+  this.columnCount_ = columnCount;
 
   // The current color, bold, underline and blink attributes.
   this.textAttributes = new hterm.TextAttributes(window.document);
