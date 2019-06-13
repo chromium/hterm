@@ -3059,6 +3059,10 @@ hterm.Terminal.prototype.setAlternateMode = function(state) {
     }
   }
 
+  // NB: We specifically do not use realizeSize_ because that's optimized to
+  // elide updates when the size is the same which is the most common scenario
+  // at this point.  We need the other cascading changes from switching the
+  // underlying screen to be processed.
   this.realizeWidth_(this.screenSize.width);
   this.realizeHeight_(this.screenSize.height);
   this.scrollPort_.syncScrollHeight();
