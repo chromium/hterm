@@ -18,7 +18,7 @@ before(function() {
   this.imageBase64 = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1' +
                      'mabHWZy6t1U/htQAEAOw==';
   this.imageArrayBuffer = lib.codec.stringToCodeUnitArray(
-      this.imageBase64, Uint8Array).buffer;
+      atob(this.imageBase64), Uint8Array).buffer;
   this.imageBlob = new Blob([this.imageArrayBuffer]);
 });
 
@@ -445,6 +445,62 @@ it('display-img-normal', function(done) {
     inline: true,
     align: 'center',
     uri: `data:application/octet-stream;base64,${this.imageBase64}`,
+  }, onLoad, assert.fail);
+}).timeout(DISPLAY_IMAGE_TIMEOUT);
+
+/**
+ * Check simple image display handling via ArrayBuffer.
+ */
+it('display-img-array-buffer', function(done) {
+  this.terminal.allowImagesInline = true;
+
+  // Callback when loading finishes.
+  const onLoad = () => {
+    assert.equal(1, this.terminal.getCursorRow());
+    const row = this.terminal.getRowNode(0);
+    const container = row.childNodes[1];
+    const img = container.childNodes[0];
+
+    assert.equal('center', container.style.textAlign);
+    assert.equal(2, img.clientHeight);
+
+    done();
+  };
+
+  // Display an image that only takes up one row.
+  this.terminal.displayImage({
+    height: '2px',
+    inline: true,
+    align: 'center',
+    buffer: this.imageArrayBuffer,
+  }, onLoad, assert.fail);
+}).timeout(DISPLAY_IMAGE_TIMEOUT);
+
+/**
+ * Check simple image display handling via Blob.
+ */
+it('display-img-blob', function(done) {
+  this.terminal.allowImagesInline = true;
+
+  // Callback when loading finishes.
+  const onLoad = () => {
+    assert.equal(1, this.terminal.getCursorRow());
+    const row = this.terminal.getRowNode(0);
+    const container = row.childNodes[1];
+    const img = container.childNodes[0];
+
+    assert.equal('center', container.style.textAlign);
+    assert.equal(2, img.clientHeight);
+
+    done();
+  };
+
+  // Display an image that only takes up one row.
+  this.terminal.displayImage({
+    height: '2px',
+    inline: true,
+    align: 'center',
+    buffer: this.imageBlob,
   }, onLoad, assert.fail);
 }).timeout(DISPLAY_IMAGE_TIMEOUT);
 
