@@ -1935,6 +1935,23 @@ it('OSC-52', function(done) {
   });
 
 /**
+ * Verify invalid OSC 52 content is ignored.
+ */
+it('OSC-52-invalid', function() {
+  // Mock this out since we can't document.execCommand from the
+  // test harness.
+  let old_cCSTC = hterm.copySelectionToClipboard;
+  hterm.copySelectionToClipboard = function(document, str) {
+    hterm.copySelectionToClipboard = old_cCSTC;
+    assert.fail();
+  };
+
+  this.terminal.interpret('\x1b]52;c;!@#$%^&*\x07hello');
+  const text = this.terminal.getRowsText(0, 1);
+  assert.equal(text, 'hello');
+});
+
+/**
  * Test that OSC 52 works when large strings are split across multiple interpret
  * calls.
  */

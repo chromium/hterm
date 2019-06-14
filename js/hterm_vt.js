@@ -1873,7 +1873,13 @@ hterm.VT.OSC['52'] = function(parseState) {
   if (!args)
     return;
 
-  var data = window.atob(args[1]);
+  let data;
+  try {
+    data = window.atob(args[1]);
+  } catch (e) {
+    // If the user sent us invalid base64 content, silently ignore it.
+    return;
+  }
   if (this.characterEncoding == 'utf-8') {
     const decoder = new TextDecoder();
     const bytes = lib.codec.stringToCodeUnitArray(data, Uint8Array);
