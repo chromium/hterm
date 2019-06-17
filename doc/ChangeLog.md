@@ -1,3 +1,54 @@
+# 1.85, 2019-06-17, Significant Unicode improvements.
+
+* vt: Ignore invalid OSC-52 requests.
+* tests: Add missing image Blobs & ArrayBuffers tests.
+* lint: Rewrite helper in python.
+* load_tests: Convert to python.
+* concat: Replace arbitrary shell scripts with explicit commands.
+* Convert test suite to mocha.
+* tests: Bundle external data into test env.
+* tests: Create fresh scrollport for each test.
+* terminal: Split strings based on graphemes.
+* prefs: Add cursor shape to preferences.
+* scrollport: Fix line height for underline cursor.
+* parser_tests: Peel negKeySeq helper out of Tests.
+* tests: Fix async init with hterm.Terminal.
+* tests: Move state cleanup to postambles.
+* Change keymap for modifiers on Enter key.
+* scrollport: Ignore scrolling for non-cancelable scrollwheel events.
+* scrollport: Fix chromevox pageup/pagedown display.
+* scrollport: Set offscreen selection rows as aria-hidden.
+* screen: Simplify overwriteString return.
+* terminal: Update replaceReferences API.
+* vt: Allow ; to be omitted with OSC sequences.
+* a11y: Revert "Mark offscreen rows that hold selection as hidden".
+* tests: Speed up accessibility tests.
+* tests: Improve execCommand tests.
+* tests: Speed up pubsub tests.
+* tests: Drop setDefaults usage.
+* tests: Call chai asserts directly.
+* tests: Switch core to chai for asserts.
+* vt: Requeue data after UTF8 change.
+* tests: Fix assert identity tests.
+* test: Drop lib.f.alarm use.
+* Drop runtime dep checks.
+* io: Fix typo in type check.
+* concat: Avoid non-portable %T in date format.
+* io: Check for strings before ArrayBuffers.
+* test: Allow tests to be selected via the URI.
+* vt: Switch OSC-52 handling to TextDecoder.
+* io: Accept ArrayBuffers to writeUTF8.
+* Limit X10 encoding to 127 for now.
+* io: Flip UTF8/UTF16 helpers.
+* vt/io: Move UTF-8 handling to hterm.Terminal.IO.
+* Switch to ES6 Symbol.
+* Import Text{De,En}coder polyfills.
+* vt: Support mime types with inline image display.
+* tests: Move utf8 decoder test out of hterm.
+* vt: Switch OSC-52 handling to lib.decodeUTF8.
+* vt: Drop unused {de,en}codeUTF8 helpers.
+* doc: Start a section about hterm.Terminal.IO encodings.
+
 # 1.84, 2019-01-19, Firefox fixes, openWindow security fixes, and few improvements.
 
 * Update to libdot 1.26.  openWindow & new codec helpers.
