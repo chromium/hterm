@@ -26,7 +26,7 @@ the JavaScript into a single file (`hterm_all.js`).
 
 ```sh
 $ cd ~/src/libapps
-$ ./hterm/bin/mkdist.sh
+$ ./hterm/bin/mkdist
 ```
 
 The files are all written to `./hterm/dist/js/`.  Copy the `hterm_all.js` file

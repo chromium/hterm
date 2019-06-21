@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Build the library deliverables.
+
+The deliverables (things published for use by third parties) are...
+
+hterm_deps.js: Code that hterm depends on from outside of the hterm/ directory.
+If you also depend on some or all of these files you may want to make this file
+yourself.
+
+hterm.js: The hterm code and bundled resources.
+
+hterm_resources.js: Only the bundled resources (e.g. audio & icon).
+
+hterm_all.js: hterm_deps.js + hterm.js.  Most apps can just use this.
+
+hterm_test_resources.js: Test-specific resources.
+"""
+
+from __future__ import print_function
+
+import argparse
+import glob
+import os
+import sys
+
+import hterm
+import libdot
+
+import concat
+
+
+def get_parser():
+    """Get a command line parser."""
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Run with debug output.')
+    parser.add_argument('-o', '--output',
+                        default=os.path.join(hterm.DIR, 'dist', 'js'),
+                        help='Output directory. (default: %(default)s)')
+    parser.add_argument('dist_files', nargs='*',
+                        help='Only process these concat files.')
+    return parser
+
+
+def main(argv):
+    """The main func!"""
+    parser = get_parser()
+    opts = parser.parse_args(argv)
+    libdot.setup_logging(debug=opts.debug)
+
+    if not opts.dist_files:
+        opts.dist_files = glob.glob(
+            os.path.join(hterm.DIR, 'concat', '*.concat'))
+    else:
+        opts.dist_files = [os.path.abspath(x) for x in opts.dist_files]
+
+    os.makedirs(opts.output, exist_ok=True)
+    for concat_file in opts.dist_files:
+        name = os.path.splitext(os.path.basename(concat_file))[0]
+        concat.concat(concat_file,
+                      os.path.join(opts.output, '%s.js' % name))
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

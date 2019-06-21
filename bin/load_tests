@@ -21,7 +21,7 @@ TEST_PAGE = os.path.join(hterm.DIR, 'html', 'hterm_test.html')
 
 def main(argv):
     """The main func!"""
-    subprocess.check_call([os.path.join(hterm.BIN_DIR, 'mkdist.sh')])
+    subprocess.check_call([os.path.join(hterm.BIN_DIR, 'mkdist')])
     return libdot.html_test_runner_main(argv, 'file://%s' % (TEST_PAGE,))
 
 

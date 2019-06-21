@@ -30,7 +30,7 @@ control setup.
 
 # Building the distributables
 
-The `./bin/mkdist.sh` script can be used to generate the `./dist` directory,
+The `./bin/mkdist` script can be used to generate the `./dist` directory,
 which contains the hterm library source concatenated into
 `./dist/js/hterm_all.js`.  This is the file you should copy into your own
 projects.
@@ -47,7 +47,7 @@ hterm test cases.  Test results will appear in the JavaScript console.
 
 You can re-run the tests by reloading the web page as long as you haven't made
 changes to `hterm/concat/hterm_resources.concat`.  If you *do* change resources,
-run `./bin/mkdist.sh` to re-create them.
+run `./bin/mkdist` to re-create them.
 
 # Debugging escape sequences
 
