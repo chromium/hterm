@@ -320,7 +320,7 @@ it('insert', function() {
     assert.equal(ary[0].innerHTML, '   XXXXX');
 
     // Fetch enough whitespace to ensure that the row is full.
-    var ws = lib.f.getWhitespace(this.screen.getWidth());
+    const ws = ' '.repeat(this.screen.getWidth());
 
     // Check text clipping and cursor clamping.
     this.screen.clearCursorRow();

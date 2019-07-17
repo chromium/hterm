@@ -2339,7 +2339,7 @@ it('fullscreen', function(done) {
             indent = 40 - indent;
 
           self.terminal.interpret('Line ' + lib.f.zpad(i, 3) + ': ' +
-                                  lib.f.getWhitespace(indent) + '*\n');
+                                  ' '.repeat(indent) + '*\n');
         }
 
         done();

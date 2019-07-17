@@ -2052,7 +2052,7 @@ hterm.Terminal.prototype.eraseToLeft = function() {
   var cursor = this.saveCursor();
   this.setCursorColumn(0);
   const count = cursor.column + 1;
-  this.screen_.overwriteString(lib.f.getWhitespace(count), count);
+  this.screen_.overwriteString(' '.repeat(count), count);
   this.restoreCursor(cursor);
 };
 
@@ -2092,7 +2092,7 @@ hterm.Terminal.prototype.eraseToRight = function(opt_count) {
   }
 
   var cursor = this.saveCursor();
-  this.screen_.overwriteString(lib.f.getWhitespace(count), count);
+  this.screen_.overwriteString(' '.repeat(count), count);
   this.restoreCursor(cursor);
   this.clearCursorOverflow();
 };
@@ -2280,7 +2280,7 @@ hterm.Terminal.prototype.deleteLines = function(count) {
 hterm.Terminal.prototype.insertSpace = function(count) {
   var cursor = this.saveCursor();
 
-  var ws = lib.f.getWhitespace(count || 1);
+  const ws = ' '.repeat(count || 1);
   this.screen_.insertString(ws, ws.length);
   this.screen_.maybeClipCurrentRow();
 
@@ -2299,7 +2299,7 @@ hterm.Terminal.prototype.deleteChars = function(count) {
   if (deleted && !this.screen_.textAttributes.isDefault()) {
     var cursor = this.saveCursor();
     this.setCursorColumn(this.screenSize.width - deleted);
-    this.screen_.insertString(lib.f.getWhitespace(deleted));
+    this.screen_.insertString(' '.repeat(deleted));
     this.restoreCursor(cursor);
   }
 
