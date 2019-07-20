@@ -19,10 +19,15 @@ import libdot
 TEST_PAGE = os.path.join(hterm.DIR, 'html', 'hterm_test.html')
 
 
+def mkdeps(opts):
+    """Build the required deps for the test suite."""
+    subprocess.check_call([os.path.join(hterm.BIN_DIR, 'mkdist')])
+
+
 def main(argv):
     """The main func!"""
-    subprocess.check_call([os.path.join(hterm.BIN_DIR, 'mkdist')])
-    return libdot.html_test_runner_main(argv, 'file://%s' % (TEST_PAGE,))
+    return libdot.html_test_runner_main(
+        argv, 'file://%s' % (TEST_PAGE,), mkdeps=mkdeps)
 
 
 if __name__ == '__main__':
