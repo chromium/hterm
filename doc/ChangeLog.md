@@ -1,3 +1,13 @@
+# 1.86, 2019-08-06, Very minor improvements.
+
+* tests: Disable copy-execCommand test for now for headless testing.
+* load_tests: Refactor mkdeps call.
+* terminal: Use local color state when processing reverse video.
+* Switch from lib.f.getWhitespace to ES6 String.repeat.
+* terminal: Speed up realize helpers slightly.
+* screen: Set initial column count to 0.
+* mkdist: Rewrite in Python.
+
 # 1.85, 2019-06-17, Significant Unicode improvements.
 
 * vt: Ignore invalid OSC-52 requests.
