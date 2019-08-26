@@ -715,16 +715,20 @@ hterm.Terminal.prototype.getForegroundColor = function() {
  * argument string.
  *
  * @param {function} commandClass The constructor for a terminal command.
- * @param {string} argString The argument string to pass to the command.
+ * @param {string} commandName The command to run for this terminal.
+ * @param {!Array<string>} args The arguments to pass to the command.
  */
-hterm.Terminal.prototype.runCommandClass = function(commandClass, argString) {
+hterm.Terminal.prototype.runCommandClass = function(
+    commandClass, commandName, args) {
   var environment = this.prefs_.get('environment');
   if (typeof environment != 'object' || environment == null)
     environment = {};
 
   var self = this;
   this.command = new commandClass(
-      { argString: argString || '',
+      {
+        commandName: commandName,
+        args: args,
         io: this.io.push(),
         environment: environment,
         onExit: function(code) {
