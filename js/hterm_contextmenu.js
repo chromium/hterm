@@ -28,7 +28,7 @@ hterm.ContextMenu.SEPARATOR = {};
 /**
  * Bind context menu to a specific document element.
  *
- * @param {HTMLDocument} document The document to use when creating elements.
+ * @param {!Document} document The document to use when creating elements.
  */
 hterm.ContextMenu.prototype.setDocument = function(document) {
   if (this.element_) {
@@ -87,7 +87,7 @@ hterm.ContextMenu.prototype.regenerate_ = function() {
  *
  * This resets all existing menu entries.
  *
- * @param {Array<Array<string, function(Event)>>} items The menu entries.
+ * @param {!Array<!Array<string, function(!Event)>>} items The menu entries.
  */
 hterm.ContextMenu.prototype.setItems = function(items) {
   this.menu_ = items;
@@ -101,8 +101,9 @@ hterm.ContextMenu.prototype.setItems = function(items) {
  *
  * If no menu entries are defined, then nothing will be shown.
  *
- * @param {Event} e The event triggering this display.
- * @param {hterm.Terminal=} terminal The terminal object to get style info from.
+ * @param {!Event} e The event triggering this display.
+ * @param {!hterm.Terminal=} terminal The terminal object to get style info
+ *     from.
  */
 hterm.ContextMenu.prototype.show = function(e, terminal) {
   // If there are no menu entries, then don't try to show anything.

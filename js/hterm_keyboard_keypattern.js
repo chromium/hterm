@@ -11,6 +11,9 @@
  * property below.  Each modifier can be true, false, or "*".  True means
  * the modifier key must be present, false means it must not, and "*" means
  * it doesn't matter.
+ *
+ * @param {!hterm.Keyboard.KeyDown} spec
+ * @constructor
  */
 hterm.Keyboard.KeyPattern = function(spec) {
   this.wildcardCount = 0;
@@ -37,8 +40,9 @@ hterm.Keyboard.KeyPattern.modifiers = [
  * patterns first, so that loosely defined patterns have a lower priority than
  * exact patterns.
  *
- * @param {hterm.Keyboard.KeyPattern} a
- * @param {hterm.Keyboard.KeyPattern} b
+ * @param {!hterm.Keyboard.KeyPattern} a
+ * @param {!hterm.Keyboard.KeyPattern} b
+ * @return {number}
  */
 hterm.Keyboard.KeyPattern.sortCompare = function(a, b) {
   if (a.wildcardCount < b.wildcardCount)
@@ -54,9 +58,11 @@ hterm.Keyboard.KeyPattern.sortCompare = function(a, b) {
  * Private method used to match this key pattern against other key patterns
  * or key down events.
  *
- * @param {Object} The object to match.
- * @param {boolean} True if we should ignore wildcards.  Useful when you want
+ * @param {!hterm.Keyboard.KeyDown} obj The object to match.
+ * @param {boolean} exactMatch True if we should ignore wildcards.  Useful when
+ *     you want
  *   to perform and exact match against another key pattern.
+ * @return {boolean}
  */
 hterm.Keyboard.KeyPattern.prototype.match_ = function(obj, exactMatch) {
   if (this.keyCode != obj.keyCode)
@@ -78,9 +84,11 @@ hterm.Keyboard.KeyPattern.prototype.match_ = function(obj, exactMatch) {
 /**
  * Return true if the given keyDown object is a match for this key pattern.
  *
- * @param {Object} keyDown An object with a keyCode property and zero or
- *   more boolean properties representing key modifiers.  These property names
- *   must match those defined in hterm.Keyboard.KeyPattern.modifiers.
+ * @param {!hterm.Keyboard.KeyDown} keyDown An object with a keyCode property
+ *     and zero or more boolean properties representing key modifiers.  These
+ *     property names must match those defined in
+ *     hterm.Keyboard.KeyPattern.modifiers.
+ * @return {boolean}
  */
 hterm.Keyboard.KeyPattern.prototype.matchKeyDown = function(keyDown) {
   return this.match_(keyDown, false);
@@ -90,7 +98,8 @@ hterm.Keyboard.KeyPattern.prototype.matchKeyDown = function(keyDown) {
  * Return true if the given hterm.Keyboard.KeyPattern is exactly the same as
  * this one.
  *
- * @param {hterm.Keyboard.KeyPattern}
+ * @param {!hterm.Keyboard.KeyPattern} keyPattern
+ * @return {boolean}
  */
 hterm.Keyboard.KeyPattern.prototype.matchKeyPattern = function(keyPattern) {
   return this.match_(keyPattern, true);

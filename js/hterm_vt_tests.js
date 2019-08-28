@@ -23,8 +23,8 @@
  *     m = new MouseEvent(...); Object.assign(this, m); -> attrs omitted
  *
  * @param {string} type The name of the new DOM event type (e.g. 'mouseup').
- * @param {object=} options Fields to set in the new event.
- * @return {MouseEvent|WheelEvent} The new fully initialized event.
+ * @param {!Object=} options Fields to set in the new event.
+ * @return {!MouseEvent|!WheelEvent} The new fully initialized event.
  */
 const MockTerminalMouseEvent = function(type, options = {}) {
   let ret;
@@ -813,14 +813,14 @@ it('device-attributes', function() {
  * TODO(rginda): Test the clear tabstops on this line command.
  */
 it.skip('clear-line-tabstops', function() {
-    '[0g';
+    // '[0g';
   });
 
 /**
  * TODO(rginda): Test the clear all tabstops command.
  */
 it.skip('clear-all-tabstops', function() {
-    '[3g';
+    // '[3g';
   });
 
 /**

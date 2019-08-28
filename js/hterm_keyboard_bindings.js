@@ -5,11 +5,32 @@
 'use strict';
 
 /**
+ * @typedef {{
+ *     keyPattern: !hterm.Keyboard.KeyPattern,
+ *     action: (string|function()|!hterm.Keyboard.KeyAction),
+ * }}
+ */
+hterm.Keyboard.KeyBinding;
+
+/**
+ * @typedef {{
+ *     keyCode: number,
+ *     shift: boolean,
+ *     ctrl: boolean,
+ *     alt: boolean,
+ *     meta: boolean,
+ * }}
+ */
+hterm.Keyboard.KeyDown;
+
+/**
  * A mapping from hterm.Keyboard.KeyPattern to an action.
  *
  * TODO(rginda): For now this bindings code is only used for user overrides.
  * hterm.Keyboard.KeyMap still handles all of the built-in key mappings.
  * It'd be nice if we migrated that over to be hterm.Keyboard.Bindings based.
+ *
+ * @constructor
  */
 hterm.Keyboard.Bindings = function() {
   this.bindings_ = {};
@@ -28,8 +49,8 @@ hterm.Keyboard.Bindings.prototype.clear = function () {
  * Internal API that assumes parsed objects as inputs.
  * See the public addBinding for more details.
  *
- * @param {hterm.Keyboard.KeyPattern} keyPattern
- * @param {string|function|hterm.Keyboard.KeyAction} action
+ * @param {!hterm.Keyboard.KeyPattern} keyPattern
+ * @param {string|function()|!hterm.Keyboard.KeyAction} action
  */
 hterm.Keyboard.Bindings.prototype.addBinding_ = function(keyPattern, action) {
   var binding = null;
@@ -83,8 +104,8 @@ hterm.Keyboard.Bindings.prototype.addBinding_ = function(keyPattern, action) {
  *     return hterm.Keyboard.KeyActions.PASS;
  *   });
  *
- * @param {string|hterm.Keyboard.KeyPattern} keyPattern
- * @param {string|function|hterm.Keyboard.KeyAction} action
+ * @param {string|!hterm.Keyboard.KeyPattern} key
+ * @param {string|function()|!hterm.Keyboard.KeyAction} action
  */
 hterm.Keyboard.Bindings.prototype.addBinding = function(key, action) {
   // If we're given a hterm.Keyboard.KeyPattern object, pass it down.
@@ -144,7 +165,7 @@ hterm.Keyboard.Bindings.prototype.addBinding = function(key, action) {
  *    'Alt-D': hterm.Keyboard.KeyActions.CANCEL,
  *  }
  *
- * @param {Object} map
+ * @param {!Object<string, !hterm.Keyboard.KeyBinding>} map
  */
 hterm.Keyboard.Bindings.prototype.addBindings = function(map) {
   for (var key in map) {
@@ -156,9 +177,11 @@ hterm.Keyboard.Bindings.prototype.addBindings = function(map) {
  * Return the binding that is the best match for the given keyDown record,
  * or null if there is no match.
  *
- * @param {Object} keyDown An object with a keyCode property and zero or
- *   more boolean properties representing key modifiers.  These property names
- *   must match those defined in hterm.Keyboard.KeyPattern.modifiers.
+ * @param {!hterm.Keyboard.KeyDown} keyDown An object with a keyCode property
+ *     and zero or more boolean properties representing key modifiers.  These
+ *     property names must match those defined in
+ *     hterm.Keyboard.KeyPattern.modifiers.
+ * @return {!hterm.Keyboard.KeyBinding} The keyboard binding for this key.
  */
 hterm.Keyboard.Bindings.prototype.getBinding = function(keyDown) {
   var list = this.bindings_[keyDown.keyCode];

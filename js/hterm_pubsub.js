@@ -18,7 +18,7 @@ hterm.PubSub = function() {
  * No other properties of the object are touched, so there is no need to
  * worry about clashing private properties.
  *
- * @param {Object} obj The object to add this behavior to.
+ * @param {!Object} obj The object to add this behavior to.
  */
 hterm.PubSub.addBehavior = function(obj) {
   var pubsub = new hterm.PubSub();
@@ -31,7 +31,7 @@ hterm.PubSub.addBehavior = function(obj) {
  * Subscribe to be notified of messages about a subject.
  *
  * @param {string} subject The subject to subscribe to.
- * @param {function(Object)} callback The function to invoke for notifications.
+ * @param {function(!Object)} callback The function to invoke for notifications.
  */
 hterm.PubSub.prototype.subscribe = function(subject, callback) {
   if (!(subject in this.observers_))
@@ -44,7 +44,7 @@ hterm.PubSub.prototype.subscribe = function(subject, callback) {
  * Unsubscribe from a subject.
  *
  * @param {string} subject The subject to unsubscribe from.
- * @param {function(Object)} callback A callback previously registered via
+ * @param {function(!Object)} callback A callback previously registered via
  *     subscribe().
  */
 hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
@@ -66,9 +66,9 @@ hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
  * This method will return before anyone is actually notified.
  *
  * @param {string} subject The subject to publish about.
- * @param {Object} e An arbitrary object associated with this notification.
- * @param {function(Object)} opt_lastCallback An optional function to call after
- *     all subscribers have been notified.
+ * @param {!Object} e An arbitrary object associated with this notification.
+ * @param {function(!Object)=} opt_lastCallback An optional function to call
+ *     after all subscribers have been notified.
  */
 hterm.PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
   function notifyList(i) {

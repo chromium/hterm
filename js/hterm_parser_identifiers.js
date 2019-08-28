@@ -197,6 +197,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Scroll the terminal one line up.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   scrollLineUp: function(terminal) {
     terminal.scrollLineUp();
@@ -205,6 +208,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Scroll the terminal one line down.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   scrollLineDown: function(terminal) {
     terminal.scrollLineDown();
@@ -213,6 +219,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Scroll the terminal one page up.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   scrollPageUp: function(terminal) {
     terminal.scrollPageUp();
@@ -221,6 +230,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Scroll the terminal one page down.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   scrollPageDown: function(terminal) {
     terminal.scrollPageDown();
@@ -229,6 +241,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Scroll the terminal to the top.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   scrollToTop: function(terminal) {
     terminal.scrollHome();
@@ -237,6 +252,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Scroll the terminal to the bottom.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   scrollToBottom: function(terminal) {
     terminal.scrollEnd();
@@ -245,6 +263,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Clear the active screen and move the cursor to (0,0).
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   clearScreen: function(terminal) {
     terminal.clearHome();
@@ -253,6 +274,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Clear the scrollback buffer.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   clearScrollback: function(terminal) {
     terminal.clearScrollback();
@@ -261,6 +285,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Clear the terminal and scrollback buffer and move the cursor to (0,0).
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   clearTerminal: function(terminal) {
     terminal.wipeContents();
@@ -269,6 +296,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Perform a full terminal reset.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   fullReset: function(terminal) {
     terminal.reset();
@@ -277,6 +307,9 @@ hterm.Parser.identifiers.actions = {
 
   /**
    * Perform a soft terminal reset.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
    */
   softReset: function(terminal) {
     terminal.softReset();

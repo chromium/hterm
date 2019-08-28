@@ -15,7 +15,7 @@
  * compatibility with the current attributes.
  *
  * @constructor
- * @param {HTMLDocument} document The parent document to use when creating
+ * @param {!Document} document The parent document to use when creating
  *     new DOM containers.
  */
 hterm.TextAttributes = function(document) {
@@ -86,7 +86,7 @@ hterm.TextAttributes.prototype.SRC_DEFAULT = Symbol('SRC_DEFAULT');
 /**
  * The document object which should own the DOM nodes created by this instance.
  *
- * @param {HTMLDocument} document The parent document.
+ * @param {!Document} document The parent document.
  */
 hterm.TextAttributes.prototype.setDocument = function(document) {
   this.document_ = document;
@@ -95,7 +95,7 @@ hterm.TextAttributes.prototype.setDocument = function(document) {
 /**
  * Create a deep copy of this object.
  *
- * @return {hterm.TextAttributes} A deep copy of this object.
+ * @return {!hterm.TextAttributes} A deep copy of this object.
  */
 hterm.TextAttributes.prototype.clone = function() {
   var rv = new hterm.TextAttributes(null);
@@ -146,7 +146,7 @@ hterm.TextAttributes.prototype.resetColorPalette = function() {
 /**
  * Reset the color.
  *
- * @param {integer|string} index The color index in the palette to reset.
+ * @param {number|string} index The color index in the palette to reset.
  */
 hterm.TextAttributes.prototype.resetColor = function(index) {
   index = parseInt(index, 10);
@@ -190,8 +190,8 @@ hterm.TextAttributes.prototype.isDefault = function() {
  * Each vt_tiledata tile is also represented by a span with a single
  * character, with CSS classes '.tile' and '.tile_<glyph number>'.
  *
- * @param {string} opt_textContent Optional text content for the new container.
- * @return {HTMLNode} An HTML span or text nodes styled to match the current
+ * @param {string=} opt_textContent Optional text content for the new container.
+ * @return {!Node} An HTML span or text nodes styled to match the current
  *     attributes.
  */
 hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
@@ -279,7 +279,7 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
  *
  * For the purposes of this method, a string is considered a text node.
  *
- * @param {string|HTMLNode} obj The object to test.
+ * @param {string|!Node} obj The object to test.
  * @return {boolean} True if the provided container has the same style as
  *     this attributes instance.
  */
@@ -311,6 +311,14 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
           !!this.strikethrough == !!obj.strikethrough);
 };
 
+/**
+ * Set default foreground & background colors.
+ *
+ * @param {string} foreground The terminal foreground color for use as
+ *     inverse text background.
+ * @param {string} background The terminal background color for use as
+ *     inverse text foreground.
+ */
 hterm.TextAttributes.prototype.setDefaults = function(foreground, background) {
   this.defaultForeground = foreground;
   this.defaultBackground = background;
@@ -321,12 +329,6 @@ hterm.TextAttributes.prototype.setDefaults = function(foreground, background) {
 /**
  * Updates foreground and background properties based on current indices and
  * other state.
- *
- * @param {string} terminalForeground The terminal foreground color for use as
- *     inverse text background.
- * @param {string} terminalBackground The terminal background color for use as
- *     inverse text foreground.
- *
  */
 hterm.TextAttributes.prototype.syncColors = function() {
   function getBrightIndex(i) {
@@ -400,8 +402,8 @@ hterm.TextAttributes.prototype.syncColors = function() {
  *
  * For the purposes of this method, a string is considered a text node.
  *
- * @param {string|HTMLNode} obj1 An object to test.
- * @param {string|HTMLNode} obj2 Another object to test.
+ * @param {string|!Node} obj1 An object to test.
+ * @param {string|!Node} obj2 Another object to test.
  * @return {boolean} True if the containers have the same style.
  */
 hterm.TextAttributes.containersMatch = function(obj1, obj2) {
@@ -433,7 +435,7 @@ hterm.TextAttributes.containersMatch = function(obj1, obj2) {
  *
  * For the purposes of this method, a string is considered a text node.
  *
- * @param {string|HTMLNode} obj1 An object to test.
+ * @param {string|!Node} obj An object to test.
  * @return {boolean} True if the object is unstyled.
  */
 hterm.TextAttributes.containerIsDefault = function(obj) {
@@ -443,9 +445,9 @@ hterm.TextAttributes.containerIsDefault = function(obj) {
 /**
  * Static method to get the column width of a node's textContent.
  *
- * @param {HTMLElement} node The HTML element to get the width of textContent
+ * @param {!Element} node The HTML element to get the width of textContent
  *     from.
- * @return {integer} The column width of the node's textContent.
+ * @return {number} The column width of the node's textContent.
  */
 hterm.TextAttributes.nodeWidth = function(node) {
   if (!node.asciiNode) {
@@ -459,11 +461,11 @@ hterm.TextAttributes.nodeWidth = function(node) {
  * Static method to get the substr of a node's textContent.  The start index
  * and substr width are computed in column width.
  *
- * @param {HTMLElement} node The HTML element to get the substr of textContent
+ * @param {!Element} node The HTML element to get the substr of textContent
  *     from.
- * @param {integer} start The starting offset in column width.
- * @param {integer} width The width to capture in column width.
- * @return {integer} The extracted substr of the node's textContent.
+ * @param {number} start The starting offset in column width.
+ * @param {number} width The width to capture in column width.
+ * @return {number} The extracted substr of the node's textContent.
  */
 hterm.TextAttributes.nodeSubstr = function(node, start, width) {
   if (!node.asciiNode) {
@@ -477,11 +479,11 @@ hterm.TextAttributes.nodeSubstr = function(node, start, width) {
  * Static method to get the substring based of a node's textContent.  The
  * start index of end index are computed in column width.
  *
- * @param {HTMLElement} node The HTML element to get the substr of textContent
+ * @param {!Element} node The HTML element to get the substr of textContent
  *     from.
- * @param {integer} start The starting offset in column width.
- * @param {integer} end The ending offset in column width.
- * @return {integer} The extracted substring of the node's textContent.
+ * @param {number} start The starting offset in column width.
+ * @param {number} end The ending offset in column width.
+ * @return {number} The extracted substring of the node's textContent.
  */
 hterm.TextAttributes.nodeSubstring = function(node, start, end) {
   if (!node.asciiNode) {
@@ -496,11 +498,12 @@ hterm.TextAttributes.nodeSubstring = function(node, start, end) {
  * characters and runs of double-width characters.
  *
  * @param {string} str The string to split.
- * @return {Array} An array of objects that contain substrings of str, where
- *     each substring is either a contiguous runs of single-width characters
- *     or a double-width character.  For objects that contain a double-width
- *     character, its wcNode property is set to true.  For objects that contain
- *     only ASCII content, its asciiNode property is set to true.
+ * @return {!Array<{str:string, wcNode:boolean, asciiNode:boolean
+ *     wcStrWidth:number}>} An array of objects that contain substrings of str,
+ *     where each substring is either a contiguous runs of single-width
+ *     characters or a double-width character.  For objects that contain a
+ *     double-width character, its wcNode property is set to true.  For objects
+ *     that contain only ASCII content, its asciiNode property is set to true.
  */
 hterm.TextAttributes.splitWidecharString = function(str) {
   const asciiRegex = new RegExp('^[\u0020-\u007f]*$');

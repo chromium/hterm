@@ -464,7 +464,7 @@ it('page-up-down-announce', function() {
       'This is line 21 red green yellow blue magenta cyan\n' +
       'This is line 22 red green yellow blue magenta cyan\n' +
       'This is line 23 red green yellow blue magenta cyan\n' +
-      'This is line 24 red green yellow blue magenta cyan\n'
+      'This is line 24 red green yellow blue magenta cyan\n';
   assert.equal(mockAccessibilityReader.lastStringAnnounced,
                linesOneToTwentyFive);
 

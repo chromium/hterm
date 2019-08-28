@@ -6,6 +6,8 @@
 
 /**
  * Mock Notification class. See https://www.w3.org/TR/notifications/.
+ *
+ * @constructor
  */
 var MockNotification = function() {
   function mock(title, opts) {

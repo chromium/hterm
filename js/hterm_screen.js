@@ -24,7 +24,7 @@
  * - The hterm.Terminal class holds two hterm.Screen instances.  One for the
  * primary screen and one for the alternate screen.
  *
- * - The html.Screen class only cares that rows are HTMLElements.  In the
+ * - The html.Screen class only cares that rows are HTML Elements.  In the
  * larger context of hterm, however, the rows happen to be displayed by an
  * hterm.ScrollPort and have to follow a few rules as a result.  Each
  * row must be rooted by the custom HTML tag 'x-row', and each must have a
@@ -39,7 +39,7 @@
  *
  * The screen initially has no rows and a maximum column count of 0.
  *
- * @param {integer=} columnCount The maximum number of columns for this
+ * @param {number=} columnCount The maximum number of columns for this
  *    screen.  See insertString() and overwriteString() for information about
  *    what happens when too many characters are added too a row.  Defaults to
  *    0 if not provided.
@@ -81,7 +81,7 @@ hterm.Screen = function(columnCount=0) {
 /**
  * Return the screen size as an hterm.Size object.
  *
- * @return {hterm.Size} hterm.Size object representing the current number
+ * @return {!hterm.Size} hterm.Size object representing the current number
  *     of rows and columns in this screen.
  */
 hterm.Screen.prototype.getSize = function() {
@@ -91,7 +91,7 @@ hterm.Screen.prototype.getSize = function() {
 /**
  * Return the current number of rows in this screen.
  *
- * @return {integer} The number of rows in this screen.
+ * @return {number} The number of rows in this screen.
  */
 hterm.Screen.prototype.getHeight = function() {
   return this.rowsArray.length;
@@ -100,7 +100,7 @@ hterm.Screen.prototype.getHeight = function() {
 /**
  * Return the current number of columns in this screen.
  *
- * @return {integer} The number of columns in this screen.
+ * @return {number} The number of columns in this screen.
  */
 hterm.Screen.prototype.getWidth = function() {
   return this.columnCount_;
@@ -109,7 +109,7 @@ hterm.Screen.prototype.getWidth = function() {
 /**
  * Set the maximum number of columns per row.
  *
- * @param {integer} count The maximum number of columns per row.
+ * @param {number} count The maximum number of columns per row.
  */
 hterm.Screen.prototype.setColumnCount = function(count) {
   this.columnCount_ = count;
@@ -121,7 +121,7 @@ hterm.Screen.prototype.setColumnCount = function(count) {
 /**
  * Remove the first row from the screen and return it.
  *
- * @return {HTMLElement} The first row in this screen.
+ * @return {!Element} The first row in this screen.
  */
 hterm.Screen.prototype.shiftRow = function() {
   return this.shiftRows(1)[0];
@@ -130,8 +130,8 @@ hterm.Screen.prototype.shiftRow = function() {
 /**
  * Remove rows from the top of the screen and return them as an array.
  *
- * @param {integer} count The number of rows to remove.
- * @return {Array.<HTMLElement>} The selected rows.
+ * @param {number} count The number of rows to remove.
+ * @return {!Array<!Element>} The selected rows.
  */
 hterm.Screen.prototype.shiftRows = function(count) {
   return this.rowsArray.splice(0, count);
@@ -140,7 +140,7 @@ hterm.Screen.prototype.shiftRows = function(count) {
 /**
  * Insert a row at the top of the screen.
  *
- * @param {HTMLElement} row The row to insert.
+ * @param {!Element} row The row to insert.
  */
 hterm.Screen.prototype.unshiftRow = function(row) {
   this.rowsArray.splice(0, 0, row);
@@ -149,7 +149,7 @@ hterm.Screen.prototype.unshiftRow = function(row) {
 /**
  * Insert rows at the top of the screen.
  *
- * @param {Array.<HTMLElement>} rows The rows to insert.
+ * @param {!Array<!Element>} rows The rows to insert.
  */
 hterm.Screen.prototype.unshiftRows = function(rows) {
   this.rowsArray.unshift.apply(this.rowsArray, rows);
@@ -158,7 +158,7 @@ hterm.Screen.prototype.unshiftRows = function(rows) {
 /**
  * Remove the last row from the screen and return it.
  *
- * @return {HTMLElement} The last row in this screen.
+ * @return {!Element} The last row in this screen.
  */
 hterm.Screen.prototype.popRow = function() {
   return this.popRows(1)[0];
@@ -167,8 +167,8 @@ hterm.Screen.prototype.popRow = function() {
 /**
  * Remove rows from the bottom of the screen and return them as an array.
  *
- * @param {integer} count The number of rows to remove.
- * @return {Array.<HTMLElement>} The selected rows.
+ * @param {number} count The number of rows to remove.
+ * @return {!Array<!Element>} The selected rows.
  */
 hterm.Screen.prototype.popRows = function(count) {
   return this.rowsArray.splice(this.rowsArray.length - count, count);
@@ -177,7 +177,7 @@ hterm.Screen.prototype.popRows = function(count) {
 /**
  * Insert a row at the bottom of the screen.
  *
- * @param {HTMLElement} row The row to insert.
+ * @param {!Element} row The row to insert.
  */
 hterm.Screen.prototype.pushRow = function(row) {
   this.rowsArray.push(row);
@@ -186,7 +186,7 @@ hterm.Screen.prototype.pushRow = function(row) {
 /**
  * Insert rows at the bottom of the screen.
  *
- * @param {Array.<HTMLElement>} rows The rows to insert.
+ * @param {!Array<!Element>} rows The rows to insert.
  */
 hterm.Screen.prototype.pushRows = function(rows) {
   rows.push.apply(this.rowsArray, rows);
@@ -195,8 +195,8 @@ hterm.Screen.prototype.pushRows = function(rows) {
 /**
  * Insert a row at the specified row of the screen.
  *
- * @param {integer} index The index to insert the row.
- * @param {HTMLElement} row The row to insert.
+ * @param {number} index The index to insert the row.
+ * @param {!Element} row The row to insert.
  */
 hterm.Screen.prototype.insertRow = function(index, row) {
   this.rowsArray.splice(index, 0, row);
@@ -205,8 +205,8 @@ hterm.Screen.prototype.insertRow = function(index, row) {
 /**
  * Insert rows at the specified row of the screen.
  *
- * @param {integer} index The index to insert the rows.
- * @param {Array.<HTMLElement>} rows The rows to insert.
+ * @param {number} index The index to insert the rows.
+ * @param {!Array<!Element>} rows The rows to insert.
  */
 hterm.Screen.prototype.insertRows = function(index, rows) {
   for (var i = 0; i < rows.length; i++) {
@@ -217,8 +217,8 @@ hterm.Screen.prototype.insertRows = function(index, rows) {
 /**
  * Remove a row from the screen and return it.
  *
- * @param {integer} index The index of the row to remove.
- * @return {HTMLElement} The selected row.
+ * @param {number} index The index of the row to remove.
+ * @return {!Element} The selected row.
  */
 hterm.Screen.prototype.removeRow = function(index) {
   return this.rowsArray.splice(index, 1)[0];
@@ -227,9 +227,9 @@ hterm.Screen.prototype.removeRow = function(index) {
 /**
  * Remove rows from the bottom of the screen and return them as an array.
  *
- * @param {integer} index The index to start removing rows.
- * @param {integer} count The number of rows to remove.
- * @return {Array.<HTMLElement>} The selected rows.
+ * @param {number} index The index to start removing rows.
+ * @param {number} count The number of rows to remove.
+ * @return {!Array<!Element>} The selected rows.
  */
 hterm.Screen.prototype.removeRows = function(index, count) {
   return this.rowsArray.splice(index, count);
@@ -301,8 +301,8 @@ hterm.Screen.prototype.commitLineOverflow = function() {
 /**
  * Relocate the cursor to a give row and column.
  *
- * @param {integer} row The zero based row.
- * @param {integer} column The zero based column.
+ * @param {number} row The zero based row.
+ * @param {number} column The zero based column.
  */
 hterm.Screen.prototype.setCursorPosition = function(row, column) {
   if (!this.rowsArray.length) {
@@ -366,6 +366,8 @@ hterm.Screen.prototype.setCursorPosition = function(row, column) {
 /**
  * Set the provided selection object to be a caret selection at the current
  * cursor position.
+ *
+ * @param {!Selection} selection
  */
 hterm.Screen.prototype.syncSelectionCaret = function(selection) {
   try {
@@ -388,8 +390,8 @@ hterm.Screen.prototype.syncSelectionCaret = function(selection) {
  * The to-be-split node must have a container, so that the new node can be
  * placed next to it.
  *
- * @param {HTMLNode} node The node to split.
- * @param {integer} offset The offset into the node where the split should
+ * @param {!Node} node The node to split.
+ * @param {number} offset The offset into the node where the split should
  *     occur.
  */
 hterm.Screen.prototype.splitNode_ = function(node, offset) {
@@ -463,6 +465,11 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
  *
  * It is also up to the caller to properly maintain the line overflow state
  * using hterm.Screen..commitLineOverflow().
+ *
+ * @param {string} str The string to insert.
+ * @param {number=} wcwidth The cached lib.wc.strWidth value for |str|.  Will be
+ *     calculated on demand if need be.  Passing in a cached value helps speed
+ *     up processing as this is a hot codepath.
  */
 hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
   var cursorNode = this.cursorNode_;
@@ -602,6 +609,11 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
  *
  * It is also up to the caller to properly maintain the line overflow state
  * using hterm.Screen..commitLineOverflow().
+ *
+ * @param {string} str The source string for overwriting existing content.
+ * @param {number=} wcwidth The cached lib.wc.strWidth value for |str|.  Will be
+ *     calculated on demand if need be.  Passing in a cached value helps speed
+ *     up processing as this is a hot codepath.
  */
 hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;
@@ -629,9 +641,9 @@ hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
  * Text to the right of the deleted characters is shifted left.  Only affects
  * characters on the same row as the cursor.
  *
- * @param {integer} count The column width of characters to delete.  This is
+ * @param {number} count The column width of characters to delete.  This is
  *     clamped to the column width minus the cursor column.
- * @return {integer} The column width of the characters actually deleted.
+ * @return {number} The column width of the characters actually deleted.
  */
 hterm.Screen.prototype.deleteChars = function(count) {
   var node = this.cursorNode_;
@@ -710,8 +722,8 @@ hterm.Screen.prototype.deleteChars = function(count) {
  * Finds first X-ROW of a line containing specified X-ROW.
  * Used to support line overflow.
  *
- * @param {Node} row X-ROW to begin search for first row of line.
- * @return {Node} The X-ROW that is at the beginning of the line.
+ * @param {!Node} row X-ROW to begin search for first row of line.
+ * @return {!Node} The X-ROW that is at the beginning of the line.
  **/
 hterm.Screen.prototype.getLineStartRow_ = function(row) {
   while (row.previousSibling &&
@@ -725,7 +737,7 @@ hterm.Screen.prototype.getLineStartRow_ = function(row) {
  * Gets text of a line beginning with row.
  * Supports line overflow.
  *
- * @param {Node} row First X-ROW of line.
+ * @param {!Node} row First X-ROW of line.
  * @return {string} Text content of line.
  **/
 hterm.Screen.prototype.getLineText_ = function(row) {
@@ -744,8 +756,8 @@ hterm.Screen.prototype.getLineText_ = function(row) {
 /**
  * Returns X-ROW that is ancestor of the node.
  *
- * @param {Node} node Node to get X-ROW ancestor for.
- * @return {Node} X-ROW ancestor of node, or null if not found.
+ * @param {!Node} node Node to get X-ROW ancestor for.
+ * @return {!Node} X-ROW ancestor of node, or null if not found.
  **/
 hterm.Screen.prototype.getXRowAncestor_ = function(node) {
   while (node) {
@@ -760,11 +772,10 @@ hterm.Screen.prototype.getXRowAncestor_ = function(node) {
  * Returns position within line of character at offset within node.
  * Supports line overflow.
  *
- * @param {Node} row X-ROW at beginning of line.
- * @param {Node} node Node to get position of.
- * @param {integer} offset Offset into node.
- *
- * @return {integer} Position within line of character at offset within node.
+ * @param {!Node} row X-ROW at beginning of line.
+ * @param {!Node} node Node to get position of.
+ * @param {number} offset Offset into node.
+ * @return {number} Position within line of character at offset within node.
  **/
 hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
   if (!node)
@@ -788,10 +799,10 @@ hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
  * Returns position within row of character at offset within node.
  * Does not support line overflow.
  *
- * @param {Node} row X-ROW to get position within.
- * @param {Node} node Node to get position for.
- * @param {integer} offset Offset within node to get position for.
- * @return {integer} Position within row of character at offset within node.
+ * @param {!Node} row X-ROW to get position within.
+ * @param {!Node} node Node to get position for.
+ * @param {number} offset Offset within node to get position for.
+ * @return {number} Position within row of character at offset within node.
  **/
 hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
   if (node.parentNode != row) {
@@ -816,9 +827,9 @@ hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
  * Returns the node and offset corresponding to position within line.
  * Supports line overflow.
  *
- * @param {Node} row X-ROW at beginning of line.
- * @param {integer} position Position within line to retrieve node and offset.
- * @return {Array} Two element array containing node and offset respectively.
+ * @param {!Node} row X-ROW at beginning of line.
+ * @param {number} position Position within line to retrieve node and offset.
+ * @return {!Array} Two element array containing node and offset respectively.
  **/
 hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
   while (row && position > hterm.TextAttributes.nodeWidth(row)) {
@@ -836,9 +847,9 @@ hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
  * Returns the node and offset corresponding to position within row.
  * Does not support line overflow.
  *
- * @param {Node} row X-ROW to get position within.
- * @param {integer} position Position within row to retrieve node and offset.
- * @return {Array} Two element array containing node and offset respectively.
+ * @param {!Node} row X-ROW to get position within.
+ * @param {number} position Position within row to retrieve node and offset.
+ * @return {!Array} Two element array containing node and offset respectively.
  **/
 hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
   for (var i = 0; i < row.childNodes.length; i++) {
@@ -861,10 +872,10 @@ hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
  * Returns the node and offset corresponding to position within line.
  * Supports line overflow.
  *
- * @param {Node} row X-ROW at beginning of line.
- * @param {integer} start Start position of range within line.
- * @param {integer} end End position of range within line.
- * @param {Range} range Range to modify.
+ * @param {!Node} row X-ROW at beginning of line.
+ * @param {number} start Start position of range within line.
+ * @param {number} end End position of range within line.
+ * @param {!Range} range Range to modify.
  **/
 hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
   var startNodeAndOffset = this.getNodeAndOffsetWithOverflow_(row, start);
@@ -880,7 +891,7 @@ hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
 /**
  * Expands selection to surrounding string with word break matches.
  *
- * @param {Selection} selection Selection to expand.
+ * @param {!Selection} selection Selection to expand.
  * @param {string} leftMatch left word break match.
  * @param {string} rightMatch right word break match.
  * @param {string} insideMatch inside word break match.
@@ -938,7 +949,7 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
 /**
  * Expands selection to surrounding string using the user's settings.
  *
- * @param {Selection} selection Selection to expand.
+ * @param {!Selection} selection Selection to expand.
  */
 hterm.Screen.prototype.expandSelection = function(selection) {
   this.expandSelectionWithWordBreakMatches_(
@@ -951,7 +962,7 @@ hterm.Screen.prototype.expandSelection = function(selection) {
 /**
  * Expands selection to surrounding URL using a set of fixed match settings.
  *
- * @param {Selection} selection Selection to expand.
+ * @param {!Selection} selection Selection to expand.
  */
 hterm.Screen.prototype.expandSelectionForUrl = function(selection) {
   this.expandSelectionWithWordBreakMatches_(
@@ -964,7 +975,7 @@ hterm.Screen.prototype.expandSelectionForUrl = function(selection) {
 /**
  * Save the current cursor state to the corresponding screens.
  *
- * @param {hterm.VT} vt The VT object to read graphic codeset details from.
+ * @param {!hterm.VT} vt The VT object to read graphic codeset details from.
  */
 hterm.Screen.prototype.saveCursorAndState = function(vt) {
   this.cursorState_.save(vt);
@@ -973,7 +984,7 @@ hterm.Screen.prototype.saveCursorAndState = function(vt) {
 /**
  * Restore the saved cursor state in the corresponding screens.
  *
- * @param {hterm.VT} vt The VT object to write graphic codeset details to.
+ * @param {!hterm.VT} vt The VT object to write graphic codeset details to.
  */
 hterm.Screen.prototype.restoreCursorAndState = function(vt) {
   this.cursorState_.restore(vt);
@@ -993,6 +1004,8 @@ hterm.Screen.prototype.restoreCursorAndState = function(vt) {
  * - Any single shift 2 (SS2) or single shift 3 (SS3) functions sent
  *
  * These are done on a per-screen basis.
+ *
+ * @param {!hterm.Screen} screen The screen this cursor is tied to.
  */
 hterm.Screen.CursorState = function(screen) {
   this.screen_ = screen;
@@ -1004,7 +1017,7 @@ hterm.Screen.CursorState = function(screen) {
 /**
  * Save all the cursor state.
  *
- * @param {hterm.VT} vt The VT object to read graphic codeset details from.
+ * @param {!hterm.VT} vt The VT object to read graphic codeset details from.
  */
 hterm.Screen.CursorState.prototype.save = function(vt) {
   this.cursor = vt.terminal.saveCursor();
@@ -1023,7 +1036,7 @@ hterm.Screen.CursorState.prototype.save = function(vt) {
 /**
  * Restore the previously saved cursor state.
  *
- * @param {hterm.VT} vt The VT object to write graphic codeset details to.
+ * @param {!hterm.VT} vt The VT object to write graphic codeset details to.
  */
 hterm.Screen.CursorState.prototype.restore = function(vt) {
   vt.terminal.restoreCursor(this.cursor);

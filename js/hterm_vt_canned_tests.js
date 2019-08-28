@@ -115,8 +115,7 @@ afterEach(function() {
 /**
  * Test a can of data.
  *
- * @param {TestManager.Result} result The result object associated with this
- *     test.
+ * @param {!hterm.Terminal} terminal The terminal to run canned tests against.
  * @param {string} name The name of canned test.
  */
 const testData = function(terminal, name) {

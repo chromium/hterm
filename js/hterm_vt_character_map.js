@@ -13,7 +13,8 @@
  * GR maps are not currently supported.
  *
  * @param {string} description A human readable description of this map.
- * @param {Object} glmap The GL mapping from input to output characters.
+ * @param {?Object} glmap The GL mapping from input to output characters.
+ * @constructor
  */
 hterm.VT.CharacterMap = function(description, glmap) {
   /**
@@ -39,7 +40,7 @@ hterm.VT.CharacterMap = function(description, glmap) {
  *
  * Used when the mappings change.
  *
- * @param {Object?} opt_glmap Additional mappings to overlay on top of the
+ * @param {!Object=} opt_glmap Additional mappings to overlay on top of the
  *     base mapping.
  */
 hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
@@ -83,7 +84,7 @@ hterm.VT.CharacterMap.prototype.reset = function() {
  * the existing base map (what was created with).  Subsequent calls to this
  * will throw away previous override settings.
  *
- * @param {Object} glmap The custom map to override existing mappings.
+ * @param {!Object} glmap The custom map to override existing mappings.
  */
 hterm.VT.CharacterMap.prototype.setOverrides = function(glmap) {
   this.sync_(glmap);
@@ -92,7 +93,7 @@ hterm.VT.CharacterMap.prototype.setOverrides = function(glmap) {
 /**
  * Return a copy of this mapping.
  *
- * @return {hterm.VT.CharacterMap} A new hterm.VT.CharacterMap instance.
+ * @return {!hterm.VT.CharacterMap} A new hterm.VT.CharacterMap instance.
  */
 hterm.VT.CharacterMap.prototype.clone = function() {
   var map = new hterm.VT.CharacterMap(this.description, this.glmapBase_);
@@ -115,8 +116,8 @@ hterm.VT.CharacterMaps = function() {
 /**
  * Look up a previously registered map.
  *
- * @param {String} name The name of the map to lookup.
- * @return {hterm.VT.CharacterMap} The map, if it's been registered.
+ * @param {string} name The name of the map to lookup.
+ * @return {!hterm.VT.CharacterMap} The map, if it's been registered.
  */
 hterm.VT.CharacterMaps.prototype.getMap = function(name) {
   if (this.maps_.hasOwnProperty(name))
@@ -130,8 +131,8 @@ hterm.VT.CharacterMaps.prototype.getMap = function(name) {
  *
  * Any previously registered maps by this name will be discarded.
  *
- * @param {String} name The name of the map.
- * @param {hterm.VT.CharacterMap} map The map to register.
+ * @param {string} name The name of the map.
+ * @param {!hterm.VT.CharacterMap} map The map to register.
  */
 hterm.VT.CharacterMaps.prototype.addMap = function(name, map) {
   if (this.maps_ === this.mapsBase_)
@@ -150,7 +151,7 @@ hterm.VT.CharacterMaps.prototype.reset = function() {
 /**
  * Merge custom changes to this table.
  *
- * @param {Object} maps A set of hterm.VT.CharacterMap objects.
+ * @param {!Object} maps A set of hterm.VT.CharacterMap objects.
  */
 hterm.VT.CharacterMaps.prototype.setOverrides = function(maps) {
   if (this.maps_ === this.mapsBase_)

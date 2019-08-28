@@ -14,7 +14,7 @@ describe('hterm_parser_tests.js', () => {
  * Helper to check parseKeySequence failing behavior.
  *
  * @param {string} input The key sequence to parse.
- * @param {RegExp} pattern The error message checker.
+ * @param {!RegExp} pattern The error message checker.
  */
 const negKeySeq = function(input, pattern) {
   try {

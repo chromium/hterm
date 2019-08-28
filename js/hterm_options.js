@@ -22,7 +22,7 @@
  * except that we enable autowrap (wraparound) by default since that seems to
  * be what xterm does.
  *
- * @param {hterm.Options=} opt_copy Optional instance to copy.
+ * @param {!hterm.Options=} opt_copy Optional instance to copy.
  * @constructor
  */
 hterm.Options = function(opt_copy) {

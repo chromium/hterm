@@ -5,6 +5,17 @@
 'use strict';
 
 /**
+ * @typedef {{
+ *     keyCap: number,
+ *     normal: string,
+ *     control: boolean,
+ *     alt: boolean,
+ *     meta: boolean,
+ * }}
+ */
+hterm.Keyboard.KeyDef;
+
+/**
  * The default key map for hterm.
  *
  * Contains a mapping of keyCodes to keyDefs (aka key definitions).  The key
@@ -24,9 +35,13 @@
  *
  * The sequences defined in this key map come from [XTERM] as referenced in
  * vt.js, starting with the section titled "Alt and Meta Keys".
+ *
+ * @param {!hterm.Keyboard} keyboard
+ * @constructor
  */
 hterm.Keyboard.KeyMap = function(keyboard) {
   this.keyboard = keyboard;
+  /** @type {!Object<number, !hterm.Keyboard.KeyDef>} */
   this.keyDefs = {};
   this.reset();
 };
@@ -63,6 +78,9 @@ hterm.Keyboard.KeyMap = function(keyboard) {
  * The second-to-last element of the array will be overwritten with the
  * state of the modifier keys, as specified in the final table of "PC-Style
  * Function Keys" from [XTERM].
+ *
+ * @param {number} keyCode The KeyboardEvent.keyCode to match against.
+ * @param {!hterm.Keyboard.KeyDef} def The actions this key triggers.
  */
 hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
   if (keyCode in this.keyDefs)
@@ -83,8 +101,10 @@ hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
  * Each key definition should have 6 elements: (keyCode, keyCap, normal action,
  * control action, alt action and meta action).  See KeyMap.addKeyDef for the
  * meaning of these elements.
+ *
+ * @param {...!hterm.Keyboard.KeyDef} args Definitions to add.
  */
-hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(var_args) {
+hterm.Keyboard.KeyMap.prototype.addKeyDefs = function(...args) {
   for (var i = 0; i < arguments.length; i++) {
     this.addKeyDef(arguments[i][0],
                    { keyCap: arguments[i][1],
@@ -411,6 +431,9 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
 
 /**
  * Either allow the paste or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyInsert_ = function(e) {
   if (this.keyboard.shiftInsertPaste && e.shiftKey)
@@ -421,6 +444,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyInsert_ = function(e) {
 
 /**
  * Either scroll the scrollback buffer or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
   if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
@@ -438,6 +464,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
 
 /**
  * Either scroll the scrollback buffer or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
   if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
@@ -455,6 +484,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
 
 /**
  * Either scroll the scrollback buffer or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
   if (!this.keyboard.pageKeysScroll ^ e.shiftKey)
@@ -471,6 +503,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
  * claims that the alt key is not pressed, we know the DEL was a synthetic
  * one from a user that hit alt-backspace. Based on a user pref, we can sub
  * in meta-backspace in this case.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
   if (this.keyboard.altBackspaceIsMetaBackspace &&
@@ -481,6 +516,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
 
 /**
  * Either scroll the scrollback buffer or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
   if (!this.keyboard.pageKeysScroll ^ e.shiftKey)
@@ -492,6 +530,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
 
 /**
  * Either scroll the scrollback buffer or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyArrowUp_ = function(e) {
   if (!this.keyboard.applicationCursor && e.shiftKey) {
@@ -505,6 +546,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyArrowUp_ = function(e) {
 
 /**
  * Either scroll the scrollback buffer or send a key sequence.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyArrowDown_ = function(e) {
   if (!this.keyboard.applicationCursor && e.shiftKey) {
@@ -518,8 +562,11 @@ hterm.Keyboard.KeyMap.prototype.onKeyArrowDown_ = function(e) {
 
 /**
  * Clear the primary/alternate screens and the scrollback buffer.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onClear_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onClear_ = function(e) {
   this.keyboard.terminal.wipeContents();
   return hterm.Keyboard.KeyActions.CANCEL;
 };
@@ -530,8 +577,11 @@ hterm.Keyboard.KeyMap.prototype.onClear_ = function(e, keyDef) {
  * It would be nice to use the Fullscreen API, but the UX is slightly different
  * a bad way: the Escape key is automatically registered for exiting.  If we let
  * the browser handle F11 directly though, we still get to capture Escape.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onF11_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onF11_ = function(e) {
   if (hterm.windowType != 'popup')
     return hterm.Keyboard.KeyActions.PASS;
   else
@@ -544,6 +594,10 @@ hterm.Keyboard.KeyMap.prototype.onF11_ = function(e, keyDef) {
  * Note that Ctrl-1 and Ctrl-9 don't actually have special sequences mapped
  * to them in xterm or gnome-terminal.  The range is really Ctrl-2..8, but
  * we handle 1..9 since Chrome treats the whole range special.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @param {!hterm.Keyboard.KeyDef} keyDef Key definition.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
   // Compute a control character for a given character.
@@ -567,8 +621,11 @@ hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
 
 /**
  * Either pass Alt-1..9 to the browser or send them to the host.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e) {
   if (this.keyboard.terminal.passAltNumber && !e.shiftKey)
     return hterm.Keyboard.KeyActions.PASS;
 
@@ -577,8 +634,11 @@ hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e, keyDef) {
 
 /**
  * Either pass Meta-1..9 to the browser or send them to the host.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e) {
   if (this.keyboard.terminal.passMetaNumber && !e.shiftKey)
     return hterm.Keyboard.KeyActions.PASS;
 
@@ -587,8 +647,11 @@ hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e, keyDef) {
 
 /**
  * Either send a ^C or interpret the keystroke as a copy command.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
   var selection = this.keyboard.terminal.getDocument().getSelection();
 
   if (!selection.isCollapsed) {
@@ -620,8 +683,11 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e, keyDef) {
 
 /**
  * Either send a ^N or open a new window to the same location.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
   if (e.shiftKey) {
     lib.f.openWindow(document.location.href, '',
                      'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
@@ -640,8 +706,10 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e, keyDef) {
  * a ^V if the user presses Ctrl-V. This can be flipped with the
  * 'ctrl-v-paste' preference.
  *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e) {
   if ((!e.shiftKey && this.keyboard.ctrlVPaste) ||
       (e.shiftKey && !this.keyboard.ctrlVPaste)) {
     // We try to do the pasting ourselves as not all browsers/OSs bind Ctrl-V to
@@ -659,8 +727,11 @@ hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e, keyDef) {
 
 /**
  * Either the default action or open a new window to the same location.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e) {
   if (e.shiftKey) {
     lib.f.openWindow(document.location.href, '',
                      'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
@@ -682,6 +753,10 @@ hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e, keyDef) {
  * If there is a selection, we defer to the browser.  In this case we clear out
  * the selection so the user knows we heard them, and also to give them a
  * chance to send a Meta-C by just hitting the key again.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @param {!hterm.Keyboard.KeyDef} keyDef Key definition.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
   var document = this.keyboard.terminal.getDocument();
@@ -704,8 +779,11 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
  *
  * Always PASS Meta-Shift-V to allow browser to interpret the keystroke as
  * a paste command.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
  */
-hterm.Keyboard.KeyMap.prototype.onMetaV_ = function(e, keyDef) {
+hterm.Keyboard.KeyMap.prototype.onMetaV_ = function(e) {
   if (e.shiftKey)
     return hterm.Keyboard.KeyActions.PASS;
 
@@ -723,6 +801,10 @@ hterm.Keyboard.KeyMap.prototype.onMetaV_ = function(e, keyDef) {
  *
  * We override the browser zoom keys to change the ScrollPort's font size to
  * avoid the issue.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @param {!hterm.Keyboard.KeyDef} keyDef Key definition.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onPlusMinusZero_ = function(e, keyDef) {
   if (!(this.keyboard.ctrlPlusMinusZeroZoom ^ e.shiftKey)) {

@@ -12,7 +12,9 @@
  *
  * See also: [XTERM] as referenced in vt.js.
  *
- * @param {hterm.Terminal} The Terminal object associated with this keyboard.
+ * @param {!hterm.Terminal} terminal The Terminal object associated with this
+ *     keyboard.
+ * @constructor
  */
 hterm.Keyboard = function(terminal) {
   // The parent vt interpreter.
@@ -172,6 +174,9 @@ hterm.Keyboard = function(terminal) {
 
 /**
  * Special handling for keyCodes in a keyboard layout.
+ *
+ * @enum {symbol}
+ * @const
  */
 hterm.Keyboard.KeyActions = {
   /**
@@ -231,7 +236,7 @@ hterm.Keyboard.KeyActions = {
  *
  * Passing a null element will uninstall the keyboard handlers.
  *
- * @param {HTMLElement} element The element whose events should be captured, or
+ * @param {!Element} element The element whose events should be captured, or
  *     null to disable the keyboard.
  */
 hterm.Keyboard.prototype.installKeyboard = function(element) {
@@ -263,10 +268,12 @@ hterm.Keyboard.prototype.uninstallKeyboard = function() {
 };
 
 /**
- * Handle onTextInput events.
+ * Handle textInput events.
  *
  * These are generated when using IMEs, Virtual Keyboards (VKs), compose keys,
  * Unicode input, etc...
+ *
+ * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.onTextInput_ = function(e) {
   if (!e.data)
@@ -278,9 +285,11 @@ hterm.Keyboard.prototype.onTextInput_ = function(e) {
 };
 
 /**
- * Handle onKeyPress events.
+ * Handle keypress events.
  *
  * TODO(vapier): Drop this event entirely and only use keydown.
+ *
+ * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.onKeyPress_ = function(e) {
   // FF doesn't set keyCode reliably in keypress events.  Stick to the which
@@ -329,6 +338,8 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
  * When combined with Chrome permission 'app.window.fullscreen.overrideEsc',
  * and called for both key down and key up events,
  * the ESC key remains usable within fullscreen Chrome app windows.
+ *
+ * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.preventChromeAppNonCtrlShiftDefault_ = function(e) {
   if (!window.chrome || !window.chrome.app || !window.chrome.app.window)
@@ -337,10 +348,20 @@ hterm.Keyboard.prototype.preventChromeAppNonCtrlShiftDefault_ = function(e) {
     e.preventDefault();
 };
 
+/**
+ * Handle focusout events.
+ *
+ * @param {!FocusEvent} e The event to process.
+ */
 hterm.Keyboard.prototype.onFocusOut_ = function(e) {
   this.altKeyPressed = 0;
 };
 
+/**
+ * Handle keyup events.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ */
 hterm.Keyboard.prototype.onKeyUp_ = function(e) {
   if (e.keyCode == 18)
     this.altKeyPressed = this.altKeyPressed & ~(1 << (e.location - 1));
@@ -350,7 +371,9 @@ hterm.Keyboard.prototype.onKeyUp_ = function(e) {
 };
 
 /**
- * Handle onKeyDown events.
+ * Handle keydown events.
+ *
+ * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   if (e.keyCode == 18)

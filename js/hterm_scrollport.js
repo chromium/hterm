@@ -25,8 +25,9 @@
  * This ensures that we can quickly assign the correct display height
  * to the rows with css.
  *
- * @param {RowProvider} rowProvider An object capable of providing rows as
+ * @param {!RowProvider} rowProvider An object capable of providing rows as
  *     raw text or row nodes.
+ * @constructor
  */
 hterm.ScrollPort = function(rowProvider) {
   hterm.PubSub.addBehavior(this);
@@ -92,6 +93,7 @@ hterm.ScrollPort = function(rowProvider) {
 
   this.div_ = null;
   this.document_ = null;
+  this.screen_ = null;
 
   // Collection of active timeout handles.
   this.timeouts_ = {};
@@ -109,7 +111,8 @@ hterm.ScrollPort = function(rowProvider) {
  * Proxy for the native selection object which understands how to walk up the
  * DOM to find the containing row node and sort out which comes first.
  *
- * @param {hterm.ScrollPort} scrollPort The parent hterm.ScrollPort instance.
+ * @param {!hterm.ScrollPort} scrollPort The parent hterm.ScrollPort instance.
+ * @constructor
  */
 hterm.ScrollPort.Selection = function(scrollPort) {
   this.scrollPort_ = scrollPort;
@@ -153,7 +156,9 @@ hterm.ScrollPort.Selection = function(scrollPort) {
  * Given a list of DOM nodes and a container, return the DOM node that
  * is first according to a depth-first search.
  *
- * Returns null if none of the children are found.
+ * @param {!Node} parent
+ * @param {!Array<!Node>} childAry
+ * @return {?Node} Returns null if none of the children are found.
  */
 hterm.ScrollPort.Selection.prototype.findFirstChild = function(
     parent, childAry) {
@@ -280,9 +285,11 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   this.isMultiline = anchorRow.rowIndex != focusRow.rowIndex;
 };
 
-
 /**
  * Turn a div into this hterm.ScrollPort.
+ *
+ * @param {!Element} div
+ * @param {function()=} callback
  */
 hterm.ScrollPort.prototype.decorate = function(div, callback) {
   this.div_ = div;
@@ -579,7 +586,7 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
 /**
  * Set the AccessibilityReader object to use to announce page scroll updates.
  *
- * @param {hterm.AccessibilityReader} accessibilityReader for announcing page
+ * @param {!hterm.AccessibilityReader} accessibilityReader for announcing page
  *     scroll updates.
  */
 hterm.ScrollPort.prototype.setAccessibilityReader =
@@ -622,7 +629,7 @@ hterm.ScrollPort.prototype.scrollPageDown = function() {
  *
  * @param {string} fontFamily Value of the CSS 'font-family' to use for this
  *     scrollport.  Should be a monospace font.
- * @param {string} opt_smoothing Optional value for '-webkit-font-smoothing'.
+ * @param {string=} opt_smoothing Optional value for '-webkit-font-smoothing'.
  *     Defaults to an empty string if not specified.
  */
 hterm.ScrollPort.prototype.setFontFamily = function(fontFamily, opt_smoothing) {
@@ -636,6 +643,7 @@ hterm.ScrollPort.prototype.setFontFamily = function(fontFamily, opt_smoothing) {
   this.syncCharacterSize();
 };
 
+/** @return {string} */
 hterm.ScrollPort.prototype.getFontFamily = function() {
   return this.screen_.style.fontFamily;
 };
@@ -645,6 +653,8 @@ hterm.ScrollPort.prototype.getFontFamily = function() {
  *
  * Defaults to null, meaning no custom css is loaded.  Set it back to null or
  * the empty string to remove a previously applied custom css.
+ *
+ * @param {?string} url
  */
 hterm.ScrollPort.prototype.setUserCssUrl = function(url) {
   if (url) {
@@ -657,10 +667,12 @@ hterm.ScrollPort.prototype.setUserCssUrl = function(url) {
   }
 };
 
+/** @param {string} text */
 hterm.ScrollPort.prototype.setUserCssText = function(text) {
   this.userCssText_.textContent = text;
 };
 
+/** Focus. */
 hterm.ScrollPort.prototype.focus = function() {
   this.iframe_.focus();
   this.screen_.focus();
@@ -674,42 +686,51 @@ hterm.ScrollPort.prototype.blur = function() {
   this.screen_.blur();
 };
 
+/** @return {string} */
 hterm.ScrollPort.prototype.getForegroundColor = function() {
   return this.screen_.style.color;
 };
 
+/** @param {string} color */
 hterm.ScrollPort.prototype.setForegroundColor = function(color) {
   this.screen_.style.color = color;
   this.scrollUpButton_.style.backgroundColor = color;
   this.scrollDownButton_.style.backgroundColor = color;
 };
 
+/** @return {string} */
 hterm.ScrollPort.prototype.getBackgroundColor = function() {
   return this.screen_.style.backgroundColor;
 };
 
+/** @param {string} color */
 hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
   this.screen_.style.backgroundColor = color;
   this.scrollUpButton_.style.color = color;
   this.scrollDownButton_.style.color = color;
 };
 
+/** @param {string} image */
 hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
   this.screen_.style.backgroundImage = image;
 };
 
+/** @param {number} size */
 hterm.ScrollPort.prototype.setBackgroundSize = function(size) {
   this.screen_.style.backgroundSize = size;
 };
 
+/** @param {number} position */
 hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
   this.screen_.style.backgroundPosition = position;
 };
 
+/** @param {boolean} ctrlVPaste */
 hterm.ScrollPort.prototype.setCtrlVPaste = function(ctrlVPaste) {
   this.ctrlVPaste = ctrlVPaste;
 };
 
+/** @param {boolean} pasteOnDrop */
 hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
   this.pasteOnDrop = pasteOnDrop;
 };
@@ -718,6 +739,8 @@ hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
  * Get the usable size of the scrollport screen.
  *
  * The width will not include the scrollbar width.
+ *
+ * @return {number}
  */
 hterm.ScrollPort.prototype.getScreenSize = function() {
   var size = hterm.getClientSize(this.screen_);
@@ -731,6 +754,8 @@ hterm.ScrollPort.prototype.getScreenSize = function() {
  * Get the usable width of the scrollport screen.
  *
  * This the widget width minus scrollbar width.
+ *
+ * @return {number}
  */
 hterm.ScrollPort.prototype.getScreenWidth = function() {
   return this.getScreenSize().width ;
@@ -738,6 +763,8 @@ hterm.ScrollPort.prototype.getScreenWidth = function() {
 
 /**
  * Get the usable height of the scrollport screen.
+ *
+ * @return {number}
  */
 hterm.ScrollPort.prototype.getScreenHeight = function() {
   return this.getScreenSize().height;
@@ -745,6 +772,8 @@ hterm.ScrollPort.prototype.getScreenHeight = function() {
 
 /**
  * Return the document that holds the visible rows of this hterm.ScrollPort.
+ *
+ * @return {!Document}
  */
 hterm.ScrollPort.prototype.getDocument = function() {
   return this.document_;
@@ -752,6 +781,8 @@ hterm.ScrollPort.prototype.getDocument = function() {
 
 /**
  * Returns the x-screen element that holds the rows of this hterm.ScrollPort.
+ *
+ * @return {?Element}
  */
 hterm.ScrollPort.prototype.getScreenNode = function() {
   return this.screen_;
@@ -770,7 +801,7 @@ hterm.ScrollPort.prototype.resetCache = function() {
  *
  * This will clear the row cache and cause a redraw.
  *
- * @param {Object} rowProvider An object capable of providing the rows
+ * @param {!RowProvider} rowProvider An object capable of providing the rows
  *     in this hterm.ScrollPort.
  */
 hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
@@ -807,6 +838,9 @@ hterm.ScrollPort.prototype.invalidate = function() {
   this.drawVisibleRows_(topRowIndex, bottomRowIndex);
 };
 
+/**
+ * Schedule invalidate.
+ */
 hterm.ScrollPort.prototype.scheduleInvalidate = function() {
   if (this.timeouts_.invalidate)
     return;
@@ -820,6 +854,8 @@ hterm.ScrollPort.prototype.scheduleInvalidate = function() {
 
 /**
  * Set the font size of the ScrollPort.
+ *
+ * @param {number} px
  */
 hterm.ScrollPort.prototype.setFontSize = function(px) {
   this.screen_.style.fontSize = px + 'px';
@@ -828,6 +864,8 @@ hterm.ScrollPort.prototype.setFontSize = function(px) {
 
 /**
  * Return the current font size of the ScrollPort.
+ *
+ * @return {number}
  */
 hterm.ScrollPort.prototype.getFontSize = function() {
   return parseInt(this.screen_.style.fontSize);
@@ -836,9 +874,9 @@ hterm.ScrollPort.prototype.getFontSize = function() {
 /**
  * Measure the size of a single character in pixels.
  *
- * @param {string} opt_weight The font weight to measure, or 'normal' if
+ * @param {string=} opt_weight The font weight to measure, or 'normal' if
  *     omitted.
- * @return {hterm.Size} A new hterm.Size object.
+ * @return {!hterm.Size} A new hterm.Size object.
  */
 hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
   // Number of lines used to average the height of a single character.
@@ -991,8 +1029,10 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   this.rowNodes_.style.top = this.screen_.offsetTop - topFoldOffset + 'px';
 };
 
+/**
+ * Resize the scroll area to appear as though it contains every row.
+ */
 hterm.ScrollPort.prototype.syncScrollHeight = function() {
-  // Resize the scroll area to appear as though it contains every row.
   this.lastRowCount_ = this.rowProvider_.getRowCount();
   this.scrollArea_.style.height = (this.characterSize.height *
                                    this.lastRowCount_ +
@@ -1082,6 +1122,8 @@ hterm.ScrollPort.prototype.redraw_ = function() {
  * It is critical that this method does not move the selection nodes.  Doing
  * so would clear the current selection.  Instead, the rest of the DOM is
  * adjusted around them.
+ *
+ * @param {number} topRowIndex
  */
 hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
   if (!this.selection.startRow ||
@@ -1131,6 +1173,8 @@ hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
  * It is critical that this method does not move the selection nodes.  Doing
  * so would clear the current selection.  Instead, the rest of the DOM is
  * adjusted around them.
+ *
+ * @param {number} bottomRowIndex
  */
 hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
   if (!this.selection.endRow ||
@@ -1181,6 +1225,9 @@ hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
  * It is critical that this method does not move the selection nodes.  Doing
  * so would clear the current selection.  Instead, the rest of the DOM is
  * adjusted around them.
+ *
+ * @param {number} topRowIndex
+ * @param {number} bottomRowIndex
  */
 hterm.ScrollPort.prototype.drawVisibleRows_ = function(
     topRowIndex, bottomRowIndex) {
@@ -1340,6 +1387,8 @@ hterm.ScrollPort.prototype.resetSelectBags_ = function() {
  * Place a row node in the cache of visible nodes.
  *
  * This method may only be used during a redraw_.
+ *
+ * @param {!Node} rowNode
  */
 hterm.ScrollPort.prototype.cacheRowNode_ = function(rowNode) {
   this.currentRowNodeCache_[rowNode.rowIndex] = rowNode;
@@ -1352,6 +1401,9 @@ hterm.ScrollPort.prototype.cacheRowNode_ = function(rowNode) {
  * from the RowProvider if not.
  *
  * If a redraw_ is in progress the row will be added to the current cache.
+ *
+ * @param {number} rowIndex
+ * @return {!Node}
  */
 hterm.ScrollPort.prototype.fetchRowNode_ = function(rowIndex) {
   var node;
@@ -1409,8 +1461,10 @@ hterm.ScrollPort.prototype.selectAll = function() {
 
 /**
  * Return the maximum scroll position in pixels.
+ *
+ * @return {number}
  */
-hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
+hterm.ScrollPort.prototype.getScrollMax_ = function() {
   return (hterm.getClientHeight(this.scrollArea_) +
           this.visibleRowTopMargin + this.visibleRowBottomMargin -
           hterm.getClientHeight(this.screen_));
@@ -1419,7 +1473,7 @@ hterm.ScrollPort.prototype.getScrollMax_ = function(e) {
 /**
  * Scroll the given rowIndex to the top of the hterm.ScrollPort.
  *
- * @param {integer} rowIndex Index of the target row.
+ * @param {number} rowIndex Index of the target row.
  */
 hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
   this.syncScrollHeight();
@@ -1444,7 +1498,7 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
 /**
  * Scroll the given rowIndex to the bottom of the hterm.ScrollPort.
  *
- * @param {integer} rowIndex Index of the target row.
+ * @param {number} rowIndex Index of the target row.
  */
 hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
   this.syncScrollHeight();
@@ -1470,6 +1524,8 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
  *
  * This is based on the scroll position.  If a redraw_ is in progress this
  * returns the row that *should* be at the top.
+ *
+ * @return {number}
  */
 hterm.ScrollPort.prototype.getTopRowIndex = function() {
   return Math.round(this.screen_.scrollTop / this.characterSize.height);
@@ -1480,6 +1536,9 @@ hterm.ScrollPort.prototype.getTopRowIndex = function() {
  *
  * This is based on the scroll position.  If a redraw_ is in progress this
  * returns the row that *should* be at the bottom.
+ *
+ * @param {number} topRowIndex
+ * @return {number}
  */
 hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
   return topRowIndex + this.visibleRowCount - 1;
@@ -1490,6 +1549,8 @@ hterm.ScrollPort.prototype.getBottomRowIndex = function(topRowIndex) {
  *
  * The onScroll event fires when scrollArea's scrollTop property changes.  This
  * may be due to the user manually move the scrollbar, or a programmatic change.
+ *
+ * @param {!Event} e
  */
 hterm.ScrollPort.prototype.onScroll_ = function(e) {
   var screenSize = this.getScreenSize();
@@ -1513,6 +1574,8 @@ hterm.ScrollPort.prototype.onScroll_ = function(e) {
  *
  * Clients may call event.preventDefault() if they want to keep the scrollport
  * from also handling the events.
+ *
+ * @param {!WheelEvent} e
  */
 hterm.ScrollPort.prototype.onScrollWheel = function(e) {};
 
@@ -1523,6 +1586,8 @@ hterm.ScrollPort.prototype.onScrollWheel = function(e) {};
  * hterm.ScrollPort.  Because the frontmost element in the hterm.ScrollPort is
  * a fixed position DIV, the scroll wheel does nothing by default.  Instead, we
  * have to handle it manually.
+ *
+ * @param {!WheelEvent} e
  */
 hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   this.onScrollWheel(e);
@@ -1562,8 +1627,8 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
  * This normalizes the browser's concept of a scroll (pixels, lines, etc...)
  * into a standard pixel distance.
  *
- * @param {WheelEvent} e The mouse wheel event to process.
- * @return {Object} The x & y of how far (in pixels) to scroll.
+ * @param {!WheelEvent} e The mouse wheel event to process.
+ * @return {{x:number, y:number}} The x & y of how far (in pixels) to scroll.
  */
 hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
   const delta = {x: 0, y: 0};
@@ -1591,17 +1656,20 @@ hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
   return delta;
 };
 
-
 /**
  * Clients can override this if they want to hear touch events.
  *
  * Clients may call event.preventDefault() if they want to keep the scrollport
  * from also handling the events.
+ *
+ * @param {!TouchEvent} e
  */
 hterm.ScrollPort.prototype.onTouch = function(e) {};
 
 /**
  * Handler for touch events.
+ *
+ * @param {!TouchEvent} e
  */
 hterm.ScrollPort.prototype.onTouch_ = function(e) {
   this.onTouch(e);
@@ -1685,6 +1753,8 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
  *
  * The browser will resize us such that the top row stays at the top, but we
  * prefer to the bottom row to stay at the bottom.
+ *
+ * @param {!FocusEvent} e
  */
 hterm.ScrollPort.prototype.onResize_ = function(e) {
   // Re-measure, since onResize also happens for browser zoom changes.
@@ -1696,6 +1766,8 @@ hterm.ScrollPort.prototype.onResize_ = function(e) {
  *
  * Clients may call event.preventDefault() if they want to keep the scrollport
  * from also handling the events.
+ *
+ * @param {!ClipboardEvent} e
  */
 hterm.ScrollPort.prototype.onCopy = function(e) { };
 
@@ -1706,6 +1778,8 @@ hterm.ScrollPort.prototype.onCopy = function(e) { };
  * the rows between selection start and selection end.  This handler determines
  * if we're missing some of the selected text, and if so populates one or both
  * of the "select bags" with the missing text.
+ *
+ * @param {!ClipboardEvent} e
  */
 hterm.ScrollPort.prototype.onCopy_ = function(e) {
   this.onCopy(e);
@@ -1764,6 +1838,8 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
 /**
  * Focuses on the paste target on a ctrl-v keydown event, as in
  * FF a content editable element must be focused before the paste event.
+ *
+ * @param {!KeyboardEvent} e
  */
 hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
   if (!this.ctrlVPaste)
@@ -1777,6 +1853,8 @@ hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
  * Handle a paste event on the the ScrollPort's screen element.
  *
  * TODO: Handle ClipboardData.files transfers.  https://crbug.com/433581.
+ *
+ * @param {!ClipboardEvent} e
  */
 hterm.ScrollPort.prototype.onPaste_ = function(e) {
   this.pasteTarget_.focus();
@@ -1792,6 +1870,8 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
 /**
  * Handles a textInput event on the paste target. Stops this from
  * propagating as we want this to be handled in the onPaste_ method.
+ *
+ * @param {!Event} e
  */
 hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
   e.stopPropagation();
@@ -1805,7 +1885,7 @@ hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
  *
  * TODO: Handle DataTransfer.files transfers.  https://crbug.com/433581.
  *
- * @param {DragEvent} e The drag event that fired us.
+ * @param {!DragEvent} e The drag event that fired us.
  */
 hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
   if (!this.pasteOnDrop)
@@ -1839,6 +1919,8 @@ hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
 
 /**
  * Set the vertical scrollbar mode of the ScrollPort.
+ *
+ * @param {boolean} state
  */
 hterm.ScrollPort.prototype.setScrollbarVisible = function(state) {
   this.screen_.style.overflowY = state ? 'scroll' : 'hidden';
@@ -1847,6 +1929,8 @@ hterm.ScrollPort.prototype.setScrollbarVisible = function(state) {
 /**
  * Set scroll wheel multiplier. This alters how much the screen scrolls on
  * mouse wheel events.
+ *
+ * @param {number} multiplier
  */
 hterm.ScrollPort.prototype.setScrollWheelMoveMultipler = function(multiplier) {
   this.scrollWheelMultiplier_ = multiplier;

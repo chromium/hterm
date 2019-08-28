@@ -17,11 +17,12 @@ const assert = chai.assert;
 
 // Catch any random errors before the test runner runs.
 let earlyError = null;
+/** Catch any errors. */
 window.onerror = function() {
   earlyError = Array.from(arguments);
 };
 
-// Run the test framework once everything is finished.
+/** Run the test framework once everything is finished. */
 window.onload = function() {
   hterm.defaultStorage = new lib.Storage.Memory();
 

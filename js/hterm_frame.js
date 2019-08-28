@@ -17,9 +17,10 @@
 /**
  * Construct a new frame for the given terminal.
  *
- * @param terminal {hterm.Terminal} The parent terminal object.
- * @param url {String} The url to load in the frame.
- * @param opt_options {Object} Optional options for the frame.  Not implemented.
+ * @param {!hterm.Terminal} terminal The parent terminal object.
+ * @param {string} url The url to load in the frame.
+ * @param {!Object=} opt_options Optional options for the frame.  Not
+ *     implemented.
  */
 hterm.Frame = function(terminal, url, opt_options) {
   this.terminal_ = terminal;
@@ -33,6 +34,8 @@ hterm.Frame = function(terminal, url, opt_options) {
 
 /**
  * Handle messages from the iframe.
+ *
+ * @param {!MessageEvent} e The message to process.
  */
 hterm.Frame.prototype.onMessage_ = function(e) {
   switch (e.data.name) {
@@ -124,6 +127,9 @@ hterm.Frame.prototype.onClose = function() {};
 
 /**
  * Send a message to the iframe.
+ *
+ * @param {string} name The message name.
+ * @param {!Array} argv The message arguments.
  */
 hterm.Frame.prototype.postMessage = function(name, argv) {
   if (!this.messageChannel_)
@@ -178,30 +184,6 @@ hterm.Frame.prototype.show = function() {
       'max-height: 80%;' +
       'box-shadow: 0 0 2px ' + this.terminal_.getForegroundColor() + ';' +
       'border: 2px ' + this.terminal_.getForegroundColor() + ' solid;');
-
-  if (false) {
-    // No use for the close button, so no use for the window header either.
-    var header = document.createElement('div');
-    header.style.cssText = (
-        'display: flex;' +
-        'justify-content: flex-end;' +
-        'height: ' + headerHeight + ';' +
-        'background-color: ' + this.terminal_.getForegroundColor() + ';' +
-        'color: ' + this.terminal_.getBackgroundColor() + ';' +
-        'font-size: 16px;' +
-        'font-family: ' + this.terminal_.getFontFamily());
-    container.appendChild(header);
-
-    var button = document.createElement('div');
-    button.setAttribute('role', 'button');
-    button.style.cssText = (
-        'margin-top: -3px;' +
-        'margin-right: 3px;' +
-        'cursor: pointer;');
-    button.textContent = '\u2a2f';
-    button.addEventListener('click', this.onCloseClicked_.bind(this));
-    header.appendChild(button);
-  }
 
   var iframe = this.iframe_ = document.createElement('iframe');
   iframe.onload = this.onLoad_.bind(this);

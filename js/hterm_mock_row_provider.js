@@ -4,6 +4,13 @@
 
 'use strict';
 
+/**
+ * MockRowProvider implements RowProvider for tests.
+ *
+ * @param {!Document} document Document.
+ * @param {number} count Number of visible rows.
+ * @constructor
+ */
 function MockRowProvider(document, count) {
   this.document_ = document;
   this.rows_ = new Array();
@@ -16,10 +23,21 @@ function MockRowProvider(document, count) {
   };
 }
 
+/**
+ * Reset the call count for the specified function.
+ *
+ * @param {string} name
+ */
 MockRowProvider.prototype.resetCallCount = function(name) {
   this.callCounts_[name] = 0;
 };
 
+/**
+ * Get the number of times a specified function has been called.
+ *
+ * @param {string} name Function name.
+ * @return {number} The number of times the function has been called.
+ */
 MockRowProvider.prototype.getCallCount = function(name) {
   if (!(name in this.callCounts_))
     throw 'Unknown name: ' + name;
@@ -27,6 +45,11 @@ MockRowProvider.prototype.getCallCount = function(name) {
   return this.callCounts_[name];
 };
 
+/**
+ * Increment call count for the specified function.
+ *
+ * @param {string} name Function name.
+ */
 MockRowProvider.prototype.addCallCount = function(name) {
   if (!(name in this.callCounts_)) {
     this.callCounts_[name] = 1;
@@ -35,14 +58,28 @@ MockRowProvider.prototype.addCallCount = function(name) {
   }
 };
 
+/**
+ * Set whether caching is enabled.
+ *
+ * @param {boolean} state Whether caching is enabled.
+ */
 MockRowProvider.prototype.setCacheEnabled = function(state) {
   this.rowNodeCache_ = state ? {} : null;
 };
 
+/**
+ * @return {number} The row count.
+ */
 MockRowProvider.prototype.getRowCount = function() {
   return this.rows_.length;
 };
 
+/**
+ * Get the specified row record.
+ *
+ * @param {number} index The index of the row record to retrieve.
+ * @return {!Object} The specified row record.
+ */
 MockRowProvider.prototype.getRowRecord_ = function(index) {
   if (index < 0 || index >= this.rows_.length)
     throw 'Index out of bounds: ' + index;
@@ -66,6 +103,13 @@ MockRowProvider.prototype.getRowRecord_ = function(index) {
   return this.rows_[index];
 };
 
+/**
+ * Get the text of the specified rows.
+ *
+ * @param {number} start The index of the first row of text.
+ * @param {number} end The index of the last row of text.
+ * @return {string} The text of the specified rows.
+ */
 MockRowProvider.prototype.getRowsText = function(start, end) {
   if (start < 0 || end >= this.rows_.length)
     throw 'Index out of bounds.';
@@ -74,11 +118,23 @@ MockRowProvider.prototype.getRowsText = function(start, end) {
   return text.map(function (e) { return e.text; }).join('\n');
 };
 
+/**
+ * Get the text of the specified row.
+ *
+ * @param {number} index The index of the row.
+ * @return {string} The text of the specified row.
+ */
 MockRowProvider.prototype.getRowText = function(index) {
   var rec = this.getRowRecord_(index);
   return rec.text;
 };
 
+/**
+ * Get the specifed row node.
+ *
+ * @param {number} index The index of the node.
+ * @return {!Node} The specified node.
+ */
 MockRowProvider.prototype.getRowNode = function(index) {
   this.addCallCount('getRowNode');
 

@@ -5,8 +5,8 @@
 'use strict';
 
 /**
- * @constructor
  * Parses the key definition syntax used for user keyboard customizations.
+ * @constructor
  */
 hterm.Parser = function() {
   /**
@@ -20,19 +20,28 @@ hterm.Parser = function() {
   this.pos = 0;
 
   /**
-   * @type {string?} The character at the current position.
+   * @type {?string} The character at the current position.
    */
   this.ch = null;
 };
 
+/**
+ * @param {string} message
+ * @return {!Error}
+ */
 hterm.Parser.prototype.error = function(message) {
   return new Error('Parse error at ' + this.pos + ': ' + message);
 };
 
+/** @return {boolean} */
 hterm.Parser.prototype.isComplete = function() {
   return this.pos == this.source.length;
 };
 
+/**
+ * @param {string} source
+ * @param {number=} opt_pos
+ */
 hterm.Parser.prototype.reset = function(source, opt_pos) {
   this.source = source;
   this.pos = opt_pos || 0;
@@ -62,8 +71,8 @@ hterm.Parser.prototype.reset = function(source, opt_pos) {
  *   Ctrl-*-A: Matches Ctrl-A, as well as any other key sequence that includes
  *     at least the Ctrl and A keys.
  *
- * @return {Object} An object with shift, ctrl, alt, meta, keyCode
- *   properties.
+ * @return {!hterm.Keyboard.KeyDown} An object with shift, ctrl, alt, meta,
+ *     keyCode properties.
  */
 hterm.Parser.prototype.parseKeySequence = function() {
   var rv = {
@@ -129,6 +138,7 @@ hterm.Parser.prototype.parseKeySequence = function() {
   return rv;
 };
 
+/** @return {string} */
 hterm.Parser.prototype.parseKeyAction = function() {
   this.skipSpace();
 
@@ -149,18 +159,22 @@ hterm.Parser.prototype.parseKeyAction = function() {
 
 };
 
+/** @return {boolean} */
 hterm.Parser.prototype.peekString = function() {
   return this.ch == '\'' || this.ch == '"';
 };
 
+/** @return {boolean} */
 hterm.Parser.prototype.peekIdentifier = function() {
   return this.ch.match(/[a-z_]/i);
 };
 
+/** @return {boolean} */
 hterm.Parser.prototype.peekInteger = function() {
   return this.ch.match(/[0-9]/);
 };
 
+/** @return {!Object} */
 hterm.Parser.prototype.parseToken = function() {
   if (this.ch == '*') {
     var rv = {type: 'symbol', value: this.ch};
@@ -181,6 +195,7 @@ hterm.Parser.prototype.parseToken = function() {
   throw this.error('Unexpected token');
 };
 
+/** @return {string} */
 hterm.Parser.prototype.parseIdentifier = function() {
   if (!this.peekIdentifier())
     throw this.error('Expected identifier');
@@ -188,6 +203,7 @@ hterm.Parser.prototype.parseIdentifier = function() {
   return this.parsePattern(/[a-z0-9_]+/ig);
 };
 
+/** @return {number} */
 hterm.Parser.prototype.parseInteger = function() {
   var base = 10;
 
@@ -207,8 +223,6 @@ hterm.Parser.prototype.parseInteger = function() {
  *
  * TODO(rginda): Variable interpolation.
  *
- * @param {ParseState} parseState
- * @param {string} quote A single or double-quote character.
  * @return {string}
  */
 hterm.Parser.prototype.parseString = function() {
@@ -297,7 +311,7 @@ hterm.Parser.prototype.parseEscape = function() {
 /**
  * Parse the given pattern starting from the current position.
  *
- * @param {RegExp} pattern A pattern representing the characters to span.  MUST
+ * @param {!RegExp} pattern A pattern representing the characters to span.  MUST
  *   include the "global" RegExp flag.
  * @return {string}
  */

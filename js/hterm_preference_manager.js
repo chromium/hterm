@@ -8,6 +8,8 @@
  * PreferenceManager subclass managing global NaSSH preferences.
  *
  * This is currently just an ordered list of known connection profiles.
+ *
+ * @param {string} profileId
  */
 hterm.PreferenceManager = function(profileId) {
   lib.PreferenceManager.call(this, hterm.defaultStorage,
@@ -26,7 +28,7 @@ hterm.PreferenceManager.prefix_ = '/hterm/profiles/';
 /**
  * List all the defined profiles.
  *
- * @param {function(Array<string>)} callback Called with the list of profiles.
+ * @param {function(!Array<string>)} callback Called with the list of profiles.
  */
 hterm.PreferenceManager.listProfiles = function(callback) {
   hterm.defaultStorage.getItems(null, (items) => {
@@ -78,12 +80,12 @@ hterm.PreferenceManager.categoryDefinitions = [
 /**
  * Internal helper to create a default preference object.
  *
- * @param {hterm.PreferenceManager.categories} category The pref category.
  * @param {string} name The user readable name/title.
- * @param {Object} defaultValue The default pref value.
- * @param {Object} type The type for this pref (or an array for enums).
+ * @param {!hterm.PreferenceManager.categories} category The pref category.
+ * @param {!Object} defaultValue The default pref value.
+ * @param {!Object} type The type for this pref (or an array for enums).
  * @param {string} help The user readable help text.
- * @return {Object} The default pref object.
+ * @return {!Object} The default pref object.
  */
 hterm.PreferenceManager.definePref_ = function(
     name, category, defaultValue, type, help) {
