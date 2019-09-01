@@ -28,7 +28,8 @@ def main(argv):
     # We know our tools are first in $PATH now.
     libdot.run(['eslint'] + argv)
     libdot.run([
-        'closure-compiler', '--checks-only', '--jscomp_warning=lintChecks',
+        os.path.join(libdot.BIN_DIR, 'closure-compiler'),
+        '--checks-only', '--jscomp_warning=lintChecks',
         '--language_in=ECMASCRIPT6_STRICT'] + argv)
 
 
