@@ -667,6 +667,13 @@ hterm.ScrollPort.prototype.focus = function() {
   this.publish('focus');
 };
 
+/**
+ * Unfocus the scrollport.
+ */
+hterm.ScrollPort.prototype.blur = function() {
+  this.screen_.blur();
+};
+
 hterm.ScrollPort.prototype.getForegroundColor = function() {
   return this.screen_.style.color;
 };
