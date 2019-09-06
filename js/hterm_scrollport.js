@@ -1599,10 +1599,13 @@ hterm.ScrollPort.prototype.onScroll_ = function(e) {
 /**
  * Clients can override this if they want to hear scrollwheel events.
  *
- * Clients may call event.preventDefault() if they want to keep the scrollport
- * from also handling the events.
+ * Clients may call event.preventDefault() or return false if they want to keep
+ * the scrollport from also handling the events. Returning false will not
+ * prevent the event's default action.
  *
  * @param {!WheelEvent} e
+ * @return {?bool} Return false to prevent the scrollport from handling the
+ *     event.
  */
 hterm.ScrollPort.prototype.onScrollWheel = function(e) {};
 
@@ -1617,13 +1620,13 @@ hterm.ScrollPort.prototype.onScrollWheel = function(e) {};
  * @param {!WheelEvent} e
  */
 hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
-  this.onScrollWheel(e);
+  if (this.onScrollWheel(e) === false || e.defaultPrevented)
+    return;
 
-  // Ignore the event if it was already handled (preventDefault was called),
-  // or if it is non-cancelable since preventDefault is ignored for these.
-  // See https://crbug.com/894223 where blink sends non-cancelable touchpad
-  // scrollWheel events.
-  if (e.defaultPrevented || !e.cancelable)
+  // Ignore the event if it is non-cancelable since preventDefault is ignored
+  // for these. See https://crbug.com/894223 where blink sends non-cancelable
+  // touchpad scrollWheel events.
+  if (!e.cancelable)
     return;
 
   // Figure out how far this event wants us to scroll.
@@ -1688,10 +1691,13 @@ hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
 /**
  * Clients can override this if they want to hear touch events.
  *
- * Clients may call event.preventDefault() if they want to keep the scrollport
- * from also handling the events.
+ * Clients may call event.preventDefault() or return false if they want to keep
+ * the scrollport from also handling the events. Returning false will not
+ * prevent the event's default action.
  *
  * @param {!TouchEvent} e
+ * @return {?bool} Return false to prevent the scrollport from handling the
+ *     event.
  */
 hterm.ScrollPort.prototype.onTouch = function(e) {};
 
@@ -1701,9 +1707,7 @@ hterm.ScrollPort.prototype.onTouch = function(e) {};
  * @param {!TouchEvent} e
  */
 hterm.ScrollPort.prototype.onTouch_ = function(e) {
-  this.onTouch(e);
-
-  if (e.defaultPrevented)
+  if (this.onTouch(e) === false || e.defaultPrevented)
     return;
 
   // Extract the fields from the Touch event that we need.  If we saved the
@@ -1793,10 +1797,13 @@ hterm.ScrollPort.prototype.onResize_ = function(e) {
 /**
  * Clients can override this if they want to hear copy events.
  *
- * Clients may call event.preventDefault() if they want to keep the scrollport
- * from also handling the events.
+ * Clients may call event.preventDefault() or return false if they want to keep
+ * the scrollport from also handling the events. Returning false will not
+ * prevent the event's default action.
  *
  * @param {!ClipboardEvent} e
+ * @return {?bool} Return false to prevent the scrollport from handling the
+ *     event.
  */
 hterm.ScrollPort.prototype.onCopy = function(e) { };
 
@@ -1811,9 +1818,7 @@ hterm.ScrollPort.prototype.onCopy = function(e) { };
  * @param {!ClipboardEvent} e
  */
 hterm.ScrollPort.prototype.onCopy_ = function(e) {
-  this.onCopy(e);
-
-  if (e.defaultPrevented)
+  if (this.onCopy(e) === false || e.defaultPrevented)
     return;
 
   this.resetSelectBags_();
