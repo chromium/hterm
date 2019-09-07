@@ -3408,7 +3408,9 @@ hterm.Terminal.prototype.copySelectionToClipboard = function() {
  * Show overlay with current terminal size.
  */
 hterm.Terminal.prototype.overlaySize = function() {
-  this.showOverlay(this.screenSize.width + 'x' + this.screenSize.height);
+  if (this.prefs_.get('enable-resize-status')) {
+    this.showOverlay(this.screenSize.width + 'x' + this.screenSize.height);
+  }
 };
 
 /**
