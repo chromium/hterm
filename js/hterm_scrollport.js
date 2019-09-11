@@ -1324,8 +1324,6 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
     }
 
     this.rowNodes_.insertBefore(newNode, node);
-    if (!newNode.nextSibling)
-      debugger;
     this.rowNodes_.removeChild(node);
     node = newNode.nextSibling;
   }
@@ -1350,7 +1348,7 @@ hterm.ScrollPort.prototype.ariaHideOffscreenSelectionRows_ = function(
   // Reset previously hidden selection rows.
   const hiddenRows = this.ariaHiddenSelectionRows_;
   let row;
-  while (row = hiddenRows.pop()) {
+  while ((row = hiddenRows.pop())) {
     row.removeAttribute('aria-hidden');
   }
 

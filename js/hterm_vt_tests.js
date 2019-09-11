@@ -1770,7 +1770,7 @@ it('OSC-8', function() {
   assert.isNull(tattrs.uri);
 
   // Check the link.
-  // XXX: Can't check the URI target due to binding via event listener.
+  // Note: Can't check the URI target due to binding via event listener.
   const row = this.terminal.getRowNode(0);
   const span = row.childNodes[0];
   assert.equal('foo', span.uriId);
@@ -1790,7 +1790,7 @@ it('OSC-8-blank-id', function() {
   assert.isNull(tattrs.uri);
 
   // Check the link.
-  // XXX: Can't check the URI target due to binding via event listener.
+  // Note: Can't check the URI target due to binding via event listener.
   const row = this.terminal.getRowNode(0);
   const span = row.childNodes[0];
   assert.equal('', span.uriId);
@@ -1811,7 +1811,7 @@ it('OSC-8-switch-uri', function() {
   assert.isNull(tattrs.uri);
 
   // Check the links.
-  // XXX: Can't check the URI target due to binding via event listener.
+  // Note: Can't check the URI target due to binding via event listener.
   const row = this.terminal.getRowNode(0);
   let span = row.childNodes[0];
   assert.equal('foo', span.uriId);

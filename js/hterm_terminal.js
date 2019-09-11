@@ -3263,7 +3263,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
                    '--hterm-charsize-height');
 
       // Figure out how many rows the image occupies, then add that many.
-      // XXX: This count will be inaccurate if the font size changes on us.
+      // Note: This count will be inaccurate if the font size changes on us.
       const padRows = Math.ceil(img.clientHeight /
                                 this.scrollPort_.characterSize.height);
       for (let i = 0; i < padRows; ++i)

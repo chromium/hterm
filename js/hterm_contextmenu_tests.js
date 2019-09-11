@@ -30,7 +30,7 @@ it('contextmenu-simple', () => {
   menu.setDocument(document);
 
   // Create a basic menu.
-  menu.setItems([['Foo', () => { return; }]]);
+  menu.setItems([['Foo', () => {}]]);
 
   // Show/hide this menu.
   menu.show({clientX: 0, clientY: 0});
