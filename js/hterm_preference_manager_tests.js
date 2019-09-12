@@ -27,8 +27,8 @@ it('pref-messages-sync', () => {
   hterm.messageManager.addMessages(messages);
 
   // Walk the loaded message ids and check for stale entries.
-  Object.entries(hterm.messageManager.messages).forEach(
-      ([msgId, nasshMsg]) => {
+  Object.entries(hterm.messageManager.messages_)
+      .forEach(([msgId, nasshMsg]) => {
         if (msgId.startsWith('HTERM_PREF_')) {
           const key = msgIdToHelpId(msgId);
           assert.property(hterm.PreferenceManager.defaultPreferences, key,

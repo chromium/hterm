@@ -54,6 +54,9 @@ hterm.notifyCopyMessage = '\u2702';
  */
 hterm.desktopNotificationTitle = '\u266A %(title) \u266A';
 
+/** @type {?lib.MessageManager} */
+hterm.messageManager = null;
+
 /**
  * The hterm init function, registered with lib.registerInit().
  *
