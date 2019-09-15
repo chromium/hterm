@@ -16,26 +16,17 @@ import hterm
 import libdot
 
 
+def _get_default_paths():
+    """Get list of paths to lint by default."""
+    os.chdir(hterm.DIR)
+    # All files in js/*.js.
+    # Sort to ensure hterm.js comes before hterm_other.js, etc.
+    return sorted(glob.glob(os.path.join('js', '*.js')))
+
+
 def main(argv):
     """The main func!"""
-    if not argv:
-        os.chdir(hterm.DIR)
-        # All files in js/*.js.
-        # Sort to ensure hterm.js comes before hterm_other.js, etc.
-        argv = glob.glob(os.path.join('js', '*.js'))
-        argv.sort()
-
-    libdot.setup_logging()
-    libdot.node_and_npm_setup()
-
-    # We know our tools are first in $PATH now.
-    libdot.run(['eslint'] + argv)
-    # TODO(crbug.com/998928): Update checks beyond just 'lintChecks'.
-    # E.g. --jscomp_error=*.
-    libdot.run([
-        os.path.join(libdot.BIN_DIR, 'closure-compiler'),
-        '--checks-only', '--jscomp_error=lintChecks',
-        '--language_in=ECMASCRIPT_2018'] + argv)
+    return libdot.lint.main(argv, get_default_paths=_get_default_paths)
 
 
 if __name__ == '__main__':
