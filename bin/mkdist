@@ -30,8 +30,6 @@ import sys
 import hterm
 import libdot
 
-import concat
-
 
 def get_parser():
     """Get a command line parser."""
@@ -63,8 +61,8 @@ def main(argv):
     os.makedirs(opts.output, exist_ok=True)
     for concat_file in opts.dist_files:
         name = os.path.splitext(os.path.basename(concat_file))[0]
-        concat.concat(concat_file,
-                      os.path.join(opts.output, '%s.js' % name))
+        libdot.concat.concat(concat_file,
+                             os.path.join(opts.output, '%s.js' % name))
 
 
 if __name__ == '__main__':
