@@ -26,7 +26,8 @@ def _get_default_paths():
 
 def main(argv):
     """The main func!"""
-    return libdot.lint.main(argv, get_default_paths=_get_default_paths)
+    return libdot.lint.main(argv, paths=_get_default_paths(),
+                            closure_args=['--jscomp_error=lintChecks'])
 
 
 if __name__ == '__main__':
