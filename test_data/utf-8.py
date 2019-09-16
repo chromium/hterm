@@ -45,20 +45,20 @@ def print_range(opts):
     i = 0
     spacer = opts.spacer or ' '
     while i < len(codepoints):
-        slice = codepoints[i:i + opts.width]
-        print('%*x%s' % (opts._pad, i + start, spacer), end='')
-        print(opts.spacer.join(slice), end='')
+        data = codepoints[i:i + opts.width]
+        print('%*x%s' % (opts.pad, i + start, spacer), end='')
+        print(opts.spacer.join(data), end='')
         print(opts.spacer)
         i += opts.width
 
 
 def print_header(opts):
     """Display the header for the codepoints."""
-    print('%*s%s' % (opts._pad, '', opts.spacer or ' '), end='')
+    print('%*s%s' % (opts.pad, '', opts.spacer or ' '), end='')
     i = 4
     width = 4
     if opts.spacer:
-      width += 4 * len(opts.spacer) - 1
+        width += 4 * len(opts.spacer) - 1
     while i <= opts.width:
         print('%*s%s' % (width, '+' + ('%x' % (i - 1)), opts.spacer), end='')
         i += 4
@@ -89,7 +89,7 @@ def main(argv):
     """The main entry point!"""
     parser = get_parser()
     opts = parser.parse_args(argv)
-    opts._pad = len('%x' % opts.end)
+    opts.pad = len('%x' % opts.end)
 
     print_header(opts)
     print_range(opts)
