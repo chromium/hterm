@@ -18,10 +18,11 @@ import libdot
 
 def _get_default_paths():
     """Get list of paths to lint by default."""
-    os.chdir(hterm.DIR)
     # All files in js/*.js.
+    # Use relpath for nicer default output.
     # Sort to ensure hterm.js comes before hterm_other.js, etc.
-    return sorted(glob.glob(os.path.join('js', '*.js')))
+    return sorted(os.path.relpath(x, os.getcwd())
+                  for x in glob.glob(os.path.join(hterm.DIR, 'js', '*.js')))
 
 
 def main(argv):
