@@ -30,7 +30,7 @@ it('publish-order', (done) => {
     function three() { assert.equal(3, ++callbackCount); }
     function last() { assert.equal(4, ++callbackCount); done(); }
 
-    var obj = {};
+    var obj = /** @type {!hterm.PubSub} */ ({});
     hterm.PubSub.addBehavior(obj);
 
     obj.subscribe('test', one);
@@ -51,7 +51,7 @@ it('parameter', (done) => {
     function three(param) { assert.deepStrictEqual(expected, param); }
     function last(param) { assert.deepStrictEqual(expected, param); done(); }
 
-    var obj = {};
+    var obj = /** @type {!hterm.PubSub} */ ({});
     hterm.PubSub.addBehavior(obj);
 
     obj.subscribe('test', one);
@@ -69,7 +69,7 @@ it('forever-alone', (done) => {
 
     function last(param) { calledLast = true; }
 
-    var obj = {};
+    var obj = /** @type {!hterm.PubSub} */ ({});
     hterm.PubSub.addBehavior(obj);
 
     obj.publish('test', null, last);
@@ -102,7 +102,7 @@ it('exception', function(done) {
     function bar() { calledBar = true; }
     function last() { calledLast = true; }
 
-    var obj = {};
+    var obj = /** @type {!hterm.PubSub} */ ({});
     hterm.PubSub.addBehavior(obj);
 
     obj.subscribe('test', foo);

@@ -7,6 +7,8 @@
 /**
  * Utility class used to add publish/subscribe/unsubscribe functionality to
  * an existing object.
+ *
+ * @constructor
  */
 hterm.PubSub = function() {
   this.observers_ = {};
@@ -31,7 +33,7 @@ hterm.PubSub.addBehavior = function(obj) {
  * Subscribe to be notified of messages about a subject.
  *
  * @param {string} subject The subject to subscribe to.
- * @param {function(!Object)} callback The function to invoke for notifications.
+ * @param {function(...)} callback The function to invoke for notifications.
  */
 hterm.PubSub.prototype.subscribe = function(subject, callback) {
   if (!(subject in this.observers_))
@@ -44,7 +46,7 @@ hterm.PubSub.prototype.subscribe = function(subject, callback) {
  * Unsubscribe from a subject.
  *
  * @param {string} subject The subject to unsubscribe from.
- * @param {function(!Object)} callback A callback previously registered via
+ * @param {function(...)} callback A callback previously registered via
  *     subscribe().
  */
 hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
@@ -66,7 +68,7 @@ hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
  * This method will return before anyone is actually notified.
  *
  * @param {string} subject The subject to publish about.
- * @param {!Object} e An arbitrary object associated with this notification.
+ * @param {?Object=} e An arbitrary object associated with this notification.
  * @param {function(!Object)=} opt_lastCallback An optional function to call
  *     after all subscribers have been notified.
  */
