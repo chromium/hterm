@@ -166,12 +166,12 @@ hterm.Parser.prototype.peekString = function() {
 
 /** @return {boolean} */
 hterm.Parser.prototype.peekIdentifier = function() {
-  return this.ch.match(/[a-z_]/i);
+  return !!this.ch.match(/[a-z_]/i);
 };
 
 /** @return {boolean} */
 hterm.Parser.prototype.peekInteger = function() {
-  return this.ch.match(/[0-9]/);
+  return !!this.ch.match(/[0-9]/);
 };
 
 /** @return {!Object} */
@@ -205,14 +205,12 @@ hterm.Parser.prototype.parseIdentifier = function() {
 
 /** @return {number} */
 hterm.Parser.prototype.parseInteger = function() {
-  var base = 10;
-
   if (this.ch == '0' && this.pos < this.source.length - 1 &&
       this.source.substr(this.pos + 1, 1) == 'x') {
-    return parseInt(this.parsePattern(/0x[0-9a-f]+/gi));
+    return parseInt(this.parsePattern(/0x[0-9a-f]+/gi), undefined);
   }
 
-  return parseInt(this.parsePattern(/\d+/g));
+  return parseInt(this.parsePattern(/\d+/g), 10);
 };
 
 /**
