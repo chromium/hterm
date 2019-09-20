@@ -2311,6 +2311,14 @@ it('DECSCUSR, cursor shapes', function() {
   });
 
 it('bracketed-paste', function() {
+    /**
+      * @param {!Object<string, string>} data
+      * @return {!ClipboardEvent}
+      */
+    function clipboardEvent(data) {
+      return /** @type {!ClipboardEvent} */ (
+          {clipboardData: {getData: (type) => data[type]}});
+    }
     var resultString;
     this.terminal.io.sendString = (str) => resultString = str;
 
@@ -2319,13 +2327,13 @@ it('bracketed-paste', function() {
     this.terminal.interpret('\x1b[?2004h');
     assert.isTrue(this.terminal.options_.bracketedPaste);
 
-    this.terminal.onPaste_({text: 'hello world'});
+    this.terminal.onPaste_(clipboardEvent({text: 'hello world'}));
     assert.equal(resultString, '\x1b[200~hello world\x1b[201~');
 
     this.terminal.interpret('\x1b[?2004l');
     assert.isFalse(this.terminal.options_.bracketedPaste);
 
-    this.terminal.onPaste_({text: 'hello world'});
+    this.terminal.onPaste_(clipboardEvent({text: 'hello world'}));
     assert.equal(resultString, 'hello world');
   });
 

@@ -24,9 +24,13 @@
  * @param {string=} opt_profileId Optional preference profile name.  If not
  *     provided, defaults to 'default'.
  * @constructor
+ * @implements {hterm.RowProvider}
  */
 hterm.Terminal = function(opt_profileId) {
   this.profileId_ = null;
+
+  /** @type {?hterm.PreferenceManager} */
+  this.prefs_ = null;
 
   // Two screen instances.
   this.primaryScreen_ = new hterm.Screen();
@@ -115,6 +119,7 @@ hterm.Terminal = function(opt_profileId) {
   // All terminal bell notifications that have been generated (not necessarily
   // shown).
   this.bellNotificationList_ = [];
+  this.bellSquelchTimeout_ = null;
 
   // Whether we have permission to display notifications.
   this.desktopNotificationBell_ = false;
@@ -338,7 +343,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
       if (v) {
         for (var key in v) {
-          var i = parseInt(key);
+          var i = parseInt(key, 10);
           if (isNaN(i) || i < 0 || i > 255) {
             console.log('Invalid value in palette: ' + key + ': ' + v[key]);
             continue;
@@ -423,7 +428,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'font-size': function(v) {
-      v = parseInt(v);
+      v = parseInt(v, 10);
       if (v <= 0) {
         console.error(`Invalid font size: ${v}`);
         return;
@@ -599,7 +604,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
  * @return {!hterm.PreferenceManager}
  */
 hterm.Terminal.prototype.getPrefs = function() {
-  return this.prefs_;
+  return lib.notNull(this.prefs_);
 };
 
 /**
@@ -622,7 +627,7 @@ hterm.Terminal.prototype.setBracketedPaste = function(state) {
  */
 hterm.Terminal.prototype.setCursorColor = function(color) {
   if (color === undefined)
-    color = this.prefs_.get('cursor-color');
+    color = this.prefs_.getString('cursor-color');
 
   this.setCssVar('cursor-color', color);
 };
@@ -655,7 +660,7 @@ hterm.Terminal.prototype.setSelectionEnabled = function(state) {
  */
 hterm.Terminal.prototype.setBackgroundColor = function(color) {
   if (color === undefined)
-    color = this.prefs_.get('background-color');
+    color = this.prefs_.getString('background-color');
 
   this.backgroundColor_ = lib.colors.normalizeCSS(color);
   this.primaryScreen_.textAttributes.setDefaults(
@@ -674,7 +679,7 @@ hterm.Terminal.prototype.setBackgroundColor = function(color) {
  * @return {string}
  */
 hterm.Terminal.prototype.getBackgroundColor = function() {
-  return this.backgroundColor_;
+  return lib.notNull(this.backgroundColor_);
 };
 
 /**
@@ -688,7 +693,7 @@ hterm.Terminal.prototype.getBackgroundColor = function() {
  */
 hterm.Terminal.prototype.setForegroundColor = function(color) {
   if (color === undefined)
-    color = this.prefs_.get('foreground-color');
+    color = this.prefs_.getString('foreground-color');
 
   this.foregroundColor_ = lib.colors.normalizeCSS(color);
   this.primaryScreen_.textAttributes.setDefaults(
@@ -707,14 +712,14 @@ hterm.Terminal.prototype.setForegroundColor = function(color) {
  * @return {string}
  */
 hterm.Terminal.prototype.getForegroundColor = function() {
-  return this.foregroundColor_;
+  return lib.notNull(this.foregroundColor_);
 };
 
 /**
  * Create a new instance of a terminal command and run it with a given
  * argument string.
  *
- * @param {function()} commandClass The constructor for a terminal command.
+ * @param {!Function} commandClass The constructor for a terminal command.
  * @param {string} commandName The command to run for this terminal.
  * @param {!Array<string>} args The arguments to pass to the command.
  */
@@ -775,13 +780,13 @@ hterm.Terminal.prototype.uninstallKeyboard = function() {
  * Normally this is used to set variables in the hterm namespace.
  *
  * @param {string} name The variable to set.
- * @param {string} value The value to assign to the variable.
+ * @param {string|number} value The value to assign to the variable.
  * @param {string=} opt_prefix The variable namespace/prefix to use.
  */
 hterm.Terminal.prototype.setCssVar = function(name, value,
                                               opt_prefix='--hterm-') {
   this.document_.documentElement.style.setProperty(
-      `${opt_prefix}${name}`, value);
+      `${opt_prefix}${name}`, value.toString());
 };
 
 /**
@@ -809,7 +814,7 @@ hterm.Terminal.prototype.getCssVar = function(name, opt_prefix='--hterm-') {
  */
 hterm.Terminal.prototype.setFontSize = function(px) {
   if (px <= 0)
-    px = this.prefs_.get('font-size');
+    px = this.prefs_.getNumber('font-size');
 
   this.scrollPort_.setFontSize(px);
   this.setCssVar('charsize-width', this.scrollPort_.characterSize.width + 'px');
@@ -839,8 +844,8 @@ hterm.Terminal.prototype.getFontFamily = function() {
  * Set the CSS "font-family" for this terminal.
  */
 hterm.Terminal.prototype.syncFontFamily = function() {
-  this.scrollPort_.setFontFamily(this.prefs_.get('font-family'),
-                                 this.prefs_.get('font-smoothing'));
+  this.scrollPort_.setFontFamily(this.prefs_.getString('font-family'),
+                                 this.prefs_.getString('font-smoothing'));
   this.syncBoldSafeState();
 };
 
@@ -895,7 +900,7 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
  */
 hterm.Terminal.prototype.setTextBlink = function(state) {
   if (state === undefined)
-    state = this.prefs_.get('enable-blink');
+    state = this.prefs_.getBoolean('enable-blink');
   this.setCssVar('blink-node-duration', state ? '0.7s' : '0');
 };
 
@@ -921,7 +926,7 @@ hterm.Terminal.prototype.saveCursor = function() {
 /**
  * Return the current text attributes.
  *
- * @return {string}
+ * @return {!hterm.TextAttributes}
  */
 hterm.Terminal.prototype.getTextAttributes = function() {
   return this.screen_.textAttributes;
@@ -930,7 +935,7 @@ hterm.Terminal.prototype.getTextAttributes = function() {
 /**
  * Set the text attributes.
  *
- * @param {string} textAttributes The attributes to set.
+ * @param {!hterm.TextAttributes} textAttributes The attributes to set.
  */
 hterm.Terminal.prototype.setTextAttributes = function(textAttributes) {
   this.screen_.textAttributes = textAttributes;
@@ -1030,7 +1035,7 @@ hterm.Terminal.prototype.getCursorShape = function() {
 /**
  * Set the width of the terminal, resizing the UI to match.
  *
- * @param {number} columnCount
+ * @param {?number} columnCount
  */
 hterm.Terminal.prototype.setWidth = function(columnCount) {
   if (columnCount == null) {
@@ -1048,7 +1053,7 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
 /**
  * Set the height of the terminal, resizing the UI to match.
  *
- * @param {number} rowCount The height in rows.
+ * @param {?number} rowCount The height in rows.
  */
 hterm.Terminal.prototype.setHeight = function(rowCount) {
   if (rowCount == null) {
@@ -1478,22 +1483,24 @@ hterm.Terminal.prototype.decorate = function(div) {
  * @private
  */
 hterm.Terminal.prototype.setupScrollPort_ = function() {
-  this.scrollPort_.setBackgroundImage(this.prefs_.get('background-image'));
-  this.scrollPort_.setBackgroundSize(this.prefs_.get('background-size'));
+  this.scrollPort_.setBackgroundImage(
+      this.prefs_.getString('background-image'));
+  this.scrollPort_.setBackgroundSize(this.prefs_.getString('background-size'));
   this.scrollPort_.setBackgroundPosition(
-      this.prefs_.get('background-position'));
-  this.scrollPort_.setUserCssUrl(this.prefs_.get('user-css'));
-  this.scrollPort_.setUserCssText(this.prefs_.get('user-css-text'));
-  this.scrollPort_.setAccessibilityReader(this.accessibilityReader_);
+      this.prefs_.getString('background-position'));
+  this.scrollPort_.setUserCssUrl(this.prefs_.getString('user-css'));
+  this.scrollPort_.setUserCssText(this.prefs_.getString('user-css-text'));
+  this.scrollPort_.setAccessibilityReader(
+      lib.notNull(this.accessibilityReader_));
 
   this.div_.focus = this.focus.bind(this);
 
-  this.setFontSize(this.prefs_.get('font-size'));
+  this.setFontSize(this.prefs_.getNumber('font-size'));
   this.syncFontFamily();
 
-  this.setScrollbarVisible(this.prefs_.get('scrollbar-visible'));
+  this.setScrollbarVisible(this.prefs_.getBoolean('scrollbar-visible'));
   this.setScrollWheelMoveMultipler(
-      this.prefs_.get('scroll-wheel-move-multiplier'));
+      this.prefs_.getNumber('scroll-wheel-move-multiplier'));
 
   this.document_ = this.scrollPort_.getDocument();
   this.accessibilityReader_.decorate(this.document_);
@@ -1503,12 +1510,17 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
 
   var onMouse = this.onMouse_.bind(this);
   var screenNode = this.scrollPort_.getScreenNode();
-  screenNode.addEventListener('mousedown', onMouse);
-  screenNode.addEventListener('mouseup', onMouse);
-  screenNode.addEventListener('mousemove', onMouse);
+  screenNode.addEventListener(
+      'mousedown', /** @type {!EventListener} */ (onMouse));
+  screenNode.addEventListener(
+      'mouseup', /** @type {!EventListener} */ (onMouse));
+  screenNode.addEventListener(
+      'mousemove', /** @type {!EventListener} */ (onMouse));
   this.scrollPort_.onScrollWheel = onMouse;
 
-  screenNode.addEventListener('keydown', this.onKeyboardActivity_.bind(this));
+  screenNode.addEventListener(
+      'keydown',
+      /** @type {!EventListener} */ (this.onKeyboardActivity_.bind(this)));
 
   screenNode.addEventListener(
       'focus', this.onFocusChange_.bind(this, true));
@@ -1631,8 +1643,10 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
   ['mousedown', 'mouseup', 'mousemove', 'click', 'dblclick',
    ].forEach(function(event) {
        this.scrollBlockerNode_.addEventListener(event, onMouse);
-       this.cursorNode_.addEventListener(event, onMouse);
-       this.document_.addEventListener(event, onMouse);
+       this.cursorNode_.addEventListener(
+           event, /** @type {!EventListener} */ (onMouse));
+       this.document_.addEventListener(
+           event, /** @type {!EventListener} */ (onMouse));
      }.bind(this));
 
   this.cursorNode_.addEventListener('mousedown', function() {
@@ -1681,6 +1695,7 @@ hterm.Terminal.prototype.blur = function() {
  *     start of the scrollback buffer.  On-screen rows will always have the
  *     largest indices.
  * @return {!Element} The 'x-row' element containing for the requested row.
+ * @override
  */
 hterm.Terminal.prototype.getRowNode = function(index) {
   if (index < this.scrollbackRows_.length)
@@ -1742,6 +1757,7 @@ hterm.Terminal.prototype.getRowText = function(index) {
  * it to compute the size of the scrollbar.
  *
  * @return {number} The number of rows in this terminal.
+ * @override
  */
 hterm.Terminal.prototype.getRowCount = function() {
   return this.scrollbackRows_.length + this.screen_.rowsArray.length;
@@ -1926,8 +1942,8 @@ hterm.Terminal.prototype.print = function(str) {
  * local scrollback buffer, which means the scrollbars and shift-pgup/pgdn
  * continue to work as most users would expect.
  *
- * @param {number} scrollTop The zero-based top of the scroll region.
- * @param {number} scrollBottom The zero-based bottom of the scroll region,
+ * @param {?number} scrollTop The zero-based top of the scroll region.
+ * @param {?number} scrollBottom The zero-based bottom of the scroll region,
  *     inclusive.
  */
 hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
@@ -2350,13 +2366,13 @@ hterm.Terminal.prototype.vtScrollUp = function(count) {
  * This function does not affect the scrollback rows at all.  Rows shifted
  * off the bottom are lost.
  *
- * @param {number=} opt_count The number of rows to scroll.
+ * @param {number} count The number of rows to scroll.
  */
-hterm.Terminal.prototype.vtScrollDown = function(opt_count) {
+hterm.Terminal.prototype.vtScrollDown = function(count) {
   var cursor = this.saveCursor();
 
   this.setAbsoluteCursorPosition(this.getVTScrollTop(), 0);
-  this.insertLines(opt_count);
+  this.insertLines(count);
 
   this.restoreCursor(cursor);
 };
@@ -2623,11 +2639,11 @@ hterm.Terminal.prototype.ringBell = function() {
 
   if (this.bellAudio_.getAttribute('src')) {
     this.bellAudio_.play();
-    this.bellSequelchTimeout_ = setTimeout(function() {
-        delete this.bellSquelchTimeout_;
-      }.bind(this), 500);
+    this.bellSequelchTimeout_ = setTimeout(() => {
+        this.bellSquelchTimeout_ = null;
+      }, 500);
   } else {
-    delete this.bellSquelchTimeout_;
+    this.bellSquelchTimeout_ = null;
   }
 
   if (this.desktopNotificationBell_ && !this.document_.hasFocus()) {
@@ -2893,20 +2909,20 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
   switch (shape) {
     case hterm.Terminal.cursorShape.BEAM:
       style.backgroundColor = 'transparent';
-      style.borderBottomStyle = null;
+      style.borderBottomStyle = '';
       style.borderLeftStyle = 'solid';
       break;
 
     case hterm.Terminal.cursorShape.UNDERLINE:
       style.backgroundColor = 'transparent';
       style.borderBottomStyle = 'solid';
-      style.borderLeftStyle = null;
+      style.borderLeftStyle = '';
       break;
 
     default:
       style.backgroundColor = 'var(--hterm-cursor-color)';
-      style.borderBottomStyle = null;
-      style.borderLeftStyle = null;
+      style.borderBottomStyle = '';
+      style.borderLeftStyle = '';
       break;
   }
 };
@@ -2977,7 +2993,7 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
 
   this.zoomWarningNode_.textContent = lib.i18n.replaceReferences(
       hterm.zoomWarningMessage,
-      [parseInt(this.scrollPort_.characterSize.zoomFactor * 100)]);
+      [Math.floor(this.scrollPort_.characterSize.zoomFactor * 100)]);
 
   this.zoomWarningNode_.style.fontFamily = this.prefs_.get('font-family');
 
@@ -3035,7 +3051,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   if (!this.overlayNode_.parentNode)
     this.div_.appendChild(this.overlayNode_);
 
-  var divSize = hterm.getClientSize(this.div_);
+  var divSize = hterm.getClientSize(lib.notNull(this.div_));
   var overlaySize = hterm.getClientSize(this.overlayNode_);
 
   this.overlayNode_.style.top =
@@ -3206,14 +3222,13 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
   if (options.inline) {
     const io = this.io.push();
     io.showOverlay(hterm.msg('LOADING_RESOURCE_START', [options.name],
-                             'Loading $1 ...'), null);
+                             'Loading $1 ...'));
 
     // While we're loading the image, eat all the user's input.
     io.onVTKeystroke = io.sendString = () => {};
 
     // Initialize this new image.
-    const img =
-        /** @type {!ImageElement} */ (this.document_.createElement('img'));
+    const img = this.document_.createElement('img');
     if (options.uri !== undefined) {
       img.src = options.uri;
     } else if (options.buffer !== undefined) {
@@ -3221,7 +3236,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
       img.src = URL.createObjectURL(blob);
     } else {
       const blob = new Blob([options.blob], {type: options.type});
-      img.src = URL.createObjectURL(options.blob);
+      img.src = URL.createObjectURL(blob);
     }
     img.title = img.alt = options.name;
 
@@ -3246,7 +3261,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
         const ary = dim.match(/^([0-9]+)(px|%)?$/);
         if (ary) {
           if (ary[2] == '%')
-            return maxDim * parseInt(ary[1]) / 100 + 'px';
+            return Math.floor(maxDim * ary[1] / 100) + 'px';
           else if (ary[2] == 'px')
             return dim;
           else
@@ -3280,7 +3295,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
       // This helps with rounding errors between JS & CSS counts.
       const div = this.document_.createElement('div');
       div.style.position = 'relative';
-      div.style.textAlign = options.align;
+      div.style.textAlign = options.align || '';
       img.style.position = 'absolute';
       img.style.bottom = 'calc(0px - var(--hterm-charsize-height))';
       div.appendChild(img);
@@ -3320,7 +3335,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
       const blob = new Blob([options.buffer]);
       a.href = URL.createObjectURL(blob);
     } else {
-      a.href = URL.createObjectURL(options.blob);
+      a.href = URL.createObjectURL(lib.notNull(options.blob));
     }
     a.download = options.name;
     this.document_.body.appendChild(a);
@@ -3465,7 +3480,7 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
 /**
  * Manage the automatic mouse hiding behavior while typing.
  *
- * @param {boolean=} v Whether to enable automatic hiding.
+ * @param {?boolean=} v Whether to enable automatic hiding.
  */
 hterm.Terminal.prototype.setAutomaticMouseHiding = function(v=null) {
   // Since Chrome OS & macOS do this by default everywhere, we don't need to.
@@ -3497,7 +3512,7 @@ hterm.Terminal.prototype.onKeyboardActivity_ = function(e) {
  * The terminalRow and terminalColumn properties contain the (row, column)
  * coordinates for the mouse event.
  *
- * @param {!Event} e The mouse event to handle.
+ * @param {!MouseEvent} e The mouse event to handle.
  */
 hterm.Terminal.prototype.onMouse_ = function(e) {
   if (e.processedByTerminalHandler_) {
@@ -3535,10 +3550,11 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   // One based row/column stored on the mouse event.
-  e.terminalRow = parseInt((e.clientY - this.scrollPort_.visibleRowTopMargin) /
-                           this.scrollPort_.characterSize.height) + 1;
-  e.terminalColumn = parseInt(e.clientX /
-                              this.scrollPort_.characterSize.width) + 1;
+  e.terminalRow = Math.floor(
+      (e.clientY - this.scrollPort_.visibleRowTopMargin) /
+      this.scrollPort_.characterSize.height) + 1;
+  e.terminalColumn = Math.floor(
+      e.clientX / this.scrollPort_.characterSize.width) + 1;
 
   if (e.type == 'mousedown' && e.terminalColumn > this.screenSize.width) {
     // Mousedown in the scrollbar area.
@@ -3559,7 +3575,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   if (e.type == 'mousedown') {
-    this.contextMenu.hide(e);
+    this.contextMenu.hide();
 
     if (e.altKey || !reportMouseEvents) {
       // If VT mouse reporting is disabled, or has been defeated with
@@ -3619,7 +3635,8 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     if (this.scrollWheelArrowKeys_ && !e.shiftKey &&
         this.keyboard.applicationCursor && !this.isPrimaryScreen()) {
       if (e.type == 'wheel') {
-        const delta = this.scrollPort_.scrollWheelDelta(e);
+        const delta =
+            this.scrollPort_.scrollWheelDelta(/** @type {!WheelEvent} */ (e));
 
         // Helper to turn a wheel event delta into a series of key presses.
         const deltaToArrows = (distance, charSize, arrowPos, arrowNeg) => {
@@ -3679,7 +3696,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
  * The event parameter will be a normal DOM mouse click event with additional
  * 'terminalRow' and 'terminalColumn' properties.
  *
- * @param {!Event} e The mouse event to handle.
+ * @param {!MouseEvent} e The mouse event to handle.
  */
 hterm.Terminal.prototype.onMouse = function(e) { };
 
@@ -3709,10 +3726,10 @@ hterm.Terminal.prototype.onScroll_ = function() {
 /**
  * React when text is pasted into the scrollPort.
  *
- * @param {!Event} e The DOM paste event to handle.
+ * @param {!ClipboardEvent} e The DOM paste event to handle.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  var data = e.text.replace(/\n/mg, '\r');
+  var data = e.clipboardData.getData('text').replace(/\n/mg, '\r');
   if (this.options_.bracketedPaste) {
     // We strip out most escape sequences as they can cause issues (like
     // inserting an \x1b[201~ midstream).  We pass through whitespace

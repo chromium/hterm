@@ -734,12 +734,12 @@ hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
   this.screen_.style.backgroundImage = image;
 };
 
-/** @param {number} size */
+/** @param {string} size */
 hterm.ScrollPort.prototype.setBackgroundSize = function(size) {
   this.screen_.style.backgroundSize = size;
 };
 
-/** @param {number} position */
+/** @param {string} position */
 hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
   this.screen_.style.backgroundPosition = position;
 };
