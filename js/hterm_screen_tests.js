@@ -57,7 +57,7 @@ it('push-pop', function() {
     this.screen.pushRows(ary);
     assert.equal(ary.length, this.screen.rowsArray.length);
 
-    var popary = this.screen.popRows(5);
+    popary = this.screen.popRows(5);
     for (var i = 0; i < 5; i++) {
       assert.equal(ary[i + 5], popary[i], 'i:' + i);
     }
@@ -99,7 +99,7 @@ it('unshift-shift', function() {
     this.screen.unshiftRows(ary);
     assert.equal(ary.length, this.screen.rowsArray.length);
 
-    var shiftary = this.screen.shiftRows(5);
+    shiftary = this.screen.shiftRows(5);
     for (var i = 0; i < 5; i++) {
       assert.equal(ary[i], shiftary[i], 'i:' + i);
     }

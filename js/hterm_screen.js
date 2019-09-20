@@ -43,10 +43,12 @@
  *    screen.  See insertString() and overwriteString() for information about
  *    what happens when too many characters are added too a row.  Defaults to
  *    0 if not provided.
+ * @constructor
  */
 hterm.Screen = function(columnCount=0) {
   /**
    * Public, read-only access to the rows in this screen.
+   * @type {!Array<!Element>}
    */
   this.rowsArray = [];
 
@@ -70,11 +72,14 @@ hterm.Screen = function(columnCount=0) {
   this.cursorNode_ = null;
 
   // The offset in column width into cursorNode_ where the cursor is positioned.
-  this.cursorOffset_ = null;
+  this.cursorOffset_ = 0;
 
   // Regexes for expanding word selections.
+  /** @type {?string} */
   this.wordBreakMatchLeft = null;
+  /** @type {?string} */
   this.wordBreakMatchRight = null;
+  /** @type {?string} */
   this.wordBreakMatchMiddle = null;
 };
 
@@ -248,7 +253,7 @@ hterm.Screen.prototype.invalidateCursorPosition = function() {
   this.cursorPosition.move(0, 0);
   this.cursorRowNode_ = null;
   this.cursorNode_ = null;
-  this.cursorOffset_ = null;
+  this.cursorOffset_ = 0;
 };
 
 /**
@@ -411,7 +416,7 @@ hterm.Screen.prototype.splitNode_ = function(node, offset) {
  * Ensure that text is clipped and the cursor is clamped to the column count.
  */
 hterm.Screen.prototype.maybeClipCurrentRow = function() {
-  var width = hterm.TextAttributes.nodeWidth(this.cursorRowNode_);
+  var width = hterm.TextAttributes.nodeWidth(lib.notNull(this.cursorRowNode_));
 
   if (width <= this.columnCount_) {
     // Current row does not need clipping, but may need clamping.
@@ -430,7 +435,7 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
   this.setCursorPosition(this.cursorPosition.row, this.columnCount_ - 1);
 
   // Remove any text that partially overflows.
-  width = hterm.TextAttributes.nodeWidth(this.cursorNode_);
+  width = hterm.TextAttributes.nodeWidth(lib.notNull(this.cursorNode_));
 
   if (this.cursorOffset_ < width - 1) {
     this.cursorNode_.textContent = hterm.TextAttributes.nodeSubstr(
@@ -623,8 +628,9 @@ hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
   if (wcwidth === undefined)
     wcwidth = lib.wc.strWidth(str);
 
-  if (this.textAttributes.matchesContainer(this.cursorNode_) &&
-      this.cursorNode_.textContent.substr(this.cursorOffset_) == str) {
+  if (this.textAttributes.matchesContainer(lib.notNull(this.cursorNode_)) &&
+      this.cursorNode_.textContent.substr(this.cursorOffset_) ==
+          str) {
     // This overwrite would be a no-op, just move the cursor and return.
     this.cursorOffset_ += wcwidth;
     this.cursorPosition.column += wcwidth;
@@ -741,11 +747,12 @@ hterm.Screen.prototype.getLineStartRow_ = function(row) {
  * @return {string} Text content of line.
  **/
 hterm.Screen.prototype.getLineText_ = function(row) {
-  var rowText = "";
-  while (row) {
-    rowText += row.textContent;
-    if (row.hasAttribute('line-overflow')) {
-      row = row.nextSibling;
+  let rowText = '';
+  let rowOrNull = row;
+  while (rowOrNull) {
+    rowText += rowOrNull.textContent;
+    if (rowOrNull.hasAttribute('line-overflow')) {
+      rowOrNull = rowOrNull.nextSibling;
     } else {
       break;
     }
@@ -757,15 +764,16 @@ hterm.Screen.prototype.getLineText_ = function(row) {
  * Returns X-ROW that is ancestor of the node.
  *
  * @param {!Node} node Node to get X-ROW ancestor for.
- * @return {!Node} X-ROW ancestor of node, or null if not found.
+ * @return {?Node} X-ROW ancestor of node, or null if not found.
  **/
 hterm.Screen.prototype.getXRowAncestor_ = function(node) {
-  while (node) {
-    if (node.nodeName === 'X-ROW')
+  let nodeOrNull = node;
+  while (nodeOrNull) {
+    if (nodeOrNull.nodeName === 'X-ROW')
       break;
-    node = node.parentNode;
+    nodeOrNull = nodeOrNull.parentNode;
   }
-  return node;
+  return nodeOrNull;
 };
 
 /**
@@ -829,7 +837,7 @@ hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
  *
  * @param {!Node} row X-ROW at beginning of line.
  * @param {number} position Position within line to retrieve node and offset.
- * @return {!Array} Two element array containing node and offset respectively.
+ * @return {?Array} Two element array containing node and offset respectively.
  **/
 hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
   while (row && position > hterm.TextAttributes.nodeWidth(row)) {
@@ -837,7 +845,7 @@ hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
       position -= hterm.TextAttributes.nodeWidth(row);
       row = row.nextSibling;
     } else {
-      return -1;
+      return [null, -1];
     }
   }
   return this.getNodeAndOffsetWithinRow_(row, position);
@@ -849,7 +857,7 @@ hterm.Screen.prototype.getNodeAndOffsetWithOverflow_ = function(row, position) {
  *
  * @param {!Node} row X-ROW to get position within.
  * @param {number} position Position within row to retrieve node and offset.
- * @return {!Array} Two element array containing node and offset respectively.
+ * @return {?Array} Two element array containing node and offset respectively.
  **/
 hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
   for (var i = 0; i < row.childNodes.length; i++) {
@@ -891,7 +899,7 @@ hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
 /**
  * Expands selection to surrounding string with word break matches.
  *
- * @param {!Selection} selection Selection to expand.
+ * @param {?Selection} selection Selection to expand.
  * @param {string} leftMatch left word break match.
  * @param {string} rightMatch right word break match.
  * @param {string} insideMatch inside word break match.
@@ -905,21 +913,19 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
   if (!range || range.toString().match(/\s/))
     return;
 
-  const rowElement = this.getXRowAncestor_(range.startContainer);
+  const rowElement = this.getXRowAncestor_(lib.notNull(range.startContainer));
   if (!rowElement)
     return;
   const row = this.getLineStartRow_(rowElement);
   if (!row)
     return;
 
-  var startPosition = this.getPositionWithOverflow_(row,
-                                                    range.startContainer,
-                                                    range.startOffset);
+  var startPosition = this.getPositionWithOverflow_(
+      row, lib.notNull(range.startContainer), range.startOffset);
   if (startPosition == -1)
     return;
-  var endPosition = this.getPositionWithOverflow_(row,
-                                                  range.endContainer,
-                                                  range.endOffset);
+  var endPosition = this.getPositionWithOverflow_(
+      row, lib.notNull(range.endContainer), range.endOffset);
   if (endPosition == -1)
     return;
 
@@ -949,20 +955,20 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
 /**
  * Expands selection to surrounding string using the user's settings.
  *
- * @param {!Selection} selection Selection to expand.
+ * @param {?Selection} selection Selection to expand.
  */
 hterm.Screen.prototype.expandSelection = function(selection) {
   this.expandSelectionWithWordBreakMatches_(
       selection,
-      this.wordBreakMatchLeft,
-      this.wordBreakMatchRight,
-      this.wordBreakMatchMiddle);
+      lib.notNull(this.wordBreakMatchLeft),
+      lib.notNull(this.wordBreakMatchRight),
+      lib.notNull(this.wordBreakMatchMiddle));
 };
 
 /**
  * Expands selection to surrounding URL using a set of fixed match settings.
  *
- * @param {!Selection} selection Selection to expand.
+ * @param {?Selection} selection Selection to expand.
  */
 hterm.Screen.prototype.expandSelectionForUrl = function(selection) {
   this.expandSelectionWithWordBreakMatches_(
@@ -1006,6 +1012,7 @@ hterm.Screen.prototype.restoreCursorAndState = function(vt) {
  * These are done on a per-screen basis.
  *
  * @param {!hterm.Screen} screen The screen this cursor is tied to.
+ * @constructor
  */
 hterm.Screen.CursorState = function(screen) {
   this.screen_ = screen;
