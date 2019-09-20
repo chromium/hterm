@@ -17,7 +17,7 @@ it('contextmenu-stub', () => {
   const menu = new hterm.ContextMenu();
 
   // Show/hide this stub menu.  It should be fine.
-  menu.show();
+  menu.show(/** @type {!Event} */ ({clientX: 0, clientY: 0}));
   menu.hide();
 });
 
@@ -30,10 +30,10 @@ it('contextmenu-simple', () => {
   menu.setDocument(document);
 
   // Create a basic menu.
-  menu.setItems([['Foo', () => {}]]);
+  menu.setItems([{name: 'Foo', action: () => {}}]);
 
   // Show/hide this menu.
-  menu.show({clientX: 0, clientY: 0});
+  menu.show(/** @type {!Event} */ ({clientX: 0, clientY: 0}));
   menu.hide();
 });
 
@@ -46,13 +46,13 @@ it('contextmenu-separator', () => {
   menu.setDocument(document);
 
   // Create a basic menu.
-  menu.setItems([[hterm.ContextMenu.SEPARATOR]]);
+  menu.setItems([{name: hterm.ContextMenu.SEPARATOR}]);
 
   // Check the entries.
   assert.equal('separator', menu.element_.firstElementChild.className);
 
   // Show/hide this menu.
-  menu.show({clientX: 0, clientY: 0});
+  menu.show(/** @type {!Event} */ ({clientX: 0, clientY: 0}));
   menu.hide();
 });
 

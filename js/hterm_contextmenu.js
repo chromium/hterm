@@ -10,6 +10,8 @@
 
 /**
  * Manage the context menu usually shown when right clicking.
+ *
+ * @constructor
  */
 hterm.ContextMenu = function() {
   // The document that contains this context menu.
@@ -17,13 +19,17 @@ hterm.ContextMenu = function() {
   // The generated context menu (i.e. HTML elements).
   this.element_ = null;
   // The structured menu (i.e. JS objects).
+  /** @type {!Array<!hterm.ContextMenu.Item>} */
   this.menu_ = [];
 };
+
+/** @typedef {{name:(string|symbol), action:function(!Event)}} */
+hterm.ContextMenu.Item;
 
 /**
  * Constant to add a separator to the context menu.
  */
-hterm.ContextMenu.SEPARATOR = {};
+hterm.ContextMenu.SEPARATOR = Symbol('-');
 
 /**
  * Bind context menu to a specific document element.
@@ -61,7 +67,7 @@ hterm.ContextMenu.prototype.regenerate_ = function() {
     this.element_.removeChild(this.element_.firstChild);
   }
 
-  this.menu_.forEach(([name, action]) => {
+  this.menu_.forEach(({name, action}) => {
     const menuitem = this.document_.createElement('menuitem');
     if (name === hterm.ContextMenu.SEPARATOR) {
       menuitem.innerHTML = '<hr>';
@@ -87,7 +93,7 @@ hterm.ContextMenu.prototype.regenerate_ = function() {
  *
  * This resets all existing menu entries.
  *
- * @param {!Array<!Array<string, function(!Event)>>} items The menu entries.
+ * @param {!Array<!hterm.ContextMenu.Item>} items The menu entries.
  */
 hterm.ContextMenu.prototype.setItems = function(items) {
   this.menu_ = items;
@@ -121,7 +127,7 @@ hterm.ContextMenu.prototype.show = function(e, terminal) {
 
   this.element_.style.top = `${e.clientY}px`;
   this.element_.style.left = `${e.clientX}px`;
-  const docSize = hterm.getClientSize(this.document_.body);
+  const docSize = hterm.getClientSize(lib.notNull(this.document_.body));
 
   this.element_.style.display = 'block';
 
