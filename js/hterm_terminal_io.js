@@ -199,7 +199,7 @@ hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
   // not the same.  See https://crbug.com/930171#5 for more details.
   if (typeof string == 'string') {
     if (this.terminal_.characterEncoding != 'raw') {
-      const bytes = lib.codec.stringToCodeUnitArray(string, Uint8Array);
+      const bytes = lib.codec.stringToCodeUnitArray(string);
       string = this.textDecoder_.decode(bytes, {stream: true});
     }
   } else {

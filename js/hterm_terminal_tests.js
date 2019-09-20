@@ -18,7 +18,7 @@ before(function() {
   this.imageBase64 = 'R0lGODdhCAAQAIAAAP///wAAACwAAAAACAAQAAACFkSAhpfMC1uMT1' +
                      'mabHWZy6t1U/htQAEAOw==';
   this.imageArrayBuffer = lib.codec.stringToCodeUnitArray(
-      atob(this.imageBase64), Uint8Array).buffer;
+      atob(this.imageBase64)).buffer;
   this.imageBlob = new Blob([this.imageArrayBuffer]);
 });
 

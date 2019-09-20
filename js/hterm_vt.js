@@ -1949,7 +1949,7 @@ hterm.VT.OSC['52'] = function(parseState) {
   }
   if (this.characterEncoding == 'utf-8') {
     const decoder = new TextDecoder();
-    const bytes = lib.codec.stringToCodeUnitArray(data, Uint8Array);
+    const bytes = lib.codec.stringToCodeUnitArray(data);
     data = decoder.decode(bytes);
   }
   if (data)
@@ -2029,7 +2029,7 @@ hterm.VT.OSC['1337'] = function(parseState) {
     height: 'auto',
     align: 'left',
     type: '',
-    buffer: lib.codec.stringToCodeUnitArray(atob(args[2]), Uint8Array).buffer,
+    buffer: lib.codec.stringToCodeUnitArray(atob(args[2])).buffer,
   };
   // Walk the "key=value;" sets.
   args[1].split(';').forEach((ele) => {
