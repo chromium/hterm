@@ -57,83 +57,86 @@ hterm.desktopNotificationTitle = '\u266A %(title) \u266A';
 /** @type {?lib.MessageManager} */
 hterm.messageManager = null;
 
-/**
- * The hterm init function, registered with lib.registerInit().
- *
- * This is called during lib.init().
- *
- * @param {function} onInit The function lib.init() wants us to invoke when
- *     initialization is complete.
- */
-lib.registerInit('hterm', function(onInit) {
-  function initOs(os) {
-    hterm.os = os;
+lib.registerInit(
+    'hterm',
+    /**
+     * The hterm init function, registered with lib.registerInit().
+     *
+     * This is called during lib.init().
+     *
+     * @param {function()} onInit The function lib.init() wants us to invoke
+     *     when initialization is complete.
+     */
+    function(onInit) {
+      function initOs(os) {
+        hterm.os = os;
 
-    onInit();
-  }
+        onInit();
+      }
 
-  function initMessageManager() {
-    lib.i18n.getAcceptLanguages((languages) => {
-      if (!hterm.messageManager)
-        hterm.messageManager = new lib.MessageManager(languages);
+      function initMessageManager() {
+        lib.i18n.getAcceptLanguages((languages) => {
+          if (!hterm.messageManager)
+            hterm.messageManager = new lib.MessageManager(languages);
 
-      // If OS detection fails, then we'll still set the value to something.
-      // The OS logic in hterm tends to be best effort anyways.
-      lib.f.getOs().then(initOs).catch(initOs);
+          // If OS detection fails, then we'll still set the value to something.
+          // The OS logic in hterm tends to be best effort anyways.
+          lib.f.getOs().then(initOs).catch(initOs);
+        });
+      }
+
+      function onWindow(window) {
+        hterm.windowType = window.type;
+        initMessageManager();
+      }
+
+      function onTab(tab) {
+        if (tab && window.chrome) {
+          chrome.windows.get(tab.windowId, null, onWindow);
+        } else {
+          // TODO(rginda): This is where we end up for a v1 app's background
+          // page. Maybe windowType = 'none' would be more appropriate, or
+          // something.
+          hterm.windowType = 'normal';
+          initMessageManager();
+        }
+      }
+
+      if (!hterm.defaultStorage) {
+        if (window.chrome && chrome.storage && chrome.storage.sync) {
+          hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
+        } else {
+          hterm.defaultStorage = new lib.Storage.Local();
+        }
+      }
+
+      // The chrome.tabs API is not supported in packaged apps, and detecting if
+      // you're a packaged app is a little awkward.
+      var isPackagedApp = false;
+      if (window.chrome && chrome.runtime && chrome.runtime.getManifest) {
+        var manifest = chrome.runtime.getManifest();
+        isPackagedApp = manifest.app && manifest.app.background;
+      }
+
+      if (isPackagedApp) {
+        // Packaged apps are never displayed in browser tabs.
+        setTimeout(onWindow.bind(null, {type: 'popup'}), 0);
+      } else {
+        if (window.chrome && chrome.tabs) {
+          // The getCurrent method gets the tab that is "currently running", not
+          // the topmost or focused tab.
+          chrome.tabs.getCurrent(onTab);
+        } else {
+          setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
+        }
+      }
     });
-  }
-
-  function onWindow(window) {
-    hterm.windowType = window.type;
-    initMessageManager();
-  }
-
-  function onTab(tab) {
-    if (tab && window.chrome) {
-      chrome.windows.get(tab.windowId, null, onWindow);
-    } else {
-      // TODO(rginda): This is where we end up for a v1 app's background page.
-      // Maybe windowType = 'none' would be more appropriate, or something.
-      hterm.windowType = 'normal';
-      initMessageManager();
-    }
-  }
-
-  if (!hterm.defaultStorage) {
-    if (window.chrome && chrome.storage && chrome.storage.sync) {
-      hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.sync);
-    } else {
-      hterm.defaultStorage = new lib.Storage.Local();
-    }
-  }
-
-  // The chrome.tabs API is not supported in packaged apps, and detecting if
-  // you're a packaged app is a little awkward.
-  var isPackagedApp = false;
-  if (window.chrome && chrome.runtime && chrome.runtime.getManifest) {
-    var manifest = chrome.runtime.getManifest();
-    isPackagedApp = manifest.app && manifest.app.background;
-  }
-
-  if (isPackagedApp) {
-    // Packaged apps are never displayed in browser tabs.
-    setTimeout(onWindow.bind(null, {type: 'popup'}), 0);
-  } else {
-    if (window.chrome && chrome.tabs) {
-      // The getCurrent method gets the tab that is "currently running", not the
-      // topmost or focused tab.
-      chrome.tabs.getCurrent(onTab);
-    } else {
-      setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
-    }
-  }
-});
 
 /**
  * Return decimal { width, height } for a given DOM element.
  *
  * @param {!Element} element The element whose size to lookup.
- * @return {!DOMClientRect} The size of the element.
+ * @return {!DOMRect} The size of the element.
  */
 hterm.getClientSize = function(element) {
   return element.getBoundingClientRect();
@@ -306,10 +309,10 @@ hterm.msg = function(name, args = [], string) {
 /**
  * Create a new notification.
  *
- * @param {{title:string, body:string}} params Various parameters for the
- *     notification.
- *   title {string} The title (defaults to the window's title).
- *   body {string} The message body (main text).
+ * @param {{title:(string|undefined), body:(string|undefined)}=} params Various
+ *     parameters for the notification.
+ *     title The title (defaults to the window's title).
+ *     body The message body (main text).
  * @return {!Notification}
  */
 hterm.notify = function(params) {
@@ -332,7 +335,7 @@ hterm.notify = function(params) {
   var n = new Notification(title, options);
   n.onclick = function() {
     window.focus();
-    this.close();
+    n.close();
   };
   return n;
 };
@@ -359,6 +362,7 @@ hterm.openUrl = function(url) {
  *
  * @param {number} width The width of this record.
  * @param {number} height The height of this record.
+ * @constructor
  */
 hterm.Size = function(width, height) {
   this.width = width;
@@ -412,6 +416,7 @@ hterm.Size.prototype.equals = function(that) {
  *
  * @return {string} A string that identifies the width and height of this
  *     instance.
+ * @override
  */
 hterm.Size.prototype.toString = function() {
   return '[hterm.Size: ' + this.width + ', ' + this.height + ']';
@@ -433,6 +438,7 @@ hterm.Size.prototype.toString = function() {
  * @param {number} column The column of this record.
  * @param {boolean=} opt_overflow Optional boolean indicating that the RowCol
  *     has overflowed.
+ * @constructor
  */
 hterm.RowCol = function(row, column, opt_overflow) {
   this.row = row;
@@ -492,6 +498,7 @@ hterm.RowCol.prototype.equals = function(that) {
  *
  * @return {string} A string that identifies the row and column of this
  *     instance.
+ * @override
  */
 hterm.RowCol.prototype.toString = function() {
   return ('[hterm.RowCol: ' + this.row + ', ' + this.column + ', ' +
