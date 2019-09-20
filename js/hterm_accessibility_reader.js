@@ -14,8 +14,9 @@
  * row of a large piece of output to the screen as it wouldn't be performant.
  * But we want the screen reader to read it all out in order.
  *
- * @param {!DivElement} div The div element where the live region should be
+ * @param {!Element} div The div element where the live region should be
  *     added.
+ * @constructor
  */
 hterm.AccessibilityReader = function(div) {
   this.document_ = div.ownerDocument;
@@ -322,6 +323,8 @@ hterm.AccessibilityReader.prototype.announceAction_ =
   if (this.lastCursorRow_ != cursorRow) {
     return false;
   }
+
+  lib.assert(this.lastCursorRowString_ !== null);
 
   // The case when the row of text hasn't changed at all.
   if (this.lastCursorRowString_ == cursorRowString) {
