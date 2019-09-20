@@ -21,6 +21,7 @@
  * @param {string} url The url to load in the frame.
  * @param {!Object=} opt_options Optional options for the frame.  Not
  *     implemented.
+ * @constructor
  */
 hterm.Frame = function(terminal, url, opt_options) {
   this.terminal_ = terminal;
@@ -129,7 +130,7 @@ hterm.Frame.prototype.onClose = function() {};
  * Send a message to the iframe.
  *
  * @param {string} name The message name.
- * @param {!Array} argv The message arguments.
+ * @param {!Array=} argv The message arguments.
  */
 hterm.Frame.prototype.postMessage = function(name, argv) {
   if (!this.messageChannel_)
@@ -153,21 +154,10 @@ hterm.Frame.prototype.show = function() {
     return defaultValue;
   }
 
-  var self = this;
-
   if (this.container_ && this.container_.parentNode) {
     console.error('Frame already visible');
     return;
   }
-
-  var headerHeight = '16px';
-
-  var divSize = hterm.getClientSize(this.div_);
-
-  var width = opt('width', 640);
-  var height = opt('height', 480);
-  var left = (divSize.width - width) / 2;
-  var top = (divSize.height - height) / 2;
 
   var document = this.terminal_.document_;
 
