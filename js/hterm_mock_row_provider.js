@@ -10,6 +10,7 @@
  * @param {!Document} document Document.
  * @param {number} count Number of visible rows.
  * @constructor
+ * @implements {hterm.RowProvider}
  */
 function MockRowProvider(document, count) {
   this.document_ = document;
@@ -69,6 +70,7 @@ MockRowProvider.prototype.setCacheEnabled = function(state) {
 
 /**
  * @return {number} The row count.
+ * @override
  */
 MockRowProvider.prototype.getRowCount = function() {
   return this.rows_.length;
@@ -133,7 +135,8 @@ MockRowProvider.prototype.getRowText = function(index) {
  * Get the specifed row node.
  *
  * @param {number} index The index of the node.
- * @return {!Node} The specified node.
+ * @return {!Element} The specified node.
+ * @override
  */
 MockRowProvider.prototype.getRowNode = function(index) {
   this.addCallCount('getRowNode');

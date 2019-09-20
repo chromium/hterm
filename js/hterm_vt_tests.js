@@ -1836,12 +1836,12 @@ it('OSC-9', function() {
     // An empty notification.
     this.terminal.interpret('\x1b]9;\x07');
     assert.equal(1, Notification.count);
-    assert.equal('', Notification.call.body);
+    assert.equal('', Notification.lastCall.body);
 
     // A random notification.
     this.terminal.interpret('\x1b]9;this is a title\x07');
     assert.equal(2, Notification.count);
-    assert.equal('this is a title', Notification.call.body);
+    assert.equal('this is a title', Notification.lastCall.body);
   });
 
 /**
@@ -2120,32 +2120,32 @@ it('OSC-777-notify', function() {
     // An empty notification.  We don't test the title as it's generated.
     this.terminal.interpret('\x1b]777;notify\x07');
     assert.equal(1, Notification.count);
-    assert.notEqual(Notification.call.title, '');
-    assert.isUndefined(Notification.call.body);
+    assert.notEqual(Notification.lastCall.title, '');
+    assert.isUndefined(Notification.lastCall.body);
 
     // Same as above, but covers slightly different parsing.
     this.terminal.interpret('\x1b]777;notify;\x07');
     assert.equal(2, Notification.count);
-    assert.notEqual(Notification.call.title, '');
-    assert.isUndefined(Notification.call.body);
+    assert.notEqual(Notification.lastCall.title, '');
+    assert.isUndefined(Notification.lastCall.body);
 
     // A notification with a title.
     this.terminal.interpret('\x1b]777;notify;my title\x07');
     assert.equal(3, Notification.count);
-    assert.include(Notification.call.title, 'my title');
-    assert.isUndefined(Notification.call.body);
+    assert.include(Notification.lastCall.title, 'my title');
+    assert.isUndefined(Notification.lastCall.body);
 
     // A notification with a title & body.
     this.terminal.interpret('\x1b]777;notify;my title;my body\x07');
     assert.equal(4, Notification.count);
-    assert.include(Notification.call.title, 'my title');
-    assert.include(Notification.call.body, 'my body');
+    assert.include(Notification.lastCall.title, 'my title');
+    assert.include(Notification.lastCall.body, 'my body');
 
     // A notification with a title & body, covering more parsing.
     this.terminal.interpret('\x1b]777;notify;my title;my body;and a semi\x07');
     assert.equal(5, Notification.count);
-    assert.include(Notification.call.title, 'my title');
-    assert.include(Notification.call.body, 'my body;and a semi');
+    assert.include(Notification.lastCall.title, 'my title');
+    assert.include(Notification.lastCall.body, 'my body;and a semi');
   });
 
 /**

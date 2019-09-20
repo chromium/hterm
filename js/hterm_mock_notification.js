@@ -4,6 +4,11 @@
 
 'use strict';
 
+/** @type {number} Notification.count is used in tests. */
+Notification.count;
+/** @type {{title: string}} Notification.lastCall is used in tests. */
+Notification.lastCall;
+
 /**
  * Mock Notification class. See https://www.w3.org/TR/notifications/.
  *
@@ -16,8 +21,8 @@ var MockNotification = function() {
     this.title = title;
     this.body = opts.body || '';
     mock.count++;
-    mock.call = Object.assign({'title': title}, opts);
-    mock.calls.push(mock.call);
+    mock.lastCall = Object.assign({'title': title}, opts);
+    mock.calls.push(mock.lastCall);
   }
   mock.prototype.close = function() {
     mock.count--;
@@ -41,6 +46,8 @@ MockNotification.origNotification = Notification;
  * Start the mock.
  *
  * All calls to Notification() will run through a new mock.
+ *
+ * @suppress {checkTypes}
  */
 MockNotification.start = function() {
   Notification = new MockNotification();
