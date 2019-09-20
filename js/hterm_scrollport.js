@@ -5,6 +5,26 @@
 'use strict';
 
 /**
+ * The RowProvider should return rows rooted by the custom tag name 'x-row'.
+ * This ensures that we can quickly assign the correct display height
+ * to the rows with css.
+ *
+ * @interface
+ */
+hterm.RowProvider = function() {};
+
+/** @return {number} The current number of rows. */
+hterm.RowProvider.prototype.getRowCount = function() {};
+
+/**
+ * Get specified row.
+ *
+ * @param {number} index The index of the row.
+ * @return {!Element}
+ */
+hterm.RowProvider.prototype.getRowNode = function(index) {};
+
+/**
  * A 'viewport' view of fixed-height rows with support for selection and
  * copy-to-clipboard.
  *
@@ -21,13 +41,10 @@
  * of the selection is off screen.  It would be difficult to fix this without
  * adding significant overhead to pathologically large selection cases.
  *
- * The RowProvider should return rows rooted by the custom tag name 'x-row'.
- * This ensures that we can quickly assign the correct display height
- * to the rows with css.
- *
- * @param {!RowProvider} rowProvider An object capable of providing rows as
- *     raw text or row nodes.
+ * @param {!hterm.RowProvider} rowProvider An object capable of providing rows
+ *     as raw text or row nodes.
  * @constructor
+ * @extends {hterm.PubSub}
  */
 hterm.ScrollPort = function(rowProvider) {
   hterm.PubSub.addBehavior(this);
@@ -550,7 +567,9 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   // detect browser zoom level.  We should come up with a better solution.
   // Note: This must be http:// else Chrome cannot create the element correctly.
   var xmlns = 'http://www.w3.org/2000/svg';
-  this.svg_ = this.div_.ownerDocument.createElementNS(xmlns, 'svg');
+  this.svg_ =
+      /** @type {?SVGSVGElement} */
+      (this.div_.ownerDocument.createElementNS(xmlns, 'svg'));
   this.svg_.id = 'hterm:zoom-detector';
   this.svg_.setAttribute('xmlns', xmlns);
   this.svg_.setAttribute('version', '1.1');
@@ -691,7 +710,7 @@ hterm.ScrollPort.prototype.getForegroundColor = function() {
   return this.screen_.style.color;
 };
 
-/** @param {string} color */
+/** @param {?string} color */
 hterm.ScrollPort.prototype.setForegroundColor = function(color) {
   this.screen_.style.color = color;
   this.scrollUpButton_.style.backgroundColor = color;
@@ -703,14 +722,14 @@ hterm.ScrollPort.prototype.getBackgroundColor = function() {
   return this.screen_.style.backgroundColor;
 };
 
-/** @param {string} color */
+/** @param {?string} color */
 hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
   this.screen_.style.backgroundColor = color;
   this.scrollUpButton_.style.color = color;
   this.scrollDownButton_.style.color = color;
 };
 
-/** @param {string} image */
+/** @param {?string} image */
 hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
   this.screen_.style.backgroundImage = image;
 };
@@ -740,7 +759,7 @@ hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
  *
  * The width will not include the scrollbar width.
  *
- * @return {number}
+ * @return {{height: number, width: number}}
  */
 hterm.ScrollPort.prototype.getScreenSize = function() {
   var size = hterm.getClientSize(this.screen_);
@@ -801,8 +820,8 @@ hterm.ScrollPort.prototype.resetCache = function() {
  *
  * This will clear the row cache and cause a redraw.
  *
- * @param {!RowProvider} rowProvider An object capable of providing the rows
- *     in this hterm.ScrollPort.
+ * @param {!hterm.RowProvider} rowProvider An object capable of providing the
+ *     rows in this hterm.ScrollPort.
  */
 hterm.ScrollPort.prototype.setRowProvider = function(rowProvider) {
   this.resetCache();
@@ -868,7 +887,7 @@ hterm.ScrollPort.prototype.setFontSize = function(px) {
  * @return {number}
  */
 hterm.ScrollPort.prototype.getFontSize = function() {
-  return parseInt(this.screen_.style.fontSize);
+  return this.screen_.style.fontSize;
 };
 
 /**

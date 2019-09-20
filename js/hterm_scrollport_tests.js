@@ -11,6 +11,8 @@ describe('scrollport', () => {
 /**
  * A mock accessibility reader which will simply record the last string passed
  * to assertiveAnnounce.
+ *
+ * @constructor
  */
 const MockAccessibilityReader = function() {
   this.accessibilityEnabled = false;
@@ -621,6 +623,9 @@ describe('DragAndDrop', () => {
  * We can't generate useful DragEvents as the dataTransfer member is forced
  * read-only, so create a fake object and call the drag handler directly.
  * This is a bit ugly, but the web makes us do it.
+ *
+ * @param {boolean=} shift The shift key is pressed.
+ * @constructor
  */
 const MockDragEvent = function(shift) {
   this.dataTransfer = new DataTransfer();
@@ -631,7 +636,8 @@ const MockDragEvent = function(shift) {
 beforeEach(function() {
   // Create a new port since so the subscribe event doesn't stick to
   // this.scrollPort across multiple tests.
-  this.scrollPort = new hterm.ScrollPort();
+  this.scrollPort = new hterm.ScrollPort(
+      new MockRowProvider(window.document, 0));
 });
 
 /**
