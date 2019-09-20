@@ -23,11 +23,14 @@ it('pref-messages-sync', () => {
   const titleIdToMsgId = (id) => `TITLE_PREF_${toMsgId(id)}`;
 
   // Load the translations database from nassh.
-  const messages = lib.resource.getData('hterm/test/messages');
+  const messages = /** @type {!lib.MessageManager.Messages} */
+      (lib.resource.getData('hterm/test/messages'));
   hterm.messageManager.addMessages(messages);
 
   // Walk the loaded message ids and check for stale entries.
-  Object.entries(hterm.messageManager.messages_)
+  /** @suppress {visibility} */
+  const loadedMessages = hterm.messageManager.messages_;
+  Object.entries(loadedMessages)
       .forEach(([msgId, nasshMsg]) => {
         if (msgId.startsWith('HTERM_PREF_')) {
           const key = msgIdToHelpId(msgId);
