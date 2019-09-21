@@ -311,7 +311,7 @@ it('embedded-escape-sequence', function() {
     // We know we're going to cause chokes, so silence the warnings.
     this.terminal.vt.warnUnimplemented = false;
 
-    ['\a', '\x1b\\'].forEach((seq) => {
+    ['\x07', '\x1b\\'].forEach((seq) => {
       // We get all the data at once with a terminated sequence.
       this.terminal.reset();
       this.terminal.interpret('\x1b]0;asdf\x1b x ' + seq);
@@ -1929,6 +1929,7 @@ it('OSC-52', function(done) {
       hterm.copySelectionToClipboard = old_cCSTC;
       assert.equal(str, 'copypasta!');
       done();
+      return Promise.resolve();
     };
 
     this.terminal.interpret('\x1b]52;c;Y29weXBhc3RhIQ==\x07');
@@ -1944,6 +1945,7 @@ it('OSC-52-invalid', function() {
   hterm.copySelectionToClipboard = function(document, str) {
     hterm.copySelectionToClipboard = old_cCSTC;
     assert.fail();
+    return Promise.resolve();
   };
 
   this.terminal.interpret('\x1b]52;c;!@#$%^&*\x07hello');
@@ -1963,6 +1965,7 @@ it('OSC-52-big', function(done) {
       hterm.copySelectionToClipboard = old_cCSTC;
       assert.equal(str, expect);
       done();
+      return Promise.resolve();
     };
 
     var expect = '';
@@ -2185,7 +2188,7 @@ it('OSC-1337-file-invalid', function(done) {
   this.terminal.displayImage = (options) => {
     assert.equal('', options.name);
     assert.equal(1, options.size);
-    assert.isUndefined(options.unk);
+    assert.isUndefined(options['unk']);
     done();
   };
 
@@ -2461,7 +2464,6 @@ it('docs-invalid', function() {
     assert.isFalse(this.terminal.vt.codingSystemLocked_);
 
     // Try switching to a random set of invalid escapes.
-    var ch;
     ['a', '9', 'X', '(', '}'].forEach((ch) => {
       // First in ECMA-35 encoding.
       this.terminal.interpret('\x1b%@');

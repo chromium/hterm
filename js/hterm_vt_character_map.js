@@ -59,8 +59,8 @@ hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
   else
     this.glmap_ = this.glmapBase_;
 
-  var glchars = Object.keys(this.glmap_).map((key) =>
-      '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16)));
+  var glchars = Object.keys(lib.notNull(this.glmap_)).map((key) =>
+      '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16), 2));
   this.glre_ = new RegExp('[' + glchars.join('') + ']', 'g');
 
   this.GL = (str) => str.replace(this.glre_, (ch) => this.glmap_[ch]);
@@ -104,6 +104,8 @@ hterm.VT.CharacterMap.prototype.clone = function() {
 
 /**
  * Table of character maps.
+ *
+ * @constructor
  */
 hterm.VT.CharacterMaps = function() {
   this.maps_ = hterm.VT.CharacterMaps.DefaultMaps;
@@ -117,7 +119,8 @@ hterm.VT.CharacterMaps = function() {
  * Look up a previously registered map.
  *
  * @param {string} name The name of the map to lookup.
- * @return {!hterm.VT.CharacterMap} The map, if it's been registered.
+ * @return {!hterm.VT.CharacterMap|undefined} The map, if it's been registered
+ *     or undefined.
  */
 hterm.VT.CharacterMaps.prototype.getMap = function(name) {
   if (this.maps_.hasOwnProperty(name))

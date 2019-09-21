@@ -17,6 +17,10 @@
  * The ../bin/vtscope.py script can be used to replay canned data to one
  * or more terminals at the same time.  It understands how to ignore the header
  * information contained in the pre-recorded sessions.
+ */
+
+/*
+ * (This documentation moved out of JSDoc block due to use of '@@')
  *
  * Pre-recorded sessions look like this...
  *
