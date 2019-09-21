@@ -14,6 +14,9 @@ describe('hterm_terminal_io_tests.js', () => {
  * Simple mock Terminal object for an IO object's needs.
  *
  * These tests focus on the IO object itself rather than integration with the
+ *
+ * @constructor
+ * @extends {hterm.Terminal}
  */
 const MockTerminalForIO = function() {
   this.overlayVisible = false;
@@ -24,18 +27,26 @@ const MockTerminalForIO = function() {
   // This comes last.
   this.io = new hterm.Terminal.IO(this);
 };
+
+/** @override */
 MockTerminalForIO.prototype.showOverlay = function(message, timeout) {
   this.showCount++;
   // For timeouts, we'll track the final state (i.e. after the timeout).
   this.overlayVisible = (timeout === null);
   this.overlayMessage = message;
 };
+
+/** @override */
 MockTerminalForIO.prototype.hideOverlay = function() {
   this.overlayVisible = false;
 };
+
+/** @override */
 MockTerminalForIO.prototype.setProfile = function(profileName) {
   this.profileName = profileName;
 };
+
+/** @override */
 MockTerminalForIO.prototype.interpret = function(str) {
   this.buffer += str;
 };

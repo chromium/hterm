@@ -191,21 +191,21 @@ hterm.Terminal.IO.prototype.onTerminalResize = function(width, height) {
 /**
  * Write a UTF-8 encoded byte string to the terminal.
  *
- * @param {string} string The UTF-8 encoded string to print.
+ * @param {string|!ArrayBuffer} string The UTF-8 encoded string to print.
  */
 hterm.Terminal.IO.prototype.writeUTF8 = function(string) {
   // We can't use instanceof here on string to see if it's an ArrayBuffer as it
   // might be constructed in a different runtime context whose ArrayBuffer was
   // not the same.  See https://crbug.com/930171#5 for more details.
   if (typeof string == 'string') {
-    if (this.terminal_.characterEncoding != 'raw') {
+    if (this.terminal_.vt.characterEncoding != 'raw') {
       const bytes = lib.codec.stringToCodeUnitArray(string);
       string = this.textDecoder_.decode(bytes, {stream: true});
     }
   } else {
     // Handle array buffers & typed arrays by normalizing into a typed array.
     const u8 = new Uint8Array(string);
-    if (this.terminal_.characterEncoding == 'raw') {
+    if (this.terminal_.vt.characterEncoding == 'raw') {
       string = lib.codec.codeUnitArrayToString(u8);
     } else {
       string = this.textDecoder_.decode(u8, {stream: true});
