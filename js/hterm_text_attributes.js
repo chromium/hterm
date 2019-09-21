@@ -15,7 +15,7 @@
  * compatibility with the current attributes.
  *
  * @constructor
- * @param {!Document} document The parent document to use when creating
+ * @param {!Document=} document The parent document to use when creating
  *     new DOM containers.
  */
 hterm.TextAttributes = function(document) {
@@ -24,14 +24,20 @@ hterm.TextAttributes = function(document) {
   // SRC_DEFAULT  (use context default)
   // rgb(...)     (true color form)
   // number       (representing the index from color palette to use)
+  /** @type {symbol|string|number} */
   this.foregroundSource = this.SRC_DEFAULT;
+  /** @type {symbol|string|number} */
   this.backgroundSource = this.SRC_DEFAULT;
+  /** @type {symbol|string|number} */
   this.underlineSource = this.SRC_DEFAULT;
 
   // These properties cache the value in the color table, but foregroundSource
   // and backgroundSource contain the canonical values.
+  /** @type {symbol|string} */
   this.foreground = this.DEFAULT_COLOR;
+  /** @type {symbol|string} */
   this.background = this.DEFAULT_COLOR;
+  /** @type {symbol|string} */
   this.underlineColor = this.DEFAULT_COLOR;
 
   this.defaultForeground = 'rgb(255, 255, 255)';
@@ -50,8 +56,11 @@ hterm.TextAttributes = function(document) {
   this.invisible = false;
   this.wcNode = false;
   this.asciiNode = true;
+  /** @type {?string} */
   this.tileData = null;
+  /** @type {?string} */
   this.uri = null;
+  /** @type {?string} */
   this.uriId = null;
 
   this.colorPalette = null;
@@ -98,7 +107,7 @@ hterm.TextAttributes.prototype.setDocument = function(document) {
  * @return {!hterm.TextAttributes} A deep copy of this object.
  */
 hterm.TextAttributes.prototype.clone = function() {
-  var rv = new hterm.TextAttributes(null);
+  var rv = new hterm.TextAttributes();
 
   for (var key in this) {
     rv[key] = this[key];
@@ -194,7 +203,8 @@ hterm.TextAttributes.prototype.isDefault = function() {
  * @return {!Node} An HTML span or text nodes styled to match the current
  *     attributes.
  */
-hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
+hterm.TextAttributes.prototype.createContainer = function(
+    opt_textContent = '') {
   if (this.isDefault()) {
     // Only attach attributes where we need an explicit default for the
     // matchContainer logic below.
@@ -208,10 +218,10 @@ hterm.TextAttributes.prototype.createContainer = function(opt_textContent) {
   var classes = [];
 
   if (this.foreground != this.DEFAULT_COLOR)
-    style.color = this.foreground;
+    style.color = this.foreground.toString();
 
   if (this.background != this.DEFAULT_COLOR)
-    style.backgroundColor = this.background;
+    style.backgroundColor = this.background.toString();
 
   if (this.enableBold && this.bold)
     style.fontWeight = 'bold';
@@ -314,9 +324,9 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
 /**
  * Set default foreground & background colors.
  *
- * @param {string} foreground The terminal foreground color for use as
+ * @param {?string} foreground The terminal foreground color for use as
  *     inverse text background.
- * @param {string} background The terminal background color for use as
+ * @param {?string} background The terminal background color for use as
  *     inverse text foreground.
  */
 hterm.TextAttributes.prototype.setDefaults = function(foreground, background) {
@@ -347,21 +357,32 @@ hterm.TextAttributes.prototype.syncColors = function() {
     return color == this.DEFAULT_COLOR ? defaultColor : color;
   };
 
-  var foregroundSource = this.foregroundSource;
-  var backgroundSource = this.backgroundSource;
+  // TODO(joelhockey): Remove redundant `typeof foo == 'number'` when
+  // externs/es6.js is updated.
+  // https://github.com/google/closure-compiler/pull/3472.
 
   if (this.enableBoldAsBright && this.bold) {
-    if (Number.isInteger(foregroundSource)) {
-      foregroundSource = getBrightIndex(foregroundSource);
+    if (typeof this.foregroundSource == 'number' &&
+        Number.isInteger(this.foregroundSource)) {
+      this.foregroundSource = getBrightIndex(this.foregroundSource);
     }
   }
 
-  if (foregroundSource == this.SRC_DEFAULT)
-    this.foreground = this.DEFAULT_COLOR;
-  else if (Number.isInteger(foregroundSource))
-    this.foreground = this.colorPalette[foregroundSource];
-  else
-    this.foreground = foregroundSource;
+  /**
+   * @param {symbol|string|number} source
+   * @return {symbol|string}
+   */
+  const colorFromSource = (source) => {
+    if (source == this.SRC_DEFAULT) {
+      return this.DEFAULT_COLOR;
+    } else if (typeof source == 'number' && Number.isInteger(source)) {
+      return this.colorPalette[source];
+    } else {
+      return source.toString();
+    }
+  };
+
+  this.foreground = colorFromSource(this.foregroundSource);
 
   if (this.faint) {
     const colorToMakeFaint =
@@ -369,12 +390,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
     this.foreground = lib.colors.mix(colorToMakeFaint, 'rgb(0, 0, 0)', 0.3333);
   }
 
-  if (backgroundSource == this.SRC_DEFAULT)
-    this.background = this.DEFAULT_COLOR;
-  else if (Number.isInteger(backgroundSource))
-    this.background = this.colorPalette[backgroundSource];
-  else
-    this.background = backgroundSource;
+  this.background = colorFromSource(this.backgroundSource);
 
   // Once we've processed the bold-as-bright and faint attributes, swap.
   // This matches xterm/gnome-terminal.
@@ -388,12 +404,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
   if (this.invisible)
     this.foreground = this.background;
 
-  if (this.underlineSource == this.SRC_DEFAULT)
-    this.underlineColor = this.DEFAULT_COLOR;
-  else if (Number.isInteger(this.underlineSource))
-    this.underlineColor = this.colorPalette[this.underlineSource];
-  else
-    this.underlineColor = this.underlineSource;
+  this.underlineColor = colorFromSource(this.underlineSource);
 };
 
 /**
@@ -445,7 +456,7 @@ hterm.TextAttributes.containerIsDefault = function(obj) {
 /**
  * Static method to get the column width of a node's textContent.
  *
- * @param {!Element} node The HTML element to get the width of textContent
+ * @param {!Node} node The HTML element to get the width of textContent
  *     from.
  * @return {number} The column width of the node's textContent.
  */
@@ -461,11 +472,11 @@ hterm.TextAttributes.nodeWidth = function(node) {
  * Static method to get the substr of a node's textContent.  The start index
  * and substr width are computed in column width.
  *
- * @param {!Element} node The HTML element to get the substr of textContent
+ * @param {!Node} node The HTML element to get the substr of textContent
  *     from.
  * @param {number} start The starting offset in column width.
- * @param {number} width The width to capture in column width.
- * @return {number} The extracted substr of the node's textContent.
+ * @param {number=} width The width to capture in column width.
+ * @return {string} The extracted substr of the node's textContent.
  */
 hterm.TextAttributes.nodeSubstr = function(node, start, width) {
   if (!node.asciiNode) {
@@ -483,7 +494,7 @@ hterm.TextAttributes.nodeSubstr = function(node, start, width) {
  *     from.
  * @param {number} start The starting offset in column width.
  * @param {number} end The ending offset in column width.
- * @return {number} The extracted substring of the node's textContent.
+ * @return {string} The extracted substring of the node's textContent.
  */
 hterm.TextAttributes.nodeSubstring = function(node, start, end) {
   if (!node.asciiNode) {
@@ -498,7 +509,7 @@ hterm.TextAttributes.nodeSubstring = function(node, start, end) {
  * characters and runs of double-width characters.
  *
  * @param {string} str The string to split.
- * @return {!Array<{str:string, wcNode:boolean, asciiNode:boolean
+ * @return {!Array<{str:string, wcNode:boolean, asciiNode:boolean,
  *     wcStrWidth:number}>} An array of objects that contain substrings of str,
  *     where each substring is either a contiguous runs of single-width
  *     characters or a double-width character.  For objects that contain a
