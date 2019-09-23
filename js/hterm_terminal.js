@@ -1868,7 +1868,7 @@ hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
  * The string is *not* parsed for escape codes.  Use the interpret() method if
  * that's what you're after.
  *
- * @param{string} str The string to print.
+ * @param {string} str The string to print.
  */
 hterm.Terminal.prototype.print = function(str) {
   this.scheduleSyncCursorPosition_();

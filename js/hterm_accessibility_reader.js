@@ -89,7 +89,7 @@ hterm.AccessibilityReader = function(div) {
  * aria updates make it to the screen reader. We want this to be short so
  * there's not a big delay between typing/executing commands and hearing output.
  *
- * @constant
+ * @const
  * @type {number}
  */
 hterm.AccessibilityReader.DELAY = 50;
