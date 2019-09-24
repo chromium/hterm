@@ -71,7 +71,7 @@ it.skip('copy-execCommand', (done) => {
   let oldClipboardWrite;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     oldClipboardWrite = navigator.clipboard.writeText;
-    navigator.clipboard.writeText = undefined;
+    delete navigator.clipboard.writeText;
   }
 
   // Mock this out since we can't document.execCommand from the test harness.
@@ -90,7 +90,7 @@ it.skip('copy-execCommand', (done) => {
   };
 
   // Mock the newer API too.
-  navigator.clipboard.writeText = undefined;
+  delete navigator.clipboard.writeText;
 
   hterm.copySelectionToClipboard(doc, 'copypasta!');
 });
