@@ -121,13 +121,19 @@ function setupHterm() {
   term.installKeyboard();
 
   term.contextMenu.setItems([
-    ['Terminal Reset', () => term.reset()],
-    ['Terminal Clear', () => term.clear()],
-    [hterm.ContextMenu.SEPARATOR],
-    ['Homepage', function() {
-      lib.f.openWindow('https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm/README.md', '_blank');
-    }],
-    ['FAQ', function() { lib.f.openWindow('https://goo.gl/muppJj', '_blank'); }],
+    {name: 'Terminal Reset', action: () => term.reset()},
+    {name: 'Terminal Clear', action: () => term.clear()},
+    {name: 'hterm.ContextMenu.SEPARATOR},
+    {name: 'Homepage', action: function() {
+        lib.f.openWindow(
+            'https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm/README.md',
+            '_blank');
+      }
+    },
+    {name: 'FAQ', action: function() {
+        lib.f.openWindow('https://goo.gl/muppJj', '_blank'); 
+      }
+    },
   ]);
 
   // Useful for console debugging.
