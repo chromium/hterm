@@ -91,8 +91,10 @@ hterm.Terminal = function(opt_profileId) {
 
   // These prefs are cached so we don't have to read from local storage with
   // each output and keystroke.  They are initialized by the preference manager.
-  this.backgroundColor_ = null;
-  this.foregroundColor_ = null;
+  /** @type {string} */
+  this.backgroundColor_ = '';
+  /** @type {string} */
+  this.foregroundColor_ = '';
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
   this.scrollWheelArrowKeys_ = null;
@@ -662,7 +664,7 @@ hterm.Terminal.prototype.setBackgroundColor = function(color) {
   if (color === undefined)
     color = this.prefs_.getString('background-color');
 
-  this.backgroundColor_ = lib.colors.normalizeCSS(color);
+  this.backgroundColor_ = lib.colors.normalizeCSS(color) || '';
   this.primaryScreen_.textAttributes.setDefaults(
       this.foregroundColor_, this.backgroundColor_);
   this.alternateScreen_.textAttributes.setDefaults(
@@ -695,7 +697,7 @@ hterm.Terminal.prototype.setForegroundColor = function(color) {
   if (color === undefined)
     color = this.prefs_.getString('foreground-color');
 
-  this.foregroundColor_ = lib.colors.normalizeCSS(color);
+  this.foregroundColor_ = lib.colors.normalizeCSS(color) || '';
   this.primaryScreen_.textAttributes.setDefaults(
       this.foregroundColor_, this.backgroundColor_);
   this.alternateScreen_.textAttributes.setDefaults(

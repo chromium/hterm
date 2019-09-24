@@ -110,6 +110,7 @@ hterm.ScrollPort = function(rowProvider) {
 
   this.div_ = null;
   this.document_ = null;
+  /** @type {?Element} */
   this.screen_ = null;
 
   // Collection of active timeout handles.
@@ -432,15 +433,20 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
 
   doc.body.appendChild(this.screen_);
 
-  this.screen_.addEventListener('scroll', this.onScroll_.bind(this));
-  this.screen_.addEventListener('wheel', this.onScrollWheel_.bind(this));
-  this.screen_.addEventListener('touchstart', this.onTouch_.bind(this));
-  this.screen_.addEventListener('touchmove', this.onTouch_.bind(this));
-  this.screen_.addEventListener('touchend', this.onTouch_.bind(this));
-  this.screen_.addEventListener('touchcancel', this.onTouch_.bind(this));
-  this.screen_.addEventListener('copy', this.onCopy_.bind(this));
-  this.screen_.addEventListener('paste', this.onPaste_.bind(this));
-  this.screen_.addEventListener('drop', this.onDragAndDrop_.bind(this));
+  /**
+   * @param {function(...)} f
+   * @return {!EventListener}
+   */
+  const el = (f) => /** @type {!EventListener} */ (f);
+  this.screen_.addEventListener('scroll', el(this.onScroll_.bind(this)));
+  this.screen_.addEventListener('wheel', el(this.onScrollWheel_.bind(this)));
+  this.screen_.addEventListener('touchstart', el(this.onTouch_.bind(this)));
+  this.screen_.addEventListener('touchmove', el(this.onTouch_.bind(this)));
+  this.screen_.addEventListener('touchend', el(this.onTouch_.bind(this)));
+  this.screen_.addEventListener('touchcancel', el(this.onTouch_.bind(this)));
+  this.screen_.addEventListener('copy', el(this.onCopy_.bind(this)));
+  this.screen_.addEventListener('paste', el(this.onPaste_.bind(this)));
+  this.screen_.addEventListener('drop', el(this.onDragAndDrop_.bind(this)));
 
   doc.body.addEventListener('keydown', this.onBodyKeyDown_.bind(this));
 
@@ -710,7 +716,7 @@ hterm.ScrollPort.prototype.getForegroundColor = function() {
   return this.screen_.style.color;
 };
 
-/** @param {?string} color */
+/** @param {string} color */
 hterm.ScrollPort.prototype.setForegroundColor = function(color) {
   this.screen_.style.color = color;
   this.scrollUpButton_.style.backgroundColor = color;
@@ -722,14 +728,14 @@ hterm.ScrollPort.prototype.getBackgroundColor = function() {
   return this.screen_.style.backgroundColor;
 };
 
-/** @param {?string} color */
+/** @param {string} color */
 hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
   this.screen_.style.backgroundColor = color;
   this.scrollUpButton_.style.color = color;
   this.scrollDownButton_.style.color = color;
 };
 
-/** @param {?string} image */
+/** @param {string} image */
 hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
   this.screen_.style.backgroundImage = image;
 };
@@ -762,7 +768,7 @@ hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
  * @return {{height: number, width: number}}
  */
 hterm.ScrollPort.prototype.getScreenSize = function() {
-  var size = hterm.getClientSize(this.screen_);
+  var size = hterm.getClientSize(lib.notNull(this.screen_));
   return {
     height: size.height,
     width: size.width - this.currentScrollbarWidthPx
@@ -887,7 +893,7 @@ hterm.ScrollPort.prototype.setFontSize = function(px) {
  * @return {number}
  */
 hterm.ScrollPort.prototype.getFontSize = function() {
-  return this.screen_.style.fontSize;
+  return parseInt(this.screen_.style.fontSize, 10);
 };
 
 /**
@@ -966,8 +972,8 @@ hterm.ScrollPort.prototype.syncCharacterSize = function() {
  * dimensions of the 'x-screen'.
  */
 hterm.ScrollPort.prototype.resize = function() {
-  this.currentScrollbarWidthPx = hterm.getClientWidth(this.screen_) -
-    this.screen_.clientWidth;
+  this.currentScrollbarWidthPx =
+    hterm.getClientWidth(lib.notNull(this.screen_)) - this.screen_.clientWidth;
 
   this.syncScrollHeight();
   this.syncRowNodesDimensions_();
@@ -1483,7 +1489,7 @@ hterm.ScrollPort.prototype.selectAll = function() {
 hterm.ScrollPort.prototype.getScrollMax_ = function() {
   return (hterm.getClientHeight(this.scrollArea_) +
           this.visibleRowTopMargin + this.visibleRowBottomMargin -
-          hterm.getClientHeight(this.screen_));
+          hterm.getClientHeight(lib.notNull(this.screen_)));
 };
 
 /**
@@ -1659,8 +1665,10 @@ hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
       delta.y = e.deltaY * this.characterSize.height;
       break;
     case WheelEvent.DOM_DELTA_PAGE:
-      delta.x = e.deltaX * this.characterSize.width * this.screen_.getWidth();
-      delta.y = e.deltaY * this.characterSize.height * this.screen_.getHeight();
+      delta.x = e.deltaX * this.characterSize.width *
+          hterm.getClientWidth(lib.notNull(this.screen_));
+      delta.y = e.deltaY * this.characterSize.height *
+          hterm.getClientHeight(lib.notNull(this.screen_));
       break;
   }
 
