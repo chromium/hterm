@@ -3728,10 +3728,10 @@ hterm.Terminal.prototype.onScroll_ = function() {
 /**
  * React when text is pasted into the scrollPort.
  *
- * @param {!ClipboardEvent} e The DOM paste event to handle.
+ * @param {{text: string}} e The text of the paste event to handle.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  var data = e.clipboardData.getData('text').replace(/\n/mg, '\r');
+  var data = e.text.replace(/\n/mg, '\r');
   if (this.options_.bracketedPaste) {
     // We strip out most escape sequences as they can cause issues (like
     // inserting an \x1b[201~ midstream).  We pass through whitespace
