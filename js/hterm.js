@@ -10,11 +10,6 @@
  */
 var hterm = {};
 
-// Export for node environments.
-if (typeof exports !== 'undefined') {
-  module.exports = hterm;
-}
-
 /**
  * The type of window hosting hterm.
  *
