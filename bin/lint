@@ -16,6 +16,10 @@ import hterm
 import libdot
 
 
+# Path to generated deps file that hterm uses for libdot/etc...
+DEPS_FILE = os.path.join(hterm.DIR, 'dist', 'js', 'hterm_deps.js')
+
+
 def _get_default_paths():
     """Get list of paths to lint by default."""
     # All files in js/*.js.
@@ -25,10 +29,18 @@ def _get_default_paths():
                   for x in glob.glob(os.path.join(hterm.DIR, 'js', '*.js')))
 
 
+def mkdeps(_opts):
+    """Build the deps we might use when linting."""
+    if not os.path.exists(DEPS_FILE):
+        libdot.run([os.path.join(hterm.BIN_DIR, 'mkdist')])
+
+
 def main(argv):
     """The main func!"""
-    return libdot.lint.main(argv, paths=_get_default_paths(),
-                            closure_args=['--jscomp_error=lintChecks'])
+    closure_args = list(libdot.lint.DEFAULT_CLOSURE_ARGS) + [
+        os.path.relpath(DEPS_FILE)]
+    return libdot.lint.main(argv, paths=_get_default_paths(), mkdeps=mkdeps,
+                            closure_args=closure_args)
 
 
 if __name__ == '__main__':
