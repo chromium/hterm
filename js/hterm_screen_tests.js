@@ -572,10 +572,11 @@ it('whitespace-fill', function() {
   this.screen.maybeClipCurrentRow();
   this.screen.setCursorPosition(0, 15);
   this.screen.insertString('bye');
-  assert.equal(row.innerHTML,
-               'start <span style="text-decoration-style: wavy; text-decoration-' +
-               'line: underline;">hi</span>       <span style="text-decoration-' +
-               'style: wavy; text-decoration-line: underline;">bye</span>');
+  assert.equal(
+      row.innerHTML,
+      'start <span style="text-decoration-style: wavy; text-decoration-' +
+      'line: underline;">hi</span>       <span style="text-decoration-' +
+      'style: wavy; text-decoration-line: underline;">bye</span>');
   ta.reset();
   this.screen.clearCursorRow();
 });

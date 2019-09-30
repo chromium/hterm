@@ -1536,65 +1536,65 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
       'blur', this.onFocusChange_.bind(this, false));
 
   var style = this.document_.createElement('style');
-  style.textContent =
-      ('.cursor-node[focus="false"] {' +
-       '  box-sizing: border-box;' +
-       '  background-color: transparent !important;' +
-       '  border-width: 2px;' +
-       '  border-style: solid;' +
-       '}' +
-       'menu {' +
-       '  margin: 0;' +
-       '  padding: 0;' +
-       '  cursor: var(--hterm-mouse-cursor-pointer);' +
-       '}' +
-       'menuitem {' +
-       '  white-space: nowrap;' +
-       '  border-bottom: 1px dashed;' +
-       '  display: block;' +
-       '  padding: 0.3em 0.3em 0 0.3em;' +
-       '}' +
-       'menuitem.separator {' +
-       '  border-bottom: none;' +
-       '  height: 0.5em;' +
-       '  padding: 0;' +
-       '}' +
-       'menuitem:hover {' +
-       '  color: var(--hterm-cursor-color);' +
-       '}' +
-       '.wc-node {' +
-       '  display: inline-block;' +
-       '  text-align: center;' +
-       '  width: calc(var(--hterm-charsize-width) * 2);' +
-       '  line-height: var(--hterm-charsize-height);' +
-       '}' +
-       ':root {' +
-       '  --hterm-charsize-width: ' + this.scrollPort_.characterSize.width + 'px;' +
-       '  --hterm-charsize-height: ' + this.scrollPort_.characterSize.height + 'px;' +
-       // Default position hides the cursor for when the window is initializing.
-       '  --hterm-cursor-offset-col: -1;' +
-       '  --hterm-cursor-offset-row: -1;' +
-       '  --hterm-blink-node-duration: 0.7s;' +
-       '  --hterm-mouse-cursor-default: default;' +
-       '  --hterm-mouse-cursor-text: text;' +
-       '  --hterm-mouse-cursor-pointer: pointer;' +
-       '  --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);' +
-       '}' +
-       '.uri-node:hover {' +
-       '  text-decoration: underline;' +
-       '  cursor: var(--hterm-mouse-cursor-pointer);' +
-       '}' +
-       '@keyframes blink {' +
-       '  from { opacity: 1.0; }' +
-       '  to { opacity: 0.0; }' +
-       '}' +
-       '.blink-node {' +
-       '  animation-name: blink;' +
-       '  animation-duration: var(--hterm-blink-node-duration);' +
-       '  animation-iteration-count: infinite;' +
-       '  animation-timing-function: ease-in-out;' +
-       '  animation-direction: alternate;' +
-       '}');
+  style.textContent = `
+.cursor-node[focus="false"] {
+  box-sizing: border-box;
+  background-color: transparent !important;
+  border-width: 2px;
+  border-style: solid;
+}
+menu {
+  margin: 0;
+  padding: 0;
+  cursor: var(--hterm-mouse-cursor-pointer);
+}
+menuitem {
+  white-space: nowrap;
+  border-bottom: 1px dashed;
+  display: block;
+  padding: 0.3em 0.3em 0 0.3em;
+}
+menuitem.separator {
+  border-bottom: none;
+  height: 0.5em;
+  padding: 0;
+}
+menuitem:hover {
+  color: var(--hterm-cursor-color);
+}
+.wc-node {
+  display: inline-block;
+  text-align: center;
+  width: calc(var(--hterm-charsize-width) * 2);
+  line-height: var(--hterm-charsize-height);
+}
+:root {
+  --hterm-charsize-width: ${this.scrollPort_.characterSize.width}px;
+  --hterm-charsize-height: ${this.scrollPort_.characterSize.height}px;
+  /* Default position hides the cursor for when the window is initializing. */
+  --hterm-cursor-offset-col: -1;
+  --hterm-cursor-offset-row: -1;
+  --hterm-blink-node-duration: 0.7s;
+  --hterm-mouse-cursor-default: default;
+  --hterm-mouse-cursor-text: text;
+  --hterm-mouse-cursor-pointer: pointer;
+  --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);
+}
+.uri-node:hover {
+  text-decoration: underline;
+  cursor: var(--hterm-mouse-cursor-pointer);
+}
+@keyframes blink {
+  from { opacity: 1.0; }
+  to { opacity: 0.0; }
+}
+.blink-node {
+  animation-name: blink;
+  animation-duration: var(--hterm-blink-node-duration);
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-direction: alternate;
+}`;
   // Insert this stock style as the first node so that any user styles will
   // override w/out having to use !important everywhere.  The rules above mix
   // runtime variables with default ones designed to be overridden by the user,
@@ -1605,17 +1605,17 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
   this.cursorNode_ = this.document_.createElement('div');
   this.cursorNode_.id = 'hterm:terminal-cursor';
   this.cursorNode_.className = 'cursor-node';
-  this.cursorNode_.style.cssText =
-      ('position: absolute;' +
-       'left: calc(var(--hterm-charsize-width) * var(--hterm-cursor-offset-col));' +
-       'top: calc(var(--hterm-charsize-height) * var(--hterm-cursor-offset-row));' +
-       'display: ' + (this.options_.cursorVisible ? '' : 'none') + ';' +
-       'width: var(--hterm-charsize-width);' +
-       'height: var(--hterm-charsize-height);' +
-       'background-color: var(--hterm-cursor-color);' +
-       'border-color: var(--hterm-cursor-color);' +
-       '-webkit-transition: opacity, background-color 100ms linear;' +
-       '-moz-transition: opacity, background-color 100ms linear;');
+  this.cursorNode_.style.cssText = `
+position: absolute;
+left: calc(var(--hterm-charsize-width) * var(--hterm-cursor-offset-col));
+top: calc(var(--hterm-charsize-height) * var(--hterm-cursor-offset-row));
+display: ${this.options_.cursorVisible ? '' : 'none'};
+width: var(--hterm-charsize-width);
+height: var(--hterm-charsize-height);
+background-color: var(--hterm-cursor-color);
+border-color: var(--hterm-cursor-color);
+-webkit-transition: opacity, background-color 100ms linear;
+-moz-transition: opacity, background-color 100ms linear;`;
 
   this.setCursorColor();
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));

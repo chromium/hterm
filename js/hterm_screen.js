@@ -681,7 +681,8 @@ hterm.Screen.prototype.deleteChars = function(count) {
     // was deleted).  If there are more chars to delete, the next loop will pick
     // up the slack.
     if (node.wcNode && offset < startLength &&
-        ((endLength && startLength == endLength) || (!endLength && offset == 1))) {
+        ((endLength && startLength == endLength) ||
+         (!endLength && offset == 1))) {
       // No characters were deleted when there should be.  We're probably trying
       // to delete one column width from a wide character node.  We remove the
       // wide character node here and replace it with a single space.

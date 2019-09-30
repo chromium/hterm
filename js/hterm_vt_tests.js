@@ -2700,7 +2700,8 @@ it('mouse-press-x10-coord', function() {
   assert.equal('\x1b[M   ', resultString);
 
   // Check the 7-bit limit.
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 95, terminalColumn: 94});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 95, terminalColumn: 94});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \x7e\x7f', resultString);
 
@@ -2708,22 +2709,26 @@ it('mouse-press-x10-coord', function() {
   These are disabled because we currently clamp X10 reporting to 7-bit.
 
   // Check 150,100 cell.
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \x84\xb6', resultString);
 
   // Check 222,222 cell (just below max range).
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 222, terminalColumn: 222});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 222, terminalColumn: 222});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \xfe\xfe', resultString);
 
   // Check 223,223 cell (max range).
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 223, terminalColumn: 223});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 223, terminalColumn: 223});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \xff\xff', resultString);
 
   // Check 300,300 cell (out of range).
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 300, terminalColumn: 300});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 300, terminalColumn: 300});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \xff\xff', resultString);
 */
@@ -2751,7 +2756,8 @@ it('mouse-press-utf8-coord', function() {
   assert.equal('\x1b[M   ', resultString);
 
   // Check 150,100 cell.
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[M \x84\xb6', resultString);
 
@@ -2802,7 +2808,8 @@ it('mouse-press-sgr-coord', function() {
   assert.equal('\x1b[<0;0;0M', resultString);
 
   // Check 150,100 cell.
-  e = MockTerminalMouseEvent('mousedown', {terminalRow: 150, terminalColumn: 100});
+  e = MockTerminalMouseEvent(
+      'mousedown', {terminalRow: 150, terminalColumn: 100});
   terminal.vt.onTerminalMouse_(e);
   assert.equal('\x1b[<0;100;150M', resultString);
 

@@ -808,20 +808,23 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
 hterm.VT.prototype.dispatch = function(type, code, parseState) {
   var handler = hterm.VT[type][code];
   if (!handler) {
-    if (this.warnUnimplemented)
-      console.warn('Unknown ' + type + ' code: ' + JSON.stringify(code));
+    if (this.warnUnimplemented) {
+      console.warn(`Unknown ${type} code: ${JSON.stringify(code)}`);
+    }
     return;
   }
 
   if (handler == hterm.VT.ignore) {
-    if (this.warnUnimplemented)
-      console.warn('Ignored ' + type + ' code: ' + JSON.stringify(code));
+    if (this.warnUnimplemented) {
+      console.warn(`Ignored ${type} code: ${JSON.stringify(code)}`);
+    }
     return;
   }
 
   if (parseState.subargs && !handler.supportsSubargs) {
-    if (this.warnUnimplemented)
-      console.warn('Ignored ' + type + ' code w/subargs: ' + JSON.stringify(code));
+    if (this.warnUnimplemented) {
+      console.warn(`Ignored ${type} code w/subargs: ${JSON.stringify(code)}`);
+    }
     return;
   }
 

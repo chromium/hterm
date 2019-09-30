@@ -442,6 +442,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     // Chrome OS keyboard top row.  The media-keys-are-fkeys preference allows
     // users to make these always behave as function keys (see those bindings
     // above for more details).
+    /* eslint-disable max-len */
     add(166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+'23~', DEFAULT);  // F1
     add(167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+'24~', DEFAULT);  // F2
     add(168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+'25~', DEFAULT);  // F3
@@ -452,17 +453,18 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     add(173, '[MUTE]',   med(CSI + '19~'),           DEFAULT, CSI+'32~', DEFAULT);  // F8
     add(174, '[VOL-]',   med(CSI + '20~'),           DEFAULT, CSI+'33~', DEFAULT);  // F9
     add(175, '[VOL+]',   med(CSI + '21~'),           DEFAULT, CSI+'34~', DEFAULT);  // F10
+    /* eslint-enable max-len */
 
     // We could make this into F11, but it'd be a bit weird.  Chrome allows us
     // to see this and react, but it doesn't actually allow us to block or
     // cancel it, so it makes the screen flash/lock still.
-    add(152, '[POWER]',  DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+    add(152, '[POWER]', DEFAULT, DEFAULT, DEFAULT, DEFAULT);
 
     // The Pixelbook has a slightly different layout.  This means half the keys
     // above are off by one.  https://crbug.com/807513
-    add(179, '[PLAY]',   med(CSI + '18~'),           DEFAULT, CSI + '31~', DEFAULT); // F7
+    add(179, '[PLAY]', med(CSI + '18~'), DEFAULT, CSI + '31~', DEFAULT); // F7
     // The settings / hamburgers / three hot dogs / menu / whatever-it's-called.
-    add(154, '[DOGS]',   med(CSI + '23~'),           DEFAULT, CSI + '42~', DEFAULT); // F11
+    add(154, '[DOGS]', med(CSI + '23~'), DEFAULT, CSI + '42~', DEFAULT); // F11
 
     // We don't use this for anything, but keep it from popping up by default.
     add(153, '[ASSIST]', DEFAULT, DEFAULT, DEFAULT, DEFAULT);
