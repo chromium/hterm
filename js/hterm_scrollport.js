@@ -13,12 +13,16 @@
  */
 hterm.RowProvider = function() {};
 
-/** @return {number} The current number of rows. */
+/**
+ * @abstract
+ * @return {number} The current number of rows.
+ */
 hterm.RowProvider.prototype.getRowCount = function() {};
 
 /**
  * Get specified row.
  *
+ * @abstract
  * @param {number} index The index of the row.
  * @return {!Element}
  */
@@ -341,6 +345,7 @@ hterm.ScrollPort.prototype.decorate = function(div, callback) {
 /**
  * Initialises the content of this.iframe_. This needs to be done asynchronously
  * in FF after the Iframe's load event has fired.
+ *
  * @private
  */
 hterm.ScrollPort.prototype.paintIframeContents_ = function() {

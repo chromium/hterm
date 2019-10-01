@@ -48,6 +48,7 @@
 hterm.Screen = function(columnCount=0) {
   /**
    * Public, read-only access to the rows in this screen.
+   *
    * @type {!Array<!Element>}
    */
   this.rowsArray = [];

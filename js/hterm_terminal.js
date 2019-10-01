@@ -636,6 +636,7 @@ hterm.Terminal.prototype.setCursorColor = function(color) {
 
 /**
  * Return the current cursor color as a string.
+ *
  * @return {string}
  */
 hterm.Terminal.prototype.getCursorColor = function() {
@@ -1482,6 +1483,7 @@ hterm.Terminal.prototype.decorate = function(div) {
 /**
  * Initialisation of ScrollPort properties which need to be set after its DOM
  * has been initialised.
+ *
  * @private
  */
 hterm.Terminal.prototype.setupScrollPort_ = function() {
@@ -3092,6 +3094,7 @@ hterm.Terminal.prototype.hideOverlay = function() {
 
 /**
  * Paste from the system clipboard to the terminal.
+ *
  * @return {boolean}
  */
 hterm.Terminal.prototype.paste = function() {

@@ -6,6 +6,7 @@
 
 /**
  * Parses the key definition syntax used for user keyboard customizations.
+ *
  * @constructor
  */
 hterm.Parser = function() {
