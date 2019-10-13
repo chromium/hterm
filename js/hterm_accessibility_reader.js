@@ -27,7 +27,7 @@ hterm.AccessibilityReader = function(div) {
   liveRegion.style.cssText = `position: absolute;
                               width: 0; height: 0;
                               overflow: hidden;
-                              left: 0; top: 0;`;
+                              left: -1000px; top: -1000px;`;
   div.appendChild(liveRegion);
 
   // Whether command output should be rendered for Assistive Technology.
@@ -37,7 +37,6 @@ hterm.AccessibilityReader = function(div) {
   // This live element is used for command output.
   this.liveElement_ = this.document_.createElement('p');
   this.liveElement_.setAttribute('aria-live', 'polite');
-  this.liveElement_.setAttribute('aria-label', '');
   liveRegion.appendChild(this.liveElement_);
 
   // This live element is used for speaking out the current screen when
@@ -45,7 +44,6 @@ hterm.AccessibilityReader = function(div) {
   // announcements.
   this.assertiveLiveElement_ = this.document_.createElement('p');
   this.assertiveLiveElement_.setAttribute('aria-live', 'assertive');
-  this.assertiveLiveElement_.setAttribute('aria-label', '');
   liveRegion.appendChild(this.assertiveLiveElement_);
 
   // A queue of updates to announce.
@@ -264,12 +262,12 @@ hterm.AccessibilityReader.prototype.assertiveAnnounce = function(str) {
   // So we slightly change the string to ensure that the attribute change gets
   // registered.
   str = str.trim();
-  if (str == this.assertiveLiveElement_.getAttribute('aria-label')) {
+  if (str == this.assertiveLiveElement_.innerText) {
     str = '\n' + str;
   }
 
   this.clear();
-  this.assertiveLiveElement_.setAttribute('aria-label', str);
+  this.assertiveLiveElement_.innerText = str;
 };
 
 /**
@@ -283,8 +281,8 @@ hterm.AccessibilityReader.prototype.newLine = function() {
  * Clear the live region and any in-flight announcements.
  */
 hterm.AccessibilityReader.prototype.clear = function() {
-  this.liveElement_.setAttribute('aria-label', '');
-  this.assertiveLiveElement_.setAttribute('aria-label', '');
+  this.liveElement_.innerText = '';
+  this.assertiveLiveElement_.innerText = '';
   clearTimeout(this.nextReadTimer_);
   this.nextReadTimer_ = null;
   this.queue_ = [];
@@ -415,10 +413,10 @@ hterm.AccessibilityReader.prototype.addToLiveRegion_ = function() {
   // registered and the screen reader won't know that the string has changed.
   // So we slightly change the string to ensure that the attribute change gets
   // registered.
-  if (str == this.liveElement_.getAttribute('aria-label')) {
+  if (str == this.liveElement_.innerText) {
     str = '\n' + str;
   }
 
-  this.liveElement_.setAttribute('aria-label', str);
+  this.liveElement_.innerText = str;
   this.queue_ = [];
 };

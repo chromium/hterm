@@ -59,16 +59,16 @@ it('a11y-live-region-single-delay', function(done) {
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  assert.equal('', this.liveElement.getAttribute('aria-label'));
+  assert.equal('', this.liveElement.innerText);
 
   const observer = new MutationObserver(() => {
     assert.equal('Some test output Some other test output\nMore output',
-                 this.liveElement.getAttribute('aria-label'));
+                 this.liveElement.innerText);
     observer.disconnect();
     done();
   });
 
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 });
 
 
@@ -82,11 +82,11 @@ it('a11y-live-region-double-delay', function(done) {
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  assert.equal('', this.liveElement.getAttribute('aria-label'));
+  assert.equal('', this.liveElement.innerText);
 
   const checkFirstAnnounce = () => {
     assert.equal('Some test output Some other test output\nMore output',
-                 this.liveElement.getAttribute('aria-label'));
+                 this.liveElement.innerText);
 
     this.accessibilityReader.announce('more text');
     this.accessibilityReader.newLine();
@@ -96,7 +96,7 @@ it('a11y-live-region-double-delay', function(done) {
 
   const checkSecondAnnounce = () => {
     assert.equal('more text\n...and more',
-                 this.liveElement.getAttribute('aria-label'));
+                 this.liveElement.innerText);
     return true;
   };
 
@@ -113,7 +113,7 @@ it('a11y-live-region-double-delay', function(done) {
     }
   });
 
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 });
 
 /**
@@ -123,11 +123,11 @@ it('a11y-live-region-double-delay', function(done) {
 it('a11y-live-region-duplicate-text', function(done) {
   this.accessibilityReader.announce('Some test output');
 
-  assert.equal('', this.liveElement.getAttribute('aria-label'));
+  assert.equal('', this.liveElement.innerText);
 
   const checkFirstAnnounce = () => {
     assert.equal('Some test output',
-                 this.liveElement.getAttribute('aria-label'));
+                 this.liveElement.innerText);
 
     this.accessibilityReader.announce('Some test output');
     return true;
@@ -135,7 +135,7 @@ it('a11y-live-region-duplicate-text', function(done) {
 
   const checkSecondAnnounce = () => {
     assert.equal('\nSome test output',
-                 this.liveElement.getAttribute('aria-label'));
+                 this.liveElement.innerText);
     return true;
   };
 
@@ -152,7 +152,7 @@ it('a11y-live-region-duplicate-text', function(done) {
     }
   });
 
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 });
 
 /**
@@ -160,10 +160,10 @@ it('a11y-live-region-duplicate-text', function(done) {
  */
 it('a11y-assertive-live-region', function() {
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+  assert.equal(this.assertiveLiveElement.innerText,
                'Some test output');
   this.accessibilityReader.clear();
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 });
 
 /**
@@ -172,10 +172,10 @@ it('a11y-assertive-live-region', function() {
  */
 it('a11y-assertive-live-region-duplicate-text', function() {
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+  assert.equal(this.assertiveLiveElement.innerText,
                'Some test output');
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+  assert.equal(this.assertiveLiveElement.innerText,
                '\nSome test output');
 });
 
@@ -189,22 +189,22 @@ it('a11y-assertive-live-region-interrupts-polite', function(done) {
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  assert.equal(this.liveElement.getAttribute('aria-label'), '');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.liveElement.innerText, '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // The live element should not change because we interrupt it. It should only
   // announce the 'PASS' string which comes after all the output above.
   const observer = new MutationObserver(() => {
-    if (this.liveElement.getAttribute('aria-label') == 'PASS') {
+    if (this.liveElement.innerText == 'PASS') {
       done();
     } else {
-      assert.equal(this.liveElement.getAttribute('aria-label'), '');
+      assert.equal(this.liveElement.innerText, '');
     }
   });
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+  assert.equal(this.assertiveLiveElement.innerText,
                'Some test output');
 
   this.accessibilityReader.announce('PASS');
@@ -220,20 +220,20 @@ it('a11y-disabled-enabled', function(done) {
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  assert.equal(this.liveElement.getAttribute('aria-label'), '');
+  assert.equal(this.liveElement.innerText, '');
 
   // Only 'Other output' should be announced now.
   this.accessibilityReader.setAccessibilityEnabled(true);
   this.accessibilityReader.announce('Other output');
 
   const observer = new MutationObserver(() => {
-    if (this.liveElement.getAttribute('aria-label') == 'Other output') {
+    if (this.liveElement.innerText == 'Other output') {
       done();
     } else {
-      assert.equal(this.liveElement.getAttribute('aria-label'), '');
+      assert.equal(this.liveElement.innerText, '');
     }
   });
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 });
 
 /**
@@ -245,19 +245,19 @@ it('a11y-enabled-disabled', function(done) {
   this.accessibilityReader.newLine();
   this.accessibilityReader.announce('More output');
 
-  assert.equal(this.liveElement.getAttribute('aria-label'), '');
+  assert.equal(this.liveElement.innerText, '');
 
   // The live element should not change because accessibility is disabled. It
   // should only announce the 'PASS' string which comes after all the output
   // above.
   const observer = new MutationObserver(() => {
-    if (this.liveElement.getAttribute('aria-label') == 'PASS') {
+    if (this.liveElement.innerText == 'PASS') {
       done();
     } else {
-      assert.equal(this.liveElement.getAttribute('aria-label'), '');
+      assert.equal(this.liveElement.innerText, '');
     }
   });
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 
   this.accessibilityReader.setAccessibilityEnabled(false);
 
@@ -274,13 +274,13 @@ it('a11y-assertive-disabled-enabled', function() {
   this.accessibilityReader.setAccessibilityEnabled(false);
 
   this.accessibilityReader.assertiveAnnounce('Some test output');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+  assert.equal(this.assertiveLiveElement.innerText,
                'Some test output');
 
   this.accessibilityReader.setAccessibilityEnabled(true);
 
   this.accessibilityReader.assertiveAnnounce('More test output');
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'),
+  assert.equal(this.assertiveLiveElement.innerText,
                'More test output');
 });
 
@@ -304,56 +304,56 @@ it('a11y-selection-change-left-right', function() {
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.innerText, 'a');
 
   // Move the cursor left 1 character.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
+  assert.equal(this.assertiveLiveElement.innerText, 'b');
 
   // Move the cursor right 1 character with wide chars in the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へどabc', 0, 0);
   this.accessibilityReader.afterCursorChange('匂へどabc', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '匂');
+  assert.equal(this.assertiveLiveElement.innerText, '匂');
 
   // Move the cursor left 1 character with wide chars in the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へどabc', 0, 9);
   this.accessibilityReader.afterCursorChange('匂へどabc', 0, 8);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.innerText, 'c');
 
   // Move the cursor to the end of the output.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 3);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
+  assert.equal(this.assertiveLiveElement.innerText, 'abc');
 
   // Move the cursor to the start of the output.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('abc', 0, 0);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'abc');
+  assert.equal(this.assertiveLiveElement.innerText, 'abc');
 
   // Don't move the cursor at all.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 0);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // Move the cursor 1 character but without a user gesture.
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // Move the cursor 1 character but have the output change at the same time.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abcd', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // Move the cursor 1 character but have the output change elsewhere on the
   // screen at the same time.
@@ -361,13 +361,13 @@ it('a11y-selection-change-left-right', function() {
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce('foo bar');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // Move the cursor 1 character but have the row change as well.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('abc', 1, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 });
 
 /**
@@ -382,24 +382,24 @@ it('a11y-selection-change-left-right-with-announce', function(done) {
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.innerText, 'a');
 
   // Do this again but 'foo bar' is announced during the cursor change.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.announce('foo bar');
   this.accessibilityReader.afterCursorChange('abc', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // We check that the space gets consumed and isn't announced but 'foo bar'
   // still gets announced.
   const observer = new MutationObserver(() => {
-    if (this.liveElement.getAttribute('aria-label') == 'foo bar') {
+    if (this.liveElement.innerText == 'foo bar') {
       done();
     }
   });
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 });
 
 /**
@@ -411,89 +411,89 @@ it('a11y-selection-change-backspace-delete', function() {
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.innerText, 'a');
 
   // Backspace a character at the end of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.innerText, 'c');
 
   // Backspace a wide character.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('匂へど', 0, 6);
   this.accessibilityReader.afterCursorChange('匂へ', 0, 4);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'ど');
+  assert.equal(this.assertiveLiveElement.innerText, 'ど');
 
   // Do this again but add an empty space in place of the deleted character. The
   // terminal may do this as spaces are no different from empty space in the
   // terminal.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab ', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.innerText, 'c');
 
   // Do the same thing but add other text as well. The backspace shouldn't be
   // announced.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.afterCursorChange('ab e ', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // Backspace a character in the middle of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ac', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
+  assert.equal(this.assertiveLiveElement.innerText, 'b');
 
   // Delete a character at the start of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 0);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.innerText, 'a');
 
   // Delete a character at the end of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.innerText, 'c');
 
   // Delete the entire end of the line of text.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc: xyzabc', 0, 11);
   this.accessibilityReader.afterCursorChange('abc: ', 0, 5);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'xyzabc');
+  assert.equal(this.assertiveLiveElement.innerText, 'xyzabc');
 
   // Do this again but add an empty space in place of the deleted character. The
   // terminal may do this as spaces are no different from empty space in the
   // terminal.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab ', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'c');
+  assert.equal(this.assertiveLiveElement.innerText, 'c');
 
   // Do the same thing but add other text as well. The delete shouldn't be
   // announced.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 2);
   this.accessibilityReader.afterCursorChange('ab e ', 0, 2);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // Delete a character in the middle of the string.
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('ac', 0, 1);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'b');
+  assert.equal(this.assertiveLiveElement.innerText, 'b');
 
   // Backspace a character without a user gesture.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 });
 
 /**
@@ -509,18 +509,18 @@ it('a11y-selection-change-backspace-with-announce', function(done) {
   this.accessibilityReader.beforeCursorChange('abc', 0, 1);
   this.accessibilityReader.announce('bc');
   this.accessibilityReader.afterCursorChange('bc', 0, 0);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'a');
+  assert.equal(this.assertiveLiveElement.innerText, 'a');
 
   // Announce something afterward to ensure the mutation observer fires and
   // avoid timing out the test..
   this.accessibilityReader.announce('foo');
 
   const observer = new MutationObserver(() => {
-    if (this.liveElement.getAttribute('aria-label') == 'foo') {
+    if (this.liveElement.innerText == 'foo') {
       done();
     }
   });
-  observer.observe(this.liveElement, {attributes: true});
+  observer.observe(this.liveElement, {childList: true});
 });
 
 /**
@@ -531,30 +531,30 @@ it('a11y-selection-space', function() {
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), 'Space');
+  assert.equal(this.assertiveLiveElement.innerText, 'Space');
 
   // No space announced if the cursor doesn't move.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 3);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // No space announced if a space is not printed to the screen.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.hasUserGesture = true;
   this.accessibilityReader.beforeCursorChange('abc ', 0, 4);
   this.accessibilityReader.announce('d');
   this.accessibilityReader.afterCursorChange('dabc ', 0, 5);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 
   // No space announced if there's not a user gesture.
-  this.assertiveLiveElement.setAttribute('aria-label', '');
+  this.assertiveLiveElement.innerText = '';
   this.accessibilityReader.beforeCursorChange('abc', 0, 3);
   this.accessibilityReader.announce(' ');
   this.accessibilityReader.afterCursorChange('abc ', 0, 4);
-  assert.equal(this.assertiveLiveElement.getAttribute('aria-label'), '');
+  assert.equal(this.assertiveLiveElement.innerText, '');
 });
 
 });

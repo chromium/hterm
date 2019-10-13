@@ -203,10 +203,10 @@ it('show-overlay-announce', function() {
   const liveElement = this.terminal.accessibilityReader_.assertiveLiveElement_;
 
   this.terminal.showOverlay('test');
-  assert.equal('test', liveElement.getAttribute('aria-label'));
+  assert.equal('test', liveElement.innerText);
 
   this.terminal.showOverlay('hello');
-  assert.equal('hello', liveElement.getAttribute('aria-label'));
+  assert.equal('hello', liveElement.innerText);
 });
 
 /**
