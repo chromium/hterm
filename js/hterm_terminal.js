@@ -21,12 +21,12 @@
  * displayed twice as wide as standard latin characters.  This is to support
  * CJK (and possibly other character sets).
  *
- * @param {string=} opt_profileId Optional preference profile name.  If not
- *     provided, defaults to 'default'.
+ * @param {?string=} profileId Optional preference profile name.  If not
+ *     provided or null, defaults to 'default'.
  * @constructor
  * @implements {hterm.RowProvider}
  */
-hterm.Terminal = function(opt_profileId) {
+hterm.Terminal = function(profileId) {
   this.profileId_ = null;
 
   /** @type {?hterm.PreferenceManager} */
@@ -167,7 +167,7 @@ hterm.Terminal = function(opt_profileId) {
 
   this.reportFocus = false;
 
-  this.setProfile(opt_profileId || 'default',
+  this.setProfile(profileId || 'default',
                   function() { this.onTerminalReady(); }.bind(this));
 };
 
