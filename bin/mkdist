@@ -33,11 +33,9 @@ import libdot
 
 def get_parser():
     """Get a command line parser."""
-    parser = argparse.ArgumentParser(
+    parser = libdot.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-d', '--debug', action='store_true',
-                        help='Run with debug output.')
     parser.add_argument('-o', '--output',
                         default=os.path.join(hterm.DIR, 'dist', 'js'),
                         help='Output directory. (default: %(default)s)')
@@ -50,7 +48,6 @@ def main(argv):
     """The main func!"""
     parser = get_parser()
     opts = parser.parse_args(argv)
-    libdot.setup_logging(debug=opts.debug)
 
     if not opts.dist_files:
         opts.dist_files = glob.glob(
