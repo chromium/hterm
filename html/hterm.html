@@ -103,6 +103,10 @@ function setupHterm() {
           io.println('');
           printPrompt();
           break;
+        case '\x7f':
+          // \x08 = backspace, \x1b[K = 'Erase in line'.
+          io.print('\x08\x1b[K');
+          break;
         default:
           io.print(string);
           break;
