@@ -48,7 +48,8 @@ Feel free to let us know via the Contact section above! :)
 * [Keyboard Bindings](./doc/KeyboardBindings.md) -- All keyboard related details
 * [Control Sequences](./doc/ControlSequences.md) -- Supported control sequences
 * [Embedding](./doc/embed.md) -- Using hterm in your project
-* [Hacking](./doc/hack.md) -- Developing the hterm source
+* [Hacking](./doc/hack.md) -- Using the hterm source
+* [Internals](./doc/internals/) -- Developing the hterm project
 
 [chromium-hterm mailing list]: https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm
 [libdot]: ../libdot
