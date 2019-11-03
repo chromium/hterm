@@ -79,13 +79,15 @@ copy() {
     str="$(echo "$@" | b64enc)"
   fi
 
-  local len=${#str}
-  if [ ${len} -lt ${OSC_52_MAX_SEQUENCE} ]; then
-    print_seq "$(printf '\033]52;c;%s\a' "${str}")"
-  else
-    die "selection too long to send to terminal:" \
-      "${OSC_52_MAX_SEQUENCE} limit, ${len} attempted"
+  if [ ${OSC_52_MAX_SEQUENCE} -gt 0 ]; then
+    local len=${#str}
+    if [ ${len} -gt ${OSC_52_MAX_SEQUENCE} ]; then
+      die "selection too long to send to terminal:" \
+        "${OSC_52_MAX_SEQUENCE} limit, ${len} attempted"
+    fi
   fi
+
+  print_seq "$(printf '\033]52;c;%s\a' "${str}")"
 }
 
 # Write tool usage and exit.
@@ -107,6 +109,10 @@ The data can either be read from stdin:
 
 Or specified on the command line:
   $ osc52.sh "hello world"
+
+Options:
+  -h, --help    This screen.
+  -f, --force   Ignore max byte limit (${OSC_52_MAX_SEQUENCE})
 EOF
 
   if [ $# -gt 0 ]; then
@@ -125,6 +131,9 @@ main() {
     -h|--help)
       usage
       ;;
+    -f|--force)
+      OSC_52_MAX_SEQUENCE=0
+      ;;
     -*)
       usage "Unknown option: $1"
       ;;
@@ -132,6 +141,7 @@ main() {
       break
       ;;
     esac
+    shift
   done
 
   copy "$@"
