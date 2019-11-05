@@ -745,6 +745,7 @@ hterm.Terminal.prototype.runCommandClass = function(
         onExit: function(code) {
           self.io.pop();
           self.uninstallKeyboard();
+          self.div_.dispatchEvent(new CustomEvent('terminal-closing'));
           if (self.prefs_.get('close-on-exit'))
               window.close();
         }
