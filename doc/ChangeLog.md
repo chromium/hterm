@@ -1,3 +1,30 @@
+# 1.87, 2019-11-28, Tons of linting/cleanups.
+
+* osc52.sh: add a --force flag to ignore limits.
+* doc: Split up internal documentation.
+* example: Add basic backspace support in hterm.html.
+* terminal: Pause cursor blinking while the user is typing.
+* mkdist: Unify argument parsing & log setup.
+* eslint: Enable more jsdoc checks.
+* eslint: Set max-len 80.
+* eslint: Enable jsdoc plugin & tag naming.
+* lint: Generate deps for closure.
+* hterm: Drop module.exports support.
+* npm: Start packaging files.
+* js: Clean up closure compilation.
+* scrollport/terminal: Only scroll to end on resize if already scrolled to the end.
+* lint: Fix chdir logic with default paths.
+* pylint: Clean up various pylint issues in the code base.
+* vtscope: Port to Python 3.
+* lint: Unify helper program.
+* tests: Update lib.MessageManager API usage.
+* prefs: Add enable-resize-status setting.
+* eslint: Turn on more rules.
+* js: Fix lint and closure-compile errors.
+* scrollport/terminal: Add blur() method to unfocus.
+* lint: Use new closure-compiler wrapper.
+* terminal: Pass commandName in Command constructor.
+
 # 1.86, 2019-08-06, Very minor improvements.
 
 * tests: Disable copy-execCommand test for now for headless testing.
