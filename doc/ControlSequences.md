@@ -493,7 +493,7 @@ argN p.
 |   Y | CVT      | Cursor Line Tabulation                      | *Ignored (TBD)* |
 |   Z | CBT      | Cursor Backward Tabulation                  | Move cursor back `arg1` tabs |
 |   [ | SRS      | Start Reversed String                       | *Ignored (TBD)* |
-|   \ | PTX      | Parallel Texts                              | *Ignored (TBD)* |
+|   \ | PTX      | Parallel Texts                              | *Ignored (TBD)*; See [Ruby character](https://en.wikipedia.org/wiki/Ruby_character#Unicode) |
 |   ] | SDS      | Start Directed String                       | *Ignored (TBD)* |
 |   ^ | SIMD     | Select Implicit Movement Direction          | *Ignored (TBD)* |
 |   _ |          |                                             | *Ignored (TBD)* |
