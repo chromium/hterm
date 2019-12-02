@@ -934,7 +934,7 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
   //Move start to the left.
   var rowText = this.getLineText_(row);
   var lineUpToRange = lib.wc.substring(rowText, 0, endPosition);
-  var leftRegularExpression = new RegExp(leftMatch + insideMatch + "$");
+  var leftRegularExpression = new RegExp(leftMatch + insideMatch + '$');
   var expandedStart = lineUpToRange.search(leftRegularExpression);
   if (expandedStart == -1 || expandedStart > startPosition)
     return;
@@ -942,7 +942,7 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
   //Move end to the right.
   var lineFromRange = lib.wc.substring(rowText, startPosition,
                                        lib.wc.strWidth(rowText));
-  var rightRegularExpression = new RegExp("^" + insideMatch + rightMatch);
+  var rightRegularExpression = new RegExp('^' + insideMatch + rightMatch);
   var found = lineFromRange.match(rightRegularExpression);
   if (!found)
     return;
