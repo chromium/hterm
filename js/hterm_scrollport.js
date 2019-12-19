@@ -436,7 +436,6 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
       'width: 100%;' +
       'outline: none !important');
 
-  doc.body.appendChild(this.screen_);
 
   /**
    * @param {function(...)} f
@@ -493,6 +492,10 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   this.scrollDownButton_.addEventListener(
       'click', this.scrollPageDown.bind(this));
 
+  doc.body.appendChild(this.scrollUpButton_);
+  doc.body.appendChild(this.screen_);
+  doc.body.appendChild(this.scrollDownButton_);
+
   // We only allow the scroll buttons to display after a delay, otherwise the
   // page up button can flash onto the screen during the intial change in focus.
   // This seems to be because it is the first element inside the <x-screen>
@@ -521,8 +524,6 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
     }
   });
 
-  this.screen_.appendChild(this.scrollUpButton_);
-
   // This is the main container for the fixed rows.
   this.rowNodes_ = doc.createElement('div');
   this.rowNodes_.id = 'hterm:row-nodes';
@@ -533,8 +534,6 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
       '-webkit-user-select: text;' +
       '-moz-user-select: text;');
   this.screen_.appendChild(this.rowNodes_);
-
-  this.screen_.appendChild(this.scrollDownButton_);
 
   // Two nodes to hold offscreen text during the copy event.
   this.topSelectBag_ = doc.createElement('x-select-bag');
