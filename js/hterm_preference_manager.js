@@ -565,7 +565,7 @@ hterm.PreferenceManager.defaultPreferences = {
   'word-break-match-left': hterm.PreferenceManager.definePref_(
       'Automatic selection halting (to the left)',
       hterm.PreferenceManager.Categories.CopyPaste,
-      '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:`]', 'string',
+      '[^\\s[\\](){}<>"\'^!@#$%&*,;:`‘“‹«]', 'string',
       `Regular expression to halt matching to the left (start) of a ` +
       `selection.\n` +
       `\n` +
@@ -576,7 +576,7 @@ hterm.PreferenceManager.defaultPreferences = {
   'word-break-match-right': hterm.PreferenceManager.definePref_(
       'Automatic selection halting (to the right)',
       hterm.PreferenceManager.Categories.CopyPaste,
-      '[^\\s\\[\\](){}<>"\'\\^!@#$%&*,;:~.`]', 'string',
+      '[^\\s[\\](){}<>"\'^!@#$%&*,;:~.`’”›»]', 'string',
       `Regular expression to halt matching to the right (end) of a ` +
       `selection.\n` +
       `\n` +
@@ -586,7 +586,7 @@ hterm.PreferenceManager.defaultPreferences = {
   'word-break-match-middle': hterm.PreferenceManager.definePref_(
       'Word break characters',
       hterm.PreferenceManager.Categories.CopyPaste,
-      '[^\\s\\[\\](){}<>"\'\\^]*', 'string',
+      '[^\\s[\\](){}<>"\'^]*', 'string',
       `Regular expression to match all the characters in the middle.\n` +
       `\n` +
       `Normally this is a character class to reject specific characters.\n` +
