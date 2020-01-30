@@ -975,8 +975,8 @@ hterm.Screen.prototype.expandSelection = function(selection) {
 hterm.Screen.prototype.expandSelectionForUrl = function(selection) {
   this.expandSelectionWithWordBreakMatches_(
       selection,
-      '[^\\s[\\](){}<>"\'^!@#$%&*,;:`‘“‹«]',
-      '[^\\s[\\](){}<>"\'^!@#$%&*,;:~.`’”›»]',
+      '[^\\s[\\](){}<>"\'^!@#$%&*,;:`\u{2018}\u{201c}\u{2039}\u{ab}]',
+      '[^\\s[\\](){}<>"\'^!@#$%&*,;:~.`\u{2019}\u{201d}\u{203a}\u{bb}]',
       '[^\\s[\\](){}<>"\'^]*');
 };
 

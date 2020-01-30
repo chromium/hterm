@@ -565,7 +565,8 @@ hterm.PreferenceManager.defaultPreferences = {
   'word-break-match-left': hterm.PreferenceManager.definePref_(
       'Automatic selection halting (to the left)',
       hterm.PreferenceManager.Categories.CopyPaste,
-      '[^\\s[\\](){}<>"\'^!@#$%&*,;:`‘“‹«]', 'string',
+      // TODO(vapier): Switch \u back to ‘“‹« once builders are fixed.
+      '[^\\s[\\](){}<>"\'^!@#$%&*,;:`\u{2018}\u{201c}\u{2039}\u{ab}]', 'string',
       `Regular expression to halt matching to the left (start) of a ` +
       `selection.\n` +
       `\n` +
@@ -576,7 +577,9 @@ hterm.PreferenceManager.defaultPreferences = {
   'word-break-match-right': hterm.PreferenceManager.definePref_(
       'Automatic selection halting (to the right)',
       hterm.PreferenceManager.Categories.CopyPaste,
-      '[^\\s[\\](){}<>"\'^!@#$%&*,;:~.`’”›»]', 'string',
+      // TODO(vapier): Switch \u back to ’”›» once builders are fixed.
+      '[^\\s[\\](){}<>"\'^!@#$%&*,;:~.`\u{2019}\u{201d}\u{203a}\u{bb}]',
+      'string',
       `Regular expression to halt matching to the right (end) of a ` +
       `selection.\n` +
       `\n` +
