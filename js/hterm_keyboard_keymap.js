@@ -331,12 +331,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   add(8,   '[BKSP]', bs('\x7f', '\b'), bs('\b', '\x7f'), DEFAULT,     DEFAULT);
 
   // Third row.
-  add(9,   '[TAB]', sh('\t', CSI + 'Z'), STRIP,     PASS,    DEFAULT);
+  add(9,   '[TAB]', sh('\t', CSI + 'Z'), c('onCtrlTab_'), PASS, DEFAULT);
   add(81,  'qQ',    DEFAULT,             ctl('Q'),  DEFAULT, DEFAULT);
-  add(87,  'wW',    DEFAULT,             ctl('W'),  DEFAULT, DEFAULT);
+  add(87,  'wW',    DEFAULT,         c('onCtrlW_'), DEFAULT, DEFAULT);
   add(69,  'eE',    DEFAULT,             ctl('E'),  DEFAULT, DEFAULT);
   add(82,  'rR',    DEFAULT,             ctl('R'),  DEFAULT, DEFAULT);
-  add(84,  'tT',    DEFAULT,             ctl('T'),  DEFAULT, DEFAULT);
+  add(84,  'tT',    DEFAULT,         c('onCtrlT_'), DEFAULT, DEFAULT);
   add(89,  'yY',    DEFAULT,             ctl('Y'),  DEFAULT, DEFAULT);
   add(85,  'uU',    DEFAULT,             ctl('U'),  DEFAULT, DEFAULT);
   add(73,  'iI',    DEFAULT,             ctl('I'),  DEFAULT, DEFAULT);
@@ -689,6 +689,45 @@ hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e) {
 };
 
 /**
+ * Either pass ctrl+[shift]+tab to the browser or strip.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlTab_ = function(e) {
+  if (this.keyboard.terminal.passCtrlTab) {
+    return hterm.Keyboard.KeyActions.PASS;
+  }
+  return hterm.Keyboard.KeyActions.STRIP;
+};
+
+/**
+ * Either pass ^W (close tab) to the browser or send it to the host.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlW_ = function(e) {
+  if (this.keyboard.terminal.passCtrlW && !e.shiftKey) {
+    return hterm.Keyboard.KeyActions.PASS;
+  }
+  return '\x17';
+};
+
+/**
+ * Either pass ^T (new tab) to the browser or send it to the host.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol|string} Key action or sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlT_ = function(e) {
+  if (this.keyboard.terminal.passCtrlT && !e.shiftKey) {
+    return hterm.Keyboard.KeyActions.PASS;
+  }
+  return '\x14';
+};
+
+/**
  * Either send a ^C or interpret the keystroke as a copy command.
  *
  * @param {!KeyboardEvent} e The event to process.
@@ -731,7 +770,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
-  if (e.shiftKey) {
+  if (e.shiftKey || this.keyboard.terminal.passCtrlN) {
     lib.f.openWindow(document.location.href, '',
                      'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
                      'minimizable=yes,width=' + window.innerWidth +

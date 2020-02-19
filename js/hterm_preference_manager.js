@@ -639,6 +639,47 @@ hterm.PreferenceManager.defaultPreferences = {
       `browser platform and window type.`
   ),
 
+  'pass-ctrl-n': hterm.PreferenceManager.definePref_(
+      'Pass Ctrl-N key behavior',
+      hterm.PreferenceManager.Categories.Keyboard,
+      false, 'bool',
+      `Whether Ctrl-N is passed to the browser.\n` +
+      `\n` +
+      `If true, Ctrl-N will be handled by the browser as the "new window" ` +
+      `keyboard accelerator. If false, Ctrl-N will be sent to the host.`
+  ),
+
+  'pass-ctrl-t': hterm.PreferenceManager.definePref_(
+      'Pass Ctrl-T key behavior',
+      hterm.PreferenceManager.Categories.Keyboard,
+      false, 'bool',
+      `Whether Ctrl-T is passed to the browser.\n` +
+      `\n` +
+      `If true, Ctrl-T will be handled by the browser as the "new tab" ` +
+      `keyboard accelerator. If false, Ctrl-T will be sent to the host.`
+  ),
+
+  'pass-ctrl-tab': hterm.PreferenceManager.definePref_(
+      'Pass Ctrl-Tab key behavior',
+      hterm.PreferenceManager.Categories.Keyboard,
+      false, 'bool',
+      `Whether Ctrl-Tab and Ctrl-Shift-Tab are passed to the browser.\n` +
+      `\n` +
+      `If true, Ctrl-Tab and Ctrl-Shift-Tab will be handled by the browser `+
+      `as the "next/previous tab" keyboard accelerator. If false, the Tab ` +
+      `key is sent to the host without Ctrl or Shift.`
+  ),
+
+  'pass-ctrl-w': hterm.PreferenceManager.definePref_(
+      'Pass Ctrl-W key behavior',
+      hterm.PreferenceManager.Categories.Keyboard,
+      false, 'bool',
+      `Whether Ctrl-W is passed to the browser.\n` +
+      `\n` +
+      `If true, Ctrl-W will be handled by the browser as the "close tab" ` +
+      `keyboard accelerator. If false, Ctrl-W will be sent to the host.`
+  ),
+
   'pass-meta-number': hterm.PreferenceManager.definePref_(
       'Pass Meta-1..9 key behavior',
       hterm.PreferenceManager.Categories.Keyboard,

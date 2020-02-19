@@ -516,6 +516,22 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
       terminal.passCtrlNumber = v;
     },
 
+    'pass-ctrl-n': function(v) {
+      terminal.passCtrlN = v;
+    },
+
+    'pass-ctrl-t': function(v) {
+      terminal.passCtrlT = v;
+    },
+
+    'pass-ctrl-tab': function(v) {
+      terminal.passCtrlTab = v;
+    },
+
+    'pass-ctrl-w': function(v) {
+      terminal.passCtrlW = v;
+    },
+
     'pass-meta-number': function(v) {
       if (v == null) {
         // Let Meta-1..9 pass to the browser (to control tab switching) on
