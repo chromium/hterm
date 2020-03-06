@@ -827,6 +827,15 @@ hterm.Terminal.prototype.getCssVar = function(name, opt_prefix='--hterm-') {
 };
 
 /**
+ * Update CSS character size variables to match the scrollport.
+ */
+hterm.Terminal.prototype.updateCssCharsize_ = function() {
+  this.setCssVar('charsize-width', this.scrollPort_.characterSize.width + 'px');
+  this.setCssVar('charsize-height',
+                 this.scrollPort_.characterSize.height + 'px');
+};
+
+/**
  * Set the font size for this terminal.
  *
  * Call setFontSize(0) to reset to the default font size.
@@ -840,9 +849,7 @@ hterm.Terminal.prototype.setFontSize = function(px) {
     px = this.prefs_.getNumber('font-size');
 
   this.scrollPort_.setFontSize(px);
-  this.setCssVar('charsize-width', this.scrollPort_.characterSize.width + 'px');
-  this.setCssVar('charsize-height',
-                 this.scrollPort_.characterSize.height + 'px');
+  this.updateCssCharsize_();
 };
 
 /**
@@ -869,6 +876,7 @@ hterm.Terminal.prototype.getFontFamily = function() {
 hterm.Terminal.prototype.syncFontFamily = function() {
   this.scrollPort_.setFontFamily(this.prefs_.getString('font-family'),
                                  this.prefs_.getString('font-smoothing'));
+  this.updateCssCharsize_();
   this.syncBoldSafeState();
 };
 
