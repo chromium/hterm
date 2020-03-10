@@ -608,7 +608,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-alt-number': hterm.PreferenceManager.definePref_(
-      'Pass Alt-1..9 key behavior',
+      'Alt-1..9 switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
       `Whether Alt-1..9 is passed to the browser.\n` +
@@ -624,7 +624,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-ctrl-number': hterm.PreferenceManager.definePref_(
-      'Pass Ctrl-1..9 key behavior',
+      'Ctrl-1..9 switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
       `Whether Ctrl-1..9 is passed to the browser.\n` +
@@ -640,7 +640,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-ctrl-n': hterm.PreferenceManager.definePref_(
-      'Pass Ctrl-N key behavior',
+      'Ctrl-N new window behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
       `Whether Ctrl-N is passed to the browser.\n` +
@@ -650,7 +650,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-ctrl-t': hterm.PreferenceManager.definePref_(
-      'Pass Ctrl-T key behavior',
+      'Ctrl-T new tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
       `Whether Ctrl-T is passed to the browser.\n` +
@@ -660,7 +660,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-ctrl-tab': hterm.PreferenceManager.definePref_(
-      'Pass Ctrl-Tab key behavior',
+      'Ctrl-Tab switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
       `Whether Ctrl-Tab and Ctrl-Shift-Tab are passed to the browser.\n` +
@@ -671,7 +671,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-ctrl-w': hterm.PreferenceManager.definePref_(
-      'Pass Ctrl-W key behavior',
+      'Ctrl-W close tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
       `Whether Ctrl-W is passed to the browser.\n` +
@@ -681,7 +681,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-meta-number': hterm.PreferenceManager.definePref_(
-      'Pass Meta-1..9 key behavior',
+      'Meta-1..9 switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
       `Whether Meta-1..9 is passed to the browser.\n` +
@@ -697,7 +697,7 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-meta-v': hterm.PreferenceManager.definePref_(
-      'Pass Meta-V key behavior',
+      'Meta-V paste behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       true, 'bool',
       `Whether Meta-V gets passed to host.`
