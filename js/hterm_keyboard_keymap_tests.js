@@ -55,7 +55,7 @@ describe('hterm_keyboard_keymap_tests.js', () => {
      */
     function action(type, def, shiftKey) {
       let control = def[type];
-      if (typeof control == 'function') {
+      while (typeof control == 'function') {
         control = control.call(
             map, new KeyboardEvent('keydown', {shiftKey}), def);
       }
