@@ -71,7 +71,7 @@ Sample usage looks like this:
     ...
     Next up: offset 73, ESC [ 0 m
 
-    # Exit vtscope.  Pressing Ctrl-D on a blank line works too.
+    # Exit vtscope.  Pressing Ctrl+D on a blank line works too.
     vtscope> exit
 
 Check the comments in the "cmd_*" methods below for details about specific

@@ -49,7 +49,7 @@ hterm.Keyboard = function(terminal) {
   this.altGrMode = 'none';
 
   /**
-   * If true, Shift-Insert will fall through to the browser as a paste.
+   * If true, Shift+Insert will fall through to the browser as a paste.
    * If false, the keystroke will be sent to the host.
    */
   this.shiftInsertPaste = true;
@@ -67,9 +67,9 @@ hterm.Keyboard = function(terminal) {
   this.pageKeysScroll = false;
 
   /**
-   * If true, Ctrl-Plus/Minus/Zero controls zoom.
-   * If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ^_,
-   * Ctrl-Plus/Zero do nothing.
+   * If true, Ctrl+Plus/Minus/Zero controls zoom.
+   * If false, Ctrl+Shift+Plus/Minus/Zero controls zoom, Ctrl+Minus sends ^_,
+   * Ctrl+Plus/Zero do nothing.
    */
   this.ctrlPlusMinusZeroZoom = true;
 
@@ -477,7 +477,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
   // If e.maskShiftKey was set (during getAction) it means the shift key is
   // already accounted for in the action, and we should not act on it any
-  // further. This is currently only used for Ctrl-Shift-Tab, which should send
+  // further. This is currently only used for Ctrl+Shift+Tab, which should send
   // "CSI Z", not "CSI 1 ; 2 Z".
   var shift = !e.maskShiftKey && e.shiftKey;
 

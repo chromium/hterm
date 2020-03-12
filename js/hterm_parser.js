@@ -65,11 +65,11 @@ hterm.Parser.prototype.reset = function(source, opt_pos) {
  *   A: Matches only an unmodified "A" character.
  *   65: Same as above.
  *   0x41: Same as above.
- *   Ctrl-A: Matches only Ctrl-A.
- *   Ctrl-65: Same as above.
- *   Ctrl-0x41: Same as above.
- *   Ctrl-Shift-A: Matches only Ctrl-Shift-A.
- *   Ctrl-*-A: Matches Ctrl-A, as well as any other key sequence that includes
+ *   Ctrl+A: Matches only Ctrl+A.
+ *   Ctrl+65: Same as above.
+ *   Ctrl+0x41: Same as above.
+ *   Ctrl+Shift+A: Matches only Ctrl+Shift+A.
+ *   Ctrl+*+A: Matches Ctrl+A, as well as any other key sequence that includes
  *     at least the Ctrl and A keys.
  *
  * @return {!hterm.Keyboard.KeyDown} An object with shift, ctrl, alt, meta,
@@ -124,7 +124,7 @@ hterm.Parser.prototype.parseKeySequence = function() {
 
     this.skipSpace();
 
-    if (this.ch != '-')
+    if (this.ch !== '-' && this.ch !== '+')
       break;
 
     if (rv.keyCode != null)

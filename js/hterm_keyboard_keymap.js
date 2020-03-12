@@ -346,9 +346,9 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   add(221, ']}',    DEFAULT,             ctl(']'),  DEFAULT, DEFAULT);
   add(220, '\\|',   DEFAULT,             ctl('\\'), DEFAULT, DEFAULT);
 
-  // Fourth row. We let Ctrl-Shift-J pass for Chrome DevTools.
+  // Fourth row. We let Ctrl+Shift+J pass for Chrome DevTools.
   // To be compliant with xterm's behavior for modifiers on Enter
-  // would mean maximizing the window with Alt-Enter... so we don't
+  // would mean maximizing the window with Alt+Enter... so we don't
   // want to do that. Our behavior on Enter is what most other
   // modern emulators do.
   add(20,  '[CAPS]',  PASS,    PASS,                        PASS,    DEFAULT);
@@ -366,9 +366,9 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   add(13,  '[ENTER]', '\r',    DEFAULT,                     DEFAULT, DEFAULT);
 
   // Fifth row.  This includes the copy/paste shortcuts.  On some
-  // platforms it's Ctrl-C/V, on others it's Meta-C/V.  We assume either
-  // Ctrl-C/Meta-C should pass to the browser when there is a selection,
-  // and Ctrl-Shift-V/Meta-*-V should always pass to the browser (since
+  // platforms it's Ctrl+C/V, on others it's Meta+C/V.  We assume either
+  // Ctrl+C/Meta+C should pass to the browser when there is a selection,
+  // and Ctrl+Shift+V/Meta+*+V should always pass to the browser (since
   // these seem to be recognized as paste too).
   add(16,  '[SHIFT]', PASS, PASS,                  PASS,    DEFAULT);
   add(90,  'zZ',   DEFAULT, ctl('Z'),              DEFAULT, DEFAULT);
@@ -631,10 +631,10 @@ hterm.Keyboard.KeyMap.prototype.onF11_ = function(e) {
 };
 
 /**
- * Either pass Ctrl-1..9 to the browser or send them to the host.
+ * Either pass Ctrl+1..9 to the browser or send them to the host.
  *
- * Note that Ctrl-1 and Ctrl-9 don't actually have special sequences mapped
- * to them in xterm or gnome-terminal.  The range is really Ctrl-2..8, but
+ * Note that Ctrl+1 and Ctrl+9 don't actually have special sequences mapped
+ * to them in xterm or gnome-terminal.  The range is really Ctrl+2..8, but
  * we handle 1..9 since Chrome treats the whole range special.
  *
  * @param {!KeyboardEvent} e The event to process.
@@ -663,7 +663,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
 };
 
 /**
- * Either pass Alt-1..9 to the browser or send them to the host.
+ * Either pass Alt+1..9 to the browser or send them to the host.
  *
  * @param {!KeyboardEvent} e The event to process.
  * @return {symbol|string} Key action or sequence.
@@ -676,7 +676,7 @@ hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e) {
 };
 
 /**
- * Either pass Meta-1..9 to the browser or send them to the host.
+ * Either pass Meta+1..9 to the browser or send them to the host.
  *
  * @param {!KeyboardEvent} e The event to process.
  * @return {symbol|string} Key action or sequence.
@@ -738,8 +738,8 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
 
   if (!selection.isCollapsed) {
     if (this.keyboard.ctrlCCopy && !e.shiftKey) {
-      // Ctrl-C should copy if there is a selection, send ^C otherwise.
-      // Perform the copy by letting the browser handle Ctrl-C.  On most
+      // Ctrl+C should copy if there is a selection, send ^C otherwise.
+      // Perform the copy by letting the browser handle Ctrl+C.  On most
       // browsers, this is the *only* way to place text on the clipboard from
       // the 'drive-by' web.
       if (this.keyboard.terminal.clearSelectionAfterCopy) {
@@ -749,7 +749,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
     }
 
     if (!this.keyboard.ctrlCCopy && e.shiftKey) {
-      // Ctrl-Shift-C should copy if there is a selection, send ^C otherwise.
+      // Ctrl+Shift+C should copy if there is a selection, send ^C otherwise.
       // Perform the copy manually.  This only works in situations where
       // document.execCommand('copy') is allowed.
       if (this.keyboard.terminal.clearSelectionAfterCopy) {
@@ -786,8 +786,8 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
 /**
  * Either send a ^V or issue a paste command.
  *
- * The default behavior is to paste if the user presses Ctrl-Shift-V, and send
- * a ^V if the user presses Ctrl-V. This can be flipped with the
+ * The default behavior is to paste if the user presses Ctrl+Shift+V, and send
+ * a ^V if the user presses Ctrl+V. This can be flipped with the
  * 'ctrl-v-paste' preference.
  *
  * @param {!KeyboardEvent} e The event to process.
@@ -796,8 +796,8 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
 hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e) {
   if ((!e.shiftKey && this.keyboard.ctrlVPaste) ||
       (e.shiftKey && !this.keyboard.ctrlVPaste)) {
-    // We try to do the pasting ourselves as not all browsers/OSs bind Ctrl-V to
-    // pasting.  Notably, on macOS, Ctrl-V/Ctrl-Shift-V do nothing.
+    // We try to do the pasting ourselves as not all browsers/OSs bind Ctrl+V to
+    // pasting.  Notably, on macOS, Ctrl+V/Ctrl+Shift+V do nothing.
     // However, this might run into web restrictions, so if it fails, we still
     // fallback to the letting the native behavior (hopefully) save us.
     if (this.keyboard.terminal.paste())
@@ -830,15 +830,15 @@ hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e) {
 };
 
 /**
- * Either send a Meta-C or allow the browser to interpret the keystroke as a
+ * Either send a Meta+C or allow the browser to interpret the keystroke as a
  * copy command.
  *
- * If there is no selection, or if the user presses Meta-Shift-C, then we'll
+ * If there is no selection, or if the user presses Meta+Shift+C, then we'll
  * transmit an '\x1b' (if metaSendsEscape is on) followed by 'c' or 'C'.
  *
  * If there is a selection, we defer to the browser.  In this case we clear out
  * the selection so the user knows we heard them, and also to give them a
- * chance to send a Meta-C by just hitting the key again.
+ * chance to send a Meta+C by just hitting the key again.
  *
  * @param {!KeyboardEvent} e The event to process.
  * @param {!hterm.Keyboard.KeyDef} keyDef Key definition.
@@ -848,7 +848,7 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
   var document = this.keyboard.terminal.getDocument();
   if (e.shiftKey || document.getSelection().isCollapsed) {
     // If the shift key is being held, or there is no document selection, send
-    // a Meta-C.  The keyboard code will add the ESC if metaSendsEscape is true,
+    // a Meta+C.  The keyboard code will add the ESC if metaSendsEscape is true,
     // we just have to decide between 'c' and 'C'.
     return keyDef.keyCap.substr(e.shiftKey ? 1 : 0, 1);
   }
@@ -861,9 +861,9 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
 };
 
 /**
- * Either PASS or DEFAULT Meta-V, depending on preference.
+ * Either PASS or DEFAULT Meta+V, depending on preference.
  *
- * Always PASS Meta-Shift-V to allow browser to interpret the keystroke as
+ * Always PASS Meta+Shift+V to allow browser to interpret the keystroke as
  * a paste command.
  *
  * @param {!KeyboardEvent} e The event to process.

@@ -12,7 +12,7 @@ accept data.
 
 In order for the terminal itself to handle keyboard shortcuts and such, a call
 to `installKeyboard` is made.  This binds all the relevant input callbacks to
-be captured by hterm.  It will handle things like pressing "X" and "Ctrl-X" and
+be captured by hterm.  It will handle things like pressing "X" and "Ctrl+X" and
 sending the resulting data to the IO object.
 
 At this point, all data runs through the IO object created earlier.  When the

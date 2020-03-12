@@ -32,7 +32,7 @@ The vast majority of the code here lives under [js/].
   * [hterm_keyboard_bindings.js]: Helper for binding keypresses (via
     keypatterns) to actions.
   * [hterm_keyboard_keymap.js]: Default keyboard map (e.g. what happens when you
-    press X, Ctrl-X, Alt-X, etc...).
+    press X, Ctrl+X, Alt+X, etc...).
   * [hterm_keyboard_keypattern.js]: Helper for matching keyboard bindings.
   * [hterm_parser.js]: Simple parser for handling keyboard bindings.
   * [hterm_parser_identifiers.js]: Constants for the parser code (such as

@@ -65,11 +65,11 @@ it('modifiers', () => {
     assert.equal(rv.meta, meta);
   };
 
-  checkResult('Shift-X', true, false, false, false);
-  checkResult('Ctrl-X', false, true, false, false);
-  checkResult('Control-X', false, true, false, false);
-  checkResult('Alt-X', false, false, true, false);
-  checkResult('Meta-X', false, false, false, true);
+  checkResult('Shift+X', true, false, false, false);
+  checkResult('Ctrl+X', false, true, false, false);
+  checkResult('Control+X', false, true, false, false);
+  checkResult('Alt+X', false, false, true, false);
+  checkResult('Meta+X', false, false, false, true);
 
   checkResult('SHIFT-X', true, false, false, false);
   checkResult('CTRL-X', false, true, false, false);
@@ -82,6 +82,12 @@ it('modifiers', () => {
   checkResult('Shift-Alt-X', true, false, true, false);
   checkResult('Shift-Meta-X', true, false, false, true);
   checkResult('Shift-Ctrl-Alt-Meta-X', true, true, true, true);
+
+  checkResult('Shift+Ctrl+X', true, true, false, false);
+  checkResult('ShIfT+cTrL+x', true, true, false, false);
+  checkResult('Shift+Alt+X', true, false, true, false);
+  checkResult('Shift+Meta+X', true, false, false, true);
+  checkResult('Shift+Ctrl+Alt+Meta+X', true, true, true, true);
 
   checkResult('Shift-*-X', true, '*', '*', '*');
   checkResult('Shift-Ctrl-*-X', true, true, '*', '*');

@@ -654,8 +654,8 @@ we support some of them.
 | 1039 |         |        | Send ESC when Alt modifies a key            | Supported |
 | 1040 |         |        | Keep selection even if not highlighted      | Won't support |
 | 1041 |         |        | Use the CLIPBOARD selection                 | Won't support |
-| 1042 |         |        | Enable Urgency window manager hint when Control-G is received | *Ignored (TBD)* |
-| 1043 |         |        | Enable raising of the window when Control-G is received | *Ignored (TBD)* |
+| 1042 |         |        | Enable Urgency window manager hint when Ctrl+G is received | *Ignored (TBD)* |
+| 1043 |         |        | Enable raising of the window when Ctrl+G is received | *Ignored (TBD)* |
 | 1047 |         |        | Use Alternate Screen Buffer                 | Supported |
 | 1048 |         |        | Save cursor as in DECSC                     | Supported |
 | 1049 |         |        | Combine 1047 and 1048 modes and clear       | Supported |

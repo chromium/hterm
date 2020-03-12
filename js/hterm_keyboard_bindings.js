@@ -97,18 +97,18 @@ hterm.Keyboard.Bindings.prototype.addBinding_ = function(keyPattern, action) {
  * If a binding for the keyPattern already exists it will be overridden.
  *
  * More specific keyPatterns take precedence over those with wildcards.  Given
- * bindings for "Ctrl-A" and "Ctrl-*-A", and a "Ctrl-A" keydown, the "Ctrl-A"
- * binding will match even if "Ctrl-*-A" was created last.
+ * bindings for "Ctrl+A" and "Ctrl+*+A", and a "Ctrl+A" keydown, the "Ctrl+A"
+ * binding will match even if "Ctrl+*+A" was created last.
  *
  * If action is a string, it will be passed through hterm.Parser.parseKeyAction.
  *
  * For example:
- *   // Will replace Ctrl-P keystrokes with the string "hiya!".
- *   addBinding('Ctrl-P', "'hiya!'");
+ *   // Will replace Ctrl+P keystrokes with the string "hiya!".
+ *   addBinding('Ctrl+P', "'hiya!'");
  *   // Will cancel the keystroke entirely (make it do nothing).
- *   addBinding('Alt-D', hterm.Keyboard.KeyActions.CANCEL);
+ *   addBinding('Alt+D', hterm.Keyboard.KeyActions.CANCEL);
  *   // Will execute the code and return the action.
- *   addBinding('Ctrl-T', function() {
+ *   addBinding('Ctrl+T', function() {
  *     console.log('Got a T!');
  *     return hterm.Keyboard.KeyActions.PASS;
  *   });
@@ -168,10 +168,10 @@ hterm.Keyboard.Bindings.prototype.addBinding = function(key, action) {
  *
  * For example:
  *  {
- *    // Will replace Ctrl-P keystrokes with the string "hiya!".
- *    'Ctrl-P': "'hiya!'",
+ *    // Will replace Ctrl+P keystrokes with the string "hiya!".
+ *    'Ctrl+P': "'hiya!'",
  *    // Will cancel the keystroke entirely (make it do nothing).
- *    'Alt-D': hterm.Keyboard.KeyActions.CANCEL,
+ *    'Alt+D': hterm.Keyboard.KeyActions.CANCEL,
  *  }
  *
  * @param {!Object<string, !hterm.Keyboard.KeyBindingAction>} map

@@ -119,11 +119,11 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'alt-backspace-is-meta-backspace': hterm.PreferenceManager.definePref_(
-      'Alt-Backspace is Meta-Backspace',
+      'Alt+Backspace is Meta+Backspace',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `If set, undoes the Chrome OS Alt-Backspace->DEL remap, so that ` +
-      `Alt-Backspace indeed is Alt-Backspace.`
+      `If set, undoes the Chrome OS Alt+Backspace->DEL remap, so that ` +
+      `Alt+Backspace indeed is Alt+Backspace.`
   ),
 
   'alt-is-meta': hterm.PreferenceManager.definePref_(
@@ -319,28 +319,28 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'ctrl-plus-minus-zero-zoom': hterm.PreferenceManager.definePref_(
-      'Ctrl-+/-/0 zoom behavior',
+      'Ctrl++/-/0 zoom behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       true, 'bool',
-      `If true, Ctrl-Plus/Minus/Zero controls zoom.\n` +
-      `If false, Ctrl-Shift-Plus/Minus/Zero controls zoom, Ctrl-Minus sends ` +
-      `^_, Ctrl-Plus/Zero do nothing.`
+      `If true, Ctrl+Plus/Minus/Zero controls zoom.\n` +
+      `If false, Ctrl+Shift+Plus/Minus/Zero controls zoom, Ctrl+Minus sends ` +
+      `^_, Ctrl+Plus/Zero do nothing.`
   ),
 
   'ctrl-c-copy': hterm.PreferenceManager.definePref_(
-      'Ctrl-C copy behavior',
+      'Ctrl+C copy behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `Ctrl-C copies if true, send ^C to host if false.\n` +
-      `Ctrl-Shift-C sends ^C to host if true, copies if false.`
+      `Ctrl+C copies if true, send ^C to host if false.\n` +
+      `Ctrl+Shift+C sends ^C to host if true, copies if false.`
   ),
 
   'ctrl-v-paste': hterm.PreferenceManager.definePref_(
-      'Ctrl-V paste behavior',
+      'Ctrl+V paste behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `Ctrl-V pastes if true, send ^V to host if false.\n` +
-      `Ctrl-Shift-V sends ^V to host if true, pastes if false.`
+      `Ctrl+V pastes if true, send ^V to host if false.\n` +
+      `Ctrl+Shift+V sends ^V to host if true, pastes if false.`
   ),
 
   'east-asian-ambiguous-as-two-column': hterm.PreferenceManager.definePref_(
@@ -490,9 +490,9 @@ hterm.PreferenceManager.defaultPreferences = {
       'Home/End key scroll behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `If true, Home/End controls the terminal scrollbar and Shift-Home/` +
-      `Shift-End are sent to the remote host. If false, then Home/End are ` +
-      `sent to the remote host and Shift-Home/Shift-End scrolls.`
+      `If true, Home/End controls the terminal scrollbar and Shift+Home/` +
+      `Shift+End are sent to the remote host. If false, then Home/End are ` +
+      `sent to the remote host and Shift+Home/Shift+End scrolls.`
   ),
 
   'keybindings': hterm.PreferenceManager.definePref_(
@@ -507,9 +507,9 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `Sample keybindings:\n` +
       `{\n` +
-      `  "Ctrl-Alt-K": "clearTerminal",\n` +
-      `  "Ctrl-Shift-L": "PASS",\n` +
-      `  "Ctrl-H": "'Hello World'"\n` +
+      `  "Ctrl+Alt+K": "clearTerminal",\n` +
+      `  "Ctrl+Shift+L": "PASS",\n` +
+      `  "Ctrl+H": "'Hello World'"\n` +
       `}`
   ),
 
@@ -527,7 +527,7 @@ hterm.PreferenceManager.defaultPreferences = {
       true, 'bool',
       `Send an ESC prefix when pressing a key while holding the Meta key.\n` +
       `\n` +
-      `For example, when enabled, pressing Meta-K will send ^[k as if you ` +
+      `For example, when enabled, pressing Meta+K will send ^[k as if you ` +
       `typed Escape then k. When disabled, only k will be sent.`
   ),
 
@@ -602,105 +602,105 @@ hterm.PreferenceManager.defaultPreferences = {
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
       `If true, Page Up/Page Down controls the terminal scrollbar and ` +
-      `Shift-Page Up/Shift-Page Down are sent to the remote host. If false, ` +
-      `then Page Up/Page Down are sent to the remote host and Shift-Page Up/` +
-      `Shift-Page Down scrolls.`
+      `Shift+Page Up/Shift+Page Down are sent to the remote host. If false, ` +
+      `then Page Up/Page Down are sent to the remote host and Shift+Page Up/` +
+      `Shift+Page Down scrolls.`
   ),
 
   'pass-alt-number': hterm.PreferenceManager.definePref_(
-      'Alt-1..9 switch tab behavior',
+      'Alt+1..9 switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
-      `Whether Alt-1..9 is passed to the browser.\n` +
+      `Whether Alt+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
       `lose Chrome's "switch to tab" keyboard accelerators. When not running ` +
       `in a tab it's better to send these keys to the host so they can be ` +
       `used in vim or emacs.\n` +
       `\n` +
-      `If true, Alt-1..9 will be handled by the browser. If false, Alt-1..9 ` +
+      `If true, Alt+1..9 will be handled by the browser. If false, Alt+1..9 ` +
       `will be sent to the host. If null, autodetect based on browser ` +
       `platform and window type.`
   ),
 
   'pass-ctrl-number': hterm.PreferenceManager.definePref_(
-      'Ctrl-1..9 switch tab behavior',
+      'Ctrl+1..9 switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
-      `Whether Ctrl-1..9 is passed to the browser.\n` +
+      `Whether Ctrl+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
       `lose Chrome's "switch to tab" keyboard accelerators. When not running ` +
       `in a tab it's better to send these keys to the host so they can be ` +
       `used in vim or emacs.\n` +
       `\n` +
-      `If true, Ctrl-1..9 will be handled by the browser. If false, ` +
-      `Ctrl-1..9 will be sent to the host. If null, autodetect based on ` +
+      `If true, Ctrl+1..9 will be handled by the browser. If false, ` +
+      `Ctrl+1..9 will be sent to the host. If null, autodetect based on ` +
       `browser platform and window type.`
   ),
 
   'pass-ctrl-n': hterm.PreferenceManager.definePref_(
-      'Ctrl-N new window behavior',
+      'Ctrl+N new window behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `Whether Ctrl-N is passed to the browser.\n` +
+      `Whether Ctrl+N is passed to the browser.\n` +
       `\n` +
-      `If true, Ctrl-N will be handled by the browser as the "new window" ` +
-      `keyboard accelerator. If false, Ctrl-N will be sent to the host.`
+      `If true, Ctrl+N will be handled by the browser as the "new window" ` +
+      `keyboard accelerator. If false, Ctrl+N will be sent to the host.`
   ),
 
   'pass-ctrl-t': hterm.PreferenceManager.definePref_(
-      'Ctrl-T new tab behavior',
+      'Ctrl+T new tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `Whether Ctrl-T is passed to the browser.\n` +
+      `Whether Ctrl+T is passed to the browser.\n` +
       `\n` +
-      `If true, Ctrl-T will be handled by the browser as the "new tab" ` +
-      `keyboard accelerator. If false, Ctrl-T will be sent to the host.`
+      `If true, Ctrl+T will be handled by the browser as the "new tab" ` +
+      `keyboard accelerator. If false, Ctrl+T will be sent to the host.`
   ),
 
   'pass-ctrl-tab': hterm.PreferenceManager.definePref_(
-      'Ctrl-Tab switch tab behavior',
+      'Ctrl+Tab switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `Whether Ctrl-Tab and Ctrl-Shift-Tab are passed to the browser.\n` +
+      `Whether Ctrl+Tab and Ctrl+Shift+Tab are passed to the browser.\n` +
       `\n` +
-      `If true, Ctrl-Tab and Ctrl-Shift-Tab will be handled by the browser `+
+      `If true, Ctrl+Tab and Ctrl+Shift+Tab will be handled by the browser `+
       `as the "next/previous tab" keyboard accelerator. If false, the Tab ` +
       `key is sent to the host without Ctrl or Shift.`
   ),
 
   'pass-ctrl-w': hterm.PreferenceManager.definePref_(
-      'Ctrl-W close tab behavior',
+      'Ctrl+W close tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       false, 'bool',
-      `Whether Ctrl-W is passed to the browser.\n` +
+      `Whether Ctrl+W is passed to the browser.\n` +
       `\n` +
-      `If true, Ctrl-W will be handled by the browser as the "close tab" ` +
-      `keyboard accelerator. If false, Ctrl-W will be sent to the host.`
+      `If true, Ctrl+W will be handled by the browser as the "close tab" ` +
+      `keyboard accelerator. If false, Ctrl+W will be sent to the host.`
   ),
 
   'pass-meta-number': hterm.PreferenceManager.definePref_(
-      'Meta-1..9 switch tab behavior',
+      'Meta+1..9 switch tab behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
-      `Whether Meta-1..9 is passed to the browser.\n` +
+      `Whether Meta+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
       `lose Chrome's "switch to tab" keyboard accelerators. When not running ` +
       `in a tab it's better to send these keys to the host so they can be ` +
       `used in vim or emacs.\n` +
       `\n` +
-      `If true, Meta-1..9 will be handled by the browser. If false, ` +
-      `Meta-1..9 will be sent to the host. If null, autodetect based on ` +
+      `If true, Meta+1..9 will be handled by the browser. If false, ` +
+      `Meta+1..9 will be sent to the host. If null, autodetect based on ` +
       `browser platform and window type.`
   ),
 
   'pass-meta-v': hterm.PreferenceManager.definePref_(
-      'Meta-V paste behavior',
+      'Meta+V paste behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       true, 'bool',
-      `Whether Meta-V gets passed to host.`
+      `Whether Meta+V gets passed to host.`
   ),
 
   'paste-on-drop': hterm.PreferenceManager.definePref_(
@@ -783,10 +783,10 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'shift-insert-paste': hterm.PreferenceManager.definePref_(
-      'Shift-Insert paste',
+      'Shift+Insert paste',
       hterm.PreferenceManager.Categories.Keyboard,
       true, 'bool',
-      `Whether Shift-Insert is used for pasting or is sent to the remote host.`
+      `Whether Shift+Insert is used for pasting or is sent to the remote host.`
   ),
 
   'user-css': hterm.PreferenceManager.definePref_(

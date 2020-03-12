@@ -498,7 +498,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'pass-alt-number': function(v) {
       if (v == null) {
-        // Let Alt-1..9 pass to the browser (to control tab switching) on
+        // Let Alt+1..9 pass to the browser (to control tab switching) on
         // non-OS X systems, or if hterm is not opened in an app window.
         v = (hterm.os != 'mac' && hterm.windowType != 'popup');
       }
@@ -508,7 +508,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'pass-ctrl-number': function(v) {
       if (v == null) {
-        // Let Ctrl-1..9 pass to the browser (to control tab switching) on
+        // Let Ctrl+1..9 pass to the browser (to control tab switching) on
         // non-OS X systems, or if hterm is not opened in an app window.
         v = (hterm.os != 'mac' && hterm.windowType != 'popup');
       }
@@ -534,7 +534,7 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
     'pass-meta-number': function(v) {
       if (v == null) {
-        // Let Meta-1..9 pass to the browser (to control tab switching) on
+        // Let Meta+1..9 pass to the browser (to control tab switching) on
         // OS X systems, or if hterm is not opened in an app window.
         v = (hterm.os == 'mac' && hterm.windowType != 'popup');
       }

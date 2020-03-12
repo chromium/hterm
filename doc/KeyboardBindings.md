@@ -17,17 +17,17 @@ them with one exception: developers can bind arbitrary JS code as callbacks.
 
 Keep in mind that some browsers and operating systems do not allow certain key
 sequences to be rebound depending on the environment.  For example, Chrome will
-not let you rebind Control-N when running in a tab, but will if you're running
+not let you rebind Ctrl+N when running in a tab, but will if you're running
 fullscreen or in a dedicated window.  Similarly, Windows never lets you rebind
-Control-Alt-Delete.
+Ctrl+Alt+Delete.
 
 ## Key Sequence Parsing
 
 The first part of a keyboard binding is declaring the key sequence to bind.
 The syntax is quite simple: a key sequence is zero or more key modifiers
 followed by a key code.  Key codes can be a number or an identifier.  Modifiers
-and key codes should be joined by dashes.  An asterisk can be used to indicate
-that the unspecified modifiers are optional.
+and key codes should be joined by pluses (+) or dashes (-).  An asterisk can be
+used to indicate that the unspecified modifiers are optional.
 
 Capitalization of keys is not important.  e.g. `Ctrl`, `CTRL`, `ctrl`, and
 `cTRl` are all equivalent.  This applies to modifiers and key codes.
@@ -36,7 +36,7 @@ Capitalization of keys is not important.  e.g. `Ctrl`, `CTRL`, `ctrl`, and
 
 Here are the possible modifiers.  We do not currently differentiate between
 left & right keys, so `shift` matches both left shift and right shift.
-Order does not matter, so `Ctrl-Shift-A` is equiavlent to `Shift-Ctrl-A`.
+Order does not matter, so `Ctrl+Shift+A` is equiavlent to `Shift+Ctrl+A`.
 
 * `Shift`: The shift key.
 * `Ctrl`: the control key.
@@ -46,7 +46,7 @@ Order does not matter, so `Ctrl-Shift-A` is equiavlent to `Shift-Ctrl-A`.
 * `*`: The asterisk can be used to match unspecified modifiers.
 
 If the key is not listed here, then it cannot be used as a modifier.
-e.g. You cannot bind `Escape-K` or `Capslock-D` to something else.
+e.g. You cannot bind `Escape+K` or `Capslock+D` to something else.
 
 ### Key Codes
 
@@ -64,11 +64,12 @@ Some examples will probably help.
 * `A`: Matches only an unmodified "A" character.
 * `65`: Same as above.
 * `0x41`: Same as above.
-* `Ctrl-A`: Matches only Ctrl-A.
-* `Ctrl-65`: Same as above.
-* `Ctrl-0x41`: Same as above.
-* `Ctrl-Shift-A`: Matches only Ctrl-Shift-A.
-* `Ctrl-*-A`: Matches Ctrl-A, as well as any other key sequence that includes
+* `Ctrl+A`: Matches only Ctrl+A.
+* `Ctrl-A`: Same as above.
+* `Ctrl+65`: Same as above.
+* `Ctrl+0x41`: Same as above.
+* `Ctrl+Shift+A`: Matches only Ctrl+Shift+A.
+* `Ctrl+*+A`: Matches Ctrl+A, as well as any other key sequence that includes
   at least the Ctrl and A keys.
 
 ## Key Action Parsing
@@ -157,26 +158,26 @@ Specifically on the topic of quoting:
 
 In the keybindings below (many of which are not terribly useful):
 
-* Control-A will paste the string `hi`.
-* Control-N will send the sequence to the browser or OS to handle.
+* Ctrl+A will paste the string `hi`.
+* Ctrl+N will send the sequence to the browser or OS to handle.
   What happens exactly after that is up to the browser or OS.
-* Control-X will do nothing at all.  It's like the key press never happened.
-* Shift-Page Up will cause the terminal to scroll up one page.
+* Ctrl+X will do nothing at all.  It's like the key press never happened.
+* Shift+Page Up will cause the terminal to scroll up one page.
 * X will tell hterm to process the X key like normal.
-* Control-Alt-M will send a backspace character.
-* Control-*-M will match all Control-M combinations (regardless of Alt, Meta,
+* Ctrl+Alt+M will send a backspace character.
+* Ctrl+*+M will match all Ctrl+M combinations (regardless of Alt, Meta,
   or Shift keys), except for keys with more specific bindings (e.g. it will
-  not match Control-Alt-M here).
+  not match Ctrl+Alt+M here).
 
 ```
 {
-  "Ctrl-A": "'hi'",
-  "Ctrl-N": "PASS",
-  "Ctrl-X": "CANCEL",
-  "Shift-PGUP": "scrollPageUp",
+  "Ctrl+A": "'hi'",
+  "Ctrl+N": "PASS",
+  "Ctrl+X": "CANCEL",
+  "Shift+PGUP": "scrollPageUp",
   "X": "DEFAULT",
-  "Ctrl-Alt-M": "'\u0008'",
-  "Ctrl-*-M": "DEFAULT"
+  "Ctrl+Alt+M": "'\u0008'",
+  "Ctrl+*+M": "DEFAULT"
 }
 ```
 
