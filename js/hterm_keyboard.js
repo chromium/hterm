@@ -507,6 +507,11 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     }
   }
 
+  // Call keyDef function now that we have given bindings a chance to override.
+  if (typeof action == 'function') {
+    action = action.call(self.keyMap, e, keyDef);
+  }
+
   if (alt && this.altSendsWhat == 'browser-key' && action == DEFAULT) {
     // When altSendsWhat is 'browser-key', we wait for the keypress event.
     // In keypress, the browser should have set the event.charCode to the
