@@ -42,7 +42,34 @@ hterm.Keyboard.KeyBinding;
  * @constructor
  */
 hterm.Keyboard.Bindings = function() {
+  /** @private {!Object<number, !Array<!hterm.Keyboard.KeyBinding>>} */
   this.bindings_ = {};
+};
+
+/**
+ * Default bindings for each OS.
+ *
+ * @type {!Object<string, !Object<string, string>>}
+ */
+hterm.Keyboard.Bindings.OsDefaults = {
+  'android': {
+  },
+  'cros': {
+    // Submit feedback.
+    'Alt+Shift+I': 'PASS',
+    // Switch input method.
+    'Ctrl+Space': 'PASS',
+  },
+  'linux': {
+  },
+  'mac': {
+    // Home.
+    'Meta+Left': '"\u001b[H"',
+    // End.
+    'Meta+Right': '"\u001b[F"'
+  },
+  'windows': {
+  },
 };
 
 /**
@@ -175,8 +202,14 @@ hterm.Keyboard.Bindings.prototype.addBinding = function(key, action) {
  *  }
  *
  * @param {!Object<string, !hterm.Keyboard.KeyBindingAction>} map
+ * @param {boolean=} addOsDefaults If true, OS defaults are added first to
+ *     ensure user defined mappings take precedence.
  */
-hterm.Keyboard.Bindings.prototype.addBindings = function(map) {
+hterm.Keyboard.Bindings.prototype.addBindings = function(
+    map, addOsDefaults = false) {
+  if (addOsDefaults) {
+    this.addBindings(hterm.Keyboard.Bindings.OsDefaults[hterm.os] || {});
+  }
   for (var key in map) {
     this.addBinding(key, map[key]);
   }

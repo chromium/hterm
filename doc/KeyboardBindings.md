@@ -125,7 +125,7 @@ else, please file a [feature request] with us.
 * `fullReset`: Perform a full terminal reset (like running `reset`).
 * `softReset`: Perform a soft terminal reset (mostly color/etc... attributes).
 
-## `keybindings` User Preference
+## User Preference - keybindings
 
 Since all preferences are stored as strings, the `keybindings` object is
 stored as a JSON string.  At runtime, it is converted back to a JSON object.
@@ -180,6 +180,13 @@ In the keybindings below (many of which are not terribly useful):
   "Ctrl+*+M": "DEFAULT"
 }
 ```
+
+## User Preference - keybindings-os-defaults
+
+Keybindings OS Defaults turns on an OS-dependent set of key bindings. These
+bindings can be overridden by any specified in `keybindings`. The set of
+OS-dependent key bindings can be seen in [hterm_keyboard_bindings.js] in field
+`hterm.Keyboard.Bindings.OsDefaults`.
 
 ## Default Keymap
 

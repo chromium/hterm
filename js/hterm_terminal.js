@@ -217,6 +217,33 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     this.prefs_.deactivate();
 
   this.prefs_ = new hterm.PreferenceManager(this.profileId_);
+
+  /**
+   * Clears and reloads key bindings.  Used by preferences
+   * 'keybindings' and 'keybindings-os-defaults'.
+   *
+   * @param {*} bindings
+   * @param {*} useOsDefaults
+   */
+  function loadKeyBindings(bindings, useOsDefaults) {
+    terminal.keyboard.bindings.clear();
+
+    if (!bindings) {
+      return;
+    }
+
+    if (!(bindings instanceof Object)) {
+      console.error('Error in keybindings preference: Expected object');
+      return;
+    }
+
+    try {
+      terminal.keyboard.bindings.addBindings(bindings, !!useOsDefaults);
+    } catch (ex) {
+      console.error('Error in keybindings preference: ' + ex);
+    }
+  }
+
   this.prefs_.addObservers(null, {
     'alt-gr-mode': function(v) {
       if (v == null) {
@@ -459,21 +486,11 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'keybindings': function(v) {
-      terminal.keyboard.bindings.clear();
+      loadKeyBindings(v, terminal.prefs_.get('keybindings-os-defaults'));
+    },
 
-      if (!v)
-        return;
-
-      if (!(v instanceof Object)) {
-        console.error('Error in keybindings preference: Expected object');
-        return;
-      }
-
-      try {
-        terminal.keyboard.bindings.addBindings(v);
-      } catch (ex) {
-        console.error('Error in keybindings preference: ' + ex);
-      }
+    'keybindings-os-defaults': function(v) {
+      loadKeyBindings(terminal.prefs_.get('keybindings'), v);
     },
 
     'media-keys-are-fkeys': function(v) {

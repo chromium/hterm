@@ -513,6 +513,14 @@ hterm.PreferenceManager.defaultPreferences = {
       `}`
   ),
 
+  'keybindings-os-defaults': hterm.PreferenceManager.definePref_(
+      'Use default OS Keyboard bindings/shortcuts',
+      hterm.PreferenceManager.Categories.Keyboard,
+      false, 'bool',
+      `Whether common OS keyboard bindings should be respected instead of ` +
+      `always capturing for hterm's own use.`
+  ),
+
   'media-keys-are-fkeys': hterm.PreferenceManager.definePref_(
       'Media keys are Fkeys',
       hterm.PreferenceManager.Categories.Keyboard,
