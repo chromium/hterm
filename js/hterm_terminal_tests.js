@@ -692,4 +692,34 @@ it('mouse-wheel-arrow-keys-primary', function() {
   assert.isUndefined(resultString);
 });
 
+/**
+ * Check paste() is working correctly. Note that we do not test the legacy
+ * pasting using document.execCommand() because it is hard to simulate the
+ * behavior.
+ */
+it('paste', async function() {
+  if (!navigator.clipboard) {
+    // Skip this test.
+    return;
+  }
+
+  const terminal = this.terminal;
+  const oldReadText = navigator.clipboard.readText;
+  navigator.clipboard.readText = async () => 'hello world';
+  const oldOnPasteData = terminal.onPasteData_;
+  const onPasteDataPromise = new Promise((resolve) => {
+    terminal.onPasteData_ = (data) => {
+      terminal.onPasteData_ = oldOnPasteData;
+      resolve(data);
+    };
+  });
+
+  try {
+    assert.isNull(this.terminal.paste());
+    assert.equal((await onPasteDataPromise), 'hello world');
+  } finally {
+    navigator.clipboard.readText = oldReadText;
+  }
+});
+
 });

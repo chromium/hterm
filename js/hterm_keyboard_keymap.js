@@ -802,7 +802,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e) {
     // pasting.  Notably, on macOS, Ctrl+V/Ctrl+Shift+V do nothing.
     // However, this might run into web restrictions, so if it fails, we still
     // fallback to the letting the native behavior (hopefully) save us.
-    if (this.keyboard.terminal.paste())
+    if (this.keyboard.terminal.paste() !== false)
       return hterm.Keyboard.KeyActions.CANCEL;
     else
       return hterm.Keyboard.KeyActions.PASS;

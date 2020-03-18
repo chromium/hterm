@@ -275,26 +275,6 @@ hterm.copySelectionToClipboard = function(document, str) {
 };
 
 /**
- * Paste the system clipboard into the element with focus.
- *
- * Note: In Chrome/Firefox app/extension environments, you'll need the
- * "clipboardRead" permission.  In other environments, this might always
- * fail as the browser frequently blocks access for security reasons.
- *
- * @param {!Document} document The document to paste into.
- * @return {boolean} True if the paste succeeded.
- */
-hterm.pasteFromClipboard = function(document) {
-  try {
-    return document.execCommand('paste');
-  } catch (firefoxException) {
-    // Ignore this.  FF 40 and older would incorrectly throw an exception if
-    // there was an error instead of returning false.
-    return false;
-  }
-};
-
-/**
  * Return a formatted message in the current locale.
  *
  * @param {string} name The name of the message to return.

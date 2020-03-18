@@ -3166,10 +3166,29 @@ hterm.Terminal.prototype.hideOverlay = function() {
 /**
  * Paste from the system clipboard to the terminal.
  *
- * @return {boolean}
+ * Note: In Chrome, this should work unless the user has rejected the permission
+ * request. In Firefox extension environment, you'll need the "clipboardRead"
+ * permission.  In other environments, this might always fail as the browser
+ * frequently blocks access for security reasons.
+ *
+ * @return {?boolean} If nagivator.clipboard.readText is available, the return
+ *     value is always null. Otherwise, this function uses legacy pasting and
+ *     returns a boolean indicating whether it is successful.
  */
 hterm.Terminal.prototype.paste = function() {
-  return hterm.pasteFromClipboard(this.document_);
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then((data) => this.onPasteData_(data));
+    return null;
+  } else {
+    // Legacy pasting.
+    try {
+      return this.document_.execCommand('paste');
+    } catch (firefoxException) {
+      // Ignore this.  FF 40 and older would incorrectly throw an exception if
+      // there was an error instead of returning false.
+      return false;
+    }
+  }
 };
 
 /**
@@ -3692,7 +3711,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
         this.contextMenu.show(e, this);
       } else if (e.button == this.mousePasteButton ||
           (this.mouseRightClickPaste && e.button == 2 /* right button */)) {
-        if (!this.paste())
+        if (this.paste() === false)
           console.warn('Could not paste manually due to web restrictions');
       }
     }
@@ -3807,7 +3826,16 @@ hterm.Terminal.prototype.onScroll_ = function() {
  * @param {{text: string}} e The text of the paste event to handle.
  */
 hterm.Terminal.prototype.onPaste_ = function(e) {
-  var data = e.text.replace(/\n/mg, '\r');
+  this.onPasteData_(e.text);
+};
+
+/**
+ * Handle pasted data.
+ *
+ * @param {string} data The pasted data.
+ */
+hterm.Terminal.prototype.onPasteData_ = function(data) {
+  data = data.replace(/\n/mg, '\r');
   if (this.options_.bracketedPaste) {
     // We strip out most escape sequences as they can cause issues (like
     // inserting an \x1b[201~ midstream).  We pass through whitespace
