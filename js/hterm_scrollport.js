@@ -466,7 +466,6 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
                              text-align: center;
                              cursor: pointer;
                              height: ${scrollButtonHeight}px;
-                             width: 110px;
                              line-height: ${scrollButtonHeight}px;
                              border-width: ${scrollButtonBorder}px;
                              border-style: solid;
