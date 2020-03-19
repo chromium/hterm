@@ -75,13 +75,13 @@ describe('hterm_keyboard_keymap_tests.js', () => {
       // expected for normal,
       // expected for control,
       // expected for shift,
-      // expected for contrl + shift.
+      // expected for control + shift.
       ['N',  F, F, F, F, DEFAULT, ctl('N'),  DEFAULT,  CANCEL],
       ['N',  T, F, F, F, DEFAULT, CANCEL,    DEFAULT,  CANCEL],
       ['T',  F, F, F, F, DEFAULT, ctl('T'),  DEFAULT,  ctl('T')],
-      ['T',  F, T, F, F, DEFAULT, PASS,      DEFAULT,  ctl('T')],
+      ['T',  F, T, F, F, DEFAULT, PASS,      DEFAULT,  PASS],
       ['W',  F, F, F, F, DEFAULT, ctl('W'),  DEFAULT,  ctl('W')],
-      ['W',  F, F, T, F, DEFAULT, PASS,      DEFAULT,  ctl('W')],
+      ['W',  F, F, T, F, DEFAULT, PASS,      DEFAULT,  PASS],
       ['\t', F, F, F, F, '\t',    STRIP,     '\x1b[Z', STRIP],
       ['\t', F, F, F, T, '\t',    PASS,      '\x1b[Z', PASS],
     ];

@@ -702,26 +702,28 @@ hterm.Keyboard.KeyMap.prototype.onCtrlTab_ = function(e) {
 };
 
 /**
- * Either pass ^W (close tab) to the browser or send it to the host.
+ * Either pass Ctrl & Shift W (close tab/window) to the browser or send it to
+ * the host.
  *
  * @param {!KeyboardEvent} e The event to process.
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlW_ = function(e) {
-  if (this.keyboard.terminal.passCtrlW && !e.shiftKey) {
+  if (this.keyboard.terminal.passCtrlW) {
     return hterm.Keyboard.KeyActions.PASS;
   }
   return '\x17';
 };
 
 /**
- * Either pass ^T (new tab) to the browser or send it to the host.
+ * Either pass Ctrl & Shift T (new/reopen tab) to the browser or send it to the
+ * host.
  *
  * @param {!KeyboardEvent} e The event to process.
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlT_ = function(e) {
-  if (this.keyboard.terminal.passCtrlT && !e.shiftKey) {
+  if (this.keyboard.terminal.passCtrlT) {
     return hterm.Keyboard.KeyActions.PASS;
   }
   return '\x14';
