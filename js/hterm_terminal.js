@@ -170,6 +170,9 @@ hterm.Terminal = function(profileId) {
 
   this.reportFocus = false;
 
+  // TODO(crbug.com/1063219) Remove this once the bug is fixed.
+  this.alwaysUseLegacyPasting = false;
+
   this.setProfile(profileId || 'default',
                   function() { this.onTerminalReady(); }.bind(this));
 };
@@ -3176,7 +3179,8 @@ hterm.Terminal.prototype.hideOverlay = function() {
  *     returns a boolean indicating whether it is successful.
  */
 hterm.Terminal.prototype.paste = function() {
-  if (navigator.clipboard && navigator.clipboard.readText) {
+  if (!this.alwaysUseLegacyPasting &&
+      navigator.clipboard && navigator.clipboard.readText) {
     navigator.clipboard.readText().then((data) => this.onPasteData_(data));
     return null;
   } else {
