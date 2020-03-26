@@ -424,17 +424,20 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   // orthogonal to the DOM's notion of modifiable.
   this.screen_.setAttribute('aria-readonly', 'true');
   this.screen_.setAttribute('tabindex', '-1');
-  this.screen_.style.cssText = (
-      'caret-color: transparent;' +
-      'display: block;' +
-      'font-family: monospace;' +
-      'font-size: 15px;' +
-      'font-variant-ligatures: none;' +
-      'height: 100%;' +
-      'overflow-y: scroll; overflow-x: hidden;' +
-      'white-space: pre;' +
-      'width: 100%;' +
-      'outline: none !important');
+  this.screen_.style.cssText = `
+      background-color: rgb(var(--hterm-background-color));
+      caret-color: transparent;
+      color: rgb(var(--hterm-foreground-color));
+      display: block;
+      font-family: monospace;
+      font-size: 15px;
+      font-variant-ligatures: none;
+      height: 100%;
+      overflow-y: scroll; overflow-x: hidden;
+      white-space: pre;
+      width: 100%;
+      outline: none !important;
+  `;
 
 
   /**
@@ -460,16 +463,20 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   const scrollButtonHeight = 30;
   const scrollButtonBorder = 1;
   const scrollButtonTotalHeight = scrollButtonHeight + 2 * scrollButtonBorder;
-  const scrollButtonStyle = `right: 0px;
-                             position:fixed;
-                             z-index: 1;
-                             text-align: center;
-                             cursor: pointer;
-                             height: ${scrollButtonHeight}px;
-                             line-height: ${scrollButtonHeight}px;
-                             border-width: ${scrollButtonBorder}px;
-                             border-style: solid;
-                             font-weight: bold;`;
+  const scrollButtonStyle = `
+      background-color: rgb(var(--hterm-foreground-color));
+      border-style: solid;
+      border-width: ${scrollButtonBorder}px;
+      color: rgb(var(--hterm-background-color));
+      cursor: pointer;
+      font-weight: bold;
+      height: ${scrollButtonHeight}px;
+      line-height: ${scrollButtonHeight}px;
+      position:fixed;
+      right: 0px;
+      text-align: center;
+      z-index: 1;
+  `;
   // Note: we use a <div> rather than a <button> because we don't want it to be
   // focusable. If it's focusable this interferes with the contenteditable
   // focus.
@@ -712,30 +719,6 @@ hterm.ScrollPort.prototype.focus = function() {
  */
 hterm.ScrollPort.prototype.blur = function() {
   this.screen_.blur();
-};
-
-/** @return {string} */
-hterm.ScrollPort.prototype.getForegroundColor = function() {
-  return this.screen_.style.color;
-};
-
-/** @param {string} color */
-hterm.ScrollPort.prototype.setForegroundColor = function(color) {
-  this.screen_.style.color = color;
-  this.scrollUpButton_.style.backgroundColor = color;
-  this.scrollDownButton_.style.backgroundColor = color;
-};
-
-/** @return {string} */
-hterm.ScrollPort.prototype.getBackgroundColor = function() {
-  return this.screen_.style.backgroundColor;
-};
-
-/** @param {string} color */
-hterm.ScrollPort.prototype.setBackgroundColor = function(color) {
-  this.screen_.style.backgroundColor = color;
-  this.scrollUpButton_.style.color = color;
-  this.scrollDownButton_.style.color = color;
 };
 
 /** @param {string} image */

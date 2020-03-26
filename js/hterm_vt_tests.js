@@ -51,13 +51,13 @@ before(function() {
  * Called before each test case in this suite.
  */
 beforeEach(function(done) {
-  const document = window.document;
+  this.document = window.document;
 
-  var div = document.createElement('div');
+  var div = this.document.createElement('div');
   div.style.position = 'absolute';
   div.style.height = '100%';
   div.style.width = '100%';
-  document.body.appendChild(div);
+  this.document.body.appendChild(div);
 
   this.div = div;
 
@@ -81,7 +81,7 @@ beforeEach(function(done) {
  * Called after each test case in this suite.
  */
 afterEach(function() {
-  document.body.removeChild(this.div);
+  this.document.body.removeChild(this.div);
   this.terminal.setCursorBlink(false);
 
   MockNotification.stop();
@@ -908,8 +908,8 @@ it('bold-as-bright', function() {
                  'bold-bright. Hi\n' +
                  'bright-bold. Hi');
 
-    var fg = attrs.colorPalette[6];
-    var fg_bright = attrs.colorPalette[14];
+    var fg = 'rgb(var(--hterm-color-6))';
+    var fg_bright = 'rgb(var(--hterm-color-14))';
 
     var row_plain = this.terminal.getRowNode(0);
     assert.equal(row_plain.childNodes[1].style.color, fg,
@@ -952,8 +952,8 @@ it('disable-bold-as-bright', function() {
                  'bold-bright. Hi\n' +
                  'bright-bold. Hi');
 
-    var fg = attrs.colorPalette[6];
-    var fg_bright = attrs.colorPalette[14];
+    var fg = 'rgb(var(--hterm-color-6))';
+    var fg_bright = 'rgb(var(--hterm-color-14))';
 
     var row_plain = this.terminal.getRowNode(0);
     assert.equal(row_plain.childNodes[1].style.color, fg,
@@ -1012,20 +1012,24 @@ it('mode-bits', function() {
     this.terminal.interpret('\x1b[?1l');
     assert.isFalse(this.terminal.keyboard.applicationCursor);
 
+    const assertColor = (name, value) => {
+      const p = this.terminal.getCssVar(`${name}-color`);
+      assert.equal(`rgb(${p.replace(/,/g, ', ')})`, value);
+    };
     var fg = this.terminal.prefs_.get('foreground-color');
     var bg = this.terminal.prefs_.get('background-color');
 
     this.terminal.interpret('\x1b[?5h');
-    assert.equal(this.terminal.scrollPort_.getForegroundColor(), bg);
-    assert.equal(this.terminal.scrollPort_.getBackgroundColor(), fg);
+    assertColor('foreground', bg);
+    assertColor('background', fg);
 
     this.terminal.interpret('\x1b[?5l');
-    assert.equal(this.terminal.scrollPort_.getForegroundColor(), fg);
-    assert.equal(this.terminal.scrollPort_.getBackgroundColor(), bg);
+    assertColor('foreground', fg);
+    assertColor('background', bg);
 
     this.terminal.interpret('\x1b[?5l');
-    assert.equal(this.terminal.scrollPort_.getForegroundColor(), fg);
-    assert.equal(this.terminal.scrollPort_.getBackgroundColor(), bg);
+    assertColor('foreground', fg);
+    assertColor('background', bg);
 
     this.terminal.interpret('\x1b[?6h');
     assert.isTrue(this.terminal.options_.originMode);
@@ -1318,8 +1322,8 @@ it('256-color-colon', function() {
   this.terminal.interpret('\x1b[38;5;10;48;5;20;4mHI1');
   assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  assert.equal('rgb(0, 186, 19)', style.color);
-  assert.equal('rgb(0, 0, 215)', style.backgroundColor);
+  assert.equal('rgb(var(--hterm-color-10))', style.color);
+  assert.equal('rgb(var(--hterm-color-20))', style.backgroundColor);
   text = this.terminal.getRowText(0);
   assert.equal('HI1', text);
 
@@ -1330,8 +1334,8 @@ it('256-color-colon', function() {
   this.terminal.interpret('\x1b[38:5:50;48:5:60;4mHI2');
   assert.equal('solid', ta.underline);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  assert.equal('rgb(0, 255, 215)', style.color);
-  assert.equal('rgb(95, 95, 135)', style.backgroundColor);
+  assert.equal('rgb(var(--hterm-color-50))', style.color);
+  assert.equal('rgb(var(--hterm-color-60))', style.backgroundColor);
   text = this.terminal.getRowText(0);
   assert.equal('HI2', text);
 });
@@ -1441,8 +1445,8 @@ it('chained-sgr', function() {
   assert.isFalse(ta.faint);
   assert.isFalse(ta.strikethrough);
   style = this.terminal.getRowNode(0).childNodes[0].style;
-  assert.equal('rgb(252, 233, 79)', style.color);
-  assert.equal('rgb(0, 95, 0)', style.backgroundColor);
+  assert.equal('rgb(var(--hterm-color-11))', style.color);
+  assert.equal('rgb(var(--hterm-color-22))', style.backgroundColor);
   text = this.terminal.getRowText(0);
   assert.equal('HI2', text);
 });
@@ -2507,11 +2511,11 @@ it('cursor-save-restore', function() {
   assert.equal('solid', tattrs.underline);
 
   // Change color palette a bit.
-  assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
-  assert.equal('rgb(204, 0, 0)', tattrs.colorPalette[1]);
+  assert.equal('rgb(0, 0, 0)', this.terminal.getColorPalette(0));
+  assert.equal('rgb(204, 0, 0)', this.terminal.getColorPalette(1));
   this.terminal.interpret('\x1b]4;1;#112233;\x07');
-  assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
-  assert.equal('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+  assert.equal('rgb(0, 0, 0)', this.terminal.getColorPalette(0));
+  assert.equal('rgb(17, 34, 51)', this.terminal.getColorPalette(1));
 
   // Restore the saved cursor state.
   this.terminal.interpret('\x1b[?1048l');
@@ -2522,8 +2526,8 @@ it('cursor-save-restore', function() {
   assert.isFalse(tattrs.underline);
 
   // Make sure color palette did not change.
-  assert.equal('rgb(0, 0, 0)', tattrs.colorPalette[0]);
-  assert.equal('rgba(17, 34, 51, 1)', tattrs.colorPalette[1]);
+  assert.equal('rgb(0, 0, 0)', this.terminal.getColorPalette(0));
+  assert.equal('rgb(17, 34, 51)', this.terminal.getColorPalette(1));
 });
 
 /**

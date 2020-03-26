@@ -94,10 +94,11 @@ hterm.Terminal = function(profileId) {
 
   // These prefs are cached so we don't have to read from local storage with
   // each output and keystroke.  They are initialized by the preference manager.
-  /** @type {string} */
-  this.backgroundColor_ = '';
-  /** @type {string} */
-  this.foregroundColor_ = '';
+  /** @type {?string} */
+  this.backgroundColor_ = null;
+  /** @type {?string} */
+  this.foregroundColor_ = null;
+
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
   this.scrollWheelArrowKeys_ = null;
@@ -374,6 +375,11 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
         return;
       }
 
+      // Call terminal.setColorPalette here and below with the new default
+      // value before changing it in lib.colors.colorPalette to ensure that
+      // CSS vars are updated.
+      lib.colors.stockColorPalette.forEach(
+          (c, i) => terminal.setColorPalette(i, c));
       lib.colors.colorPalette = lib.colors.stockColorPalette.concat();
 
       if (v) {
@@ -386,14 +392,16 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
           if (v[i]) {
             var rgb = lib.colors.normalizeCSS(v[i]);
-            if (rgb)
+            if (rgb) {
+              terminal.setColorPalette(i, rgb);
               lib.colors.colorPalette[i] = rgb;
+            }
           }
         }
       }
 
-      terminal.primaryScreen_.textAttributes.resetColorPalette();
-      terminal.alternateScreen_.textAttributes.resetColorPalette();
+      terminal.primaryScreen_.textAttributes.colorPaletteOverrides = [];
+      terminal.alternateScreen_.textAttributes.colorPaletteOverrides = [];
     },
 
     'copy-on-select': function(v) {
@@ -704,12 +712,8 @@ hterm.Terminal.prototype.setBackgroundColor = function(color) {
   if (color === undefined)
     color = this.prefs_.getString('background-color');
 
-  this.backgroundColor_ = lib.colors.normalizeCSS(color) || '';
-  this.primaryScreen_.textAttributes.setDefaults(
-      this.foregroundColor_, this.backgroundColor_);
-  this.alternateScreen_.textAttributes.setDefaults(
-      this.foregroundColor_, this.backgroundColor_);
-  this.scrollPort_.setBackgroundColor(color);
+  this.backgroundColor_ = lib.colors.normalizeCSS(color);
+  this.setRgbColorCssVar('background-color', this.backgroundColor_);
 };
 
 /**
@@ -718,10 +722,10 @@ hterm.Terminal.prototype.setBackgroundColor = function(color) {
  * Intended for use by other classes, so we don't have to expose the entire
  * prefs_ object.
  *
- * @return {string}
+ * @return {?string}
  */
 hterm.Terminal.prototype.getBackgroundColor = function() {
-  return lib.notNull(this.backgroundColor_);
+  return this.backgroundColor_;
 };
 
 /**
@@ -737,12 +741,8 @@ hterm.Terminal.prototype.setForegroundColor = function(color) {
   if (color === undefined)
     color = this.prefs_.getString('foreground-color');
 
-  this.foregroundColor_ = lib.colors.normalizeCSS(color) || '';
-  this.primaryScreen_.textAttributes.setDefaults(
-      this.foregroundColor_, this.backgroundColor_);
-  this.alternateScreen_.textAttributes.setDefaults(
-      this.foregroundColor_, this.backgroundColor_);
-  this.scrollPort_.setForegroundColor(color);
+  this.foregroundColor_ = lib.colors.normalizeCSS(color);
+  this.setRgbColorCssVar('foreground-color', this.foregroundColor_);
 };
 
 /**
@@ -751,10 +751,10 @@ hterm.Terminal.prototype.setForegroundColor = function(color) {
  * Intended for use by other classes, so we don't have to expose the entire
  * prefs_ object.
  *
- * @return {string}
+ * @return {?string}
  */
 hterm.Terminal.prototype.getForegroundColor = function() {
-  return lib.notNull(this.foregroundColor_);
+  return this.foregroundColor_;
 };
 
 /**
@@ -830,6 +830,62 @@ hterm.Terminal.prototype.setCssVar = function(name, value,
                                               opt_prefix='--hterm-') {
   this.document_.documentElement.style.setProperty(
       `${opt_prefix}${name}`, value.toString());
+};
+
+/**
+ * Sets --hterm-{name} to the cracked rgb components (no alpha) if the provided
+ * input is valid.
+ *
+ * @param {string} name The variable to set.
+ * @param {?string} rgb The rgb value to assign to the variable.
+ */
+hterm.Terminal.prototype.setRgbColorCssVar = function(name, rgb) {
+  const ary = rgb ? lib.colors.crackRGB(rgb) : null;
+  if (ary) {
+    this.setCssVar(name, ary.slice(0, 3).join(','));
+  }
+};
+
+/**
+ * Sets the specified color for the active screen.
+ *
+ * @param {number} i The index into the 256 color palette to set.
+ * @param {?string} rgb The rgb value to assign to the variable.
+ */
+hterm.Terminal.prototype.setColorPalette = function(i, rgb) {
+  if (i >= 0 && i < 256 && rgb != null && rgb != this.getColorPalette[i]) {
+    this.setRgbColorCssVar(`color-${i}`, rgb);
+    this.screen_.textAttributes.colorPaletteOverrides[i] = rgb;
+  }
+};
+
+/**
+ * Returns the current value in the active screen of the specified color.
+ *
+ * @param {number} i Color palette index.
+ * @return {string} rgb color.
+ */
+hterm.Terminal.prototype.getColorPalette = function(i) {
+  return this.screen_.textAttributes.colorPaletteOverrides[i] ||
+      lib.colors.colorPalette[i];
+};
+
+/**
+ * Reset the specified color in the active screen to its default value.
+ *
+ * @param {number} i Color to reset
+ */
+hterm.Terminal.prototype.resetColor = function(i) {
+  this.setColorPalette(i, lib.colors.colorPalette[i]);
+  delete this.screen_.textAttributes.colorPaletteOverrides[i];
+};
+
+/**
+ * Reset the current screen color palette to the default state.
+ */
+hterm.Terminal.prototype.resetColorPalette = function() {
+  this.screen_.textAttributes.colorPaletteOverrides.forEach(
+      (c, i) => this.resetColor(i));
 };
 
 /**
@@ -1340,11 +1396,12 @@ hterm.Terminal.prototype.reset = function() {
   this.clearAllTabStops();
   this.setDefaultTabStops();
 
+  this.resetColorPalette();
   const resetScreen = (screen) => {
     // We want to make sure to reset the attributes before we clear the screen.
     // The attributes might be used to initialize default/empty rows.
     screen.textAttributes.reset();
-    screen.textAttributes.resetColorPalette();
+    screen.textAttributes.colorPaletteOverrides = [];
     this.clearHome(screen);
     screen.saveCursorAndState(this.vt);
   };
@@ -1375,11 +1432,12 @@ hterm.Terminal.prototype.softReset = function() {
   // We show the cursor on soft reset but do not alter the blink state.
   this.options_.cursorBlink = !!this.timeouts_.cursorBlink;
 
+  this.resetColorPalette();
   const resetScreen = (screen) => {
     // Xterm also resets the color palette on soft reset, even though it doesn't
     // seem to be documented anywhere.
     screen.textAttributes.reset();
-    screen.textAttributes.resetColorPalette();
+    screen.textAttributes.colorPaletteOverrides = [];
     screen.saveCursorAndState(this.vt);
   };
   resetScreen(this.primaryScreen_);
@@ -1629,6 +1687,12 @@ menuitem:hover {
   --hterm-mouse-cursor-text: text;
   --hterm-mouse-cursor-pointer: pointer;
   --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);
+
+  --hterm-background-color: 0,0,0;
+  --hterm-foreground-color: 255,255,255;
+${lib.colors.stockColorPalette.map((c, i) => `
+  --hterm-color-${i}: ${lib.colors.crackRGB(c).slice(0, 3).join(',')};
+`).join('')}
 }
 .uri-node:hover {
   text-decoration: underline;
@@ -2663,11 +2727,11 @@ hterm.Terminal.prototype.cursorRight = function(count) {
 hterm.Terminal.prototype.setReverseVideo = function(state) {
   this.options_.reverseVideo = state;
   if (state) {
-    this.scrollPort_.setForegroundColor(this.backgroundColor_);
-    this.scrollPort_.setBackgroundColor(this.foregroundColor_);
+    this.setRgbColorCssVar('foreground-color', this.backgroundColor_);
+    this.setRgbColorCssVar('background-color', this.foregroundColor_);
   } else {
-    this.scrollPort_.setForegroundColor(this.foregroundColor_);
-    this.scrollPort_.setBackgroundColor(this.backgroundColor_);
+    this.setRgbColorCssVar('foreground-color', this.foregroundColor_);
+    this.setRgbColorCssVar('background-color', this.backgroundColor_);
   }
 };
 
@@ -2677,8 +2741,7 @@ hterm.Terminal.prototype.setReverseVideo = function(state) {
  * This will not play the bell audio more than once per second.
  */
 hterm.Terminal.prototype.ringBell = function() {
-  this.cursorNode_.style.backgroundColor =
-      this.scrollPort_.getForegroundColor();
+  this.cursorNode_.style.backgroundColor = 'rgb(var(--hterm-foreground-color))';
 
   var self = this;
   setTimeout(function() {
@@ -2795,16 +2858,29 @@ hterm.Terminal.prototype.setReverseWraparound = function(state) {
  * @param {boolean} state True to set alternate mode, false to unset.
  */
 hterm.Terminal.prototype.setAlternateMode = function(state) {
-  var cursor = this.saveCursor();
+  if (state == (this.screen_ == this.alternateScreen_)) {
+    return;
+  }
+  const oldOverrides = this.screen_.textAttributes.colorPaletteOverrides;
+  const cursor = this.saveCursor();
   this.screen_ = state ? this.alternateScreen_ : this.primaryScreen_;
+
+  // Swap color overrides.
+  const newOverrides = this.screen_.textAttributes.colorPaletteOverrides;
+  oldOverrides.forEach((c, i) => {
+    if (!newOverrides.hasOwnProperty(i)) {
+      this.setRgbColorCssVar(`color-${i}`, this.getColorPalette(i));
+    }
+  });
+  newOverrides.forEach((c, i) => this.setRgbColorCssVar(`color-${i}`, c));
 
   if (this.screen_.rowsArray.length &&
       this.screen_.rowsArray[0].rowIndex != this.scrollbackRows_.length) {
     // If the screen changed sizes while we were away, our rowIndexes may
     // be incorrect.
-    var offset = this.scrollbackRows_.length;
-    var ary = this.screen_.rowsArray;
-    for (var i = 0; i < ary.length; i++) {
+    const offset = this.scrollbackRows_.length;
+    const ary = this.screen_.rowsArray;
+    for (let i = 0; i < ary.length; i++) {
       ary[i].rowIndex = offset + i;
     }
   }

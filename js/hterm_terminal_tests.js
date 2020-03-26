@@ -722,4 +722,42 @@ it('paste', async function() {
   }
 });
 
+/**
+ * Check set and reset of color palette.
+ */
+it('set-and-reset-colors', async function() {
+  const terminal = this.terminal;
+
+  const assertColor = (i, value) => {
+    // Validate cached terminal.getColor and css var.
+    assert.equal(value, terminal.getColorPalette(i));
+    const style = getComputedStyle(this.terminal.document_.documentElement);
+    const p = style.getPropertyValue(`--hterm-color-${i}`);
+    assert.equal(value, `rgb(${p.trim().replace(/,/g, ', ')})`);
+  };
+
+  // The color entries we'll test.
+  const indices = [0, 7, 15, 31, 63, 127, 255];
+  // The unique color we'll test against.
+  const custom = 'rgb(1, 2, 3)';
+
+  // Change the colors.
+  indices.forEach((index) => {
+    assert.isTrue(lib.colors.colorPalette != custom);
+    assertColor(index, lib.colors.colorPalette[index]);
+    terminal.setColorPalette(index, custom);
+    assertColor(index, custom);
+  });
+
+  // Reset a single color.
+  terminal.resetColor(0);
+  assertColor(0, lib.colors.colorPalette[0]);
+
+  // Reset the palette and check the colors.
+  terminal.resetColorPalette();
+  indices.forEach((index) => {
+    assertColor(index, lib.colors.colorPalette[index]);
+  });
+});
+
 });

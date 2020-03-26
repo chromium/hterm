@@ -1053,7 +1053,8 @@ hterm.Screen.CursorState.prototype.restore = function(vt) {
   // Cursor restore includes char attributes (bold/etc...), but does not change
   // the color palette (which are a terminal setting).
   const tattrs = this.textAttributes.clone();
-  tattrs.colorPalette = this.screen_.textAttributes.colorPalette;
+  tattrs.colorPaletteOverrides =
+      this.screen_.textAttributes.colorPaletteOverrides;
   tattrs.syncColors();
 
   this.screen_.textAttributes = tattrs;

@@ -1784,19 +1784,19 @@ hterm.VT.OSC['4'] = function(parseState) {
   var args = parseState.args[0].split(';');
 
   var pairCount = Math.floor(args.length / 2);
-  var colorPalette = this.terminal.getTextAttributes().colorPalette;
   var responseArray = [];
 
   for (var pairNumber = 0; pairNumber < pairCount; ++pairNumber) {
     var colorIndex = parseInt(args[pairNumber * 2], 10);
     var colorValue = args[pairNumber * 2 + 1];
 
-    if (colorIndex >= colorPalette.length)
+    if (colorIndex >= lib.colors.colorPalette.length)
       continue;
 
     if (colorValue == '?') {
       // '?' means we should report back the current color value.
-      colorValue = lib.colors.rgbToX11(colorPalette[colorIndex]);
+      colorValue = lib.colors.rgbToX11(
+          this.terminal.getColorPalette(colorIndex));
       if (colorValue)
         responseArray.push(colorIndex + ';' + colorValue);
 
@@ -1804,8 +1804,9 @@ hterm.VT.OSC['4'] = function(parseState) {
     }
 
     colorValue = lib.colors.x11ToCSS(colorValue);
-    if (colorValue)
-      colorPalette[colorIndex] = colorValue;
+    if (colorValue) {
+      this.terminal.setColorPalette(colorIndex, colorValue);
+    }
   }
 
   if (responseArray.length)
@@ -2030,18 +2031,16 @@ hterm.VT.OSC['52'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.OSC['104'] = function(parseState) {
-  const attrs = this.terminal.getTextAttributes();
-
   // If there are no args, we reset the entire palette.
   if (!parseState.args[0]) {
-    attrs.resetColorPalette();
+    this.terminal.resetColorPalette();
     return;
   }
 
   // Args come in as a single 'index1;index2;...;indexN' string.
   // Split on the semicolon and iterate through the colors.
   const args = parseState.args[0].split(';');
-  args.forEach((c) => attrs.resetColor(c));
+  args.forEach((c) => this.terminal.resetColor(c));
 };
 
 /**
@@ -2739,7 +2738,7 @@ hterm.VT.prototype.parseSgrExtendedColors = function(parseState, i, attrs) {
         skipCount: usedSubargs ? 0 : 2,
       };
       const color = parseState.parseInt(ary[1]);
-      if (color < attrs.colorPalette.length)
+      if (color < lib.colors.colorPalette.length)
         ret.color = color;
       return ret;
     }
@@ -2868,8 +2867,7 @@ hterm.VT.CSI['m'] = function(parseState) {
     }
   }
 
-  attrs.setDefaults(this.terminal.getForegroundColor(),
-                    this.terminal.getBackgroundColor());
+  attrs.syncColors();
 };
 
 // SGR calls can handle subargs.

@@ -140,7 +140,7 @@ it('underline-colors', () => {
   node = tattrs.createContainer('asdf');
   assert.equal('underline', node.style.textDecorationLine);
   assert.equal('solid', node.style.textDecorationStyle);
-  assert.equal('rgb(204, 0, 0)', node.style.textDecorationColor);
+  assert.equal('rgb(var(--hterm-color-1))', node.style.textDecorationColor);
 
   // True color.
   tattrs.underlineSource = 'rgb(1, 2, 3)';
@@ -161,7 +161,10 @@ it('inverse-colors', () => {
   // Set an attribute to force a container (rather than a text node),
   // but doesn't affect the color behavior in syncColors.
   tattrs.underline = true;
-  tattrs.setDefaults('rgb(1, 2, 3)', 'rgb(3, 2, 1)');
+  window.document.documentElement.style.setProperty(
+      '--hterm-foreground-color', 'rgb(1, 2, 3)');
+  window.document.documentElement.style.setProperty(
+      '--hterm-background-color', 'rgb(3, 2, 1)');
 
   // Test with default colors.
   tattrs.inverse = false;
@@ -182,14 +185,14 @@ it('inverse-colors', () => {
   tattrs.inverse = false;
   tattrs.syncColors();
   node = tattrs.createContainer('asdf');
-  assert.equal(tattrs.colorPalette[0], node.style.color);
-  assert.equal(tattrs.colorPalette[1], node.style.backgroundColor);
+  assert.equal('rgb(var(--hterm-color-0))', node.style.color);
+  assert.equal('rgb(var(--hterm-color-1))', node.style.backgroundColor);
 
   tattrs.inverse = true;
   tattrs.syncColors();
   node = tattrs.createContainer('asdf');
-  assert.equal(tattrs.colorPalette[1], node.style.color);
-  assert.equal(tattrs.colorPalette[0], node.style.backgroundColor);
+  assert.equal('rgb(var(--hterm-color-1))', node.style.color);
+  assert.equal('rgb(var(--hterm-color-0))', node.style.backgroundColor);
 
   // Test with true colors.
   tattrs.foregroundSource = 'rgb(1, 1, 1)';
@@ -217,7 +220,10 @@ it('invisible', () => {
   // Set an attribute to force a container (rather than a text node),
   // but doesn't affect the color behavior in syncColors.
   tattrs.underline = true;
-  tattrs.setDefaults('rgb(1, 2, 3)', 'rgb(3, 2, 1)');
+  window.document.documentElement.style.setProperty(
+      '--hterm-foreground-color', 'rgb(1, 2, 3)');
+  window.document.documentElement.style.setProperty(
+      '--hterm-background-color', 'rgb(3, 2, 1)');
 
   // Set colors to something other than the default.
   tattrs.foregroundSource = 'rgb(1, 1, 1)';
@@ -229,64 +235,6 @@ it('invisible', () => {
   node = tattrs.createContainer('asdf');
   assert.equal(tattrs.backgroundSource, node.style.color);
   assert.equal(tattrs.backgroundSource, node.style.backgroundColor);
-});
-
-/**
- * Check color palette reset.
- */
-it('reset-color-palette', () => {
-  const tattrs = new hterm.TextAttributes(window.document);
-
-  // The color entries we'll test.
-  const indices = [0, 7, 15, 31, 63, 127, 255];
-  // The unique color we'll test against.
-  const custom = '#123456';
-
-  // Change the colors.
-  indices.forEach((index) => {
-    // Make sure the default doesn't match our custom color.
-    assert.isTrue(tattrs.colorPalette[index] != custom);
-    tattrs.colorPalette[index] = custom;
-  });
-
-  // Reset the palette and check the colors.
-  tattrs.resetColorPalette();
-  indices.forEach((index) => {
-    assert.isTrue(tattrs.colorPalette[index] != custom);
-  });
-});
-
-/**
- * Check individual color reset.
- */
-it('reset-color', () => {
-  const tattrs = new hterm.TextAttributes(window.document);
-
-  // The color entries we'll test.
-  const indices = [0, 7, 15, 31, 63, 127, 255];
-  // The unique color we'll test against.
-  const custom = '#123456';
-
-  // Change the colors and test the reset.
-  indices.forEach((index) => {
-    // Make sure the default doesn't match our custom color.
-    assert.isTrue(tattrs.colorPalette[index] != custom);
-
-    tattrs.colorPalette[index] = custom;
-    tattrs.resetColor(index);
-
-    // Check it's back to the stock value.
-    assert.equal(lib.colors.stockColorPalette[index],
-                 tattrs.colorPalette[index]);
-  });
-
-  // Check some edge cases don't crash.
-  tattrs.colorPalette[0] = custom;
-  tattrs.resetColor('0');
-  assert.equal(lib.colors.stockColorPalette[0], tattrs.colorPalette[0]);
-
-  // Shouldn't do anything.
-  tattrs.resetColor('alskdjf');
 });
 
 it('splitWidecharString-ascii', () => {

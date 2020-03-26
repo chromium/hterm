@@ -40,8 +40,10 @@ hterm.TextAttributes = function(document) {
   /** @type {symbol|string} */
   this.underlineColor = this.DEFAULT_COLOR;
 
-  this.defaultForeground = 'rgb(255, 255, 255)';
-  this.defaultBackground = 'rgb(0, 0, 0)';
+  /** @const */
+  this.defaultForeground = 'rgb(var(--hterm-foreground-color))';
+  /** @const */
+  this.defaultBackground = 'rgb(var(--hterm-background-color))';
 
   // Any attributes added here that do not default to falsey (e.g. undefined or
   // null) require a bit more care.  createContainer has to always attach the
@@ -63,8 +65,12 @@ hterm.TextAttributes = function(document) {
   /** @type {?string} */
   this.uriId = null;
 
-  this.colorPalette = null;
-  this.resetColorPalette();
+  /**
+   * Colors set different to defaults in lib.colors.colorPalette.
+   *
+   * @type {!Array<string>}
+   */
+  this.colorPaletteOverrides = [];
 };
 
 /**
@@ -113,15 +119,15 @@ hterm.TextAttributes.prototype.clone = function() {
     rv[key] = this[key];
   }
 
-  rv.colorPalette = this.colorPalette.concat();
+  rv.colorPaletteOverrides = this.colorPaletteOverrides.concat();
   return rv;
 };
 
 /**
  * Reset the current set of attributes.
  *
- * This does not affect the palette.  Use resetColorPalette() for that.
- * It also doesn't affect the tile data, it's not meant to.
+ * This does not affect the palette.  Use terminal.resetColorPalette() for
+ * that.  It also doesn't affect the tile data, it's not meant to.
  */
 hterm.TextAttributes.prototype.reset = function() {
   this.foregroundSource = this.SRC_DEFAULT;
@@ -142,28 +148,6 @@ hterm.TextAttributes.prototype.reset = function() {
   this.asciiNode = true;
   this.uri = null;
   this.uriId = null;
-};
-
-/**
- * Reset the color palette to the default state.
- */
-hterm.TextAttributes.prototype.resetColorPalette = function() {
-  this.colorPalette = lib.colors.colorPalette.concat();
-  this.syncColors();
-};
-
-/**
- * Reset the color.
- *
- * @param {number|string} index The color index in the palette to reset.
- */
-hterm.TextAttributes.prototype.resetColor = function(index) {
-  index = parseInt(index, 10);
-  if (isNaN(index) || index >= this.colorPalette.length)
-    return;
-
-  this.colorPalette[index] = lib.colors.stockColorPalette[index];
-  this.syncColors();
 };
 
 /**
@@ -322,21 +306,6 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
 };
 
 /**
- * Set default foreground & background colors.
- *
- * @param {?string} foreground The terminal foreground color for use as
- *     inverse text background.
- * @param {?string} background The terminal background color for use as
- *     inverse text foreground.
- */
-hterm.TextAttributes.prototype.setDefaults = function(foreground, background) {
-  this.defaultForeground = foreground;
-  this.defaultBackground = background;
-
-  this.syncColors();
-};
-
-/**
  * Updates foreground and background properties based on current indices and
  * other state.
  */
@@ -376,7 +345,7 @@ hterm.TextAttributes.prototype.syncColors = function() {
     if (source == this.SRC_DEFAULT) {
       return this.DEFAULT_COLOR;
     } else if (typeof source == 'number' && Number.isInteger(source)) {
-      return this.colorPalette[source];
+      return `rgb(var(--hterm-color-${source}))`;
     } else {
       return source.toString();
     }
@@ -385,9 +354,15 @@ hterm.TextAttributes.prototype.syncColors = function() {
   this.foreground = colorFromSource(this.foregroundSource);
 
   if (this.faint) {
-    const colorToMakeFaint =
-        getDefaultColor(this.foreground, this.defaultForeground);
-    this.foreground = lib.colors.mix(colorToMakeFaint, 'rgb(0, 0, 0)', 0.3333);
+    if (this.foreground == this.DEFAULT_COLOR) {
+      this.foreground = 'rgba(var(--hterm-foreground-color), 0.67)';
+    } else if (typeof this.foregroundSource == 'number' &&
+        Number.isInteger(this.foregroundSource)) {
+      this.foreground =
+          `rgba(var(--hterm-color-${this.foregroundSource}), 0.67)`;
+    } else {
+      this.foreground = lib.colors.setAlpha(this.foreground.toString(), 0.67);
+    }
   }
 
   this.background = colorFromSource(this.backgroundSource);
