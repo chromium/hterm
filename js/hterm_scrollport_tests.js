@@ -278,10 +278,10 @@ it('select-all', function() {
  * Test that the page up/down buttons are onscreen when selected but offscreen
  * otherwise.
  */
-it('page-up-down-visible', function() {
+it('page-up-down-options-visible', function() {
   const doc = this.scrollPort.getDocument();
 
-  this.scrollPort.allowScrollButtonsToDisplay_ = true;
+  this.scrollPort.allowA11yButtonsToDisplay_ = true;
   const mockAccessibilityReader = new MockAccessibilityReader();
   mockAccessibilityReader.accessibilityEnabled = true;
   this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
@@ -293,7 +293,7 @@ it('page-up-down-visible', function() {
 
   selection.removeAllRanges();
   let range = document.createRange();
-  range.selectNodeContents(pageUp);
+  range.selectNodeContents(pageUp.firstChild);
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
@@ -305,11 +305,24 @@ it('page-up-down-visible', function() {
 
   selection.removeAllRanges();
   range = document.createRange();
-  range.selectNodeContents(pageDown);
+  range.selectNodeContents(pageDown.firstChild);
   selection.addRange(range);
   doc.dispatchEvent(new Event('selectionchange'));
 
   assert.isAtMost(pageDown.getBoundingClientRect().bottom,
+                  this.scrollPort.getScreenHeight());
+
+  const options = doc.getElementById('hterm:a11y:options');
+  assert.isAtLeast(options.getBoundingClientRect().top,
+                   this.scrollPort.getScreenHeight());
+
+  selection.removeAllRanges();
+  range = document.createRange();
+  range.selectNodeContents(options.firstChild);
+  selection.addRange(range);
+  doc.dispatchEvent(new Event('selectionchange'));
+
+  assert.isAtMost(options.getBoundingClientRect().bottom,
                   this.scrollPort.getScreenHeight());
 });
 
@@ -318,10 +331,10 @@ it('page-up-down-visible', function() {
  * isn't enabled.
  *
  */
-it('page-up-down-hidden', function() {
+it('page-up-down-options-hidden', function() {
   const doc = this.scrollPort.getDocument();
 
-  this.scrollPort.allowScrollButtonsToDisplay_ = true;
+  this.scrollPort.allowA11yButtonsToDisplay_ = true;
   const mockAccessibilityReader = new MockAccessibilityReader();
   mockAccessibilityReader.accessibilityEnabled = false;
   this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
@@ -350,6 +363,19 @@ it('page-up-down-hidden', function() {
   doc.dispatchEvent(new Event('selectionchange'));
 
   assert.isAtLeast(pageDown.getBoundingClientRect().top,
+                   this.scrollPort.getScreenHeight());
+
+  const options = doc.getElementById('hterm:a11y:options');
+  assert.isAtLeast(options.getBoundingClientRect().top,
+                   this.scrollPort.getScreenHeight());
+
+  selection.removeAllRanges();
+  range = document.createRange();
+  range.selectNodeContents(options.firstChild);
+  selection.addRange(range);
+  doc.dispatchEvent(new Event('selectionchange'));
+
+  assert.isAtLeast(options.getBoundingClientRect().top,
                    this.scrollPort.getScreenHeight());
 });
 

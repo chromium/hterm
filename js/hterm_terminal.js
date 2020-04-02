@@ -51,6 +51,7 @@ hterm.Terminal = function(profileId) {
   this.scrollPort_.subscribe('scroll', this.onScroll_.bind(this));
   this.scrollPort_.subscribe('paste', this.onPaste_.bind(this));
   this.scrollPort_.subscribe('focus', this.onScrollportFocus_.bind(this));
+  this.scrollPort_.subscribe('options', this.onOpenOptionsPage_.bind(this));
   this.scrollPort_.onCopy = this.onCopy_.bind(this);
 
   // The div that contains this terminal.
@@ -4052,4 +4053,17 @@ hterm.Terminal.prototype.onScrollportFocus_ = function() {
   if (!this.syncCursorPosition_() && selection) {
     selection.collapse(this.getRowNode(bottomRowIndex));
   }
+};
+
+/**
+ * Clients can override this if they want to provide an options page.
+ */
+hterm.Terminal.prototype.onOpenOptionsPage = function() {};
+
+
+/**
+ * Called when user selects to open the options page.
+ */
+hterm.Terminal.prototype.onOpenOptionsPage_ = function() {
+  this.onOpenOptionsPage();
 };
