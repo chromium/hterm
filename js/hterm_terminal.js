@@ -1689,8 +1689,6 @@ menuitem:hover {
   --hterm-mouse-cursor-pointer: pointer;
   --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);
 
-  --hterm-background-color: 0,0,0;
-  --hterm-foreground-color: 255,255,255;
 ${lib.colors.stockColorPalette.map((c, i) => `
   --hterm-color-${i}: ${lib.colors.crackRGB(c).slice(0, 3).join(',')};
 `).join('')}
