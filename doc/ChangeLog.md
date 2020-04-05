@@ -1,3 +1,21 @@
+# 1.88, 2020-04-05, Better word breaks, more keyboard prefs, and dynamic colors.
+
+* a11y: Add options page button.
+* colors: Use css vars.
+* terminal: Use navigator.clipboard for pasting.
+* keyboard: Also pass shift for pass-ctrl-t and pass-ctrl-w.
+* scrollport: Remove fixed width for Page Up button to allow wider text in JA.
+* prefs: keybindings-os-defaults: New preference.
+* hterm: Replace minus with plus for key shortcuts.
+* a11y: Use innerText instead of aria-label for announcements.
+* prefs: Reword pass-X pref descriptions.
+* keyboard: Delay keymap handling to allow binding overrides.
+* terminal: Update charsize CSS variables when font-family changes.
+* prefs: Add preferences for tab accelerators.
+* word-breaks: Add more quote marks.
+* scrollport: Put hidden page up/down buttons outside of <x-screen>.
+* eslint: Enable single quote checking.
+
 # 1.87, 2019-11-28, Tons of linting/cleanups.
 
 * osc52.sh: add a --force flag to ignore limits.
