@@ -76,6 +76,7 @@ describe('hterm_keyboard_keymap_tests.js', () => {
       // expected for control,
       // expected for shift,
       // expected for control + shift.
+      /* eslint-disable no-multi-spaces */
       ['N',  F, F, F, F, DEFAULT, ctl('N'),  DEFAULT,  CANCEL],
       ['N',  T, F, F, F, DEFAULT, CANCEL,    DEFAULT,  CANCEL],
       ['T',  F, F, F, F, DEFAULT, ctl('T'),  DEFAULT,  ctl('T')],
@@ -84,6 +85,7 @@ describe('hterm_keyboard_keymap_tests.js', () => {
       ['W',  F, F, T, F, DEFAULT, PASS,      DEFAULT,  PASS],
       ['\t', F, F, F, F, '\t',    STRIP,     '\x1b[Z', STRIP],
       ['\t', F, F, F, T, '\t',    PASS,      '\x1b[Z', PASS],
+      /* eslint-enable no-multi-spaces */
     ];
 
     for (const t of tests) {

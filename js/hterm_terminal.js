@@ -3530,7 +3530,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
       img.style.width = parseDim(
           options.width, screenSize.width, '--hterm-charsize-width');
       img.style.height = parseDim(
-          options.height,  screenSize.height, '--hterm-charsize-height');
+          options.height, screenSize.height, '--hterm-charsize-height');
 
       // Figure out how many rows the image occupies, then add that many.
       // Note: This count will be inaccurate if the font size changes on us.

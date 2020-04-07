@@ -301,6 +301,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   const SS3 = '\x1bO';
 
   // These fields are: [keycode, keycap, normal, control, alt, meta]
+  /* eslint-disable no-multi-spaces */
 
   // The browser sends the keycode 0 for some keys.  We'll just assume it's
   // going to do the right thing by default for those keys.
@@ -480,6 +481,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     // We don't use this for anything, but keep it from popping up by default.
     add(153, '[ASSIST]', DEFAULT, DEFAULT, DEFAULT, DEFAULT);
   }
+  /* eslint-enable no-multi-spaces */
 };
 
 /**

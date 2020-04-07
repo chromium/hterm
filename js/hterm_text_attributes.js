@@ -438,7 +438,7 @@ hterm.TextAttributes.containersMatch = function(obj1, obj2) {
  * @return {boolean} True if the object is unstyled.
  */
 hterm.TextAttributes.containerIsDefault = function(obj) {
-  return typeof obj == 'string'  || obj.nodeType == Node.TEXT_NODE;
+  return typeof obj == 'string' || obj.nodeType == Node.TEXT_NODE;
 };
 
 /**

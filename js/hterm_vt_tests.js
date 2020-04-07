@@ -1347,8 +1347,8 @@ it('256-color-colon', function() {
  */
 it('true-color-mode', function() {
     function getEscape(row, fg) {
-      return  '\x1b[' + (fg == true ? 38 : 48) + ';2;' + row[1] + ';' +
-              row[2] + ';' + row[3] + 'm';
+      return '\x1b[' + (fg == true ? 38 : 48) + ';2;' + row[1] + ';' +
+             row[2] + ';' + row[3] + 'm';
     }
 
     function getRGB(row) {
@@ -1357,7 +1357,7 @@ it('true-color-mode', function() {
 
     this.terminal.setWidth(80);
 
-    const colors =  [
+    const colors = [
       ['Aero', 124, 185, 232],
       ['Amber', 255, 191, 0],
       ['Bitter Lime', 191, 255, 0],

@@ -114,7 +114,7 @@ hterm.Parser.prototype.parseKeySequence = function() {
         for (const id in hterm.Parser.identifiers.modifierKeys) {
           const p = hterm.Parser.identifiers.modifierKeys[id];
           if (!rv[p]) {
-            rv[p] =  '*';
+            rv[p] = '*';
           }
         }
       } else {
