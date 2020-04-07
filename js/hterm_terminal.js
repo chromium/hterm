@@ -218,8 +218,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
 
   var terminal = this;
 
-  if (this.prefs_)
+  if (this.prefs_) {
     this.prefs_.deactivate();
+  }
 
   this.prefs_ = new hterm.PreferenceManager(this.profileId_);
 
@@ -263,8 +264,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
         v = 'none';
       }
 
-      if (!/^(none|ctrl-alt|left-alt|right-alt)$/.test(v))
+      if (!/^(none|ctrl-alt|left-alt|right-alt)$/.test(v)) {
         v = 'none';
+      }
 
       terminal.keyboard.altGrMode = v;
     },
@@ -278,8 +280,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
     },
 
     'alt-sends-what': function(v) {
-      if (!/^(escape|8-bit|browser-key)$/.test(v))
+      if (!/^(escape|8-bit|browser-key)$/.test(v)) {
         v = 'escape';
+      }
 
       terminal.keyboard.altSendsWhat = v;
     },
@@ -643,8 +646,9 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
   this.prefs_.readStorage(function() {
     this.prefs_.notifyAll();
 
-    if (opt_callback)
+    if (opt_callback) {
       opt_callback();
+    }
   }.bind(this));
 };
 
@@ -676,8 +680,9 @@ hterm.Terminal.prototype.setBracketedPaste = function(state) {
  *     saved user preference.
  */
 hterm.Terminal.prototype.setCursorColor = function(color) {
-  if (color === undefined)
+  if (color === undefined) {
     color = this.prefs_.getString('cursor-color');
+  }
 
   this.setCssVar('cursor-color', color);
 };
@@ -710,8 +715,9 @@ hterm.Terminal.prototype.setSelectionEnabled = function(state) {
  *     saved user preference.
  */
 hterm.Terminal.prototype.setBackgroundColor = function(color) {
-  if (color === undefined)
+  if (color === undefined) {
     color = this.prefs_.getString('background-color');
+  }
 
   this.backgroundColor_ = lib.colors.normalizeCSS(color);
   this.setRgbColorCssVar('background-color', this.backgroundColor_);
@@ -739,8 +745,9 @@ hterm.Terminal.prototype.getBackgroundColor = function() {
  *     saved user preference.
  */
 hterm.Terminal.prototype.setForegroundColor = function(color) {
-  if (color === undefined)
+  if (color === undefined) {
     color = this.prefs_.getString('foreground-color');
+  }
 
   this.foregroundColor_ = lib.colors.normalizeCSS(color);
   this.setRgbColorCssVar('foreground-color', this.foregroundColor_);
@@ -769,8 +776,9 @@ hterm.Terminal.prototype.getForegroundColor = function() {
 hterm.Terminal.prototype.runCommandClass = function(
     commandClass, commandName, args) {
   var environment = this.prefs_.get('environment');
-  if (typeof environment != 'object' || environment == null)
+  if (typeof environment != 'object' || environment == null) {
     environment = {};
+  }
 
   var self = this;
   this.command = new commandClass(
@@ -783,8 +791,9 @@ hterm.Terminal.prototype.runCommandClass = function(
           self.io.pop();
           self.uninstallKeyboard();
           self.div_.dispatchEvent(new CustomEvent('terminal-closing'));
-          if (self.prefs_.get('close-on-exit'))
-              window.close();
+          if (self.prefs_.get('close-on-exit')) {
+            window.close();
+          }
         }
       });
 
@@ -922,8 +931,9 @@ hterm.Terminal.prototype.updateCssCharsize_ = function() {
  * @param {number} px The desired font size, in pixels.
  */
 hterm.Terminal.prototype.setFontSize = function(px) {
-  if (px <= 0)
+  if (px <= 0) {
     px = this.prefs_.getNumber('font-size');
+  }
 
   this.scrollPort_.setFontSize(px);
   this.updateCssCharsize_();
@@ -1007,8 +1017,9 @@ hterm.Terminal.prototype.syncBoldSafeState = function() {
  * @param {boolean=} state Whether to enable support for blinking text.
  */
 hterm.Terminal.prototype.setTextBlink = function(state) {
-  if (state === undefined)
+  if (state === undefined) {
     state = this.prefs_.getBoolean('enable-blink');
+  }
   this.setCssVar('blink-node-duration', state ? '0.7s' : '0');
 };
 
@@ -1101,8 +1112,9 @@ hterm.Terminal.prototype.saveCursorAndState = function(both) {
   if (both) {
     this.primaryScreen_.saveCursorAndState(this.vt);
     this.alternateScreen_.saveCursorAndState(this.vt);
-  } else
+  } else {
     this.screen_.saveCursorAndState(this.vt);
+  }
 };
 
 /**
@@ -1117,8 +1129,9 @@ hterm.Terminal.prototype.restoreCursorAndState = function(both) {
   if (both) {
     this.primaryScreen_.restoreCursorAndState(this.vt);
     this.alternateScreen_.restoreCursorAndState(this.vt);
-  } else
+  } else {
     this.screen_.restoreCursorAndState(this.vt);
+  }
 };
 
 /**
@@ -1214,8 +1227,9 @@ hterm.Terminal.prototype.realizeSize_ = function(columnCount, rowCount) {
  * @param {number} columnCount The number of columns.
  */
 hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
-  if (columnCount <= 0)
+  if (columnCount <= 0) {
     throw new Error('Attempt to realize bad width: ' + columnCount);
+  }
 
   var deltaColumns = columnCount - this.screen_.getWidth();
   if (deltaColumns == 0) {
@@ -1227,12 +1241,14 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
   this.screen_.setColumnCount(columnCount);
 
   if (deltaColumns > 0) {
-    if (this.defaultTabStops)
+    if (this.defaultTabStops) {
       this.setDefaultTabStops(this.screenSize.width - deltaColumns);
+    }
   } else {
     for (var i = this.tabStops_.length - 1; i >= 0; i--) {
-      if (this.tabStops_[i] < columnCount)
+      if (this.tabStops_[i] < columnCount) {
         break;
+      }
 
       this.tabStops_.pop();
     }
@@ -1255,8 +1271,9 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
  * @param {number} rowCount The number of rows.
  */
 hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
-  if (rowCount <= 0)
+  if (rowCount <= 0) {
     throw new Error('Attempt to realize bad height: ' + rowCount);
+  }
 
   var deltaRows = rowCount - this.screen_.getHeight();
   if (deltaRows == 0) {
@@ -1273,11 +1290,13 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
     deltaRows *= -1;
     while (deltaRows) {
       var lastRow = this.getRowCount() - 1;
-      if (lastRow - this.scrollbackRows_.length == cursor.row)
+      if (lastRow - this.scrollbackRows_.length == cursor.row) {
         break;
+      }
 
-      if (this.getRowText(lastRow))
+      if (this.getRowText(lastRow)) {
         break;
+      }
 
       this.screen_.popRow();
       deltaRows--;
@@ -1301,8 +1320,9 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
       cursor.row += scrollbackCount;
     }
 
-    if (deltaRows)
+    if (deltaRows) {
       this.appendRows_(deltaRows);
+    }
   }
 
   this.setVTScrollRegion(null, null);
@@ -1496,8 +1516,9 @@ hterm.Terminal.prototype.backwardTabStop = function() {
  */
 hterm.Terminal.prototype.setTabStop = function(column) {
   for (var i = this.tabStops_.length - 1; i >= 0; i--) {
-    if (this.tabStops_[i] == column)
+    if (this.tabStops_[i] == column) {
       return;
+    }
 
     if (this.tabStops_[i] < column) {
       this.tabStops_.splice(i + 1, 0, column);
@@ -1517,8 +1538,9 @@ hterm.Terminal.prototype.clearTabStopAtCursor = function() {
   var column = this.screen_.cursorPosition.column;
 
   var i = this.tabStops_.indexOf(column);
-  if (i == -1)
+  if (i == -1) {
     return;
+  }
 
   this.tabStops_.splice(i, 1);
 };
@@ -1813,8 +1835,9 @@ hterm.Terminal.prototype.blur = function() {
  * @override
  */
 hterm.Terminal.prototype.getRowNode = function(index) {
-  if (index < this.scrollbackRows_.length)
+  if (index < this.scrollbackRows_.length) {
     return this.scrollbackRows_[index];
+  }
 
   var screenIndex = index - this.scrollbackRows_.length;
   return this.screen_.rowsArray[screenIndex];
@@ -1840,8 +1863,9 @@ hterm.Terminal.prototype.getRowsText = function(start, end) {
   for (var i = start; i < end; i++) {
     var node = this.getRowNode(i);
     ary.push(node.textContent);
-    if (i < end - 1 && !node.getAttribute('line-overflow'))
+    if (i < end - 1 && !node.getAttribute('line-overflow')) {
       ary.push('\n');
+    }
   }
 
   return ary.join('');
@@ -1909,12 +1933,14 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
   if (extraRows > 0) {
     var ary = this.screen_.shiftRows(extraRows);
     Array.prototype.push.apply(this.scrollbackRows_, ary);
-    if (this.scrollPort_.isScrolledEnd)
+    if (this.scrollPort_.isScrolledEnd) {
       this.scheduleScrollDown_();
+    }
   }
 
-  if (cursorRow >= this.screen_.rowsArray.length)
+  if (cursorRow >= this.screen_.rowsArray.length) {
     cursorRow = this.screen_.rowsArray.length - 1;
+  }
 
   this.setAbsoluteCursorPosition(cursorRow, 0);
 };
@@ -1994,8 +2020,9 @@ hterm.Terminal.prototype.print = function(str) {
   var strWidth = lib.wc.strWidth(str);
   // Fun edge case: If the string only contains zero width codepoints (like
   // combining characters), we make sure to iterate at least once below.
-  if (strWidth == 0 && str)
+  if (strWidth == 0 && str) {
     strWidth = 1;
+  }
 
   while (startOffset < strWidth) {
     if (this.options_.wraparound && this.screen_.cursorPosition.overflow) {
@@ -2041,8 +2068,9 @@ hterm.Terminal.prototype.print = function(str) {
     startOffset += count;
   }
 
-  if (this.scrollOnOutput_)
+  if (this.scrollOnOutput_) {
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
+  }
 };
 
 /**
@@ -2081,8 +2109,9 @@ hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
  * @return {number} The topmost row in the terminal's scroll region.
  */
 hterm.Terminal.prototype.getVTScrollTop = function() {
-  if (this.vtScrollTop_ != null)
+  if (this.vtScrollTop_ != null) {
     return this.vtScrollTop_;
+  }
 
   return 0;
 };
@@ -2097,8 +2126,9 @@ hterm.Terminal.prototype.getVTScrollTop = function() {
  * @return {number} The bottom most row in the terminal's scroll region.
  */
 hterm.Terminal.prototype.getVTScrollBottom = function() {
-  if (this.vtScrollBottom_ != null)
+  if (this.vtScrollBottom_ != null) {
     return this.vtScrollBottom_;
+  }
 
   return this.screenSize.height - 1;
 };
@@ -2116,8 +2146,9 @@ hterm.Terminal.prototype.getVTScrollBottom = function() {
  *     the terminal.
  */
 hterm.Terminal.prototype.newLine = function(dueToOverflow = false) {
-  if (!dueToOverflow)
+  if (!dueToOverflow) {
     this.accessibilityReader_.newLine();
+  }
 
   var cursorAtEndOfScreen = (this.screen_.cursorPosition.row ==
                              this.screen_.rowsArray.length - 1);
@@ -2216,8 +2247,9 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  * @param {number=} opt_count The number of characters to erase.
  */
 hterm.Terminal.prototype.eraseToRight = function(opt_count) {
-  if (this.screen_.cursorPosition.overflow)
+  if (this.screen_.cursorPosition.overflow) {
     return;
+  }
 
   var maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
   var count = opt_count ? Math.min(opt_count, maxCount) : maxCount;
@@ -2373,8 +2405,9 @@ hterm.Terminal.prototype.insertLines = function(count) {
   // The moveCount is the number of rows we need to relocate to make room for
   // the new row(s).  The count is the distance to move them.
   var moveCount = bottom - cursorRow - count + 1;
-  if (moveCount)
+  if (moveCount) {
     this.moveRows_(cursorRow, moveCount, cursorRow + count);
+  }
 
   for (var i = count - 1; i >= 0; i--) {
     this.setAbsoluteCursorPosition(cursorRow + i, 0);
@@ -2400,8 +2433,9 @@ hterm.Terminal.prototype.deleteLines = function(count) {
   count = Math.min(count, maxCount);
 
   var moveStart = bottom - count + 1;
-  if (count != maxCount)
+  if (count != maxCount) {
     this.moveRows_(top, count, moveStart);
+  }
 
   for (var i = 0; i < count; i++) {
     this.setAbsoluteCursorPosition(moveStart + i, 0);
@@ -2595,8 +2629,9 @@ hterm.Terminal.prototype.getCursorRow = function() {
  * Multiple calls will be coalesced into a single redraw.
  */
 hterm.Terminal.prototype.scheduleRedraw_ = function() {
-  if (this.timeouts_.redraw)
+  if (this.timeouts_.redraw) {
     return;
+  }
 
   var self = this;
   this.timeouts_.redraw = setTimeout(function() {
@@ -2615,8 +2650,9 @@ hterm.Terminal.prototype.scheduleRedraw_ = function() {
  * do with the VT scroll commands.
  */
 hterm.Terminal.prototype.scheduleScrollDown_ = function() {
-  if (this.timeouts_.scrollDown)
+  if (this.timeouts_.scrollDown) {
     return;
+  }
 
   var self = this;
   this.timeouts_.scrollDown = setTimeout(function() {
@@ -2661,8 +2697,9 @@ hterm.Terminal.prototype.cursorDown = function(count) {
 hterm.Terminal.prototype.cursorLeft = function(count) {
   count = count || 1;
 
-  if (count < 1)
+  if (count < 1) {
     return;
+  }
 
   var currentColumn = this.screen_.cursorPosition.column;
   if (this.options_.reverseWraparound) {
@@ -2673,8 +2710,9 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
       count--;
       this.clearCursorOverflow();
 
-      if (!count)
+      if (!count) {
         return;
+      }
     }
 
     var newRow = this.screen_.cursorPosition.row;
@@ -2704,8 +2742,9 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
 hterm.Terminal.prototype.cursorRight = function(count) {
   count = count || 1;
 
-  if (count < 1)
+  if (count < 1) {
     return;
+  }
 
   var column = lib.f.clamp(this.screen_.cursorPosition.column + count,
                            0, this.screenSize.width - 1);
@@ -2748,8 +2787,9 @@ hterm.Terminal.prototype.ringBell = function() {
     }, 200);
 
   // bellSquelchTimeout_ affects both audio and notification bells.
-  if (this.bellSquelchTimeout_)
+  if (this.bellSquelchTimeout_) {
     return;
+  }
 
   if (this.bellAudio_.getAttribute('src')) {
     this.bellAudio_.play();
@@ -2914,8 +2954,9 @@ hterm.Terminal.prototype.setCursorBlink = function(state) {
     delete this.timeouts_.cursorBlink;
   }
 
-  if (this.options_.cursorVisible)
+  if (this.options_.cursorVisible) {
     this.setCursorVisible(true);
+  }
 };
 
 /**
@@ -2944,8 +2985,9 @@ hterm.Terminal.prototype.setCursorVisible = function(state) {
   this.cursorNode_.style.opacity = '1';
 
   if (this.options_.cursorBlink) {
-    if (this.timeouts_.cursorBlink)
+    if (this.timeouts_.cursorBlink) {
       return;
+    }
 
     this.onCursorBlink_();
   } else {
@@ -3088,8 +3130,9 @@ hterm.Terminal.prototype.restyleCursor_ = function() {
  * prior to the cursor actually changing position.
  */
 hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
-  if (this.timeouts_.syncCursor)
+  if (this.timeouts_.syncCursor) {
     return;
+  }
 
   if (this.accessibilityReader_.accessibilityEnabled) {
     // Report the previous position of the cursor for accessibility purposes.
@@ -3119,8 +3162,9 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
  */
 hterm.Terminal.prototype.showZoomWarning_ = function(state) {
   if (!this.zoomWarningNode_) {
-    if (!state)
+    if (!state) {
       return;
+    }
 
     this.zoomWarningNode_ = this.document_.createElement('div');
     this.zoomWarningNode_.id = 'hterm:zoom-warning';
@@ -3151,8 +3195,9 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
   this.zoomWarningNode_.style.fontFamily = this.prefs_.get('font-family');
 
   if (state) {
-    if (!this.zoomWarningNode_.parentNode)
+    if (!this.zoomWarningNode_.parentNode) {
       this.div_.parentNode.appendChild(this.zoomWarningNode_);
+    }
   } else if (this.zoomWarningNode_.parentNode) {
     this.zoomWarningNode_.parentNode.removeChild(this.zoomWarningNode_);
   }
@@ -3173,8 +3218,9 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
  */
 hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   if (!this.overlayNode_) {
-    if (!this.div_)
+    if (!this.div_) {
       return;
+    }
 
     this.overlayNode_ = this.document_.createElement('div');
     this.overlayNode_.style.cssText = (
@@ -3201,8 +3247,9 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   this.overlayNode_.textContent = msg;
   this.overlayNode_.style.opacity = '0.75';
 
-  if (!this.overlayNode_.parentNode)
+  if (!this.overlayNode_.parentNode) {
     this.div_.appendChild(this.overlayNode_);
+  }
 
   var divSize = hterm.getClientSize(lib.notNull(this.div_));
   var overlaySize = hterm.getClientSize(this.overlayNode_);
@@ -3212,13 +3259,15 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
   this.overlayNode_.style.left = (divSize.width - overlaySize.width -
       this.scrollPort_.currentScrollbarWidthPx) / 2 + 'px';
 
-  if (this.overlayTimeout_)
+  if (this.overlayTimeout_) {
     clearTimeout(this.overlayTimeout_);
+  }
 
   this.accessibilityReader_.assertiveAnnounce(msg);
 
-  if (opt_timeout === null)
+  if (opt_timeout === null) {
     return;
+  }
 
   this.overlayTimeout_ = setTimeout(() => {
     this.overlayNode_.style.opacity = '0';
@@ -3232,12 +3281,14 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
  * Useful when we show an overlay for an event with an unknown end time.
  */
 hterm.Terminal.prototype.hideOverlay = function() {
-  if (this.overlayTimeout_)
+  if (this.overlayTimeout_) {
     clearTimeout(this.overlayTimeout_);
+  }
   this.overlayTimeout_ = null;
 
-  if (this.overlayNode_.parentNode)
+  if (this.overlayNode_.parentNode) {
     this.overlayNode_.parentNode.removeChild(this.overlayNode_);
+  }
   this.overlayNode_.style.opacity = '0.75';
 };
 
@@ -3278,8 +3329,9 @@ hterm.Terminal.prototype.paste = function() {
  * @param {string} str The string to copy.
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
-  if (this.prefs_.get('enable-clipboard-notice'))
+  if (this.prefs_.get('enable-clipboard-notice')) {
     setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
+  }
 
   hterm.copySelectionToClipboard(this.document_, str);
 };
@@ -3319,12 +3371,14 @@ hterm.Terminal.prototype.copyStringToClipboard = function(str) {
 hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
   // Make sure we're actually given a resource to display.
   if (options.uri === undefined && options.buffer === undefined &&
-      options.blob === undefined)
+      options.blob === undefined) {
     return;
+  }
 
   // Set up the defaults to simplify code below.
-  if (!options.name)
+  if (!options.name) {
     options.name = '';
+  }
 
   // See if the mime type is available.  If not, guess from the filename.
   // We don't list all possible mime types because the browser can usually
@@ -3429,17 +3483,19 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
 
       // Parse a width/height specification.
       const parseDim = (dim, maxDim, cssVar) => {
-        if (!dim || dim == 'auto')
+        if (!dim || dim == 'auto') {
           return '';
+        }
 
         const ary = dim.match(/^([0-9]+)(px|%)?$/);
         if (ary) {
-          if (ary[2] == '%')
+          if (ary[2] == '%') {
             return Math.floor(maxDim * ary[1] / 100) + 'px';
-          else if (ary[2] == 'px')
+          } else if (ary[2] == 'px') {
             return dim;
-          else
+          } else {
             return `calc(${dim} * var(${cssVar}))`;
+          }
         }
 
         return '';
@@ -3455,8 +3511,9 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
       // Note: This count will be inaccurate if the font size changes on us.
       const padRows = Math.ceil(img.clientHeight /
                                 this.scrollPort_.characterSize.height);
-      for (let i = 0; i < padRows; ++i)
+      for (let i = 0; i < padRows; ++i) {
         this.newLine();
+      }
 
       // Update the max height in case the user shrinks the character size.
       img.style.maxHeight = `calc(${padRows} * var(--hterm-charsize-height))`;
@@ -3485,8 +3542,9 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
       io.hideOverlay();
       io.pop();
 
-      if (onLoad)
+      if (onLoad) {
         onLoad();
+      }
     };
 
     // If we got a malformed image, give up.
@@ -3496,8 +3554,9 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
                                'Loading $1 failed'));
       io.pop();
 
-      if (onError)
+      if (onError) {
         onError(e);
+      }
     };
   } else {
     // We can't use chrome.downloads.download as that requires "downloads"
@@ -3530,16 +3589,18 @@ hterm.Terminal.prototype.getSelectionText = function() {
   var selection = this.scrollPort_.selection;
   selection.sync();
 
-  if (selection.isCollapsed)
+  if (selection.isCollapsed) {
     return null;
+  }
 
   // Start offset measures from the beginning of the line.
   var startOffset = selection.startOffset;
   var node = selection.startNode;
 
   // If an x-row isn't selected, |node| will be null.
-  if (!node)
+  if (!node) {
     return null;
+  }
 
   if (node.nodeName != 'X-ROW') {
     // If the selection doesn't start on an x-row node, then it must be
@@ -3589,8 +3650,9 @@ hterm.Terminal.prototype.getSelectionText = function() {
  */
 hterm.Terminal.prototype.copySelectionToClipboard = function() {
   var text = this.getSelectionText();
-  if (text != null)
+  if (text != null) {
     this.copyStringToClipboard(text);
+  }
 };
 
 /**
@@ -3608,8 +3670,9 @@ hterm.Terminal.prototype.overlaySize = function() {
  * @param {string} string The VT string representing the keystroke, in UTF-16.
  */
 hterm.Terminal.prototype.onVTKeystroke = function(string) {
-  if (this.scrollOnKeystroke_)
+  if (this.scrollOnKeystroke_) {
     this.scrollPort_.scrollRowToBottom(this.getRowCount());
+  }
 
   this.pauseCursorBlink_();
 
@@ -3628,13 +3691,15 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
     str = this.getSelectionText();
 
     // If clicking in empty space, return.
-    if (str == null)
+    if (str == null) {
       return;
+    }
   }
 
   // Make sure URL is valid before opening.
-  if (str.length > 2048 || str.search(/[\s\[\](){}<>"'\\^`]/) >= 0)
+  if (str.length > 2048 || str.search(/[\s\[\](){}<>"'\\^`]/) >= 0) {
     return;
+  }
 
   // If the URI isn't anchored, it'll open relative to the extension.
   // We have no way of knowing the correct schema, so assume http.
@@ -3661,8 +3726,9 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
 hterm.Terminal.prototype.setAutomaticMouseHiding = function(v=null) {
   // Since Chrome OS & macOS do this by default everywhere, we don't need to.
   // Linux & Windows seem to leave this to specific applications to manage.
-  if (v === null)
+  if (v === null) {
     v = (hterm.os != 'cros' && hterm.os != 'mac');
+  }
 
   this.mouseHideWhileTyping_ = !!v;
 };
@@ -3677,8 +3743,9 @@ hterm.Terminal.prototype.setAutomaticMouseHiding = function(v=null) {
  */
 hterm.Terminal.prototype.onKeyboardActivity_ = function(e) {
   // When the user starts typing, hide the mouse cursor.
-  if (this.mouseHideWhileTyping_ && !this.mouseHideDelay_)
+  if (this.mouseHideWhileTyping_ && !this.mouseHideDelay_) {
     this.setCssVar('mouse-cursor-style', 'none');
+  }
 };
 
 /**
@@ -3770,8 +3837,9 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   if (!reportMouseEvents) {
     if (e.type == 'dblclick') {
       this.screen_.expandSelection(this.document_.getSelection());
-      if (this.copyOnSelect)
+      if (this.copyOnSelect) {
         this.copySelectionToClipboard();
+      }
     }
 
     if (e.type == 'click' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
@@ -3790,8 +3858,9 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
         this.contextMenu.show(e, this);
       } else if (e.button == this.mousePasteButton ||
           (this.mouseRightClickPaste && e.button == 2 /* right button */)) {
-        if (this.paste() === false)
+        if (this.paste() === false) {
           console.warn('Could not paste manually due to web restrictions');
+        }
       }
     }
 
@@ -3885,11 +3954,13 @@ hterm.Terminal.prototype.onFocusChange_ = function(focused) {
   this.cursorNode_.setAttribute('focus', focused);
   this.restyleCursor_();
 
-  if (this.reportFocus)
+  if (this.reportFocus) {
     this.io.sendString(focused === true ? '\x1b[I' : '\x1b[O');
+  }
 
-  if (focused === true)
+  if (focused === true) {
     this.closeBellNotifications_();
+  }
 };
 
 /**
@@ -3971,8 +4042,9 @@ hterm.Terminal.prototype.onResize_ = function() {
   this.realizeSize_(columnCount, rowCount);
   this.showZoomWarning_(this.scrollPort_.characterSize.zoomFactor != 1);
 
-  if (isNewSize)
+  if (isNewSize) {
     this.overlaySize();
+  }
 
   this.restyleCursor_();
   this.scheduleSyncCursorPosition_();

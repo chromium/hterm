@@ -243,11 +243,13 @@ hterm.Keyboard.KeyAction;
  *     null to disable the keyboard.
  */
 hterm.Keyboard.prototype.installKeyboard = function(element) {
-  if (element == this.keyboardElement_)
+  if (element == this.keyboardElement_) {
     return;
+  }
 
-  if (element && this.keyboardElement_)
+  if (element && this.keyboardElement_) {
     this.installKeyboard(null);
+  }
 
   for (var i = 0; i < this.handlers_.length; i++) {
     var handler = this.handlers_[i];
@@ -279,8 +281,9 @@ hterm.Keyboard.prototype.uninstallKeyboard = function() {
  * @param {!InputEvent} e The event to process.
  */
 hterm.Keyboard.prototype.onTextInput_ = function(e) {
-  if (!e.data)
+  if (!e.data) {
     return;
+  }
 
   // Just pass the generated buffer straight down.  No need for us to split it
   // up or otherwise parse it ahead of times.
@@ -323,15 +326,17 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
     // This happens here only as a fallback.  Typically these platforms should
     // set altSendsWhat to either 'escape' or '8-bit'.
     ch = String.fromCharCode(e.keyCode);
-    if (!e.shiftKey)
+    if (!e.shiftKey) {
       ch = ch.toLowerCase();
+    }
 
   } else if (e.charCode >= 32) {
     ch = String.fromCharCode(e.charCode);
   }
 
-  if (ch)
+  if (ch) {
     this.terminal.onVTKeystroke(ch);
+  }
 
   e.preventDefault();
   e.stopPropagation();
@@ -347,10 +352,12 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
  * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.preventChromeAppNonCtrlShiftDefault_ = function(e) {
-  if (!window.chrome || !window.chrome.app || !window.chrome.app.window)
+  if (!window.chrome || !window.chrome.app || !window.chrome.app.window) {
     return;
-  if (!e.ctrlKey || !e.shiftKey)
+  }
+  if (!e.ctrlKey || !e.shiftKey) {
     e.preventDefault();
+  }
 };
 
 /**
@@ -368,11 +375,13 @@ hterm.Keyboard.prototype.onFocusOut_ = function(e) {
  * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.onKeyUp_ = function(e) {
-  if (e.keyCode == 18)
+  if (e.keyCode == 18) {
     this.altKeyPressed = this.altKeyPressed & ~(1 << (e.location - 1));
+  }
 
-  if (e.keyCode == 27)
+  if (e.keyCode == 27) {
     this.preventChromeAppNonCtrlShiftDefault_(e);
+  }
 };
 
 /**
@@ -381,11 +390,13 @@ hterm.Keyboard.prototype.onKeyUp_ = function(e) {
  * @param {!KeyboardEvent} e The event to process.
  */
 hterm.Keyboard.prototype.onKeyDown_ = function(e) {
-  if (e.keyCode == 18)
+  if (e.keyCode == 18) {
     this.altKeyPressed = this.altKeyPressed | (1 << (e.location - 1));
+  }
 
-  if (e.keyCode == 27)
+  if (e.keyCode == 27) {
     this.preventChromeAppNonCtrlShiftDefault_(e);
+  }
 
   var keyDef = this.keyMap.keyDefs[e.keyCode];
   if (!keyDef) {
@@ -413,11 +424,13 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     resolvedActionType = name;
 
     var action = keyDef[name];
-    if (typeof action == 'function')
+    if (typeof action == 'function') {
       action = action.call(self.keyMap, e, keyDef);
+    }
 
-    if (action === DEFAULT && name != 'normal')
+    if (action === DEFAULT && name != 'normal') {
       action = getAction('normal');
+    }
 
     return action;
   }
@@ -536,18 +549,21 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   if (action === STRIP) {
     alt = control = false;
     action = keyDef.normal;
-    if (typeof action == 'function')
+    if (typeof action == 'function') {
       action = action.call(this.keyMap, e, keyDef);
+    }
 
-    if (action == DEFAULT && keyDef.keyCap.length == 2)
+    if (action == DEFAULT && keyDef.keyCap.length == 2) {
       action = keyDef.keyCap.substr((shift ? 1 : 0), 1);
+    }
   }
 
   e.preventDefault();
   e.stopPropagation();
 
-  if (action === CANCEL)
+  if (action === CANCEL) {
     return;
+  }
 
   if (action !== DEFAULT && typeof action != 'string') {
     console.warn('Invalid action: ' + JSON.stringify(action));
@@ -572,14 +588,18 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
     // The math is funky but aligns w/xterm.
     let imod = 1;
-    if (shift)
+    if (shift) {
       imod += 1;
-    if (alt)
+    }
+    if (alt) {
       imod += 2;
-    if (control)
+    }
+    if (control) {
       imod += 4;
-    if (meta)
+    }
+    if (meta) {
       imod += 8;
+    }
     let mod = ';' + imod;
 
     if (action.length == 3) {

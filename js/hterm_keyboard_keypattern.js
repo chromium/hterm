@@ -21,8 +21,9 @@ hterm.Keyboard.KeyPattern = function(spec) {
 
   hterm.Keyboard.KeyPattern.modifiers.forEach(function(mod) {
     this[mod] = spec[mod] || false;
-    if (this[mod] == '*')
+    if (this[mod] == '*') {
       this.wildcardCount++;
+    }
   }.bind(this));
 };
 
@@ -45,11 +46,13 @@ hterm.Keyboard.KeyPattern.modifiers = [
  * @return {number}
  */
 hterm.Keyboard.KeyPattern.sortCompare = function(a, b) {
-  if (a.wildcardCount < b.wildcardCount)
+  if (a.wildcardCount < b.wildcardCount) {
     return -1;
+  }
 
-  if (a.wildcardCount > b.wildcardCount)
+  if (a.wildcardCount > b.wildcardCount) {
     return 1;
+  }
 
   return 0;
 };
@@ -65,15 +68,17 @@ hterm.Keyboard.KeyPattern.sortCompare = function(a, b) {
  * @return {boolean}
  */
 hterm.Keyboard.KeyPattern.prototype.match_ = function(obj, exactMatch) {
-  if (this.keyCode != obj.keyCode)
+  if (this.keyCode != obj.keyCode) {
     return false;
+  }
 
   var rv = true;
 
   hterm.Keyboard.KeyPattern.modifiers.forEach(function(mod) {
     var modValue = (mod in obj) ? obj[mod] : false;
-    if (!rv || (!exactMatch && this[mod] == '*') || this[mod] == modValue)
+    if (!rv || (!exactMatch && this[mod] == '*') || this[mod] == modValue) {
       return;
+    }
 
     rv = false;
   }.bind(this));

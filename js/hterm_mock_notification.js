@@ -16,8 +16,9 @@ Notification.lastCall;
  */
 var MockNotification = function() {
   function mock(title, opts) {
-    if (opts === undefined)
+    if (opts === undefined) {
       opts = {};
+    }
     this.title = title;
     this.body = opts.body || '';
     mock.count++;

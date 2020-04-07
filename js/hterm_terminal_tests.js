@@ -134,8 +134,9 @@ it('plaintext-stress-insert', function(done) {
 
     function test(count) {
       for (var i = count * chunkSize; i < (count + 1) * chunkSize; i++) {
-        if (i != 0)
+        if (i != 0) {
           self.terminal.newLine();
+        }
         self.terminal.screen_.insertString(
             'line ' + i + ': All work and no play makes jack a dull boy.');
       }

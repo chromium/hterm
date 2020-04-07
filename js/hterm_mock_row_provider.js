@@ -40,8 +40,9 @@ MockRowProvider.prototype.resetCallCount = function(name) {
  * @return {number} The number of times the function has been called.
  */
 MockRowProvider.prototype.getCallCount = function(name) {
-  if (!(name in this.callCounts_))
+  if (!(name in this.callCounts_)) {
     throw 'Unknown name: ' + name;
+  }
 
   return this.callCounts_[name];
 };
@@ -83,8 +84,9 @@ MockRowProvider.prototype.getRowCount = function() {
  * @return {!Object} The specified row record.
  */
 MockRowProvider.prototype.getRowRecord_ = function(index) {
-  if (index < 0 || index >= this.rows_.length)
+  if (index < 0 || index >= this.rows_.length) {
     throw 'Index out of bounds: ' + index;
+  }
 
   if (!this.rows_[index]) {
     this.rows_[index] = {
@@ -113,8 +115,9 @@ MockRowProvider.prototype.getRowRecord_ = function(index) {
  * @return {string} The text of the specified rows.
  */
 MockRowProvider.prototype.getRowsText = function(start, end) {
-  if (start < 0 || end >= this.rows_.length)
+  if (start < 0 || end >= this.rows_.length) {
     throw 'Index out of bounds.';
+  }
 
   var text = this.rows_.slice(start, end);
   return text.map(function (e) { return e.text; }).join('\n');
@@ -141,16 +144,18 @@ MockRowProvider.prototype.getRowText = function(index) {
 MockRowProvider.prototype.getRowNode = function(index) {
   this.addCallCount('getRowNode');
 
-  if (this.rowNodeCache_ && index in this.rowNodeCache_)
+  if (this.rowNodeCache_ && index in this.rowNodeCache_) {
     return this.rowNodeCache_[index];
+  }
 
   var rec = this.getRowRecord_(index);
   var rowNode = this.document_.createElement('x-row');
   rowNode.rowIndex = index;
   rowNode.innerHTML = rec.html;
 
-  if (this.rowNodeCache_)
+  if (this.rowNodeCache_) {
     this.rowNodeCache_[index] = rowNode;
+  }
 
   return rowNode;
 };

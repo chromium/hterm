@@ -113,8 +113,9 @@ hterm.Frame.prototype.onCloseClicked_ = function() {
  * Close this frame.
  */
 hterm.Frame.prototype.close = function() {
-  if (!this.container_ || !this.container_.parentNode)
-      return;
+  if (!this.container_ || !this.container_.parentNode) {
+    return;
+  }
 
   this.container_.parentNode.removeChild(this.container_);
   this.onClose();
@@ -133,8 +134,9 @@ hterm.Frame.prototype.onClose = function() {};
  * @param {!Array=} argv The message arguments.
  */
 hterm.Frame.prototype.postMessage = function(name, argv) {
-  if (!this.messageChannel_)
+  if (!this.messageChannel_) {
     throw new Error('Message channel is not set up.');
+  }
 
   this.messageChannel_.port1.postMessage({name: name, argv: argv});
 };
@@ -148,8 +150,9 @@ hterm.Frame.prototype.show = function() {
   var self = this;
 
   function opt(name, defaultValue) {
-    if (name in self.options)
+    if (name in self.options) {
       return self.options[name];
+    }
 
     return defaultValue;
   }

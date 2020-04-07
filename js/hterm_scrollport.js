@@ -187,13 +187,15 @@ hterm.ScrollPort.Selection.prototype.findFirstChild = function(
   var node = parent.firstChild;
 
   while (node) {
-    if (childAry.indexOf(node) != -1)
+    if (childAry.indexOf(node) != -1) {
       return node;
+    }
 
     if (node.childNodes.length) {
       var rv = this.findFirstChild(node, childAry);
-      if (rv)
+      if (rv) {
         return rv;
+      }
     }
 
     node = node.nextSibling;
@@ -294,8 +296,9 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     var firstNode = this.findFirstChild(
         anchorRow, [selection.anchorNode, selection.focusNode]);
 
-    if (!firstNode)
+    if (!firstNode) {
       throw new Error('Unexpected error syncing selection.');
+    }
 
     if (firstNode == selection.anchorNode) {
       anchorFirst();
@@ -522,8 +525,9 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   this.document_.addEventListener('selectionchange', () => {
     this.selection.sync();
 
-    if (!this.allowA11yButtonsToDisplay_)
+    if (!this.allowA11yButtonsToDisplay_) {
       return;
+    }
 
     const accessibilityEnabled = this.accessibilityReader_ &&
         this.accessibilityReader_.accessibilityEnabled;
@@ -715,8 +719,9 @@ hterm.ScrollPort.prototype.setUserCssUrl = function(url) {
   if (url) {
     this.userCssLink_.setAttribute('href', url);
 
-    if (!this.userCssLink_.parentNode)
+    if (!this.userCssLink_.parentNode) {
       this.document_.head.appendChild(this.userCssLink_);
+    }
   } else if (this.userCssLink_.parentNode) {
     this.document_.head.removeChild(this.userCssLink_);
   }
@@ -873,8 +878,9 @@ hterm.ScrollPort.prototype.invalidate = function() {
  * Schedule invalidate.
  */
 hterm.ScrollPort.prototype.scheduleInvalidate = function() {
-  if (this.timeouts_.invalidate)
+  if (this.timeouts_.invalidate) {
     return;
+  }
 
   var self = this;
   this.timeouts_.invalidate = setTimeout(function () {
@@ -1078,8 +1084,9 @@ hterm.ScrollPort.prototype.syncScrollHeight = function() {
  * run only one redraw occurs.
  */
 hterm.ScrollPort.prototype.scheduleRedraw = function() {
-  if (this.timeouts_.redraw)
+  if (this.timeouts_.redraw) {
     return;
+  }
 
   var self = this;
   this.timeouts_.redraw = setTimeout(function () {
@@ -1160,8 +1167,9 @@ hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
       this.selection.startRow.rowIndex >= topRowIndex) {
     // Selection is entirely below the top fold, just make sure the fold is
     // the first child.
-    if (this.rowNodes_.firstChild != this.topFold_)
+    if (this.rowNodes_.firstChild != this.topFold_) {
       this.rowNodes_.insertBefore(this.topFold_, this.rowNodes_.firstChild);
+    }
 
     return;
   }
@@ -1169,9 +1177,10 @@ hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
   if (!this.selection.isMultiline ||
       this.selection.endRow.rowIndex >= topRowIndex) {
     // Only the startRow is above the fold.
-    if (this.selection.startRow.nextSibling != this.topFold_)
+    if (this.selection.startRow.nextSibling != this.topFold_) {
       this.rowNodes_.insertBefore(this.topFold_,
                                   this.selection.startRow.nextSibling);
+    }
   } else {
     // Both rows are above the fold.
     if (this.selection.endRow.nextSibling != this.topFold_) {
@@ -1211,8 +1220,9 @@ hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
       this.selection.endRow.rowIndex <= bottomRowIndex) {
     // Selection is entirely above the bottom fold, just make sure the fold is
     // the last child.
-    if (this.rowNodes_.lastChild != this.bottomFold_)
+    if (this.rowNodes_.lastChild != this.bottomFold_) {
       this.rowNodes_.appendChild(this.bottomFold_);
+    }
 
     return;
   }
@@ -1220,9 +1230,10 @@ hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
   if (!this.selection.isMultiline ||
       this.selection.startRow.rowIndex <= bottomRowIndex) {
     // Only the endRow is below the fold.
-    if (this.bottomFold_.nextSibling != this.selection.endRow)
+    if (this.bottomFold_.nextSibling != this.selection.endRow) {
       this.rowNodes_.insertBefore(this.bottomFold_,
                                   this.selection.endRow);
+    }
   } else {
     // Both rows are below the fold.
     if (this.bottomFold_.nextSibling != this.selection.startRow) {
@@ -1267,11 +1278,13 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
   // targetNode.  Throws on failure.
   function removeUntilNode(currentNode, targetNode) {
     while (currentNode != targetNode) {
-      if (!currentNode)
+      if (!currentNode) {
         throw 'Did not encounter target node';
+      }
 
-      if (currentNode == self.bottomFold_)
+      if (currentNode == self.bottomFold_) {
         throw 'Encountered bottom fold before target node';
+      }
 
       var deadNode = currentNode;
       currentNode = currentNode.nextSibling;
@@ -1358,8 +1371,9 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
     node = newNode.nextSibling;
   }
 
-  if (node != this.bottomFold_)
+  if (node != this.bottomFold_) {
     removeUntilNode(node, bottomFold);
+  }
 };
 
 /**
@@ -1442,8 +1456,9 @@ hterm.ScrollPort.prototype.fetchRowNode_ = function(rowIndex) {
     node = this.rowProvider_.getRowNode(rowIndex);
   }
 
-  if (this.currentRowNodeCache_)
+  if (this.currentRowNodeCache_) {
     this.cacheRowNode_(node);
+  }
 
   return node;
 };
@@ -1513,11 +1528,13 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
       this.visibleRowTopMargin;
 
   var scrollMax = this.getScrollMax_();
-  if (scrollTop > scrollMax)
+  if (scrollTop > scrollMax) {
     scrollTop = scrollMax;
+  }
 
-  if (this.screen_.scrollTop == scrollTop)
+  if (this.screen_.scrollTop == scrollTop) {
     return;
+  }
 
   this.screen_.scrollTop = scrollTop;
   this.scheduleRedraw();
@@ -1538,11 +1555,13 @@ hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
       this.visibleRowTopMargin + this.visibleRowBottomMargin;
   scrollTop -= this.visibleRowCount * this.characterSize.height;
 
-  if (scrollTop < 0)
+  if (scrollTop < 0) {
     scrollTop = 0;
+  }
 
-  if (this.screen_.scrollTop == scrollTop)
+  if (this.screen_.scrollTop == scrollTop) {
     return;
+  }
 
   this.screen_.scrollTop = scrollTop;
 };
@@ -1624,19 +1643,22 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   // or if it is non-cancelable since preventDefault is ignored for these.
   // See https://crbug.com/894223 where blink sends non-cancelable touchpad
   // scrollWheel events.
-  if (e.defaultPrevented || !e.cancelable)
+  if (e.defaultPrevented || !e.cancelable) {
     return;
+  }
 
   // Figure out how far this event wants us to scroll.
   const delta = this.scrollWheelDelta(e);
 
   let top = this.screen_.scrollTop - delta.y;
-  if (top < 0)
+  if (top < 0) {
     top = 0;
+  }
 
   var scrollMax = this.getScrollMax_();
-  if (top > scrollMax)
+  if (top > scrollMax) {
     top = scrollMax;
+  }
 
   if (top != this.screen_.scrollTop) {
     // Moving scrollTop causes a scroll event, which triggers the redraw.
@@ -1704,8 +1726,9 @@ hterm.ScrollPort.prototype.onTouch = function(e) {};
 hterm.ScrollPort.prototype.onTouch_ = function(e) {
   this.onTouch(e);
 
-  if (e.defaultPrevented)
+  if (e.defaultPrevented) {
     return;
+  }
 
   // Extract the fields from the Touch event that we need.  If we saved the
   // event directly, it has references to other objects (like x-row) that
@@ -1742,8 +1765,9 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
     case 'touchcancel':
     case 'touchend':
       // Throw away existing touches that we're finished with.
-      for (i = 0; i < e.changedTouches.length; ++i)
+      for (i = 0; i < e.changedTouches.length; ++i) {
         delete this.lastTouch_[e.changedTouches[i].identifier];
+      }
       break;
 
     case 'touchmove':
@@ -1760,12 +1784,14 @@ hterm.ScrollPort.prototype.onTouch_ = function(e) {
       delta *= -1;
 
       var top = this.screen_.scrollTop - delta;
-      if (top < 0)
+      if (top < 0) {
         top = 0;
+      }
 
       var scrollMax = this.getScrollMax_();
-      if (top > scrollMax)
+      if (top > scrollMax) {
         top = scrollMax;
+      }
 
       if (top != this.screen_.scrollTop) {
         // Moving scrollTop causes a scroll event, which triggers the redraw.
@@ -1814,8 +1840,9 @@ hterm.ScrollPort.prototype.onCopy = function(e) { };
 hterm.ScrollPort.prototype.onCopy_ = function(e) {
   this.onCopy(e);
 
-  if (e.defaultPrevented)
+  if (e.defaultPrevented) {
     return;
+  }
 
   this.resetSelectBags_();
   this.selection.sync();
@@ -1872,11 +1899,13 @@ hterm.ScrollPort.prototype.onCopy_ = function(e) {
  * @param {!KeyboardEvent} e
  */
 hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
-  if (!this.ctrlVPaste)
+  if (!this.ctrlVPaste) {
     return;
+  }
 
-  if ((e.ctrlKey || e.metaKey) && e.keyCode == 86 /* 'V' */)
+  if ((e.ctrlKey || e.metaKey) && e.keyCode == 86 /* 'V' */) {
     this.pasteTarget_.focus();
+  }
 };
 
 /**
@@ -1918,8 +1947,9 @@ hterm.ScrollPort.prototype.handlePasteTargetTextInput_ = function(e) {
  * @param {!DragEvent} e The drag event that fired us.
  */
 hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
-  if (!this.pasteOnDrop)
+  if (!this.pasteOnDrop) {
     return;
+  }
 
   e.preventDefault();
 
@@ -1930,21 +1960,25 @@ hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
   // text).  e.g. text/html is OK.
   if (e.shiftKey) {
     e.dataTransfer.types.forEach((t) => {
-      if (!format && t != 'text/plain' && t.startsWith('text/'))
+      if (!format && t != 'text/plain' && t.startsWith('text/')) {
         format = t;
+      }
     });
 
     // If we found a non-plain text source, try it out first.
-    if (format)
+    if (format) {
       data = e.dataTransfer.getData(format);
+    }
   }
 
   // If we haven't loaded anything useful, fall back to plain text.
-  if (!data)
+  if (!data) {
     data = e.dataTransfer.getData('text/plain');
+  }
 
-  if (data)
+  if (data) {
     this.publish('paste', {text: data});
+  }
 };
 
 /**

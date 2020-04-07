@@ -76,8 +76,9 @@ lib.registerInit(
 
       function initMessageManager() {
         lib.i18n.getAcceptLanguages((languages) => {
-          if (!hterm.messageManager)
+          if (!hterm.messageManager) {
             hterm.messageManager = new lib.MessageManager(languages);
+          }
 
           // If OS detection fails, then we'll still set the value to something.
           // The OS logic in hterm tends to be best effort anyways.
@@ -297,8 +298,9 @@ hterm.msg = function(name, args = [], string) {
  */
 hterm.notify = function(params) {
   var def = (curr, fallback) => curr !== undefined ? curr : fallback;
-  if (params === undefined || params === null)
+  if (params === undefined || params === null) {
     params = {};
+  }
 
   // Merge the user's choices with the default settings.  We don't take it
   // directly in case it was stuffed with excess junk.
@@ -308,8 +310,9 @@ hterm.notify = function(params) {
   };
 
   var title = def(params.title, window.document.title);
-  if (!title)
+  if (!title) {
     title = 'hterm';
+  }
   title = lib.f.replaceVars(hterm.desktopNotificationTitle, {'title': title});
 
   var n = new Notification(title, options);

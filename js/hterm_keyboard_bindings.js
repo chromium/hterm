@@ -227,13 +227,15 @@ hterm.Keyboard.Bindings.prototype.addBindings = function(
  */
 hterm.Keyboard.Bindings.prototype.getBinding = function(keyDown) {
   var list = this.bindings_[keyDown.keyCode];
-  if (!list)
+  if (!list) {
     return null;
+  }
 
   for (var i = 0; i < list.length; i++) {
     var binding = list[i];
-    if (binding.keyPattern.matchKeyDown(keyDown))
+    if (binding.keyPattern.matchKeyDown(keyDown)) {
       return binding;
+    }
   }
 
   return null;

@@ -54,10 +54,11 @@ hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
 
   // Set the the GL mapping.  If we're given a custom mapping, then create a
   // new object to hold the merged map.  This way we can cleanly reset back.
-  if (opt_glmap)
+  if (opt_glmap) {
     this.glmap_ = Object.assign({}, this.glmapBase_, opt_glmap);
-  else
+  } else {
     this.glmap_ = this.glmapBase_;
+  }
 
   var glchars = Object.keys(lib.notNull(this.glmap_)).map((key) =>
       '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16), 2));
@@ -73,8 +74,9 @@ hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
  */
 hterm.VT.CharacterMap.prototype.reset = function() {
   // If we haven't been given a custom mapping, then there's nothing to reset.
-  if (this.glmap_ !== this.glmapBase_)
+  if (this.glmap_ !== this.glmapBase_) {
     this.sync_();
+  }
 };
 
 /**
@@ -97,8 +99,9 @@ hterm.VT.CharacterMap.prototype.setOverrides = function(glmap) {
  */
 hterm.VT.CharacterMap.prototype.clone = function() {
   var map = new hterm.VT.CharacterMap(this.description, this.glmapBase_);
-  if (this.glmap_ !== this.glmapBase_)
+  if (this.glmap_ !== this.glmapBase_) {
     map.setOverrides(this.glmap_);
+  }
   return map;
 };
 
@@ -123,10 +126,11 @@ hterm.VT.CharacterMaps = function() {
  *     or undefined.
  */
 hterm.VT.CharacterMaps.prototype.getMap = function(name) {
-  if (this.maps_.hasOwnProperty(name))
+  if (this.maps_.hasOwnProperty(name)) {
     return this.maps_[name];
-  else
+  } else {
     return undefined;
+  }
 };
 
 /**
@@ -138,8 +142,9 @@ hterm.VT.CharacterMaps.prototype.getMap = function(name) {
  * @param {!hterm.VT.CharacterMap} map The map to register.
  */
 hterm.VT.CharacterMaps.prototype.addMap = function(name, map) {
-  if (this.maps_ === this.mapsBase_)
+  if (this.maps_ === this.mapsBase_) {
     this.maps_ = Object.assign({}, this.mapsBase_);
+  }
   this.maps_[name] = map;
 };
 
@@ -147,8 +152,9 @@ hterm.VT.CharacterMaps.prototype.addMap = function(name, map) {
  * Reset the table and all its maps back to original state.
  */
 hterm.VT.CharacterMaps.prototype.reset = function() {
-  if (this.maps_ !== hterm.VT.CharacterMaps.DefaultMaps)
+  if (this.maps_ !== hterm.VT.CharacterMaps.DefaultMaps) {
     this.maps_ = hterm.VT.CharacterMaps.DefaultMaps;
+  }
 };
 
 /**
@@ -157,16 +163,18 @@ hterm.VT.CharacterMaps.prototype.reset = function() {
  * @param {!Object} maps A set of hterm.VT.CharacterMap objects.
  */
 hterm.VT.CharacterMaps.prototype.setOverrides = function(maps) {
-  if (this.maps_ === this.mapsBase_)
+  if (this.maps_ === this.mapsBase_) {
     this.maps_ = Object.assign({}, this.mapsBase_);
+  }
 
   for (var name in maps) {
     var map = this.getMap(name);
     if (map !== undefined) {
       this.maps_[name] = map.clone();
       this.maps_[name].setOverrides(maps[name]);
-    } else
+    } else {
       this.addMap(name, new hterm.VT.CharacterMap('user ' + name, maps[name]));
+    }
   }
 };
 

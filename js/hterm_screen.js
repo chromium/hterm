@@ -120,8 +120,9 @@ hterm.Screen.prototype.getWidth = function() {
 hterm.Screen.prototype.setColumnCount = function(count) {
   this.columnCount_ = count;
 
-  if (this.cursorPosition.column >= count)
+  if (this.cursorPosition.column >= count) {
     this.setCursorPosition(this.cursorPosition.row, count - 1);
+  }
 };
 
 /**
@@ -407,10 +408,12 @@ hterm.Screen.prototype.splitNode_ = function(node, offset) {
   node.textContent = hterm.TextAttributes.nodeSubstr(node, 0, offset);
   afterNode.textContent = lib.wc.substr(textContent, offset);
 
-  if (afterNode.textContent)
+  if (afterNode.textContent) {
     node.parentNode.insertBefore(afterNode, node.nextSibling);
-  if (!node.textContent)
+  }
+  if (!node.textContent) {
     node.parentNode.removeChild(node);
+  }
 };
 
 /**
@@ -485,8 +488,9 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
 
   // We may alter the width of the string by prepending some missing
   // whitespaces, so we need to record the string width ahead of time.
-  if (wcwidth === undefined)
+  if (wcwidth === undefined) {
     wcwidth = lib.wc.strWidth(str);
+  }
 
   // No matter what, before this function exits the cursor column will have
   // moved this much.
@@ -623,11 +627,13 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
  */
 hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;
-  if (!maxLength)
+  if (!maxLength) {
     return;
+  }
 
-  if (wcwidth === undefined)
+  if (wcwidth === undefined) {
     wcwidth = lib.wc.strWidth(str);
+  }
 
   if (this.textAttributes.matchesContainer(lib.notNull(this.cursorNode_)) &&
       this.cursorNode_.textContent.substr(this.cursorOffset_) ==
@@ -658,8 +664,9 @@ hterm.Screen.prototype.deleteChars = function(count) {
 
   var currentCursorColumn = this.cursorPosition.column;
   count = Math.min(count, this.columnCount_ - currentCursorColumn);
-  if (!count)
+  if (!count) {
     return 0;
+  }
 
   var rv = count;
   var startLength, endLength;
@@ -692,8 +699,9 @@ hterm.Screen.prototype.deleteChars = function(count) {
       node.textContent = '';
       endLength = 0;
       count -= 1;
-    } else
+    } else {
       count -= startLength - endLength;
+    }
 
     var nextNode = node.nextSibling;
     if (endLength == 0 && node != this.cursorNode_) {
@@ -771,8 +779,9 @@ hterm.Screen.prototype.getLineText_ = function(row) {
 hterm.Screen.prototype.getXRowAncestor_ = function(node) {
   let nodeOrNull = node;
   while (nodeOrNull) {
-    if (nodeOrNull.nodeName === 'X-ROW')
+    if (nodeOrNull.nodeName === 'X-ROW') {
       break;
+    }
     nodeOrNull = nodeOrNull.parentNode;
   }
   return nodeOrNull;
@@ -788,11 +797,13 @@ hterm.Screen.prototype.getXRowAncestor_ = function(node) {
  * @return {number} Position within line of character at offset within node.
  **/
 hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
-  if (!node)
+  if (!node) {
     return -1;
+  }
   var ancestorRow = this.getXRowAncestor_(node);
-  if (!ancestorRow)
+  if (!ancestorRow) {
     return -1;
+  }
   var position = 0;
   while (ancestorRow != row) {
     position += hterm.TextAttributes.nodeWidth(row);
@@ -817,8 +828,9 @@ hterm.Screen.prototype.getPositionWithOverflow_ = function(row, node, offset) {
 hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
   if (node.parentNode != row) {
     // If we traversed to the top node, then there's nothing to find here.
-    if (node.parentNode == null)
+    if (node.parentNode == null) {
       return -1;
+    }
 
     return this.getPositionWithinRow_(node.parentNode, node, offset) +
            this.getPositionWithinRow_(row, node.parentNode, 0);
@@ -826,8 +838,9 @@ hterm.Screen.prototype.getPositionWithinRow_ = function(row, node, offset) {
   var position = 0;
   for (var i = 0; i < row.childNodes.length; i++) {
     var currentNode = row.childNodes[i];
-    if (currentNode == node)
+    if (currentNode == node) {
       return position + offset;
+    }
     position += hterm.TextAttributes.nodeWidth(currentNode);
   }
   return -1;
@@ -889,11 +902,13 @@ hterm.Screen.prototype.getNodeAndOffsetWithinRow_ = function(row, position) {
  **/
 hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
   var startNodeAndOffset = this.getNodeAndOffsetWithOverflow_(row, start);
-  if (startNodeAndOffset == null)
+  if (startNodeAndOffset == null) {
     return;
+  }
   var endNodeAndOffset = this.getNodeAndOffsetWithOverflow_(row, end);
-  if (endNodeAndOffset == null)
+  if (endNodeAndOffset == null) {
     return;
+  }
   range.setStart(startNodeAndOffset[0], startNodeAndOffset[1]);
   range.setEnd(endNodeAndOffset[0], endNodeAndOffset[1]);
 };
@@ -908,47 +923,56 @@ hterm.Screen.prototype.setRange_ = function(row, start, end, range) {
  */
 hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
     function(selection, leftMatch, rightMatch, insideMatch) {
-  if (!selection)
+  if (!selection) {
     return;
+  }
 
   var range = selection.getRangeAt(0);
-  if (!range || range.toString().match(/\s/))
+  if (!range || range.toString().match(/\s/)) {
     return;
+  }
 
   const rowElement = this.getXRowAncestor_(lib.notNull(range.startContainer));
-  if (!rowElement)
+  if (!rowElement) {
     return;
+  }
   const row = this.getLineStartRow_(rowElement);
-  if (!row)
+  if (!row) {
     return;
+  }
 
   var startPosition = this.getPositionWithOverflow_(
       row, lib.notNull(range.startContainer), range.startOffset);
-  if (startPosition == -1)
+  if (startPosition == -1) {
     return;
+  }
   var endPosition = this.getPositionWithOverflow_(
       row, lib.notNull(range.endContainer), range.endOffset);
-  if (endPosition == -1)
+  if (endPosition == -1) {
     return;
+  }
 
   //Move start to the left.
   var rowText = this.getLineText_(row);
   var lineUpToRange = lib.wc.substring(rowText, 0, endPosition);
   var leftRegularExpression = new RegExp(leftMatch + insideMatch + '$');
   var expandedStart = lineUpToRange.search(leftRegularExpression);
-  if (expandedStart == -1 || expandedStart > startPosition)
+  if (expandedStart == -1 || expandedStart > startPosition) {
     return;
+  }
 
   //Move end to the right.
   var lineFromRange = lib.wc.substring(rowText, startPosition,
                                        lib.wc.strWidth(rowText));
   var rightRegularExpression = new RegExp('^' + insideMatch + rightMatch);
   var found = lineFromRange.match(rightRegularExpression);
-  if (!found)
+  if (!found) {
     return;
+  }
   var expandedEnd = startPosition + lib.wc.strWidth(found[0]);
-  if (expandedEnd == -1 || expandedEnd < endPosition)
+  if (expandedEnd == -1 || expandedEnd < endPosition) {
     return;
+  }
 
   this.setRange_(row, expandedStart, expandedEnd, range);
   selection.addRange(range);

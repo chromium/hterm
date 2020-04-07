@@ -96,8 +96,9 @@ hterm.Parser.prototype.parseKeySequence = function() {
       if (ucValue in hterm.Parser.identifiers.modifierKeys &&
           hterm.Parser.identifiers.modifierKeys.hasOwnProperty(ucValue)) {
         var mod = hterm.Parser.identifiers.modifierKeys[ucValue];
-        if (rv[mod] && rv[mod] != '*')
+        if (rv[mod] && rv[mod] != '*') {
           throw this.error('Duplicate modifier: ' + token.value);
+        }
         rv[mod] = true;
 
       } else if (ucValue in hterm.Parser.identifiers.keyCodes &&
@@ -112,8 +113,9 @@ hterm.Parser.prototype.parseKeySequence = function() {
       if (token.value == '*') {
         for (var id in hterm.Parser.identifiers.modifierKeys) {
           var p = hterm.Parser.identifiers.modifierKeys[id];
-          if (!rv[p])
+          if (!rv[p]) {
             rv[p] =  '*';
+          }
         }
       } else {
         throw this.error('Unexpected symbol: ' + token.value);
@@ -124,17 +126,20 @@ hterm.Parser.prototype.parseKeySequence = function() {
 
     this.skipSpace();
 
-    if (this.ch !== '-' && this.ch !== '+')
+    if (this.ch !== '-' && this.ch !== '+') {
       break;
+    }
 
-    if (rv.keyCode != null)
+    if (rv.keyCode != null) {
       throw this.error('Extra definition after target key');
+    }
 
     this.advance(1);
   }
 
-  if (rv.keyCode == null)
+  if (rv.keyCode == null) {
     throw this.error('Missing target key');
+  }
 
   return rv;
 };
@@ -145,13 +150,15 @@ hterm.Parser.prototype.parseKeyAction = function() {
 
   var token = this.parseToken();
 
-  if (token.type == 'string')
+  if (token.type == 'string') {
     return token.value;
+  }
 
   if (token.type == 'identifier') {
     if (token.value in hterm.Parser.identifiers.actions &&
-        hterm.Parser.identifiers.actions.hasOwnProperty(token.value))
+        hterm.Parser.identifiers.actions.hasOwnProperty(token.value)) {
       return hterm.Parser.identifiers.actions[token.value];
+    }
 
     throw this.error('Unknown key action: ' + token.value);
   }
@@ -183,23 +190,26 @@ hterm.Parser.prototype.parseToken = function() {
     return rv;
   }
 
-  if (this.peekIdentifier())
+  if (this.peekIdentifier()) {
     return {type: 'identifier', value: this.parseIdentifier()};
+  }
 
-  if (this.peekString())
+  if (this.peekString()) {
     return {type: 'string', value: this.parseString()};
+  }
 
-  if (this.peekInteger())
+  if (this.peekInteger()) {
     return {type: 'integer', value: this.parseInteger()};
-
+  }
 
   throw this.error('Unexpected token');
 };
 
 /** @return {string} */
 hterm.Parser.prototype.parseIdentifier = function() {
-  if (!this.peekIdentifier())
+  if (!this.peekIdentifier()) {
     throw this.error('Expected identifier');
+  }
 
   return this.parsePattern(/[a-z0-9_]+/ig);
 };
@@ -228,8 +238,9 @@ hterm.Parser.prototype.parseString = function() {
   var result = '';
 
   var quote = this.ch;
-  if (quote != '"' && quote != '\'')
+  if (quote != '"' && quote != '\'') {
     throw this.error('String expected');
+  }
 
   this.advance(1);
 
@@ -237,8 +248,9 @@ hterm.Parser.prototype.parseString = function() {
 
   while (this.pos < this.source.length) {
     re.lastIndex = this.pos;
-    if (!re.exec(this.source))
+    if (!re.exec(this.source)) {
       throw this.error('Unterminated string literal');
+    }
 
     result += this.source.substring(this.pos, re.lastIndex - 1);
 
@@ -295,14 +307,16 @@ hterm.Parser.prototype.parseEscape = function() {
     }
   };
 
-  if (!(this.ch in map && map.hasOwnProperty(this.ch)))
+  if (!(this.ch in map && map.hasOwnProperty(this.ch))) {
     throw this.error('Unknown escape: ' + this.ch);
+  }
 
   var value = map[this.ch];
   this.advance(1);
 
-  if (typeof value == 'function')
+  if (typeof value == 'function') {
     value = value.call(this);
+  }
 
   return value;
 };
@@ -315,14 +329,16 @@ hterm.Parser.prototype.parseEscape = function() {
  * @return {string}
  */
 hterm.Parser.prototype.parsePattern = function(pattern) {
-  if (!pattern.global)
+  if (!pattern.global) {
     throw this.error('Internal error: Span patterns must be global');
+  }
 
   pattern.lastIndex = this.pos;
   var ary = pattern.exec(this.source);
 
-  if (!ary || pattern.lastIndex - ary[0].length != this.pos)
+  if (!ary || pattern.lastIndex - ary[0].length != this.pos) {
     throw this.error('Expected match for: ' + pattern);
+  }
 
   this.pos = pattern.lastIndex - 1;
   this.advance(1);
@@ -347,15 +363,17 @@ hterm.Parser.prototype.advance = function(count) {
  * @return {void}
  */
 hterm.Parser.prototype.skipSpace = function(opt_expect) {
-  if (!/\s/.test(this.ch))
+  if (!/\s/.test(this.ch)) {
     return;
+  }
 
   var re = /\s+/gm;
   re.lastIndex = this.pos;
 
   var source = this.source;
-  if (re.exec(source))
+  if (re.exec(source)) {
     this.pos = re.lastIndex;
+  }
 
   this.ch = this.source.substr(this.pos, 1);
 

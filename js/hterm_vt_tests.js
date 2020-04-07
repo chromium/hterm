@@ -28,10 +28,11 @@
  */
 const MockTerminalMouseEvent = function(type, options = {}) {
   let ret;
-  if (type == 'wheel')
+  if (type == 'wheel') {
     ret = new WheelEvent(type, options);
-  else
+  } else {
     ret = new MouseEvent(type, options);
+  }
   ret.terminalRow = options.terminalRow || 0;
   ret.terminalColumn = options.terminalColumn || 0;
   return ret;
@@ -1233,8 +1234,9 @@ it('sgr-extended-colors-parser', function() {
     const args = input.split(';');
     parserState.args = args;
     parserState.subargs = {};
-    for (let i = 0; i < args.length; ++i)
+    for (let i = 0; i < args.length; ++i) {
       parserState.subargs[i] = args[i].includes(':');
+    }
 
     const ret = this.terminal.vt.parseSgrExtendedColors(parserState, i, ta);
     assert.equal(expSkipCount, ret.skipCount, input);
@@ -1608,8 +1610,9 @@ it('insert-wrap', function() {
  */
 it('long-wrap', function() {
     var str = '';
-    for (var i = 0; i < this.visibleColumnCount * 3; i++)
+    for (var i = 0; i < this.visibleColumnCount * 3; i++) {
       str += 'X';
+    }
 
     this.terminal.interpret(str);
 
@@ -1627,8 +1630,9 @@ it('reverse-wrap', function() {
 
     // Enough X's to wrap once and leave the cursor in the overflow state at
     // the end of the third row.
-    for (var i = 0; i < this.visibleColumnCount * 2; i++)
+    for (var i = 0; i < this.visibleColumnCount * 2; i++) {
       str += 'X';
+    }
 
     // CR to put us at col 0, backspace to put us at the last column of the
     // previous row, if reverse wraparound is enabled.
@@ -2342,8 +2346,9 @@ it('fullscreen', function(done) {
     setTimeout(function() {
         for (var i = 0; i < 1000; i++) {
           var indent = i % 40;
-          if (indent > 20)
+          if (indent > 20) {
             indent = 40 - indent;
+          }
 
           self.terminal.interpret('Line ' + lib.f.zpad(i, 3) + ': ' +
                                   ' '.repeat(indent) + '*\n');
@@ -2362,8 +2367,9 @@ it('character-maps', function() {
 
     // Create a line with all the printable characters.
     var i, line = '';
-    for (i = 0x20; i < 0x7f; ++i)
+    for (i = 0x20; i < 0x7f; ++i) {
       line += String.fromCharCode(i);
+    }
 
     this.terminal.setWidth(line.length);
 
@@ -2377,8 +2383,9 @@ it('character-maps', function() {
     for (map in hterm.VT.CharacterMaps.DefaultMaps) {
       // If this map doesn't do any translations, skip it.
       gl = hterm.VT.CharacterMaps.DefaultMaps[map].GL;
-      if (!gl)
+      if (!gl) {
         continue;
+      }
 
       // Point G0 to the specified map (and assume GL points to G0).
       this.terminal.clearHome();
@@ -2396,8 +2403,9 @@ it('docs', function() {
 
     // Create a line with all the printable characters.
     var i, graphicsLine, line = '';
-    for (i = 0x20; i < 0x7f; ++i)
+    for (i = 0x20; i < 0x7f; ++i) {
       line += String.fromCharCode(i);
+    }
     graphicsLine = hterm.VT.CharacterMaps.DefaultMaps['0'].GL(line);
 
     this.terminal.setWidth(line.length);

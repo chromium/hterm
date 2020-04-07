@@ -63,8 +63,9 @@ after(function() {
  */
 beforeEach(function(done) {
   const selection = window.getSelection();
-  if (!selection.isCollapsed)
+  if (!selection.isCollapsed) {
     selection.collapseToStart();
+  }
 
   this.rowProvider.setCacheEnabled(true);
 
@@ -172,14 +173,16 @@ it('scroll-selection', function() {
     // And select some text in the middle of the visible range.
     var anchorRow = this.rowProvider.getRowNode(55);
     var anchorNode = anchorRow;
-    while (anchorNode.firstChild)
+    while (anchorNode.firstChild) {
       anchorNode = anchorNode.firstChild;
+    }
     s.collapse(anchorNode, 0);
 
     var focusRow = this.rowProvider.getRowNode(55 + this.visibleRowCount - 10);
     var focusNode = focusRow;
-    while (focusNode.lastChild)
+    while (focusNode.lastChild) {
       focusNode = focusNode.lastChild;
+    }
     s.extend(focusNode, focusNode.length || 0);
 
     for (var i = 0; i < this.visibleRowCount; i++) {
@@ -579,14 +582,16 @@ it('scroll-selection-hidden', function() {
   // And select some text in the middle of the visible range.
   const anchorRow = this.rowProvider.getRowNode(1003);
   let anchorNode = anchorRow;
-  while (anchorNode.firstChild)
+  while (anchorNode.firstChild) {
     anchorNode = anchorNode.firstChild;
+  }
   s.collapse(anchorNode, 0);
 
   const focusRow = this.rowProvider.getRowNode(1004);
   let focusNode = focusRow;
-  while (focusNode.lastChild)
+  while (focusNode.lastChild) {
     focusNode = focusNode.lastChild;
+  }
   s.extend(focusNode, focusNode.length || 0);
 
   assert.isNull(anchorRow.getAttribute('aria-hidden'));

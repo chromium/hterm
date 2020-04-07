@@ -201,20 +201,25 @@ hterm.TextAttributes.prototype.createContainer = function(
   var style = span.style;
   var classes = [];
 
-  if (this.foreground != this.DEFAULT_COLOR)
+  if (this.foreground != this.DEFAULT_COLOR) {
     style.color = this.foreground.toString();
+  }
 
-  if (this.background != this.DEFAULT_COLOR)
+  if (this.background != this.DEFAULT_COLOR) {
     style.backgroundColor = this.background.toString();
+  }
 
-  if (this.enableBold && this.bold)
+  if (this.enableBold && this.bold) {
     style.fontWeight = 'bold';
+  }
 
-  if (this.faint)
+  if (this.faint) {
     span.faint = true;
+  }
 
-  if (this.italic)
+  if (this.italic) {
     style.fontStyle = 'italic';
+  }
 
   if (this.blink) {
     classes.push('blink-node');
@@ -227,14 +232,16 @@ hterm.TextAttributes.prototype.createContainer = function(
     textDecorationLine += ' underline';
     style.textDecorationStyle = this.underline;
   }
-  if (this.underlineColor != this.DEFAULT_COLOR)
+  if (this.underlineColor != this.DEFAULT_COLOR) {
     style.textDecorationColor = this.underlineColor;
+  }
   if (this.strikethrough) {
     textDecorationLine += ' line-through';
     span.strikethrough = true;
   }
-  if (textDecorationLine)
+  if (textDecorationLine) {
     style.textDecorationLine = textDecorationLine;
+  }
 
   if (this.wcNode) {
     classes.push('wc-node');
@@ -248,8 +255,9 @@ hterm.TextAttributes.prototype.createContainer = function(
     span.tileNode = true;
   }
 
-  if (opt_textContent)
+  if (opt_textContent) {
     span.textContent = opt_textContent;
+  }
 
   if (this.uri) {
     classes.push('uri-node');
@@ -258,8 +266,9 @@ hterm.TextAttributes.prototype.createContainer = function(
     span.addEventListener('click', hterm.openUrl.bind(this, this.uri));
   }
 
-  if (classes.length)
+  if (classes.length) {
     span.className = classes.join(' ');
+  }
 
   return span;
 };
@@ -278,8 +287,9 @@ hterm.TextAttributes.prototype.createContainer = function(
  *     this attributes instance.
  */
 hterm.TextAttributes.prototype.matchesContainer = function(obj) {
-  if (typeof obj == 'string' || obj.nodeType == Node.TEXT_NODE)
+  if (typeof obj == 'string' || obj.nodeType == Node.TEXT_NODE) {
     return this.isDefault();
+  }
 
   var style = obj.style;
 
@@ -376,8 +386,9 @@ hterm.TextAttributes.prototype.syncColors = function() {
   }
 
   // Process invisible settings last to keep it simple.
-  if (this.invisible)
+  if (this.invisible) {
     this.foreground = this.background;
+  }
 
   this.underlineColor = colorFromSource(this.underlineSource);
 };
@@ -393,14 +404,17 @@ hterm.TextAttributes.prototype.syncColors = function() {
  * @return {boolean} True if the containers have the same style.
  */
 hterm.TextAttributes.containersMatch = function(obj1, obj2) {
-  if (typeof obj1 == 'string')
+  if (typeof obj1 == 'string') {
     return hterm.TextAttributes.containerIsDefault(obj2);
+  }
 
-  if (obj1.nodeType != obj2.nodeType)
+  if (obj1.nodeType != obj2.nodeType) {
     return false;
+  }
 
-  if (obj1.nodeType == Node.TEXT_NODE)
+  if (obj1.nodeType == Node.TEXT_NODE) {
     return true;
+  }
 
   var style1 = obj1.style;
   var style2 = obj2.style;

@@ -36,8 +36,9 @@ hterm.PubSub.addBehavior = function(obj) {
  * @param {function(...)} callback The function to invoke for notifications.
  */
 hterm.PubSub.prototype.subscribe = function(subject, callback) {
-  if (!(subject in this.observers_))
+  if (!(subject in this.observers_)) {
     this.observers_[subject] = [];
+  }
 
   this.observers_[subject].push(callback);
 };
@@ -51,12 +52,14 @@ hterm.PubSub.prototype.subscribe = function(subject, callback) {
  */
 hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
   var list = this.observers_[subject];
-  if (!list)
+  if (!list) {
     throw 'Invalid subject: ' + subject;
+  }
 
   var i = list.indexOf(callback);
-  if (i < 0)
+  if (i < 0) {
     throw 'Not subscribed: ' + subject;
+  }
 
   list.splice(i, 1);
 };
@@ -76,8 +79,9 @@ hterm.PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
   function notifyList(i) {
     // Set this timeout before invoking the callback, so we don't have to
     // concern ourselves with exceptions.
-    if (i < list.length - 1)
+    if (i < list.length - 1) {
       setTimeout(notifyList, 0, i + 1);
+    }
 
     list[i](e);
   }
@@ -96,6 +100,7 @@ hterm.PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
     }
   }
 
-  if (list)
+  if (list) {
     setTimeout(notifyList, 0, 0);
+  }
 };

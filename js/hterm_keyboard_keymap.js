@@ -92,8 +92,9 @@ hterm.Keyboard.KeyMap = function(keyboard) {
  * @param {!hterm.Keyboard.KeyDef} def The actions this key triggers.
  */
 hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
-  if (keyCode in this.keyDefs)
+  if (keyCode in this.keyDefs) {
     console.warn('Duplicate keyCode: ' + keyCode);
+  }
 
   this.keyDefs[keyCode] = def;
 };
@@ -478,8 +479,9 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyInsert_ = function(e) {
-  if (this.keyboard.shiftInsertPaste && e.shiftKey)
+  if (this.keyboard.shiftInsertPaste && e.shiftKey) {
     return hterm.Keyboard.KeyActions.PASS;
+  }
 
   return '\x1b[2~';
 };
@@ -531,8 +533,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
-  if (!this.keyboard.pageKeysScroll ^ e.shiftKey)
+  if (!this.keyboard.pageKeysScroll ^ e.shiftKey) {
     return '\x1b[5~';
+  }
 
   this.keyboard.terminal.scrollPageUp();
   return hterm.Keyboard.KeyActions.CANCEL;
@@ -551,8 +554,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
  */
 hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
   if (this.keyboard.altBackspaceIsMetaBackspace &&
-      this.keyboard.altKeyPressed && !e.altKey)
+      this.keyboard.altKeyPressed && !e.altKey) {
     return '\x1b\x7f';
+  }
   return '\x1b[3~';
 };
 
@@ -563,8 +567,9 @@ hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
-  if (!this.keyboard.pageKeysScroll ^ e.shiftKey)
+  if (!this.keyboard.pageKeysScroll ^ e.shiftKey) {
     return '\x1b[6~';
+  }
 
   this.keyboard.terminal.scrollPageDown();
   return hterm.Keyboard.KeyActions.CANCEL;
@@ -624,10 +629,11 @@ hterm.Keyboard.KeyMap.prototype.onClear_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onF11_ = function(e) {
-  if (hterm.windowType != 'popup')
+  if (hterm.windowType != 'popup') {
     return hterm.Keyboard.KeyActions.PASS;
-  else
+  } else {
     return '\x1b[23~';
+  }
 };
 
 /**
@@ -645,8 +651,9 @@ hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
   // Compute a control character for a given character.
   function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64); }
 
-  if (this.keyboard.terminal.passCtrlNumber && !e.shiftKey)
+  if (this.keyboard.terminal.passCtrlNumber && !e.shiftKey) {
     return hterm.Keyboard.KeyActions.PASS;
+  }
 
   switch (keyDef.keyCap.substr(0, 1)) {
     case '1': return '1';
@@ -669,8 +676,9 @@ hterm.Keyboard.KeyMap.prototype.onCtrlNum_ = function(e, keyDef) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e) {
-  if (this.keyboard.terminal.passAltNumber && !e.shiftKey)
+  if (this.keyboard.terminal.passAltNumber && !e.shiftKey) {
     return hterm.Keyboard.KeyActions.PASS;
+  }
 
   return hterm.Keyboard.KeyActions.DEFAULT;
 };
@@ -682,8 +690,9 @@ hterm.Keyboard.KeyMap.prototype.onAltNum_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onMetaNum_ = function(e) {
-  if (this.keyboard.terminal.passMetaNumber && !e.shiftKey)
+  if (this.keyboard.terminal.passMetaNumber && !e.shiftKey) {
     return hterm.Keyboard.KeyActions.PASS;
+  }
 
   return hterm.Keyboard.KeyActions.DEFAULT;
 };
@@ -802,10 +811,11 @@ hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e) {
     // pasting.  Notably, on macOS, Ctrl+V/Ctrl+Shift+V do nothing.
     // However, this might run into web restrictions, so if it fails, we still
     // fallback to the letting the native behavior (hopefully) save us.
-    if (this.keyboard.terminal.paste() !== false)
+    if (this.keyboard.terminal.paste() !== false) {
       return hterm.Keyboard.KeyActions.CANCEL;
-    else
+    } else {
       return hterm.Keyboard.KeyActions.PASS;
+    }
   }
 
   return '\x16';
@@ -872,8 +882,9 @@ hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onMetaV_ = function(e) {
-  if (e.shiftKey)
+  if (e.shiftKey) {
     return hterm.Keyboard.KeyActions.PASS;
+  }
 
   return this.keyboard.passMetaV ?
       hterm.Keyboard.KeyActions.PASS :
@@ -899,8 +910,10 @@ hterm.Keyboard.KeyMap.prototype.onZoom_ = function(e, keyDef) {
     // If ctrl-PMZ controls zoom and the shift key is pressed, or
     // ctrl-shift-PMZ controls zoom and this shift key is not pressed,
     // then we want to send the control code instead of affecting zoom.
-    if (keyDef.keyCap == '-_')
-      return '\x1f';  // ^_
+    if (keyDef.keyCap == '-_') {
+      // ^_
+      return '\x1f';
+    }
 
     // Only ^_ is valid, the other sequences have no meaning.
     return hterm.Keyboard.KeyActions.CANCEL;
