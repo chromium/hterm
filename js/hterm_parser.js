@@ -218,6 +218,7 @@ hterm.Parser.prototype.parseIdentifier = function() {
 hterm.Parser.prototype.parseInteger = function() {
   if (this.ch == '0' && this.pos < this.source.length - 1 &&
       this.source.substr(this.pos + 1, 1) == 'x') {
+    /* eslint-disable radix */
     return parseInt(this.parsePattern(/0x[0-9a-f]+/gi), undefined);
   }
 
