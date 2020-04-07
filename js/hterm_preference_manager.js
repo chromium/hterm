@@ -35,7 +35,7 @@ hterm.PreferenceManager.prefix_ = '/hterm/profiles/';
 hterm.PreferenceManager.listProfiles = function(callback) {
   hterm.defaultStorage.getItems(null, (items) => {
     const profiles = {};
-    for (let key of Object.keys(items)) {
+    for (const key of Object.keys(items)) {
       if (key.startsWith(hterm.PreferenceManager.prefix_)) {
         // Turn "/hterm/profiles/foo/bar/cow" to "foo/bar/cow".
         const subKey = key.slice(hterm.PreferenceManager.prefix_.length);
