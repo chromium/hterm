@@ -72,10 +72,11 @@ hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
  *
  * @param {string} subject The subject to publish about.
  * @param {?Object=} e An arbitrary object associated with this notification.
- * @param {function(!Object)=} opt_lastCallback An optional function to call
+ * @param {function(!Object)=} lastCallback An optional function to call
  *     after all subscribers have been notified.
  */
-hterm.PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
+hterm.PubSub.prototype.publish = function(
+    subject, e, lastCallback = undefined) {
   function notifyList(i) {
     // Set this timeout before invoking the callback, so we don't have to
     // concern ourselves with exceptions.
@@ -92,11 +93,11 @@ hterm.PubSub.prototype.publish = function(subject, e, opt_lastCallback) {
     list = [].concat(list);
   }
 
-  if (opt_lastCallback) {
+  if (lastCallback) {
     if (list) {
-      list.push(opt_lastCallback);
+      list.push(lastCallback);
     } else {
-      list = [opt_lastCallback];
+      list = [lastCallback];
     }
   }
 

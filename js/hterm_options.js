@@ -22,20 +22,20 @@
  * except that we enable autowrap (wraparound) by default since that seems to
  * be what xterm does.
  *
- * @param {!hterm.Options=} opt_copy Optional instance to copy.
+ * @param {!hterm.Options=} copy Optional instance to copy.
  * @constructor
  */
-hterm.Options = function(opt_copy) {
+hterm.Options = function(copy = undefined) {
   // All attributes in this class are public to allow easy access by the
   // terminal.
 
-  this.wraparound = opt_copy ? opt_copy.wraparound : true;
-  this.reverseWraparound = opt_copy ? opt_copy.reverseWraparound : false;
-  this.originMode = opt_copy ? opt_copy.originMode : false;
-  this.autoCarriageReturn = opt_copy ? opt_copy.autoCarriageReturn : false;
-  this.cursorVisible = opt_copy ? opt_copy.cursorVisible : false;
-  this.cursorBlink = opt_copy ? opt_copy.cursorBlink : false;
-  this.insertMode = opt_copy ? opt_copy.insertMode : false;
-  this.reverseVideo = opt_copy ? opt_copy.reverseVideo : false;
-  this.bracketedPaste = opt_copy ? opt_copy.bracketedPaste : false;
+  this.wraparound = copy ? copy.wraparound : true;
+  this.reverseWraparound = copy ? copy.reverseWraparound : false;
+  this.originMode = copy ? copy.originMode : false;
+  this.autoCarriageReturn = copy ? copy.autoCarriageReturn : false;
+  this.cursorVisible = copy ? copy.cursorVisible : false;
+  this.cursorBlink = copy ? copy.cursorBlink : false;
+  this.insertMode = copy ? copy.insertMode : false;
+  this.reverseVideo = copy ? copy.reverseVideo : false;
+  this.bracketedPaste = copy ? copy.bracketedPaste : false;
 };

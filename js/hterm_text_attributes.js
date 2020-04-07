@@ -183,16 +183,15 @@ hterm.TextAttributes.prototype.isDefault = function() {
  * Each vt_tiledata tile is also represented by a span with a single
  * character, with CSS classes '.tile' and '.tile_<glyph number>'.
  *
- * @param {string=} opt_textContent Optional text content for the new container.
+ * @param {string=} textContent Optional text content for the new container.
  * @return {!Node} An HTML span or text nodes styled to match the current
  *     attributes.
  */
-hterm.TextAttributes.prototype.createContainer = function(
-    opt_textContent = '') {
+hterm.TextAttributes.prototype.createContainer = function(textContent = '') {
   if (this.isDefault()) {
     // Only attach attributes where we need an explicit default for the
     // matchContainer logic below.
-    const node = this.document_.createTextNode(opt_textContent);
+    const node = this.document_.createTextNode(textContent);
     node.asciiNode = true;
     return node;
   }
@@ -255,8 +254,8 @@ hterm.TextAttributes.prototype.createContainer = function(
     span.tileNode = true;
   }
 
-  if (opt_textContent) {
-    span.textContent = opt_textContent;
+  if (textContent) {
+    span.textContent = textContent;
   }
 
   if (this.uri) {

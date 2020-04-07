@@ -419,14 +419,14 @@ hterm.Size.prototype.toString = function() {
  *
  * @param {number} row The row of this record.
  * @param {number} column The column of this record.
- * @param {boolean=} opt_overflow Optional boolean indicating that the RowCol
+ * @param {boolean=} overflow Optional boolean indicating that the RowCol
  *     has overflowed.
  * @constructor
  */
-hterm.RowCol = function(row, column, opt_overflow) {
+hterm.RowCol = function(row, column, overflow = false) {
   this.row = row;
   this.column = column;
-  this.overflow = !!opt_overflow;
+  this.overflow = !!overflow;
 };
 
 /**
@@ -434,13 +434,13 @@ hterm.RowCol = function(row, column, opt_overflow) {
  *
  * @param {number} row The new row of this record.
  * @param {number} column The new column of this record.
- * @param {boolean=} opt_overflow Optional boolean indicating that the RowCol
+ * @param {boolean=} overflow Optional boolean indicating that the RowCol
  *     has overflowed.
  */
-hterm.RowCol.prototype.move = function(row, column, opt_overflow) {
+hterm.RowCol.prototype.move = function(row, column, overflow = false) {
   this.row = row;
   this.column = column;
-  this.overflow = !!opt_overflow;
+  this.overflow = !!overflow;
 };
 
 /**

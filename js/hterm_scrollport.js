@@ -688,16 +688,13 @@ hterm.ScrollPort.prototype.scrollPageDown = function() {
  *
  * @param {string} fontFamily Value of the CSS 'font-family' to use for this
  *     scrollport.  Should be a monospace font.
- * @param {string=} opt_smoothing Optional value for '-webkit-font-smoothing'.
+ * @param {string=} smoothing Optional value for '-webkit-font-smoothing'.
  *     Defaults to an empty string if not specified.
  */
-hterm.ScrollPort.prototype.setFontFamily = function(fontFamily, opt_smoothing) {
+hterm.ScrollPort.prototype.setFontFamily = function(
+    fontFamily, smoothing = '') {
   this.screen_.style.fontFamily = fontFamily;
-  if (opt_smoothing) {
-    this.screen_.style.webkitFontSmoothing = opt_smoothing;
-  } else {
-    this.screen_.style.webkitFontSmoothing = '';
-  }
+  this.screen_.style.webkitFontSmoothing = smoothing;
 
   this.syncCharacterSize();
 };
@@ -911,11 +908,11 @@ hterm.ScrollPort.prototype.getFontSize = function() {
 /**
  * Measure the size of a single character in pixels.
  *
- * @param {string=} opt_weight The font weight to measure, or 'normal' if
+ * @param {string=} weight The font weight to measure, or 'normal' if
  *     omitted.
  * @return {!hterm.Size} A new hterm.Size object.
  */
-hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
+hterm.ScrollPort.prototype.measureCharacterSize = function(weight = '') {
   // Number of lines used to average the height of a single character.
   var numberOfLines = 100;
   // Number of chars per line used to average the width of a single character.
@@ -947,7 +944,7 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(opt_weight) {
     this.rulerBaseline_.textContent = 'X';
   }
 
-  this.rulerSpan_.style.fontWeight = opt_weight || '';
+  this.rulerSpan_.style.fontWeight = weight;
 
   this.rowNodes_.appendChild(this.ruler_);
   var rulerSize = hterm.getClientSize(this.rulerSpan_);

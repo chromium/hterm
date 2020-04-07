@@ -210,10 +210,11 @@ hterm.Terminal.prototype.tabWidth = 8;
  *
  * @param {string} profileId The name of the preference profile.  Forward slash
  *     characters will be removed from the name.
- * @param {function()=} opt_callback Optional callback to invoke when the
+ * @param {function()=} callback Optional callback to invoke when the
  *     profile transition is complete.
  */
-hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
+hterm.Terminal.prototype.setProfile = function(
+    profileId, callback = undefined) {
   this.profileId_ = profileId.replace(/\//g, '');
 
   var terminal = this;
@@ -646,8 +647,8 @@ hterm.Terminal.prototype.setProfile = function(profileId, opt_callback) {
   this.prefs_.readStorage(function() {
     this.prefs_.notifyAll();
 
-    if (opt_callback) {
-      opt_callback();
+    if (callback) {
+      callback();
     }
   }.bind(this));
 };
@@ -834,12 +835,12 @@ hterm.Terminal.prototype.uninstallKeyboard = function() {
  *
  * @param {string} name The variable to set.
  * @param {string|number} value The value to assign to the variable.
- * @param {string=} opt_prefix The variable namespace/prefix to use.
+ * @param {string=} prefix The variable namespace/prefix to use.
  */
 hterm.Terminal.prototype.setCssVar = function(name, value,
-                                              opt_prefix='--hterm-') {
+                                              prefix = '--hterm-') {
   this.document_.documentElement.style.setProperty(
-      `${opt_prefix}${name}`, value.toString());
+      `${prefix}${name}`, value.toString());
 };
 
 /**
@@ -904,12 +905,12 @@ hterm.Terminal.prototype.resetColorPalette = function() {
  * Normally this is used to get variables in the hterm namespace.
  *
  * @param {string} name The variable to read.
- * @param {string=} opt_prefix The variable namespace/prefix to use.
+ * @param {string=} prefix The variable namespace/prefix to use.
  * @return {string} The current setting for this variable.
  */
-hterm.Terminal.prototype.getCssVar = function(name, opt_prefix='--hterm-') {
+hterm.Terminal.prototype.getCssVar = function(name, prefix = '--hterm-') {
   return this.document_.documentElement.style.getPropertyValue(
-      `${opt_prefix}${name}`);
+      `${prefix}${name}`);
 };
 
 /**
@@ -1563,11 +1564,10 @@ hterm.Terminal.prototype.clearAllTabStops = function() {
  * This does not clear the existing tab stops first, use clearAllTabStops
  * for that.
  *
- * @param {number=} opt_start Optional starting zero based starting column,
+ * @param {number=} start Optional starting zero based starting column,
  *     useful for filling out missing tab stops when the terminal is resized.
  */
-hterm.Terminal.prototype.setDefaultTabStops = function(opt_start) {
-  var start = opt_start || 0;
+hterm.Terminal.prototype.setDefaultTabStops = function(start = 0) {
   var w = this.tabWidth;
   // Round start up to a default tab stop.
   start = start - 1 - ((start - 1) % w) + w;
@@ -1986,10 +1986,13 @@ hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
  *
  * @param {number} start The start index.
  * @param {number} end The end index.
- * @param {!hterm.Screen=} opt_screen The screen to renumber.
+ * @param {!hterm.Screen=} screen The screen to renumber.
  */
-hterm.Terminal.prototype.renumberRows_ = function(start, end, opt_screen) {
-  var screen = opt_screen || this.screen_;
+hterm.Terminal.prototype.renumberRows_ = function(
+    start, end, screen = undefined) {
+  if (!screen) {
+    screen = this.screen_;
+  }
 
   var offset = this.scrollbackRows_.length;
   for (var i = start; i < end; i++) {
@@ -2244,15 +2247,15 @@ hterm.Terminal.prototype.eraseToLeft = function() {
  * from xterm, but agrees with gnome-terminal and konsole, xfce4-terminal.  See
  * crbug.com/232390 for details.
  *
- * @param {number=} opt_count The number of characters to erase.
+ * @param {number=} count The number of characters to erase.
  */
-hterm.Terminal.prototype.eraseToRight = function(opt_count) {
+hterm.Terminal.prototype.eraseToRight = function(count = undefined) {
   if (this.screen_.cursorPosition.overflow) {
     return;
   }
 
   var maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
-  var count = opt_count ? Math.min(opt_count, maxCount) : maxCount;
+  count = count ? Math.min(count, maxCount) : maxCount;
 
   if (this.screen_.textAttributes.background ===
       this.screen_.textAttributes.DEFAULT_COLOR) {
@@ -2350,11 +2353,13 @@ hterm.Terminal.prototype.fill = function(ch) {
  *
  * This does not respect the scroll region.
  *
- * @param {!hterm.Screen=} opt_screen Optional screen to operate on.  Defaults
+ * @param {!hterm.Screen=} screen Optional screen to operate on.  Defaults
  *     to the current screen.
  */
-hterm.Terminal.prototype.clearHome = function(opt_screen) {
-  var screen = opt_screen || this.screen_;
+hterm.Terminal.prototype.clearHome = function(screen = undefined) {
+  if (!screen) {
+    screen = this.screen_;
+  }
   var bottom = screen.getHeight();
 
   this.accessibilityReader_.clear();
@@ -2378,11 +2383,13 @@ hterm.Terminal.prototype.clearHome = function(opt_screen) {
  * The cursor position is unchanged.  This does not respect the scroll
  * region.
  *
- * @param {!hterm.Screen=} opt_screen Optional screen to operate on.  Defaults
+ * @param {!hterm.Screen=} screen Optional screen to operate on.  Defaults
  *     to the current screen.
  */
-hterm.Terminal.prototype.clear = function(opt_screen) {
-  var screen = opt_screen || this.screen_;
+hterm.Terminal.prototype.clear = function(screen = undefined) {
+  if (!screen) {
+    screen = this.screen_;
+  }
   var cursor = screen.cursorPosition.clone();
   this.clearHome(screen);
   screen.setCursorPosition(cursor.row, cursor.column);
@@ -3212,11 +3219,11 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
  * of the terminal first.
  *
  * @param {string} msg The text (not HTML) message to display in the overlay.
- * @param {number=} opt_timeout The amount of time to wait before fading out
+ * @param {?number=} timeout The amount of time to wait before fading out
  *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
  *     stay up forever (or until the next overlay).
  */
-hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
+hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
   if (!this.overlayNode_) {
     if (!this.div_) {
       return;
@@ -3265,14 +3272,14 @@ hterm.Terminal.prototype.showOverlay = function(msg, opt_timeout) {
 
   this.accessibilityReader_.assertiveAnnounce(msg);
 
-  if (opt_timeout === null) {
+  if (timeout === null) {
     return;
   }
 
   this.overlayTimeout_ = setTimeout(() => {
     this.overlayNode_.style.opacity = '0';
     this.overlayTimeout_ = setTimeout(() => this.hideOverlay(), 200);
-  }, opt_timeout || 1500);
+  }, timeout);
 };
 
 /**

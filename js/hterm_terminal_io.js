@@ -49,12 +49,13 @@ hterm.Terminal.IO = function(terminal) {
  *
  * @param {string} message The text (not HTML) message to display in the
  *     overlay.
- * @param {number=} opt_timeout The amount of time to wait before fading out
+ * @param {number=} timeout The amount of time to wait before fading out
  *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
  *     stay up forever (or until the next overlay).
  */
-hterm.Terminal.IO.prototype.showOverlay = function(message, opt_timeout) {
-  this.terminal_.showOverlay(message, opt_timeout);
+hterm.Terminal.IO.prototype.showOverlay = function(
+    message, timeout = undefined) {
+  this.terminal_.showOverlay(message, timeout);
 };
 
 /**
@@ -74,11 +75,11 @@ hterm.Terminal.IO.prototype.hideOverlay = function() {
  * The user should also be able to move/resize the frame.
  *
  * @param {string} url The URL to load in the frame.
- * @param {!Object=} opt_options Optional frame options.  Not implemented.
+ * @param {!Object=} options Optional frame options.  Not implemented.
  * @return {!hterm.Frame}
  */
-hterm.Terminal.IO.prototype.createFrame = function(url, opt_options) {
-  return new hterm.Frame(this.terminal_, url, opt_options);
+hterm.Terminal.IO.prototype.createFrame = function(url, options = undefined) {
+  return new hterm.Frame(this.terminal_, url, options);
 };
 
 /**

@@ -40,12 +40,12 @@ hterm.VT.CharacterMap = function(description, glmap) {
  *
  * Used when the mappings change.
  *
- * @param {!Object=} opt_glmap Additional mappings to overlay on top of the
+ * @param {!Object=} glmap Additional mappings to overlay on top of the
  *     base mapping.
  */
-hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
+hterm.VT.CharacterMap.prototype.sync_ = function(glmap = undefined) {
   // If there are no maps, then reset the state back.
-  if (!this.glmapBase_ && !opt_glmap) {
+  if (!this.glmapBase_ && !glmap) {
     this.GL = null;
     delete this.glmap_;
     delete this.glre_;
@@ -54,8 +54,8 @@ hterm.VT.CharacterMap.prototype.sync_ = function(opt_glmap) {
 
   // Set the the GL mapping.  If we're given a custom mapping, then create a
   // new object to hold the merged map.  This way we can cleanly reset back.
-  if (opt_glmap) {
-    this.glmap_ = Object.assign({}, this.glmapBase_, opt_glmap);
+  if (glmap) {
+    this.glmap_ = Object.assign({}, this.glmapBase_, glmap);
   } else {
     this.glmap_ = this.glmapBase_;
   }

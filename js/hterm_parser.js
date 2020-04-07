@@ -41,11 +41,11 @@ hterm.Parser.prototype.isComplete = function() {
 
 /**
  * @param {string} source
- * @param {number=} opt_pos
+ * @param {number=} pos
  */
-hterm.Parser.prototype.reset = function(source, opt_pos) {
+hterm.Parser.prototype.reset = function(source, pos = 0) {
   this.source = source;
-  this.pos = opt_pos || 0;
+  this.pos = pos;
   this.ch = source.substr(0, 1);
 };
 
@@ -358,11 +358,11 @@ hterm.Parser.prototype.advance = function(count) {
 };
 
 /**
- * @param {string=} opt_expect A list of valid non-whitespace characters to
+ * @param {string=} expect A list of valid non-whitespace characters to
  *   terminate on.
  * @return {void}
  */
-hterm.Parser.prototype.skipSpace = function(opt_expect) {
+hterm.Parser.prototype.skipSpace = function(expect = undefined) {
   if (!/\s/.test(this.ch)) {
     return;
   }
@@ -377,10 +377,9 @@ hterm.Parser.prototype.skipSpace = function(opt_expect) {
 
   this.ch = this.source.substr(this.pos, 1);
 
-  if (opt_expect) {
-    if (this.ch.indexOf(opt_expect) == -1) {
-      throw this.error('Expected one of ' + opt_expect + ', found: ' +
-          this.ch);
+  if (expect) {
+    if (this.ch.indexOf(expect) == -1) {
+      throw this.error(`Expected one of ${expect}, found: ${this.ch}`);
     }
   }
 };

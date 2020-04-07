@@ -19,15 +19,14 @@
  *
  * @param {!hterm.Terminal} terminal The parent terminal object.
  * @param {string} url The url to load in the frame.
- * @param {!Object=} opt_options Optional options for the frame.  Not
- *     implemented.
+ * @param {!Object=} options Optional options for the frame.  Not implemented.
  * @constructor
  */
-hterm.Frame = function(terminal, url, opt_options) {
+hterm.Frame = function(terminal, url, options = {}) {
   this.terminal_ = terminal;
   this.div_ = terminal.div_;
   this.url = url;
-  this.options = opt_options || {};
+  this.options = options;
   this.iframe_ = null;
   this.container_ = null;
   this.messageChannel_ = null;

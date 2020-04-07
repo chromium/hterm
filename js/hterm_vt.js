@@ -193,12 +193,12 @@ hterm.VT.prototype.MOUSE_COORDINATES_SGR = 2;
  *
  * @param {function(!hterm.VT.ParseState)=} defaultFunction The default parser
  *     function.
- * @param {string=} opt_buf Optional string to use as the current buffer.
+ * @param {?string=} buf Optional string to use as the current buffer.
  * @constructor
  */
-hterm.VT.ParseState = function(defaultFunction, opt_buf) {
+hterm.VT.ParseState = function(defaultFunction, buf = null) {
   this.defaultFunction = defaultFunction;
-  this.buf = opt_buf || null;
+  this.buf = buf;
   this.pos = 0;
   this.func = defaultFunction;
   this.args = [];
@@ -211,11 +211,11 @@ hterm.VT.ParseState = function(defaultFunction, opt_buf) {
 /**
  * Reset the parser function, buffer, and position.
  *
- * @param {string=} opt_buf Optional string to use as the current buffer.
+ * @param {string=} buf Optional string to use as the current buffer.
  */
-hterm.VT.ParseState.prototype.reset = function(opt_buf) {
+hterm.VT.ParseState.prototype.reset = function(buf = '') {
   this.resetParseFunction();
-  this.resetBuf(opt_buf || '');
+  this.resetBuf(buf);
   this.resetArguments();
 };
 
@@ -229,10 +229,10 @@ hterm.VT.ParseState.prototype.resetParseFunction = function() {
 /**
  * Reset the buffer and position only.
  *
- * @param {string=} opt_buf Optional new value for buf, defaults to null.
+ * @param {?string=} buf Optional new value for buf, defaults to null.
  */
-hterm.VT.ParseState.prototype.resetBuf = function(opt_buf) {
-  this.buf = (typeof opt_buf == 'string') ? opt_buf : null;
+hterm.VT.ParseState.prototype.resetBuf = function(buf = null) {
+  this.buf = buf;
   this.pos = 0;
 };
 
@@ -244,12 +244,12 @@ hterm.VT.ParseState.prototype.resetBuf = function(opt_buf) {
  * confusion during debugging where args from a previous sequence appear to be
  * "sticking around" in other sequences (which in reality don't use args).
  *
- * @param {string=} opt_arg_zero Optional initial value for args[0].
+ * @param {string=} arg_zero Optional initial value for args[0].
  */
-hterm.VT.ParseState.prototype.resetArguments = function(opt_arg_zero) {
+hterm.VT.ParseState.prototype.resetArguments = function(arg_zero = undefined) {
   this.args.length = 0;
-  if (typeof opt_arg_zero != 'undefined') {
-    this.args[0] = opt_arg_zero;
+  if (arg_zero !== undefined) {
+    this.args[0] = arg_zero;
   }
 };
 
