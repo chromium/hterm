@@ -66,7 +66,7 @@ hterm.Keyboard.Bindings.OsDefaults = {
     // Home.
     'Meta+Left': '"\u001b[H"',
     // End.
-    'Meta+Right': '"\u001b[F"'
+    'Meta+Right': '"\u001b[F"',
   },
   'windows': {
   },

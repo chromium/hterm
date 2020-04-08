@@ -31,7 +31,7 @@ hterm.Keyboard.KeyPattern = function(spec) {
  * Valid modifier names.
  */
 hterm.Keyboard.KeyPattern.modifiers = [
-  'shift', 'ctrl', 'alt', 'meta'
+  'shift', 'ctrl', 'alt', 'meta',
 ];
 
 /**

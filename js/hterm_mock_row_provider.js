@@ -20,7 +20,7 @@ function MockRowProvider(document, count) {
   this.rowNodeCache_ = null;
 
   this.callCounts_ = {
-    getRowNode: 0
+    getRowNode: 0,
   };
 }
 
@@ -100,7 +100,7 @@ MockRowProvider.prototype.getRowRecord_ = function(index) {
       '<x-state data-fg=5 data-bg=0> magenta</x-state>' +
       '<x-state data-fg=6 data-bg=0> cyan</x-state>',
       text:
-      'This is line ' + index + ' red green yellow blue magenta cyan'
+      'This is line ' + index + ' red green yellow blue magenta cyan',
     };
   }
 

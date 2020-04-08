@@ -779,7 +779,7 @@ hterm.ScrollPort.prototype.getScreenSize = function() {
   var size = hterm.getClientSize(lib.notNull(this.screen_));
   return {
     height: size.height,
-    width: size.width - this.currentScrollbarWidthPx
+    width: size.width - this.currentScrollbarWidthPx,
   };
 };
 

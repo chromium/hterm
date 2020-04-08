@@ -185,7 +185,7 @@ hterm.Terminal = function(profileId) {
 hterm.Terminal.cursorShape = {
   BLOCK: 'BLOCK',
   BEAM: 'BEAM',
-  UNDERLINE: 'UNDERLINE'
+  UNDERLINE: 'UNDERLINE',
 };
 
 /**
@@ -795,7 +795,7 @@ hterm.Terminal.prototype.runCommandClass = function(
           if (self.prefs_.get('close-on-exit')) {
             window.close();
           }
-        }
+        },
       });
 
   this.installKeyboard();

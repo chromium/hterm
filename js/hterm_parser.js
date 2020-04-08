@@ -77,7 +77,7 @@ hterm.Parser.prototype.reset = function(source, pos = 0) {
  */
 hterm.Parser.prototype.parseKeySequence = function() {
   var rv = {
-    keyCode: null
+    keyCode: null,
   };
 
   for (var k in hterm.Parser.identifiers.modifierKeys) {
@@ -305,7 +305,7 @@ hterm.Parser.prototype.parseEscape = function() {
     'u': function() {
       var value = this.parsePattern(/[a-z0-9]{4}/ig);
       return String.fromCharCode(parseInt(value, 16));
-    }
+    },
   };
 
   if (!(this.ch in map && map.hasOwnProperty(this.ch))) {

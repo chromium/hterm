@@ -94,7 +94,7 @@ hterm.Frame.prototype.sendTerminalInfo_ = function() {
          cursorColor: this.terminal_.getCursorColor(),
          fontSize: this.terminal_.getFontSize(),
          fontFamily: this.terminal_.getFontFamily(),
-         baseURL: lib.f.getURL('/')
+         baseURL: lib.f.getURL('/'),
           }]
         );
     }.bind(this));

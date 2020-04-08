@@ -23,7 +23,7 @@ hterm.Parser.identifiers.modifierKeys = {
   // Common alias.
   CONTROL: 'ctrl',
   ALT: 'alt',
-  META: 'meta'
+  META: 'meta',
 };
 
 /**
@@ -173,7 +173,7 @@ hterm.Parser.identifiers.keyCodes = {
   FULL_SCREEN: 183,
   WINDOW_OVERVIEW: 182,
   BRIGHTNESS_UP: 216,
-  BRIGHTNESS_DOWN: 217
+  BRIGHTNESS_DOWN: 217,
 };
 
 /**

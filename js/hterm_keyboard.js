@@ -30,7 +30,7 @@ hterm.Keyboard = function(terminal) {
       ['keydown', this.onKeyDown_.bind(this)],
       ['keypress', this.onKeyPress_.bind(this)],
       ['keyup', this.onKeyUp_.bind(this)],
-      ['textInput', this.onTextInput_.bind(this)]
+      ['textInput', this.onTextInput_.bind(this)],
   ];
 
   /**
@@ -225,7 +225,7 @@ hterm.Keyboard.KeyActions = {
    * It is useful for a modified key action, where it essentially strips the
    * modifier while preventing the browser from reacting to the key.
    */
-  STRIP: Symbol('STRIP')
+  STRIP: Symbol('STRIP'),
 };
 
 /** @typedef {string|!hterm.Keyboard.KeyActions} */
@@ -500,7 +500,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     shift: e.shiftKey, // not `var shift` from above.
     ctrl: control,
     alt: alt,
-    meta: meta
+    meta: meta,
   };
 
   var binding = this.bindings.getBinding(keyDown);
