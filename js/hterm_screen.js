@@ -45,7 +45,7 @@
  *    0 if not provided.
  * @constructor
  */
-hterm.Screen = function(columnCount=0) {
+hterm.Screen = function(columnCount = 0) {
   /**
    * Public, read-only access to the rows in this screen.
    *
@@ -480,7 +480,7 @@ hterm.Screen.prototype.maybeClipCurrentRow = function() {
  *     calculated on demand if need be.  Passing in a cached value helps speed
  *     up processing as this is a hot codepath.
  */
-hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
+hterm.Screen.prototype.insertString = function(str, wcwidth = undefined) {
   var cursorNode = this.cursorNode_;
   var cursorNodeText = cursorNode.textContent;
 
@@ -625,7 +625,7 @@ hterm.Screen.prototype.insertString = function(str, wcwidth=undefined) {
  *     calculated on demand if need be.  Passing in a cached value helps speed
  *     up processing as this is a hot codepath.
  */
-hterm.Screen.prototype.overwriteString = function(str, wcwidth=undefined) {
+hterm.Screen.prototype.overwriteString = function(str, wcwidth = undefined) {
   var maxLength = this.columnCount_ - this.cursorPosition.column;
   if (!maxLength) {
     return;

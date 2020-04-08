@@ -444,16 +444,16 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     // users to make these always behave as function keys (see those bindings
     // above for more details).
     /* eslint-disable max-len */
-    add(166, '[BACK]',   med(mod(SS3+'P', CSI+'P')), DEFAULT, CSI+'23~', DEFAULT);  // F1
-    add(167, '[FWD]',    med(mod(SS3+'Q', CSI+'Q')), DEFAULT, CSI+'24~', DEFAULT);  // F2
-    add(168, '[RELOAD]', med(mod(SS3+'R', CSI+'R')), DEFAULT, CSI+'25~', DEFAULT);  // F3
-    add(183, '[FSCR]',   med(mod(SS3+'S', CSI+'S')), DEFAULT, CSI+'26~', DEFAULT);  // F4
-    add(182, '[WINS]',   med(CSI + '15~'),           DEFAULT, CSI+'28~', DEFAULT);  // F5
-    add(216, '[BRIT-]',  med(CSI + '17~'),           DEFAULT, CSI+'29~', DEFAULT);  // F6
-    add(217, '[BRIT+]',  med(CSI + '18~'),           DEFAULT, CSI+'31~', DEFAULT);  // F7
-    add(173, '[MUTE]',   med(CSI + '19~'),           DEFAULT, CSI+'32~', DEFAULT);  // F8
-    add(174, '[VOL-]',   med(CSI + '20~'),           DEFAULT, CSI+'33~', DEFAULT);  // F9
-    add(175, '[VOL+]',   med(CSI + '21~'),           DEFAULT, CSI+'34~', DEFAULT);  // F10
+    add(166, '[BACK]',   med(mod(SS3 + 'P', CSI + 'P')), DEFAULT, CSI + '23~', DEFAULT);  // F1
+    add(167, '[FWD]',    med(mod(SS3 + 'Q', CSI + 'Q')), DEFAULT, CSI + '24~', DEFAULT);  // F2
+    add(168, '[RELOAD]', med(mod(SS3 + 'R', CSI + 'R')), DEFAULT, CSI + '25~', DEFAULT);  // F3
+    add(183, '[FSCR]',   med(mod(SS3 + 'S', CSI + 'S')), DEFAULT, CSI + '26~', DEFAULT);  // F4
+    add(182, '[WINS]',   med(CSI + '15~'),               DEFAULT, CSI + '28~', DEFAULT);  // F5
+    add(216, '[BRIT-]',  med(CSI + '17~'),               DEFAULT, CSI + '29~', DEFAULT);  // F6
+    add(217, '[BRIT+]',  med(CSI + '18~'),               DEFAULT, CSI + '31~', DEFAULT);  // F7
+    add(173, '[MUTE]',   med(CSI + '19~'),               DEFAULT, CSI + '32~', DEFAULT);  // F8
+    add(174, '[VOL-]',   med(CSI + '20~'),               DEFAULT, CSI + '33~', DEFAULT);  // F9
+    add(175, '[VOL+]',   med(CSI + '21~'),               DEFAULT, CSI + '34~', DEFAULT);  // F10
     /* eslint-enable max-len */
 
     // We could make this into F11, but it'd be a bit weird.  Chrome allows us

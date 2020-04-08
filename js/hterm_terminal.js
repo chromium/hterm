@@ -3730,7 +3730,7 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
  *
  * @param {?boolean=} v Whether to enable automatic hiding.
  */
-hterm.Terminal.prototype.setAutomaticMouseHiding = function(v=null) {
+hterm.Terminal.prototype.setAutomaticMouseHiding = function(v = null) {
   // Since Chrome OS & macOS do this by default everywhere, we don't need to.
   // Linux & Windows seem to leave this to specific applications to manage.
   if (v === null) {

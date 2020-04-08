@@ -3091,7 +3091,7 @@ hterm.VT.CSI['"q'] = hterm.VT.ignore;
  */
 hterm.VT.CSI['r'] = function(parseState) {
   var args = parseState.args;
-  var scrollTop = args[0] ? parseInt(args[0], 10) -1 : null;
+  var scrollTop = args[0] ? parseInt(args[0], 10) - 1 : null;
   var scrollBottom = args[1] ? parseInt(args[1], 10) - 1 : null;
   this.terminal.setVTScrollRegion(scrollTop, scrollBottom);
   this.terminal.setCursorPosition(0, 0);

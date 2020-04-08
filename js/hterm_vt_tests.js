@@ -1377,7 +1377,7 @@ it('true-color-mode', function() {
                      colors[j][0]);
 
         var bg = getRGB(colors[j]);
-        var style = this.terminal.getRowNode(6*i+j).childNodes[1].style;
+        var style = this.terminal.getRowNode(6 * i + j).childNodes[1].style;
         assert.equal(style.color, fg);
         assert.equal(style.backgroundColor, bg);
       }

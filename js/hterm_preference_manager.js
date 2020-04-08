@@ -673,7 +673,7 @@ hterm.PreferenceManager.defaultPreferences = {
       false, 'bool',
       `Whether Ctrl+Tab and Ctrl+Shift+Tab are passed to the browser.\n` +
       `\n` +
-      `If true, Ctrl+Tab and Ctrl+Shift+Tab will be handled by the browser `+
+      `If true, Ctrl+Tab and Ctrl+Shift+Tab will be handled by the browser ` +
       `as the "next/previous tab" keyboard accelerator. If false, the Tab ` +
       `key is sent to the host without Ctrl or Shift.`
   ),
