@@ -765,6 +765,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
     }
   }
 
+  // eslint-disable-next-line no-control-regex
   const nextTerminator = buf.search(/[\x1b\x07]/);
   const terminator = buf[nextTerminator];
   let foundTerminator;

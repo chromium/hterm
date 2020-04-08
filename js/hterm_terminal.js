@@ -3998,6 +3998,7 @@ hterm.Terminal.prototype.onPasteData_ = function(data) {
     // inserting an \x1b[201~ midstream).  We pass through whitespace
     // though: 0x08:\b 0x09:\t 0x0a:\n 0x0d:\r.
     // This matches xterm behavior.
+    // eslint-disable-next-line no-control-regex
     const filter = (data) => data.replace(/[\x00-\x07\x0b-\x0c\x0e-\x1f]/g, '');
     data = '\x1b[200~' + filter(data) + '\x1b[201~';
   }
