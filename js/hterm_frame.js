@@ -54,7 +54,6 @@ hterm.Frame.prototype.onMessage_ = function(e) {
       return;
     default:
       console.log('Unknown message from frame:', e.data);
-      return;
   }
 };
 
