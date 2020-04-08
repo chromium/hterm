@@ -373,7 +373,8 @@ it('insert', function() {
     this.screen.insertString('XXXXX');
     assert.equal(ary[2].innerHTML,
                  '   <span class="wc-node">\u4E2D</span>' +
-                 '<span class="wc-node">\u6587</span>' + 'XXXXX' +
+                 '<span class="wc-node">\u6587</span>' +
+                 'XXXXX' +
                  '<span class="wc-node">\u5B57</span>' +
                  '<span class="wc-node">\u4E32</span>');
 
@@ -451,7 +452,8 @@ it('overwrite', function() {
     this.screen.overwriteString('OO');
     assert.equal(ary[2].innerHTML,
                  'XXX<span class="wc-node">\u4E2D</span>' +
-                 '<span class="wc-node">\u6587</span>' + 'OO' +
+                 '<span class="wc-node">\u6587</span>' +
+                 'OO' +
                  '<span class="wc-node">\u4E32</span>');
 
     this.screen.clearCursorRow();
