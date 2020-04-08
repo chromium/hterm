@@ -41,6 +41,11 @@ beforeEach(function(done) {
   this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
+  // Set some fairly large padding which is hopefully more likely to reveal
+  // bugs.  Update default value for screen-padding-size pref, and set initial
+  // value to be used prior to prefs loading.
+  this.terminal.getPrefs().definePreference('screen-padding-size', 20);
+  this.terminal.setScreenPaddingSize(20);
   this.terminal.setHeight(this.visibleRowCount);
   this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.onTerminalReady = () => {
@@ -77,17 +82,20 @@ const DISPLAY_IMAGE_TIMEOUT = 5000;
 it('dimensions', function() {
     const divSize = hterm.getClientSize(this.div);
     const scrollPort = this.terminal.scrollPort_;
+    const rightPadding = Math.max(
+        scrollPort.screenPaddingSize, scrollPort.currentScrollbarWidthPx);
     const innerWidth = Math.round(
-        divSize.width - scrollPort.currentScrollbarWidthPx);
+        divSize.width - scrollPort.screenPaddingSize - rightPadding);
+    const innerHeight = divSize.height - (2 * scrollPort.screenPaddingSize);
 
     assert.equal(innerWidth, Math.round(scrollPort.getScreenWidth()));
-    assert.equal(Math.round(divSize.height),
+    assert.equal(Math.round(innerHeight),
                  Math.round(scrollPort.getScreenHeight()));
 
     assert.equal(Math.floor(innerWidth / scrollPort.characterSize.width),
                  this.visibleColumnCount);
     assert.equal(
-        Math.round(divSize.height / scrollPort.characterSize.height),
+        Math.round(innerHeight / scrollPort.characterSize.height),
         this.visibleRowCount);
 
     assert.equal(this.terminal.screen_.getWidth(), this.visibleColumnCount);

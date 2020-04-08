@@ -93,6 +93,11 @@ hterm.ScrollPort = function(rowProvider) {
   this.lastTouch_ = {};
 
   /**
+   * Size of screen padding in pixels.
+   */
+  this.screenPaddingSize = 0;
+
+  /**
    * True if the last scroll caused the scrollport to show the final row.
    */
   this.isScrolledEnd = true;
@@ -764,6 +769,11 @@ hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
   this.screen_.style.backgroundPosition = position;
 };
 
+/** @param {number} size */
+hterm.ScrollPort.prototype.setScreenPaddingSize = function(size) {
+  this.screenPaddingSize = size;
+};
+
 /** @param {boolean} ctrlVPaste */
 hterm.ScrollPort.prototype.setCtrlVPaste = function(ctrlVPaste) {
   this.ctrlVPaste = ctrlVPaste;
@@ -783,9 +793,11 @@ hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
  */
 hterm.ScrollPort.prototype.getScreenSize = function() {
   const size = hterm.getClientSize(lib.notNull(this.screen_));
+  const rightPadding = Math.max(
+      this.screenPaddingSize, this.currentScrollbarWidthPx);
   return {
-    height: size.height,
-    width: size.width - this.currentScrollbarWidthPx,
+    height: size.height - (2 * this.screenPaddingSize),
+    width: size.width - this.screenPaddingSize - rightPadding,
   };
 };
 
@@ -1057,9 +1069,11 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
 
   // Set the dimensions of the visible rows container.
   this.rowNodes_.style.width = screenSize.width + 'px';
-  this.rowNodes_.style.height = visibleRowsHeight + topFoldOffset + 'px';
-  this.rowNodes_.style.left = this.screen_.offsetLeft + 'px';
-  this.rowNodes_.style.top = this.screen_.offsetTop - topFoldOffset + 'px';
+  this.rowNodes_.style.height = screenSize.height + topFoldOffset + 'px';
+  this.rowNodes_.style.left =
+      this.screen_.offsetLeft + this.screenPaddingSize + 'px';
+  this.rowNodes_.style.top =
+      this.screen_.offsetTop + this.screenPaddingSize - topFoldOffset + 'px';
 };
 
 /**
@@ -1082,6 +1096,7 @@ hterm.ScrollPort.prototype.syncScrollHeight = function() {
   this.lastRowCount_ = this.rowProvider_.getRowCount();
   this.scrollArea_.style.height = (this.characterSize.height *
                                    this.lastRowCount_ +
+                                   (2 * this.screenPaddingSize) +
                                    this.visibleRowTopMargin +
                                    this.visibleRowBottomMargin +
                                    'px');

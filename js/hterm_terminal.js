@@ -480,7 +480,7 @@ hterm.Terminal.prototype.setProfile = function(
 
     'font-size': function(v) {
       v = parseInt(v, 10);
-      if (v <= 0) {
+      if (isNaN(v) || v <= 0) {
         console.error(`Invalid font size: ${v}`);
         return;
       }
@@ -589,6 +589,16 @@ hterm.Terminal.prototype.setProfile = function(
        }
 
        terminal.vt.characterEncoding = v;
+    },
+
+    'screen-padding-size': function(v) {
+      v = parseInt(v, 10);
+      if (isNaN(v) || v < 0) {
+        console.error(`Invalid screen padding size: ${v}`);
+        return;
+      }
+      terminal.setCssVar('screen-padding-size', `${v}px`);
+      terminal.setScreenPaddingSize(v);
     },
 
     'scroll-on-keystroke': function(v) {
@@ -1157,6 +1167,15 @@ hterm.Terminal.prototype.getCursorShape = function() {
 };
 
 /**
+ * Set the screen padding size in pixels.
+ *
+ * @param {number} size
+ */
+hterm.Terminal.prototype.setScreenPaddingSize = function(size) {
+  this.scrollPort_.setScreenPaddingSize(size);
+};
+
+/**
  * Set the width of the terminal, resizing the UI to match.
  *
  * @param {?number} columnCount
@@ -1167,9 +1186,12 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
     return;
   }
 
+  const rightPadding = Math.max(
+      this.scrollPort_.screenPaddingSize,
+      this.scrollPort_.currentScrollbarWidthPx);
   this.div_.style.width = Math.ceil(
-      this.scrollPort_.characterSize.width *
-      columnCount + this.scrollPort_.currentScrollbarWidthPx) + 'px';
+      this.scrollPort_.characterSize.width * columnCount +
+      this.scrollPort_.screenPaddingSize + rightPadding) + 'px';
   this.realizeSize_(columnCount, this.screenSize.height);
   this.scheduleSyncCursorPosition_();
 };
@@ -1185,8 +1207,8 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
     return;
   }
 
-  this.div_.style.height =
-      this.scrollPort_.characterSize.height * rowCount + 'px';
+  this.div_.style.height = this.scrollPort_.characterSize.height * rowCount +
+                           (2 * this.scrollPort_.screenPaddingSize) + 'px';
   this.realizeSize_(this.screenSize.width, rowCount);
   this.scheduleSyncCursorPosition_();
 };
@@ -1709,6 +1731,7 @@ menuitem:hover {
   --hterm-mouse-cursor-text: text;
   --hterm-mouse-cursor-pointer: pointer;
   --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);
+  --hterm-screen-padding-size: 0;
 
 ${lib.colors.stockColorPalette.map((c, i) => `
   --hterm-color-${i}: ${lib.colors.crackRGB(c).slice(0, 3).join(',')};
@@ -1741,8 +1764,10 @@ ${lib.colors.stockColorPalette.map((c, i) => `
   this.cursorNode_.className = 'cursor-node';
   this.cursorNode_.style.cssText = `
 position: absolute;
-left: calc(var(--hterm-charsize-width) * var(--hterm-cursor-offset-col));
-top: calc(var(--hterm-charsize-height) * var(--hterm-cursor-offset-row));
+left: calc(var(--hterm-screen-padding-size) +
+    var(--hterm-charsize-width) * var(--hterm-cursor-offset-col));
+top: calc(var(--hterm-screen-padding-size) +
+    var(--hterm-charsize-height) * var(--hterm-cursor-offset-row));
 display: ${this.options_.cursorVisible ? '' : 'none'};
 width: var(--hterm-charsize-width);
 height: var(--hterm-charsize-height);

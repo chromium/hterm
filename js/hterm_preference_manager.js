@@ -574,6 +574,16 @@ hterm.PreferenceManager.defaultPreferences = {
       `Note: This will handle left & right handed mice correctly.`,
   ),
 
+  'screen-padding-size': hterm.PreferenceManager.definePref_(
+      'Screen padding size',
+      hterm.PreferenceManager.Categories.Appearance,
+      8, 'int',
+      `The padding size in pixels around the border of the terminal screen.\n` +
+      `\n` +
+      `This controls the size of the border around the terminal screen so ` +
+      `the user can add some visible padding to the edges of the screen.`,
+  ),
+
   'word-break-match-left': hterm.PreferenceManager.definePref_(
       'Automatic selection halting (to the left)',
       hterm.PreferenceManager.Categories.CopyPaste,
