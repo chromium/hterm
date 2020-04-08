@@ -153,7 +153,7 @@ const testData = function(terminal, name) {
     assert.isTrue(!!ary, 'header line: ' + line);
 
     var endOffset = Number(ary[1]);
-    //console.log(`Playing to offset: ${endOffset}`);
+    // console.log(`Playing to offset: ${endOffset}`);
     terminal.interpret(data.substring(startOffset, endOffset));
 
     var lineCount = Number(ary[2]);

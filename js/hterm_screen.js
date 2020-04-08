@@ -952,7 +952,7 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
     return;
   }
 
-  //Move start to the left.
+  // Move start to the left.
   var rowText = this.getLineText_(row);
   var lineUpToRange = lib.wc.substring(rowText, 0, endPosition);
   var leftRegularExpression = new RegExp(leftMatch + insideMatch + '$');
@@ -961,7 +961,7 @@ hterm.Screen.prototype.expandSelectionWithWordBreakMatches_ =
     return;
   }
 
-  //Move end to the right.
+  // Move end to the right.
   var lineFromRange = lib.wc.substring(rowText, startPosition,
                                        lib.wc.strWidth(rowText));
   var rightRegularExpression = new RegExp('^' + insideMatch + rightMatch);
