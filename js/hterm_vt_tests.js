@@ -1368,11 +1368,11 @@ it('true-color-mode', function() {
       var fg = getRGB(colors[i]);
       for (var j = 0; j < 6; j++ ) {
         this.terminal.interpret('[mTrue Color Test ' +
-                                getEscape(colors[i],true) +
-                                getEscape(colors[j],false) + colors[i][0] +
+                                getEscape(colors[i], true) +
+                                getEscape(colors[j], false) + colors[i][0] +
                                 ' and ' + colors[j][0] + '\r\n');
 
-        var text = this.terminal.getRowText(6*i+j,1);
+        const text = this.terminal.getRowText(6 * i + j, 1);
         assert.equal(text, 'True Color Test ' + colors[i][0] + ' and ' +
                      colors[j][0]);
 
