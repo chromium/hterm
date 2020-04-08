@@ -3704,7 +3704,7 @@ hterm.Terminal.prototype.openSelectedUrl_ = function() {
   }
 
   // Make sure URL is valid before opening.
-  if (str.length > 2048 || str.search(/[\s\[\](){}<>"'\\^`]/) >= 0) {
+  if (str.length > 2048 || str.search(/[\s[\](){}<>"'\\^`]/) >= 0) {
     return;
   }
 
