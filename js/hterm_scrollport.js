@@ -791,7 +791,7 @@ hterm.ScrollPort.prototype.getScreenSize = function() {
  * @return {number}
  */
 hterm.ScrollPort.prototype.getScreenWidth = function() {
-  return this.getScreenSize().width ;
+  return this.getScreenSize().width;
 };
 
 /**
