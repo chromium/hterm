@@ -2366,8 +2366,8 @@ it('character-maps', function() {
     this.terminal.vt.setEncoding('iso-2022');
 
     // Create a line with all the printable characters.
-    var i, line = '';
-    for (i = 0x20; i < 0x7f; ++i) {
+    let line = '';
+    for (let i = 0x20; i < 0x7f; ++i) {
       line += String.fromCharCode(i);
     }
 
@@ -2402,11 +2402,11 @@ it('docs', function() {
     this.terminal.vt.setEncoding('iso-2022');
 
     // Create a line with all the printable characters.
-    var i, graphicsLine, line = '';
-    for (i = 0x20; i < 0x7f; ++i) {
+    let line = '';
+    for (let i = 0x20; i < 0x7f; ++i) {
       line += String.fromCharCode(i);
     }
-    graphicsLine = hterm.VT.CharacterMaps.DefaultMaps['0'].GL(line);
+    const graphicsLine = hterm.VT.CharacterMaps.DefaultMaps['0'].GL(line);
 
     this.terminal.setWidth(line.length);
 
