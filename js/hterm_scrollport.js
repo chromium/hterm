@@ -1192,7 +1192,7 @@ hterm.ScrollPort.prototype.drawTopFold_ = function(topRowIndex) {
     }
   }
 
-  while(this.rowNodes_.firstChild != this.selection.startRow) {
+  while (this.rowNodes_.firstChild != this.selection.startRow) {
     this.rowNodes_.removeChild(this.rowNodes_.firstChild);
   }
 };
@@ -1245,7 +1245,7 @@ hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
     }
   }
 
-  while(this.rowNodes_.lastChild != this.selection.endRow) {
+  while (this.rowNodes_.lastChild != this.selection.endRow) {
     this.rowNodes_.removeChild(this.rowNodes_.lastChild);
   }
 };

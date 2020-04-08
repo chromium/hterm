@@ -21,7 +21,7 @@ const negKeySeq = function(input, pattern) {
     var p = new hterm.Parser();
     p.reset(input);
     p.parseKeySequence();
-  } catch(ex) {
+  } catch (ex) {
     assert.isTrue(!!ex);
     assert.match(ex.message, pattern);
     return;
