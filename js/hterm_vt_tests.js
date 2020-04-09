@@ -1366,7 +1366,7 @@ it('true-color-mode', function() {
 
     for (var i = 0; i < 6; i++) {
       var fg = getRGB(colors[i]);
-      for (var j = 0; j < 6; j++ ) {
+      for (var j = 0; j < 6; j++) {
         this.terminal.interpret('[mTrue Color Test ' +
                                 getEscape(colors[i], true) +
                                 getEscape(colors[j], false) + colors[i][0] +
