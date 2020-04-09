@@ -75,7 +75,7 @@ hterm.Keyboard.Bindings.OsDefaults = {
 /**
  * Remove all bindings.
  */
-hterm.Keyboard.Bindings.prototype.clear = function () {
+hterm.Keyboard.Bindings.prototype.clear = function() {
   this.bindings_ = {};
 };
 

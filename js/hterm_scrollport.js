@@ -880,7 +880,7 @@ hterm.ScrollPort.prototype.scheduleInvalidate = function() {
   }
 
   var self = this;
-  this.timeouts_.invalidate = setTimeout(function () {
+  this.timeouts_.invalidate = setTimeout(function() {
       delete self.timeouts_.invalidate;
       self.invalidate();
     }, 0);
@@ -1086,7 +1086,7 @@ hterm.ScrollPort.prototype.scheduleRedraw = function() {
   }
 
   var self = this;
-  this.timeouts_.redraw = setTimeout(function () {
+  this.timeouts_.redraw = setTimeout(function() {
       delete self.timeouts_.redraw;
       self.redraw_();
     }, 0);

@@ -120,7 +120,7 @@ MockRowProvider.prototype.getRowsText = function(start, end) {
   }
 
   var text = this.rows_.slice(start, end);
-  return text.map(function (e) { return e.text; }).join('\n');
+  return text.map(function(e) { return e.text; }).join('\n');
 };
 
 /**
