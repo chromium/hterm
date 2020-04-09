@@ -63,21 +63,21 @@ hterm.PreferenceManager.Categories = {
  * List of categories, ordered by display order (top to bottom)
  */
 hterm.PreferenceManager.categoryDefinitions = [
-  { id: hterm.PreferenceManager.Categories.Appearance,
+  {id: hterm.PreferenceManager.Categories.Appearance,
     text: 'Appearance (fonts, colors, images)'},
-  { id: hterm.PreferenceManager.Categories.CopyPaste,
+  {id: hterm.PreferenceManager.Categories.CopyPaste,
     text: 'Copy & Paste'},
-  { id: hterm.PreferenceManager.Categories.Encoding,
+  {id: hterm.PreferenceManager.Categories.Encoding,
     text: 'Encoding'},
-  { id: hterm.PreferenceManager.Categories.Keyboard,
+  {id: hterm.PreferenceManager.Categories.Keyboard,
     text: 'Keyboard'},
-  { id: hterm.PreferenceManager.Categories.Scrolling,
+  {id: hterm.PreferenceManager.Categories.Scrolling,
     text: 'Scrolling'},
-  { id: hterm.PreferenceManager.Categories.Sounds,
+  {id: hterm.PreferenceManager.Categories.Sounds,
     text: 'Sounds'},
-  { id: hterm.PreferenceManager.Categories.Extensions,
+  {id: hterm.PreferenceManager.Categories.Extensions,
     text: 'Extensions'},
-  { id: hterm.PreferenceManager.Categories.Miscellaneous,
+  {id: hterm.PreferenceManager.Categories.Miscellaneous,
     text: 'Miscellaneous'},
 ];
 

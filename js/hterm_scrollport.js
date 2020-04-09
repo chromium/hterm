@@ -989,7 +989,7 @@ hterm.ScrollPort.prototype.resize = function() {
 
   var self = this;
   this.publish(
-      'resize', { scrollPort: this },
+      'resize', {scrollPort: this},
       function() {
         self.scheduleRedraw();
       });
@@ -1610,7 +1610,7 @@ hterm.ScrollPort.prototype.onScroll_ = function(e) {
   }
 
   this.redraw_();
-  this.publish('scroll', { scrollPort: this });
+  this.publish('scroll', {scrollPort: this});
 };
 
 /**
@@ -1917,7 +1917,7 @@ hterm.ScrollPort.prototype.onPaste_ = function(e) {
 
   var self = this;
   setTimeout(function() {
-      self.publish('paste', { text: self.pasteTarget_.value });
+      self.publish('paste', {text: self.pasteTarget_.value});
       self.pasteTarget_.value = '';
       self.focus();
     }, 0);
