@@ -42,7 +42,7 @@ before(function() {
   this.rowProvider = new MockRowProvider(document, this.totalRowCount);
 
   // The scrollport will attach to this.
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   this.div = div;
   div.style.position = 'relative';
   div.style.height = '100%';
@@ -92,7 +92,7 @@ afterEach(function() {
  * rows at the right places after some scrolling.
  */
 it('basic-scroll', function() {
-    var topRow = this.scrollPort.getTopRowIndex();
+    let topRow = this.scrollPort.getTopRowIndex();
     assert.equal(topRow, 0);
     assert.equal(this.scrollPort.getBottomRowIndex(topRow),
                  this.visibleRowCount - 1);
@@ -142,7 +142,7 @@ it('node-recycler', function() {
     // Sync redraw so we know getRowNode was called again.
     this.scrollPort.redraw_();
 
-    var count = this.rowProvider.getCallCount('getRowNode');
+    const count = this.rowProvider.getCallCount('getRowNode');
 
     // Scrolling from 0 to 1 should result in only one call to getRowNode.
     assert.equal(count, 1);
@@ -152,9 +152,9 @@ it('node-recycler', function() {
  * Make sure the selection is maintained even after scrolling off screen.
  */
 it('scroll-selection', function() {
-    var doc = this.scrollPort.getDocument();
+    const doc = this.scrollPort.getDocument();
 
-    var s = doc.getSelection();
+    const s = doc.getSelection();
     // IE does not supposed the extend method on selections.  They support
     // an approximation using addRange, but it automatically merges sibling
     // ranges and selects the parent node.  Ignore this test on IE for now.
@@ -171,28 +171,29 @@ it('scroll-selection', function() {
     this.scrollPort.redraw_();
 
     // And select some text in the middle of the visible range.
-    var anchorRow = this.rowProvider.getRowNode(55);
-    var anchorNode = anchorRow;
+    const anchorRow = this.rowProvider.getRowNode(55);
+    let anchorNode = anchorRow;
     while (anchorNode.firstChild) {
       anchorNode = anchorNode.firstChild;
     }
     s.collapse(anchorNode, 0);
 
-    var focusRow = this.rowProvider.getRowNode(55 + this.visibleRowCount - 10);
-    var focusNode = focusRow;
+    const focusRow = this.rowProvider.getRowNode(
+        55 + this.visibleRowCount - 10);
+    let focusNode = focusRow;
     while (focusNode.lastChild) {
       focusNode = focusNode.lastChild;
     }
     s.extend(focusNode, focusNode.length || 0);
 
-    for (var i = 0; i < this.visibleRowCount; i++) {
+    for (let i = 0; i < this.visibleRowCount; i++) {
       this.scrollPort.scrollRowToTop(50 - i);
       this.scrollPort.redraw_();
       assert.strictEqual(anchorNode, s.anchorNode);
       assert.strictEqual(focusNode, s.focusNode);
     }
 
-    for (var i = 0; i < this.visibleRowCount; i++) {
+    for (let i = 0; i < this.visibleRowCount; i++) {
       this.scrollPort.scrollRowToTop(50 + i);
       this.scrollPort.redraw_();
       assert.strictEqual(anchorNode, s.anchorNode);
@@ -628,7 +629,7 @@ it('fullscreen', function() {
 
     const rowProvider = new MockRowProvider(document, this.totalRowCount);
 
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     div.style.position = 'absolute';
     div.style.height = '100%';
     div.style.width = '100%';
@@ -637,7 +638,7 @@ it('fullscreen', function() {
     const scrollPort = new hterm.ScrollPort(rowProvider);
     scrollPort.decorate(div);
 
-    var divSize = hterm.getClientSize(div);
+    const divSize = hterm.getClientSize(div);
 
     assert.isAbove(divSize.height, 0);
     assert.isAbove(divSize.width, 0);

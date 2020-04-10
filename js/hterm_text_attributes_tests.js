@@ -14,7 +14,7 @@ describe('hterm_text_attributes_tests.js', () => {
  * Make sure isDefault works sanely.
  */
 it('isDefault', () => {
-  var tattrs = new hterm.TextAttributes();
+  const tattrs = new hterm.TextAttributes();
 
   // We should be in the default state initially.
   assert.isTrue(tattrs.isDefault());
@@ -33,7 +33,7 @@ it('isDefault', () => {
  */
 it('createContainer', () => {
   const tattrs = new hterm.TextAttributes(window.document);
-  var node;
+  let node;
 
   // We don't check all the fields currently.  Not clear it's worth the effort.
   // Focus on fields that have had issues in the past.
@@ -59,7 +59,7 @@ it('createContainer', () => {
  */
 it('matchesContainer', () => {
   const tattrs = new hterm.TextAttributes(window.document);
-  var node;
+  let node;
 
   // For plain string, this is just isDefault.
   assert.isTrue(tattrs.matchesContainer(''));
@@ -215,7 +215,6 @@ it('inverse-colors', () => {
  */
 it('invisible', () => {
   const tattrs = new hterm.TextAttributes(window.document);
-  let node;
 
   // Set an attribute to force a container (rather than a text node),
   // but doesn't affect the color behavior in syncColors.
@@ -232,15 +231,15 @@ it('invisible', () => {
   // Invisible settings should have same colors.
   tattrs.invisible = true;
   tattrs.syncColors();
-  node = tattrs.createContainer('asdf');
+  const node = tattrs.createContainer('asdf');
   assert.equal(tattrs.backgroundSource, node.style.color);
   assert.equal(tattrs.backgroundSource, node.style.backgroundColor);
 });
 
 it('splitWidecharString-ascii', () => {
-  var text = 'abcdefghijklmn';
+  const text = 'abcdefghijklmn';
 
-  var actual = hterm.TextAttributes.splitWidecharString(text);
+  const actual = hterm.TextAttributes.splitWidecharString(text);
   assert.equal(actual.length, 1, "Normal text shouldn't be split.");
   assert.equal(actual[0].str, text,
                "The text doesn't have enough content.");
@@ -248,9 +247,9 @@ it('splitWidecharString-ascii', () => {
 });
 
 it('splitWidecharString-wide', () => {
-  var text = 'abcd\u3041\u3042def\u3043ghi';
+  const text = 'abcd\u3041\u3042def\u3043ghi';
 
-  var actual = hterm.TextAttributes.splitWidecharString(text);
+  const actual = hterm.TextAttributes.splitWidecharString(text);
   assert.equal(actual.length, 6, 'Failed to split wide chars.');
   assert.equal(actual[0].str, 'abcd',
                'Failed to obtain the first segment');
@@ -273,9 +272,9 @@ it('splitWidecharString-wide', () => {
 });
 
 it('splitWidecharString-surrogates', () => {
-  var text = 'abc\uD834\uDD00\uD842\uDD9D';
+  const text = 'abc\uD834\uDD00\uD842\uDD9D';
 
-  var actual = hterm.TextAttributes.splitWidecharString(text);
+  const actual = hterm.TextAttributes.splitWidecharString(text);
   assert.equal(actual.length, 2, 'Failed to split surrogate pairs.');
   assert.equal(actual[0].str, 'abc\uD834\uDD00',
                'Failed to obtain the first segment');
@@ -287,9 +286,9 @@ it('splitWidecharString-surrogates', () => {
 });
 
 it('splitWidecharString-ccs', () => {
-  var text = 'xA\u030Ax';
+  const text = 'xA\u030Ax';
 
-  var actual = hterm.TextAttributes.splitWidecharString(text);
+  const actual = hterm.TextAttributes.splitWidecharString(text);
   assert.equal(actual.length, 1, 'Failed to split combining sequences.');
   assert.equal(actual[0].str, text);
 });

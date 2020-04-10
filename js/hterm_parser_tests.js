@@ -18,7 +18,7 @@ describe('hterm_parser_tests.js', () => {
  */
 const negKeySeq = function(input, pattern) {
   try {
-    var p = new hterm.Parser();
+    const p = new hterm.Parser();
     p.reset(input);
     p.parseKeySequence();
   } catch (ex) {
@@ -31,11 +31,11 @@ const negKeySeq = function(input, pattern) {
 };
 
 it('sequence-identifiers', () => {
-  var p = new hterm.Parser();
+  const p = new hterm.Parser();
 
-  var checkResult = function(input, output) {
+  const checkResult = function(input, output) {
     p.reset(input);
-    var rv = p.parseKeySequence();
+    const rv = p.parseKeySequence();
     assert.equal(rv.keyCode, output);
     assert.isFalse(rv.shift);
     assert.isFalse(rv.ctrl);
@@ -53,11 +53,11 @@ it('sequence-identifiers', () => {
 });
 
 it('modifiers', () => {
-  var p = new hterm.Parser();
+  const p = new hterm.Parser();
 
-  var checkResult = function(input, shift, ctrl, alt, meta) {
+  const checkResult = function(input, shift, ctrl, alt, meta) {
     p.reset(input);
-    var rv = p.parseKeySequence();
+    const rv = p.parseKeySequence();
     assert.equal(rv.keyCode, 88);
     assert.equal(rv.shift, shift);
     assert.equal(rv.ctrl, ctrl);
@@ -108,11 +108,11 @@ it('modifiers', () => {
 });
 
 it('keycodes', () => {
-  var p = new hterm.Parser();
+  const p = new hterm.Parser();
 
-  var checkResult = function(input, target, shift, ctrl, alt, meta) {
+  const checkResult = function(input, target, shift, ctrl, alt, meta) {
     p.reset(input);
-    var rv = p.parseKeySequence();
+    const rv = p.parseKeySequence();
     assert.equal(rv.keyCode, target);
     assert.equal(rv.shift, shift);
     assert.equal(rv.ctrl, ctrl);
@@ -142,11 +142,11 @@ it('keycodes', () => {
 });
 
 it('actions', () => {
-  var p = new hterm.Parser();
+  const p = new hterm.Parser();
 
-  var checkResult = function(input, output) {
+  const checkResult = function(input, output) {
     p.reset(input);
-    var rv = p.parseKeyAction();
+    const rv = p.parseKeyAction();
 
     assert.strictEqual(rv, output);
   };

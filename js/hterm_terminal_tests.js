@@ -31,7 +31,7 @@ before(function() {
 beforeEach(function(done) {
   const document = window.document;
 
-  var div = this.div = document.createElement('div');
+  const div = this.div = document.createElement('div');
   div.style.position = 'absolute';
   div.style.height = '100%';
   div.style.width = '100%';
@@ -75,9 +75,9 @@ const DISPLAY_IMAGE_TIMEOUT = 5000;
  * values that the Terminal was constructed with.
  */
 it('dimensions', function() {
-    var divSize = hterm.getClientSize(this.div);
-    var scrollPort = this.terminal.scrollPort_;
-    var innerWidth = Math.round(
+    const divSize = hterm.getClientSize(this.div);
+    const scrollPort = this.terminal.scrollPort_;
+    const innerWidth = Math.round(
         divSize.width - scrollPort.currentScrollbarWidthPx);
 
     assert.equal(innerWidth, Math.round(scrollPort.getScreenWidth()));
@@ -99,8 +99,8 @@ it('dimensions', function() {
  * that should stress the cursor positioning code.
  */
 it('plaintext-stress-cursor-ltr', function() {
-    for (var col = 0; col < this.visibleColumnCount; col++) {
-      for (var row = 0; row < this.visibleRowCount; row++) {
+    for (let col = 0; col < this.visibleColumnCount; col++) {
+      for (let row = 0; row < this.visibleRowCount; row++) {
         this.terminal.screen_.setCursorPosition(row, col);
         this.terminal.screen_.insertString('X');
       }
@@ -113,8 +113,8 @@ it('plaintext-stress-cursor-ltr', function() {
  * code.
  */
 it('plaintext-stress-cursor-rtl', function() {
-    for (var col = this.visibleColumnCount - 1; col >= 0; col--) {
-      for (var row = 0; row < this.visibleRowCount; row++) {
+    for (let col = this.visibleColumnCount - 1; col >= 0; col--) {
+      for (let row = 0; row < this.visibleRowCount; row++) {
         this.terminal.screen_.setCursorPosition(row, col);
         this.terminal.screen_.overwriteString('X');
       }
@@ -128,11 +128,11 @@ it('plaintext-stress-cursor-rtl', function() {
  * log is useful.
  */
 it('plaintext-stress-insert', function(done) {
-    var chunkSize = 1000;
-    var testCount = 10;
+    const chunkSize = 1000;
+    const testCount = 10;
 
     const test = (count) => {
-      for (var i = count * chunkSize; i < (count + 1) * chunkSize; i++) {
+      for (let i = count * chunkSize; i < (count + 1) * chunkSize; i++) {
         if (i != 0) {
           this.terminal.newLine();
         }
@@ -304,7 +304,7 @@ it('scrollport-focus-cursor', function(done) {
  * turned on, and nothing is passed when reporting is off.
  */
 it('focus-reporting', function() {
-  var resultString = '';
+  let resultString = '';
   this.terminal.io.sendString = (str) => resultString = str;
 
   this.terminal.interpret('\x1b[?1004h');

@@ -26,8 +26,8 @@ beforeEach(function() {
  */
 it('push-pop', function() {
     // Push one at a time.
-    var ary = [];
-    for (var i = 0; i < 10; i++) {
+    const ary = [];
+    for (let i = 0; i < 10; i++) {
       ary[i] = document.createElement('div');
       ary[i].textContent = i;
       this.screen.pushRow(ary[i]);
@@ -36,7 +36,7 @@ it('push-pop', function() {
     assert.equal(ary.length, this.screen.getHeight());
 
     // Pop one at a time.
-    for (var i = ary.length - 1; i >= 0; i--) {
+    for (let i = ary.length - 1; i >= 0; i--) {
       assert.equal(ary[i], this.screen.popRow(), 'i:' + i);
     }
 
@@ -45,11 +45,11 @@ it('push-pop', function() {
     assert.equal(ary.length, this.screen.rowsArray.length);
 
     // Bulk pop.
-    var popary = this.screen.popRows(ary.length);
+    let popary = this.screen.popRows(ary.length);
 
     assert.equal(ary.length, popary.length);
 
-    for (var i = ary.length - 1; i >= 0; i--) {
+    for (let i = ary.length - 1; i >= 0; i--) {
       assert.equal(ary[i], popary[i], 'i:' + i);
     }
 
@@ -58,7 +58,7 @@ it('push-pop', function() {
     assert.equal(ary.length, this.screen.rowsArray.length);
 
     popary = this.screen.popRows(5);
-    for (var i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       assert.equal(ary[i + 5], popary[i], 'i:' + i);
     }
   });
@@ -68,8 +68,8 @@ it('push-pop', function() {
  */
 it('unshift-shift', function() {
     // Unshift one at a time.
-    var ary = [];
-    for (var i = 0; i < 10; i++) {
+    const ary = [];
+    for (let i = 0; i < 10; i++) {
       ary[i] = document.createElement('div');
       ary[i].textContent = i;
       this.screen.unshiftRow(ary[i]);
@@ -78,7 +78,7 @@ it('unshift-shift', function() {
     assert.equal(ary.length, this.screen.rowsArray.length);
 
     // Shift one at a time.
-    for (var i = ary.length - 1; i >= 0; i--) {
+    for (let i = ary.length - 1; i >= 0; i--) {
       assert.equal(ary[i], this.screen.shiftRow(), 'i:' + i);
     }
 
@@ -87,11 +87,11 @@ it('unshift-shift', function() {
     assert.equal(ary.length, this.screen.rowsArray.length);
 
     // Bulk shift.
-    var shiftary = this.screen.shiftRows(ary.length);
+    let shiftary = this.screen.shiftRows(ary.length);
 
     assert.equal(ary.length, shiftary.length);
 
-    for (var i = ary.length - 1; i >= 0; i--) {
+    for (let i = ary.length - 1; i >= 0; i--) {
       assert.equal(ary[i], shiftary[i], 'i:' + i);
     }
 
@@ -100,7 +100,7 @@ it('unshift-shift', function() {
     assert.equal(ary.length, this.screen.rowsArray.length);
 
     shiftary = this.screen.shiftRows(5);
-    for (var i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       assert.equal(ary[i], shiftary[i], 'i:' + i);
     }
   });
@@ -109,9 +109,9 @@ it('unshift-shift', function() {
  * Test cursor positioning functionality.
  */
 it('cursor-movement', function() {
-    var ary = [];
+    const ary = [];
 
-    for (var i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
       ary[i] = document.createElement('div');
       ary[i].textContent = i;
       this.screen.pushRow(ary[i]);
@@ -204,7 +204,7 @@ it('cursor-movement', function() {
  * Test character removal.
  */
 it('delete-chars', function() {
-    var row = document.createElement('div');
+    const row = document.createElement('div');
     row.innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
     this.screen.pushRow(row);
 
@@ -213,8 +213,8 @@ it('delete-chars', function() {
 
     assert.equal(row.innerHTML, 'hel<div id="2">rld</div>');
 
-    var createWidecharNode = function(c) {
-      var span = document.createElement('span');
+    const createWidecharNode = function(c) {
+      const span = document.createElement('span');
       span.textContent = c;
       span.className = 'wc-node';
       span.wcNode = true;
@@ -222,7 +222,7 @@ it('delete-chars', function() {
       return span;
     };
 
-    var wc_row = document.createElement('div');
+    const wc_row = document.createElement('div');
     wc_row.appendChild(createWidecharNode('\u4E2D'));
     wc_row.appendChild(createWidecharNode('\u6587'));
     wc_row.appendChild(createWidecharNode('\u5B57'));
@@ -299,8 +299,8 @@ it('wide-to-narrow-char-end', function() {
 it('insert', function() {
     // Sample rows.  Row 0 is a simple, empty row.  Row 1 simulates rows with
     // mixed text attributes.
-    var ary = [document.createElement('div'), document.createElement('div'),
-               document.createElement('div')];
+    const ary = [document.createElement('div'), document.createElement('div'),
+                 document.createElement('div')];
     ary[1].innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
     this.screen.pushRows(ary);
 
@@ -339,11 +339,11 @@ it('insert', function() {
                  '<div id="2">world</div>');
 
     // Test inserting widechar string.
-    var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
+    const wideCharString = '\u4E2D\u6587\u5B57\u4E32';
     this.screen.setCursorPosition(2, 0);
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -358,7 +358,7 @@ it('insert', function() {
     this.screen.setCursorPosition(2, 3);
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -383,7 +383,7 @@ it('insert', function() {
     this.screen.setCursorPosition(2, 3);
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -399,7 +399,7 @@ it('insert', function() {
  * Test the ability to overwrite test.
  */
 it('overwrite', function() {
-    var ary = [];
+    const ary = [];
     ary[0] = document.createElement('div');
     ary[0].innerHTML = 'hello<div id="1"> </div><div id="2">world</div>';
     ary[1] = document.createElement('div');
@@ -417,11 +417,11 @@ it('overwrite', function() {
     assert.equal(ary[1].innerHTML, 'XXXXX');
 
     // Test overwriting widechar string.
-    var wideCharString = '\u4E2D\u6587\u5B57\u4E32';
+    const wideCharString = '\u4E2D\u6587\u5B57\u4E32';
     this.screen.setCursorPosition(2, 0);
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.overwriteString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -437,7 +437,7 @@ it('overwrite', function() {
     this.screen.setCursorPosition(2, 3);
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.overwriteString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -459,7 +459,7 @@ it('overwrite', function() {
     this.screen.clearCursorRow();
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -467,7 +467,7 @@ it('overwrite', function() {
     this.screen.setCursorPosition(2, 4);
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.overwriteString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;
@@ -483,7 +483,7 @@ it('overwrite', function() {
     this.screen.clearCursorRow();
     this.screen.textAttributes.wcNode = true;
     this.screen.textAttributes.asciiNode = false;
-    for (var i = 0; i < wideCharString.length; i++) {
+    for (let i = 0; i < wideCharString.length; i++) {
       this.screen.insertString(wideCharString.charAt(i));
     }
     this.screen.textAttributes.wcNode = false;

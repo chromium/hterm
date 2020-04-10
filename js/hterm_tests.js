@@ -32,11 +32,9 @@ afterEach(() => {
  * Test that basic notifications work.
  */
 it('default-notification', () => {
-  var n;
-
   // Create a default notification.
   assert.equal(0, Notification.count);
-  n = hterm.notify();
+  const n = hterm.notify();
   assert.equal(1, Notification.count);
 
   // Check the parameters.
@@ -49,11 +47,9 @@ it('default-notification', () => {
  * Test that various notifications arguments work.
  */
 it('notification-fields', () => {
-  var n;
-
   // Create the notification.
   assert.equal(0, Notification.count);
-  n = hterm.notify({'title': 'title', 'body': 'body'});
+  const n = hterm.notify({'title': 'title', 'body': 'body'});
   assert.equal(1, Notification.count);
 
   // Check the parameters.

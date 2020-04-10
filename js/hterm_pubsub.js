@@ -23,8 +23,8 @@ hterm.PubSub = function() {
  * @param {!Object} obj The object to add this behavior to.
  */
 hterm.PubSub.addBehavior = function(obj) {
-  var pubsub = new hterm.PubSub();
-  for (var m in hterm.PubSub.prototype) {
+  const pubsub = new hterm.PubSub();
+  for (const m in hterm.PubSub.prototype) {
     obj[m] = hterm.PubSub.prototype[m].bind(pubsub);
   }
 };
@@ -51,12 +51,12 @@ hterm.PubSub.prototype.subscribe = function(subject, callback) {
  *     subscribe().
  */
 hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
-  var list = this.observers_[subject];
+  const list = this.observers_[subject];
   if (!list) {
     throw 'Invalid subject: ' + subject;
   }
 
-  var i = list.indexOf(callback);
+  const i = list.indexOf(callback);
   if (i < 0) {
     throw 'Not subscribed: ' + subject;
   }
@@ -87,7 +87,7 @@ hterm.PubSub.prototype.publish = function(
     list[i](e);
   }
 
-  var list = this.observers_[subject];
+  let list = this.observers_[subject];
   if (list) {
     // Copy the list, in case it changes while we're notifying.
     list = [].concat(list);

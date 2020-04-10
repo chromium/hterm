@@ -79,7 +79,7 @@ before(function() {
 beforeEach(function(done) {
   const document = window.document;
 
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.style.position = 'absolute';
   document.body.appendChild(div);
 
@@ -125,39 +125,39 @@ afterEach(function() {
 const testData = function(terminal, name) {
   let data = lib.resource.getData(`hterm/test/canned/${name}`);
 
-  var m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/);
+  let m = data.match(/^(#[^\n]*\n)*@@ HEADER_START/);
   // And that it has optional lead-in comments followed by a header.
   assert.isTrue(!!m, 'data has a header');
 
-  var headerStart = m[0].length;
+  const headerStart = m[0].length;
 
   // And that the header has an ending.
   m = data.match(/^@@ HEADER_END\r?\n/m);
   assert.isTrue(!!m, 'header ends');
 
-  var header = data.substring(headerStart, m.index);
+  const header = data.substring(headerStart, m.index);
   data = data.substr(headerStart + header.length + m[0].length);
 
-  var startOffset = 0;
-  var headerLines = header.split(/\r?\n/);
+  let startOffset = 0;
+  const headerLines = header.split(/\r?\n/);
 
-  for (var headerIndex = 0; headerIndex < headerLines.length; headerIndex++) {
-    var line = headerLines[headerIndex];
+  for (let headerIndex = 0; headerIndex < headerLines.length; headerIndex++) {
+    const line = headerLines[headerIndex];
     if (!line || /^(#.*|\s*)$/.test(line)) {
       // Skip blank lines and comment lines.
       continue;
     }
 
-    var ary = line.match(
+    const ary = line.match(
         /^@@\s+OFFSET:(\d+)\s+LINES:(\d+)\s+CURSOR:(\d+),(\d+)\s*$/);
     assert.isTrue(!!ary, 'header line: ' + line);
 
-    var endOffset = Number(ary[1]);
+    const endOffset = Number(ary[1]);
     // console.log(`Playing to offset: ${endOffset}`);
     terminal.interpret(data.substring(startOffset, endOffset));
 
-    var lineCount = Number(ary[2]);
-    for (var rowIndex = 0; rowIndex < lineCount; rowIndex++) {
+    const lineCount = Number(ary[2]);
+    for (let rowIndex = 0; rowIndex < lineCount; rowIndex++) {
       headerIndex++;
       assert.equal(terminal.getRowText(rowIndex),
                    headerLines[headerIndex],

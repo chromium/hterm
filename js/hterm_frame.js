@@ -150,9 +150,9 @@ hterm.Frame.prototype.show = function() {
     return;
   }
 
-  var document = this.terminal_.document_;
+  const document = this.terminal_.document_;
 
-  var container = this.container_ = document.createElement('div');
+  const container = this.container_ = document.createElement('div');
   container.style.cssText = (
       'position: absolute;' +
       'display: none;' +
@@ -166,7 +166,7 @@ hterm.Frame.prototype.show = function() {
       'box-shadow: 0 0 2px ' + this.terminal_.getForegroundColor() + ';' +
       'border: 2px ' + this.terminal_.getForegroundColor() + ' solid;');
 
-  var iframe = this.iframe_ = document.createElement('iframe');
+  const iframe = this.iframe_ = document.createElement('iframe');
   iframe.onload = this.onLoad_.bind(this);
   iframe.style.cssText = (
       'display: flex;' +

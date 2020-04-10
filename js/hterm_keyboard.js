@@ -251,8 +251,8 @@ hterm.Keyboard.prototype.installKeyboard = function(element) {
     this.installKeyboard(null);
   }
 
-  for (var i = 0; i < this.handlers_.length; i++) {
-    var handler = this.handlers_[i];
+  for (let i = 0; i < this.handlers_.length; i++) {
+    const handler = this.handlers_[i];
     if (element) {
       element.addEventListener(handler[0], handler[1]);
     } else {
@@ -316,7 +316,7 @@ hterm.Keyboard.prototype.onKeyPress_ = function(e) {
   }
 
   /** @type {string} */
-  var ch;
+  let ch;
   if (e.altKey && this.altSendsWhat == 'browser-key' && e.charCode == 0) {
     // If we got here because we were expecting the browser to handle an
     // alt sequence but it didn't do it, then we might be on an OS without
@@ -398,7 +398,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     this.preventChromeAppNonCtrlShiftDefault_(e);
   }
 
-  var keyDef = this.keyMap.keyDefs[e.keyCode];
+  let keyDef = this.keyMap.keyDefs[e.keyCode];
   if (!keyDef) {
     // If this key hasn't been explicitly registered, fall back to the unknown
     // key mapping (keyCode == 0), and then automatically register it to avoid
@@ -409,7 +409,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   }
 
   // The type of action we're going to use.
-  var resolvedActionType = null;
+  let resolvedActionType = null;
 
   /**
    * @param {string} name
@@ -422,7 +422,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
     resolvedActionType = name;
 
-    var action = keyDef[name];
+    let action = keyDef[name];
     if (typeof action == 'function') {
       action = action.call(this.keyMap, e, keyDef);
     }
@@ -437,17 +437,17 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   // Note that we use the triple-equals ('===') operator to test equality for
   // these constants, in order to distinguish usage of the constant from usage
   // of a literal string that happens to contain the same bytes.
-  var CANCEL = hterm.Keyboard.KeyActions.CANCEL;
-  var DEFAULT = hterm.Keyboard.KeyActions.DEFAULT;
-  var PASS = hterm.Keyboard.KeyActions.PASS;
-  var STRIP = hterm.Keyboard.KeyActions.STRIP;
+  const CANCEL = hterm.Keyboard.KeyActions.CANCEL;
+  const DEFAULT = hterm.Keyboard.KeyActions.DEFAULT;
+  const PASS = hterm.Keyboard.KeyActions.PASS;
+  const STRIP = hterm.Keyboard.KeyActions.STRIP;
 
-  var control = e.ctrlKey;
-  var alt = this.altIsMeta ? false : e.altKey;
-  var meta = this.altIsMeta ? (e.altKey || e.metaKey) : e.metaKey;
+  let control = e.ctrlKey;
+  let alt = this.altIsMeta ? false : e.altKey;
+  let meta = this.altIsMeta ? (e.altKey || e.metaKey) : e.metaKey;
 
   // In the key-map, we surround the keyCap for non-printables in "[...]"
-  var isPrintable = !(/^\[\w+\]$/.test(keyDef.keyCap));
+  const isPrintable = !(/^\[\w+\]$/.test(keyDef.keyCap));
 
   switch (this.altGrMode) {
     case 'ctrl-alt':
@@ -475,7 +475,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   }
 
   /** @type {?hterm.Keyboard.KeyDefAction} */
-  var action;
+  let action;
 
   if (control) {
     action = getAction('control');
@@ -491,10 +491,10 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   // already accounted for in the action, and we should not act on it any
   // further. This is currently only used for Ctrl+Shift+Tab, which should send
   // "CSI Z", not "CSI 1 ; 2 Z".
-  var shift = !e.maskShiftKey && e.shiftKey;
+  let shift = !e.maskShiftKey && e.shiftKey;
 
   /** @type {!hterm.Keyboard.KeyDown} */
-  var keyDown = {
+  const keyDown = {
     keyCode: e.keyCode,
     shift: e.shiftKey, // not `var shift` from above.
     ctrl: control,
@@ -502,7 +502,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     meta: meta,
   };
 
-  var binding = this.bindings.getBinding(keyDown);
+  const binding = this.bindings.getBinding(keyDown);
 
   if (binding) {
     // Clear out the modifier bits so we don't try to munge the sequence
@@ -599,7 +599,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     if (meta) {
       imod += 8;
     }
-    let mod = ';' + imod;
+    const mod = ';' + imod;
 
     if (action.length == 3) {
       // Some of the CSI sequences have zero parameters unless modified.
@@ -615,8 +615,8 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
       action = keyDef.keyCap.substr((shift ? 1 : 0), 1);
 
       if (control) {
-        var unshifted = keyDef.keyCap.substr(0, 1);
-        var code = unshifted.charCodeAt(0);
+        const unshifted = keyDef.keyCap.substr(0, 1);
+        const code = unshifted.charCodeAt(0);
         if (code >= 64 && code <= 95) {
           action = String.fromCharCode(code - 64);
         }
@@ -624,7 +624,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     }
 
     if (alt && this.altSendsWhat == '8-bit' && action.length == 1) {
-      var code = action.charCodeAt(0) + 128;
+      const code = action.charCodeAt(0) + 128;
       action = String.fromCharCode(code);
     }
 

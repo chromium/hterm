@@ -113,9 +113,9 @@ hterm.TextAttributes.prototype.setDocument = function(document) {
  * @return {!hterm.TextAttributes} A deep copy of this object.
  */
 hterm.TextAttributes.prototype.clone = function() {
-  var rv = new hterm.TextAttributes();
+  const rv = new hterm.TextAttributes();
 
-  for (var key in this) {
+  for (const key in this) {
     rv[key] = this[key];
   }
 
@@ -196,9 +196,9 @@ hterm.TextAttributes.prototype.createContainer = function(textContent = '') {
     return node;
   }
 
-  var span = this.document_.createElement('span');
-  var style = span.style;
-  var classes = [];
+  const span = this.document_.createElement('span');
+  const style = span.style;
+  const classes = [];
 
   if (this.foreground != this.DEFAULT_COLOR) {
     style.color = this.foreground.toString();
@@ -290,7 +290,7 @@ hterm.TextAttributes.prototype.matchesContainer = function(obj) {
     return this.isDefault();
   }
 
-  var style = obj.style;
+  const style = obj.style;
 
   // We don't want to put multiple characters in a wcNode or a tile.
   // See the comments in createContainer.
@@ -415,8 +415,8 @@ hterm.TextAttributes.containersMatch = function(obj1, obj2) {
     return true;
   }
 
-  var style1 = obj1.style;
-  var style2 = obj2.style;
+  const style1 = obj1.style;
+  const style2 = obj2.style;
 
   return (style1.color == style2.color &&
           style1.backgroundColor == style2.backgroundColor &&

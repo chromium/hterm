@@ -138,8 +138,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   /* TODO(crbug.com/1065216): Delete this if no longer needed.
   const ak = (a, b) => {
     return (e, k) => {
-      var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
-                    !this.keyboard.applicationKeypad) ? a : b;
+      const action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
+                      !this.keyboard.applicationKeypad) ? a : b;
       return resolve(action, e, k);
     };
   };
@@ -155,8 +155,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    */
   const ac = (a, b) => {
     return (e, k) => {
-      var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
-                    !this.keyboard.applicationCursor) ? a : b;
+      const action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
+                      !this.keyboard.applicationCursor) ? a : b;
       return resolve(action, e, k);
     };
   };
@@ -184,7 +184,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    */
   const sh = (a, b) => {
     return (e, k) => {
-      var action = !e.shiftKey ? a : b;
+      const action = !e.shiftKey ? a : b;
       e.maskShiftKey = true;
       return resolve(action, e, k);
     };
@@ -199,7 +199,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    */
   const alt = (a, b) => {
     return (e, k) => {
-      var action = !e.altKey ? a : b;
+      const action = !e.altKey ? a : b;
       return resolve(action, e, k);
     };
   };
@@ -213,7 +213,8 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    */
   const mod = (a, b) => {
     return (e, k) => {
-      var action = !(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) ? a : b;
+      const action = !(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) ?
+        a : b;
       return resolve(action, e, k);
     };
   };
@@ -263,6 +264,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   };
 
   // Browser-specific differences.
+  // let keycapMute;
+  // let keycapVolDn;
+  // let keycapVolDn
+  let keycapSC;
+  let keycapEP;
+  let keycapMU;
   if (window.navigator && navigator.userAgent &&
       navigator.userAgent.includes('Firefox')) {
     // Firefox defines some keys uniquely.  No other browser defines these in
@@ -270,28 +277,28 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
     // as it isn't standardized.  At some point we should switch to "key".
     // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
     // http://unixpapa.com/js/key.html
-    // var keycapMute = 181;   // Mute
-    // var keycapVolDn = 182;  // Volume Down
-    // var keycapVolUp = 183;  // Volume Up
-    var keycapSC = 59;      // ;:
-    var keycapEP = 61;      // =+
-    var keycapMU = 173;     // -_
+    // keycapMute = 181;   // Mute
+    // keycapVolDn = 182;  // Volume Down
+    // keycapVolUp = 183;  // Volume Up
+    keycapSC = 59;      // ;:
+    keycapEP = 61;      // =+
+    keycapMU = 173;     // -_
 
     // Firefox Italian +*.
     add(171, '+*', DEFAULT, c('onZoom_'), DEFAULT, c('onZoom_'));
   } else {
     // All other browsers use these mappings.
-    // var keycapMute = 173;   // Mute
-    // var keycapVolDn = 174;  // Volume Down
-    // var keycapVolUp = 175;  // Volume Up
-    var keycapSC = 186;     // ;:
-    var keycapEP = 187;     // =+
-    var keycapMU = 189;     // -_
+    // keycapMute = 173;   // Mute
+    // keycapVolDn = 174;  // Volume Down
+    // keycapVolUp = 175;  // Volume Up
+    keycapSC = 186;     // ;:
+    keycapEP = 187;     // =+
+    keycapMU = 189;     // -_
   }
 
-  var ESC = '\x1b';
-  var CSI = '\x1b[';
-  var SS3 = '\x1bO';
+  const ESC = '\x1b';
+  const CSI = '\x1b[';
+  const SS3 = '\x1bO';
 
   // These fields are: [keycode, keycap, normal, control, alt, meta]
 
@@ -748,7 +755,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlT_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
-  var selection = this.keyboard.terminal.getDocument().getSelection();
+  const selection = this.keyboard.terminal.getDocument().getSelection();
 
   if (!selection.isCollapsed) {
     if (this.keyboard.ctrlCCopy && !e.shiftKey) {
@@ -860,7 +867,7 @@ hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onMetaC_ = function(e, keyDef) {
-  var document = this.keyboard.terminal.getDocument();
+  const document = this.keyboard.terminal.getDocument();
   if (e.shiftKey || document.getSelection().isCollapsed) {
     // If the shift key is being held, or there is no document selection, send
     // a Meta+C.  The keyboard code will add the ESC if metaSendsEscape is true,
@@ -928,11 +935,11 @@ hterm.Keyboard.KeyMap.prototype.onZoom_ = function(e, keyDef) {
     return hterm.Keyboard.KeyActions.PASS;
   }
 
-  var cap = keyDef.keyCap.substr(0, 1);
+  const cap = keyDef.keyCap.substr(0, 1);
   if (cap == '0') {
       this.keyboard.terminal.setFontSize(0);
   } else {
-    var size = this.keyboard.terminal.getFontSize();
+    let size = this.keyboard.terminal.getFontSize();
 
     if (cap == '-' || keyDef.keyCap == '[KP-]') {
       size -= 1;

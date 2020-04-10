@@ -14,7 +14,7 @@ Notification.lastCall;
  *
  * @constructor
  */
-var MockNotification = function() {
+const MockNotification = function() {
   function mock(title, opts) {
     if (opts === undefined) {
       opts = {};

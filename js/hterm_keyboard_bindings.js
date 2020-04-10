@@ -89,10 +89,10 @@ hterm.Keyboard.Bindings.prototype.clear = function() {
  * @param {!hterm.Keyboard.KeyBindingAction} action
  */
 hterm.Keyboard.Bindings.prototype.addBinding_ = function(keyPattern, action) {
-  var binding = null;
-  var list = this.bindings_[keyPattern.keyCode];
+  let binding = null;
+  const list = this.bindings_[keyPattern.keyCode];
   if (list) {
-    for (var i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       if (list[i].keyPattern.matchKeyPattern(keyPattern)) {
         binding = list[i];
         break;
@@ -151,10 +151,10 @@ hterm.Keyboard.Bindings.prototype.addBinding = function(key, action) {
   }
 
   // Here we treat key as a string.
-  var p = new hterm.Parser();
+  const p = new hterm.Parser();
 
   p.reset(key);
-  var sequence;
+  let sequence;
 
   try {
     sequence = p.parseKeySequence();
@@ -210,7 +210,7 @@ hterm.Keyboard.Bindings.prototype.addBindings = function(
   if (addOsDefaults) {
     this.addBindings(hterm.Keyboard.Bindings.OsDefaults[hterm.os] || {});
   }
-  for (var key in map) {
+  for (const key in map) {
     this.addBinding(key, map[key]);
   }
 };
@@ -226,13 +226,13 @@ hterm.Keyboard.Bindings.prototype.addBindings = function(
  * @return {?hterm.Keyboard.KeyBinding} The keyboard binding for this key.
  */
 hterm.Keyboard.Bindings.prototype.getBinding = function(keyDown) {
-  var list = this.bindings_[keyDown.keyCode];
+  const list = this.bindings_[keyDown.keyCode];
   if (!list) {
     return null;
   }
 
-  for (var i = 0; i < list.length; i++) {
-    var binding = list[i];
+  for (let i = 0; i < list.length; i++) {
+    const binding = list[i];
     if (binding.keyPattern.matchKeyDown(keyDown)) {
       return binding;
     }

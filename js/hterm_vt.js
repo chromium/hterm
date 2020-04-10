@@ -393,10 +393,10 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
   }
 
   // Temporary storage for our response.
-  var response;
+  let response;
 
   // Modifier key state.
-  var mod = 0;
+  let mod = 0;
   if (this.mouseReport != this.MOUSE_REPORT_PRESS) {
     if (e.shiftKey) {
       mod |= 4;
@@ -599,7 +599,7 @@ hterm.VT.prototype.setEncoding = function(encoding) {
 hterm.VT.prototype.updateEncodingState_ = function() {
   // If we're in UTF8 mode, don't suport 8-bit escape sequences as we'll never
   // see those -- everything should be UTF8!
-  var cc1 = Object.keys(hterm.VT.CC1)
+  const cc1 = Object.keys(hterm.VT.CC1)
       .filter((e) => !this.codingSystemUtf8_ || e.charCodeAt() < 0x80)
       .map((e) => '\\x' + lib.f.zpad(e.charCodeAt().toString(16), 2))
       .join('');
@@ -625,8 +625,8 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
   };
 
   // Search for the next contiguous block of plain text.
-  var buf = parseState.peekRemainingBuf();
-  var nextControl = buf.search(this.cc1Pattern_);
+  const buf = parseState.peekRemainingBuf();
+  const nextControl = buf.search(this.cc1Pattern_);
 
   if (nextControl == 0) {
     // We've stumbled right into a control character.
@@ -655,8 +655,8 @@ hterm.VT.prototype.parseUnknown_ = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.prototype.parseCSI_ = function(parseState) {
-  var ch = parseState.peekChar();
-  var args = parseState.args;
+  const ch = parseState.peekChar();
+  const args = parseState.args;
 
   const finishParsing = () => {
     // Resetting the arguments isn't strictly necessary, but it makes debugging
@@ -743,8 +743,8 @@ hterm.VT.prototype.parseCSI_ = function(parseState) {
  *     exceeded the max string sequence.
  */
 hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
-  var buf = parseState.peekRemainingBuf();
-  var args = parseState.args;
+  let buf = parseState.peekRemainingBuf();
+  const args = parseState.args;
   // Since we might modify parse state buffer locally, if we want to advance
   // the parse state buffer later on, we need to know how many chars we added.
   let bufInserted = 0;
@@ -781,7 +781,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
 
     args[0] += buf;
 
-    var abortReason;
+    let abortReason;
 
     // Special case: If our buffering happens to split the ST (\e\\), we have to
     // buffer the content temporarily.  So don't reject a trailing escape here,
@@ -824,7 +824,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.prototype.dispatch = function(type, code, parseState) {
-  var handler = hterm.VT[type][code];
+  const handler = hterm.VT[type][code];
   if (!handler) {
     if (this.warnUnimplemented) {
       console.warn(`Unknown ${type} code: ${JSON.stringify(code)}`);
@@ -1251,7 +1251,7 @@ hterm.VT.CC1['\x1a'] = hterm.VT.CC1['\x18'];
  */
 hterm.VT.CC1['\x1b'] = function(parseState) {
   function parseESC(parseState) {
-    var ch = parseState.consumeChar();
+    const ch = parseState.consumeChar();
 
     if (ch == '\x1b') {
       return;
@@ -1448,7 +1448,7 @@ hterm.VT.ESC[']'] = function(parseState) {
     }
 
     // We're done.
-    var ary = parseState.args[0].match(/^(\d+);?(.*)$/);
+    const ary = parseState.args[0].match(/^(\d+);?(.*)$/);
     if (ary) {
       parseState.args[0] = ary[2];
       this.dispatch('OSC', ary[1], parseState);
@@ -1511,7 +1511,7 @@ hterm.VT.ESC['_'] = function(parseState) {
  */
 hterm.VT.ESC['\x20'] = function(parseState) {
   parseState.func = function(parseState) {
-    var ch = parseState.consumeChar();
+    const ch = parseState.consumeChar();
     if (this.warnUnimplemented) {
       console.warn('Unimplemented sequence: ESC 0x20 ' + ch);
     }
@@ -1527,7 +1527,7 @@ hterm.VT.ESC['\x20'] = function(parseState) {
  */
 hterm.VT.ESC['#'] = function(parseState) {
   parseState.func = function(parseState) {
-    var ch = parseState.consumeChar();
+    const ch = parseState.consumeChar();
     if (ch == '8') {
       // DEC Screen Alignment Test (DECALN).
       this.terminal.setCursorPosition(0, 0);
@@ -1546,7 +1546,7 @@ hterm.VT.ESC['#'] = function(parseState) {
  */
 hterm.VT.ESC['%'] = function(parseState) {
   parseState.func = function(parseState) {
-    var ch = parseState.consumeChar();
+    let ch = parseState.consumeChar();
 
     // If we've locked the encoding, then just eat the bytes and return.
     if (this.codingSystemLocked_) {
@@ -1624,14 +1624,14 @@ hterm.VT.ESC['-'] =
 hterm.VT.ESC['.'] =
 hterm.VT.ESC['/'] = function(parseState, code) {
   parseState.func = function(parseState) {
-    var ch = parseState.consumeChar();
+    const ch = parseState.consumeChar();
     if (ch == '\x1b') {
       parseState.resetParseFunction();
       parseState.func();
       return;
     }
 
-    var map = this.characterMaps.getMap(ch);
+    const map = this.characterMaps.getMap(ch);
     if (map !== undefined) {
       if (code == '(') {
         this.G0 = map;
@@ -1808,14 +1808,14 @@ hterm.VT.OSC['2'] = hterm.VT.OSC['0'];
 hterm.VT.OSC['4'] = function(parseState) {
   // Args come in as a single 'index1;rgb1 ... ;indexN;rgbN' string.
   // We split on the semicolon and iterate through the pairs.
-  var args = parseState.args[0].split(';');
+  const args = parseState.args[0].split(';');
 
-  var pairCount = Math.floor(args.length / 2);
-  var responseArray = [];
+  const pairCount = Math.floor(args.length / 2);
+  const responseArray = [];
 
-  for (var pairNumber = 0; pairNumber < pairCount; ++pairNumber) {
-    var colorIndex = parseInt(args[pairNumber * 2], 10);
-    var colorValue = args[pairNumber * 2 + 1];
+  for (let pairNumber = 0; pairNumber < pairCount; ++pairNumber) {
+    const colorIndex = parseInt(args[pairNumber * 2], 10);
+    let colorValue = args[pairNumber * 2 + 1];
 
     if (colorIndex >= lib.colors.colorPalette.length) {
       continue;
@@ -1914,12 +1914,12 @@ hterm.VT.OSC['9'] = function(parseState) {
 hterm.VT.OSC['10'] = function(parseState) {
   // Args come in as a single string, but extra args will chain to the following
   // OSC sequences.
-  var args = parseState.args[0].split(';');
+  const args = parseState.args[0].split(';');
   if (!args) {
     return;
   }
 
-  var colorX11 = lib.colors.x11ToCSS(args.shift());
+  const colorX11 = lib.colors.x11ToCSS(args.shift());
   if (colorX11) {
     this.terminal.setForegroundColor(colorX11);
   }
@@ -1939,12 +1939,12 @@ hterm.VT.OSC['10'] = function(parseState) {
 hterm.VT.OSC['11'] = function(parseState) {
   // Args come in as a single string, but extra args will chain to the following
   // OSC sequences.
-  var args = parseState.args[0].split(';');
+  const args = parseState.args[0].split(';');
   if (!args) {
     return;
   }
 
-  var colorX11 = lib.colors.x11ToCSS(args.shift());
+  const colorX11 = lib.colors.x11ToCSS(args.shift());
   if (colorX11) {
     this.terminal.setBackgroundColor(colorX11);
   }
@@ -1964,12 +1964,12 @@ hterm.VT.OSC['11'] = function(parseState) {
 hterm.VT.OSC['12'] = function(parseState) {
   // Args come in as a single string, but extra args will chain to the following
   // OSC sequences.
-  var args = parseState.args[0].split(';');
+  const args = parseState.args[0].split(';');
   if (!args) {
     return;
   }
 
-  var colorX11 = lib.colors.x11ToCSS(args.shift());
+  const colorX11 = lib.colors.x11ToCSS(args.shift());
   if (colorX11) {
     this.terminal.setCursorColor(colorX11);
   }
@@ -2001,7 +2001,7 @@ hterm.VT.OSC['12'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.OSC['50'] = function(parseState) {
-  var args = parseState.args[0].match(/CursorShape=(.)/i);
+  const args = parseState.args[0].match(/CursorShape=(.)/i);
   if (!args) {
     console.warn('Could not parse OSC 50 args: ' + parseState.args[0]);
     return;
@@ -2042,7 +2042,7 @@ hterm.VT.OSC['52'] = function(parseState) {
   // Args come in as a single 'clipboard;b64-data' string.  The clipboard
   // parameter is used to select which of the X clipboards to address.  Since
   // we're not integrating with X, we treat them all the same.
-  var args = parseState.args[0].match(/^[cps01234567]*;(.*)/);
+  const args = parseState.args[0].match(/^[cps01234567]*;(.*)/);
   if (!args) {
     return;
   }
@@ -2124,7 +2124,7 @@ hterm.VT.OSC['112'] = function(parseState) {
 hterm.VT.OSC['1337'] = function(parseState) {
   // Args come in as a set of key value pairs followed by data.
   // File=name=<base64>;size=123;inline=1:<base64 data>
-  let args = parseState.args[0].match(/^File=([^:]*):([\s\S]*)$/m);
+  const args = parseState.args[0].match(/^File=([^:]*):([\s\S]*)$/m);
   if (!args) {
     if (this.warnUnimplemented) {
       console.log(`iTerm2 1337: unsupported sequence: ${args[1]}`);
@@ -2215,14 +2215,15 @@ hterm.VT.OSC['1337'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.OSC['777'] = function(parseState) {
-  var ary;
-  var urxvtMod = parseState.args[0].split(';', 1)[0];
+  let ary;
+  const urxvtMod = parseState.args[0].split(';', 1)[0];
 
   switch (urxvtMod) {
-    case 'notify':
+    case 'notify': {
       // Format:
       // notify;title;message
-      var title, message;
+      let title;
+      let message;
       ary = parseState.args[0].match(/^[^;]+;([^;]*)(;([\s\S]*))?$/);
       if (ary) {
         title = ary[1];
@@ -2230,6 +2231,7 @@ hterm.VT.OSC['777'] = function(parseState) {
       }
       hterm.notify({'title': title, 'body': message});
       break;
+    }
 
     default:
       console.warn('Unknown urxvt module: ' + parseState.args[0]);
@@ -2345,9 +2347,9 @@ hterm.VT.CSI['H'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.CSI['I'] = function(parseState) {
-  var count = parseState.iarg(0, 1);
+  let count = parseState.iarg(0, 1);
   count = lib.f.clamp(count, 1, this.terminal.screenSize.width);
-  for (var i = 0; i < count; i++) {
+  for (let i = 0; i < count; i++) {
     this.terminal.forwardTabStop();
   }
 };
@@ -2360,7 +2362,7 @@ hterm.VT.CSI['I'] = function(parseState) {
  */
 hterm.VT.CSI['J'] =
 hterm.VT.CSI['?J'] = function(parseState) {
-  var arg = parseState.args[0];
+  const arg = parseState.args[0];
 
   if (!arg || arg == 0) {
     this.terminal.eraseBelow();
@@ -2383,7 +2385,7 @@ hterm.VT.CSI['?J'] = function(parseState) {
  */
 hterm.VT.CSI['K'] =
 hterm.VT.CSI['?K'] = function(parseState) {
-  var arg = parseState.args[0];
+  const arg = parseState.args[0];
 
   if (!arg || arg == 0) {
     this.terminal.eraseToRight();
@@ -2485,9 +2487,9 @@ hterm.VT.CSI['X'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.CSI['Z'] = function(parseState) {
-  var count = parseState.iarg(0, 1);
+  let count = parseState.iarg(0, 1);
   count = lib.f.clamp(count, 1, this.terminal.screenSize.width);
-  for (var i = 0; i < count; i++) {
+  for (let i = 0; i < count; i++) {
     this.terminal.backwardTabStop();
   }
 };
@@ -2587,7 +2589,7 @@ hterm.VT.CSI['g'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.CSI['h'] = function(parseState) {
-  for (var i = 0; i < parseState.args.length; i++) {
+  for (let i = 0; i < parseState.args.length; i++) {
     this.setANSIMode(parseState.args[i], true);
   }
 };
@@ -2599,7 +2601,7 @@ hterm.VT.CSI['h'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.CSI['?h'] = function(parseState) {
-  for (var i = 0; i < parseState.args.length; i++) {
+  for (let i = 0; i < parseState.args.length; i++) {
     this.setDECMode(parseState.args[i], true);
   }
 };
@@ -2620,7 +2622,7 @@ hterm.VT.CSI['?i'] = hterm.VT.ignore;
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.CSI['l'] = function(parseState) {
-  for (var i = 0; i < parseState.args.length; i++) {
+  for (let i = 0; i < parseState.args.length; i++) {
     this.setANSIMode(parseState.args[i], false);
   }
 };
@@ -2632,7 +2634,7 @@ hterm.VT.CSI['l'] = function(parseState) {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.CSI['?l'] = function(parseState) {
-  for (var i = 0; i < parseState.args.length; i++) {
+  for (let i = 0; i < parseState.args.length; i++) {
     this.setDECMode(parseState.args[i], false);
   }
 };
@@ -2808,17 +2810,17 @@ hterm.VT.prototype.parseSgrExtendedColors = function(parseState, i, attrs) {
  * @param {!hterm.VT.ParseState} parseState
  */
 hterm.VT.CSI['m'] = function(parseState) {
-  var attrs = this.terminal.getTextAttributes();
+  const attrs = this.terminal.getTextAttributes();
 
   if (!parseState.args.length) {
     attrs.reset();
     return;
   }
 
-  for (var i = 0; i < parseState.args.length; i++) {
+  for (let i = 0; i < parseState.args.length; i++) {
     // If this argument has subargs (i.e. it has args followed by colons),
     // the iarg logic will implicitly truncate that off for us.
-    var arg = parseState.iarg(i, 0);
+    const arg = parseState.iarg(i, 0);
 
     if (arg < 30) {
       if (arg == 0) {  // Normal (default).
@@ -2950,8 +2952,8 @@ hterm.VT.CSI['n'] = function(parseState) {
   if (parseState.args[0] == 5) {
     this.terminal.io.sendString('\x1b0n');
   } else if (parseState.args[0] == 6) {
-    var row = this.terminal.getCursorRow() + 1;
-    var col = this.terminal.getCursorColumn() + 1;
+    const row = this.terminal.getCursorRow() + 1;
+    const col = this.terminal.getCursorColumn() + 1;
     this.terminal.io.sendString('\x1b[' + row + ';' + col + 'R');
   }
 };
@@ -2981,8 +2983,8 @@ hterm.VT.CSI['>n'] = hterm.VT.ignore;
  */
 hterm.VT.CSI['?n'] = function(parseState) {
   if (parseState.args[0] == 6) {
-    var row = this.terminal.getCursorRow() + 1;
-    var col = this.terminal.getCursorColumn() + 1;
+    const row = this.terminal.getCursorRow() + 1;
+    const col = this.terminal.getCursorColumn() + 1;
     this.terminal.io.sendString('\x1b[' + row + ';' + col + 'R');
   } else if (parseState.args[0] == 15) {
     this.terminal.io.sendString('\x1b[?11n');
@@ -3049,7 +3051,7 @@ hterm.VT.CSI['q'] = hterm.VT.ignore;
  * @param {!hterm.VT.ParseState} parseState
  */
 hterm.VT.CSI[' q'] = function(parseState) {
-  var arg = parseState.args[0];
+  const arg = parseState.args[0];
 
   if (arg == 0 || arg == 1) {
     this.terminal.setCursorShape(hterm.Terminal.cursorShape.BLOCK);
@@ -3088,9 +3090,9 @@ hterm.VT.CSI['"q'] = hterm.VT.ignore;
  * @param {!hterm.VT.ParseState} parseState
  */
 hterm.VT.CSI['r'] = function(parseState) {
-  var args = parseState.args;
-  var scrollTop = args[0] ? parseInt(args[0], 10) - 1 : null;
-  var scrollBottom = args[1] ? parseInt(args[1], 10) - 1 : null;
+  const args = parseState.args;
+  const scrollTop = args[0] ? parseInt(args[0], 10) - 1 : null;
+  const scrollBottom = args[1] ? parseInt(args[1], 10) - 1 : null;
   this.terminal.setVTScrollRegion(scrollTop, scrollBottom);
   this.terminal.setCursorPosition(0, 0);
 };
@@ -3217,7 +3219,7 @@ hterm.VT.CSI['z'] = function(parseState) {
   if (parseState.args.length < 1) {
     return;
   }
-  var arg = parseState.args[0];
+  const arg = parseState.args[0];
   if (arg == 0) {
     // Start a glyph (one parameter, the glyph number).
     if (parseState.args.length < 2) {

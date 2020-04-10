@@ -101,7 +101,7 @@ hterm.Terminal.IO.prototype.setTerminalProfile = function(profileName) {
  * @return {!hterm.Terminal.IO} The new foreground IO instance.
  */
 hterm.Terminal.IO.prototype.push = function() {
-  var io = new hterm.Terminal.IO(this.terminal_);
+  const io = new hterm.Terminal.IO(this.terminal_);
   io.keyboardCaptured_ = this.keyboardCaptured_;
 
   io.columnCount = this.columnCount;
@@ -167,7 +167,7 @@ hterm.Terminal.IO.prototype.onVTKeystroke = function(string) {
  * @param {number} height The new terminal height.
  */
 hterm.Terminal.IO.prototype.onTerminalResize_ = function(width, height) {
-  var obj = this;
+  let obj = this;
   while (obj) {
     obj.columnCount = width;
     obj.rowCount = height;

@@ -76,26 +76,26 @@ hterm.Parser.prototype.reset = function(source, pos = 0) {
  *     keyCode properties.
  */
 hterm.Parser.prototype.parseKeySequence = function() {
-  var rv = {
+  const rv = {
     keyCode: null,
   };
 
-  for (var k in hterm.Parser.identifiers.modifierKeys) {
+  for (const k in hterm.Parser.identifiers.modifierKeys) {
     rv[hterm.Parser.identifiers.modifierKeys[k]] = false;
   }
 
   while (this.pos < this.source.length) {
     this.skipSpace();
 
-    var token = this.parseToken();
+    const token = this.parseToken();
     if (token.type == 'integer') {
       rv.keyCode = token.value;
 
     } else if (token.type == 'identifier') {
-      var ucValue = token.value.toUpperCase();
+      const ucValue = token.value.toUpperCase();
       if (ucValue in hterm.Parser.identifiers.modifierKeys &&
           hterm.Parser.identifiers.modifierKeys.hasOwnProperty(ucValue)) {
-        var mod = hterm.Parser.identifiers.modifierKeys[ucValue];
+        const mod = hterm.Parser.identifiers.modifierKeys[ucValue];
         if (rv[mod] && rv[mod] != '*') {
           throw this.error('Duplicate modifier: ' + token.value);
         }
@@ -111,8 +111,8 @@ hterm.Parser.prototype.parseKeySequence = function() {
 
     } else if (token.type == 'symbol') {
       if (token.value == '*') {
-        for (var id in hterm.Parser.identifiers.modifierKeys) {
-          var p = hterm.Parser.identifiers.modifierKeys[id];
+        for (const id in hterm.Parser.identifiers.modifierKeys) {
+          const p = hterm.Parser.identifiers.modifierKeys[id];
           if (!rv[p]) {
             rv[p] =  '*';
           }
@@ -148,7 +148,7 @@ hterm.Parser.prototype.parseKeySequence = function() {
 hterm.Parser.prototype.parseKeyAction = function() {
   this.skipSpace();
 
-  var token = this.parseToken();
+  const token = this.parseToken();
 
   if (token.type == 'string') {
     return token.value;
@@ -185,7 +185,7 @@ hterm.Parser.prototype.peekInteger = function() {
 /** @return {!Object} */
 hterm.Parser.prototype.parseToken = function() {
   if (this.ch == '*') {
-    var rv = {type: 'symbol', value: this.ch};
+    const rv = {type: 'symbol', value: this.ch};
     this.advance(1);
     return rv;
   }
@@ -236,16 +236,16 @@ hterm.Parser.prototype.parseInteger = function() {
  * @return {string}
  */
 hterm.Parser.prototype.parseString = function() {
-  var result = '';
+  let result = '';
 
-  var quote = this.ch;
+  const quote = this.ch;
   if (quote != '"' && quote != '\'') {
     throw this.error('String expected');
   }
 
   this.advance(1);
 
-  var re = new RegExp('[\\\\' + quote + ']', 'g');
+  const re = new RegExp('[\\\\' + quote + ']', 'g');
 
   while (this.pos < this.source.length) {
     re.lastIndex = this.pos;
@@ -286,7 +286,7 @@ hterm.Parser.prototype.parseString = function() {
  * @return {string}
  */
 hterm.Parser.prototype.parseEscape = function() {
-  var map = {
+  const map = {
     '"': '"',
     '\'': '\'',
     '\\': '\\',
@@ -299,11 +299,11 @@ hterm.Parser.prototype.parseEscape = function() {
     't': '\x09',
     'v': '\x0b',
     'x': function() {
-      var value = this.parsePattern(/[a-z0-9]{2}/ig);
+      const value = this.parsePattern(/[a-z0-9]{2}/ig);
       return String.fromCharCode(parseInt(value, 16));
     },
     'u': function() {
-      var value = this.parsePattern(/[a-z0-9]{4}/ig);
+      const value = this.parsePattern(/[a-z0-9]{4}/ig);
       return String.fromCharCode(parseInt(value, 16));
     },
   };
@@ -312,7 +312,7 @@ hterm.Parser.prototype.parseEscape = function() {
     throw this.error('Unknown escape: ' + this.ch);
   }
 
-  var value = map[this.ch];
+  let value = map[this.ch];
   this.advance(1);
 
   if (typeof value == 'function') {
@@ -335,7 +335,7 @@ hterm.Parser.prototype.parsePattern = function(pattern) {
   }
 
   pattern.lastIndex = this.pos;
-  var ary = pattern.exec(this.source);
+  const ary = pattern.exec(this.source);
 
   if (!ary || pattern.lastIndex - ary[0].length != this.pos) {
     throw this.error('Expected match for: ' + pattern);
@@ -368,10 +368,10 @@ hterm.Parser.prototype.skipSpace = function(expect = undefined) {
     return;
   }
 
-  var re = /\s+/gm;
+  const re = /\s+/gm;
   re.lastIndex = this.pos;
 
-  var source = this.source;
+  const source = this.source;
   if (re.exec(source)) {
     this.pos = re.lastIndex;
   }

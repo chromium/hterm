@@ -119,7 +119,7 @@ MockRowProvider.prototype.getRowsText = function(start, end) {
     throw 'Index out of bounds.';
   }
 
-  var text = this.rows_.slice(start, end);
+  const text = this.rows_.slice(start, end);
   return text.map(function(e) { return e.text; }).join('\n');
 };
 
@@ -130,7 +130,7 @@ MockRowProvider.prototype.getRowsText = function(start, end) {
  * @return {string} The text of the specified row.
  */
 MockRowProvider.prototype.getRowText = function(index) {
-  var rec = this.getRowRecord_(index);
+  const rec = this.getRowRecord_(index);
   return rec.text;
 };
 
@@ -148,8 +148,8 @@ MockRowProvider.prototype.getRowNode = function(index) {
     return this.rowNodeCache_[index];
   }
 
-  var rec = this.getRowRecord_(index);
-  var rowNode = this.document_.createElement('x-row');
+  const rec = this.getRowRecord_(index);
+  const rowNode = this.document_.createElement('x-row');
   rowNode.rowIndex = index;
   rowNode.innerHTML = rec.html;
 

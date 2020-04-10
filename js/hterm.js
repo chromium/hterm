@@ -8,7 +8,7 @@
  * @fileoverview Declares the hterm.* namespace and some basic shared utilities
  * that are too small to deserve dedicated files.
  */
-var hterm = {};
+const hterm = {};
 
 /**
  * The type of window hosting hterm.
@@ -113,9 +113,9 @@ lib.registerInit(
 
       // The chrome.tabs API is not supported in packaged apps, and detecting if
       // you're a packaged app is a little awkward.
-      var isPackagedApp = false;
+      let isPackagedApp = false;
       if (window.chrome && chrome.runtime && chrome.runtime.getManifest) {
-        var manifest = chrome.runtime.getManifest();
+        const manifest = chrome.runtime.getManifest();
         isPackagedApp = manifest.app && manifest.app.background;
       }
 
@@ -297,25 +297,25 @@ hterm.msg = function(name, args = [], string) {
  * @return {!Notification}
  */
 hterm.notify = function(params) {
-  var def = (curr, fallback) => curr !== undefined ? curr : fallback;
+  const def = (curr, fallback) => curr !== undefined ? curr : fallback;
   if (params === undefined || params === null) {
     params = {};
   }
 
   // Merge the user's choices with the default settings.  We don't take it
   // directly in case it was stuffed with excess junk.
-  var options = {
+  const options = {
       'body': params.body,
       'icon': def(params.icon, lib.resource.getDataUrl('hterm/images/icon-96')),
   };
 
-  var title = def(params.title, window.document.title);
+  let title = def(params.title, window.document.title);
   if (!title) {
     title = 'hterm';
   }
   title = lib.f.replaceVars(hterm.desktopNotificationTitle, {'title': title});
 
-  var n = new Notification(title, options);
+  const n = new Notification(title, options);
   n.onclick = function() {
     window.focus();
     n.close();

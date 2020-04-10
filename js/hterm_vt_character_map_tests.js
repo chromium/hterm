@@ -14,7 +14,7 @@ describe('hterm_vt_character_map_tests.js', () => {
  * Verify null maps work sanely.
  */
 it('null-map', () => {
-  var map = new hterm.VT.CharacterMap('foo', null);
+  const map = new hterm.VT.CharacterMap('foo', null);
 
   assert.equal(map.description, 'foo');
   assert.isNull(map.GL);
@@ -24,7 +24,7 @@ it('null-map', () => {
  * Verify empty maps work sanely.
  */
 it('empty-map', () => {
-  var map = new hterm.VT.CharacterMap('foo bar', {});
+  const map = new hterm.VT.CharacterMap('foo bar', {});
 
   assert.equal(map.description, 'foo bar');
   assert.equal(typeof map.GL, 'function');
@@ -34,7 +34,7 @@ it('empty-map', () => {
  * Verify GL map works.
  */
 it('gl-translate', () => {
-  var map = new hterm.VT.CharacterMap('test', {'a': 'b'});
+  const map = new hterm.VT.CharacterMap('test', {'a': 'b'});
 
   assert.equal(map.GL('a'), 'b');
   assert.equal(map.GL('b'), 'b');
@@ -45,7 +45,7 @@ it('gl-translate', () => {
  * Verify handling of overrides.
  */
 it('overrides', () => {
-  var map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
+  const map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
 
   // Verify things start off sane.
   assert.equal(map.GL('a'), 'A');
@@ -72,7 +72,7 @@ it('overrides', () => {
  * Verify handling of resets.
  */
 it('resets', () => {
-  var map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
+  const map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
 
   // Verify things start off sane.
   assert.equal(map.GL('a'), 'A');
@@ -99,8 +99,8 @@ it('resets', () => {
  * Verify map clones work.
  */
 it('clone', () => {
-  var map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
-  var dup = map.clone();
+  const map = new hterm.VT.CharacterMap('test', {'a': 'A', 'b': 'B'});
+  const dup = map.clone();
 
   // Make sure the dupe behaves the same, but isn't the same.
   assert.equal(map.description, dup.description);
@@ -118,7 +118,7 @@ it('clone', () => {
  * Verify basic character map handling.
  */
 it('basic', () => {
-  var maps = new hterm.VT.CharacterMaps();
+  const maps = new hterm.VT.CharacterMaps();
 
   // The default mapping should pass through to the default table.
   assert.strictEqual(maps.maps_, maps.mapsBase_);
@@ -134,7 +134,7 @@ it('basic', () => {
  * Verify getMap works.
  */
 it('getMap', () => {
-  var maps = new hterm.VT.CharacterMaps();
+  const maps = new hterm.VT.CharacterMaps();
 
   assert.isUndefined(maps.getMap('X'));
   assert.isDefined(maps.getMap('0'));
@@ -145,8 +145,8 @@ it('getMap', () => {
  * Verify adding a new mapping doesn't mess with the default table.
  */
 it('new-map', () => {
-  var maps = new hterm.VT.CharacterMaps();
-  var map = new hterm.VT.CharacterMap('test', {});
+  const maps = new hterm.VT.CharacterMaps();
+  const map = new hterm.VT.CharacterMap('test', {});
 
   // Add a new map to the table.
   assert.isUndefined(maps.getMap('X'));
@@ -168,8 +168,8 @@ it('new-map', () => {
  * Verify updating an existing mapping doesn't mess with the default table.
  */
 it('update-map', () => {
-  var maps = new hterm.VT.CharacterMaps();
-  var map = new hterm.VT.CharacterMap('test', {});
+  const maps = new hterm.VT.CharacterMaps();
+  const map = new hterm.VT.CharacterMap('test', {});
 
   // Update a mapping in the table.
   assert.isDefined(maps.getMap('0'));
@@ -191,8 +191,8 @@ it('update-map', () => {
  * Verify setting overrides work.
  */
 it('overrides', () => {
-  var maps = new hterm.VT.CharacterMaps();
-  var map;
+  const maps = new hterm.VT.CharacterMaps();
+  let map;
 
   // Check the default mappings.
   assert.isUndefined(maps.getMap('U'));

@@ -60,7 +60,7 @@ hterm.VT.CharacterMap.prototype.sync_ = function(glmap = undefined) {
     this.glmap_ = this.glmapBase_;
   }
 
-  var glchars = Object.keys(lib.notNull(this.glmap_)).map((key) =>
+  const glchars = Object.keys(lib.notNull(this.glmap_)).map((key) =>
       '\\x' + lib.f.zpad(key.charCodeAt(0).toString(16), 2));
   this.glre_ = new RegExp('[' + glchars.join('') + ']', 'g');
 
@@ -98,7 +98,7 @@ hterm.VT.CharacterMap.prototype.setOverrides = function(glmap) {
  * @return {!hterm.VT.CharacterMap} A new hterm.VT.CharacterMap instance.
  */
 hterm.VT.CharacterMap.prototype.clone = function() {
-  var map = new hterm.VT.CharacterMap(this.description, this.glmapBase_);
+  const map = new hterm.VT.CharacterMap(this.description, this.glmapBase_);
   if (this.glmap_ !== this.glmapBase_) {
     map.setOverrides(this.glmap_);
   }
@@ -167,8 +167,8 @@ hterm.VT.CharacterMaps.prototype.setOverrides = function(maps) {
     this.maps_ = Object.assign({}, this.mapsBase_);
   }
 
-  for (var name in maps) {
-    var map = this.getMap(name);
+  for (const name in maps) {
+    const map = this.getMap(name);
     if (map !== undefined) {
       this.maps_[name] = map.clone();
       this.maps_[name].setOverrides(maps[name]);

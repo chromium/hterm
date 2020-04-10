@@ -217,7 +217,7 @@ hterm.Terminal.prototype.setProfile = function(
     profileId, callback = undefined) {
   this.profileId_ = profileId.replace(/\//g, '');
 
-  var terminal = this;
+  const terminal = this;
 
   if (this.prefs_) {
     this.prefs_.deactivate();
@@ -289,7 +289,7 @@ hterm.Terminal.prototype.setProfile = function(
     },
 
     'audible-bell-sound': function(v) {
-      var ary = v.match(/^lib-resource:(\S+)/);
+      const ary = v.match(/^lib-resource:(\S+)/);
       if (ary) {
         terminal.bellAudio_.setAttribute('src',
                                          lib.resource.getDataUrl(ary[1]));
@@ -388,15 +388,15 @@ hterm.Terminal.prototype.setProfile = function(
       lib.colors.colorPalette = lib.colors.stockColorPalette.concat();
 
       if (v) {
-        for (var key in v) {
-          var i = parseInt(key, 10);
+        for (const key in v) {
+          const i = parseInt(key, 10);
           if (isNaN(i) || i < 0 || i > 255) {
             console.log('Invalid value in palette: ' + key + ': ' + v[key]);
             continue;
           }
 
           if (v[i]) {
-            var rgb = lib.colors.normalizeCSS(v[i]);
+            const rgb = lib.colors.normalizeCSS(v[i]);
             if (rgb) {
               terminal.setColorPalette(i, rgb);
               lib.colors.colorPalette[i] = rgb;
@@ -776,7 +776,7 @@ hterm.Terminal.prototype.getForegroundColor = function() {
  */
 hterm.Terminal.prototype.runCommandClass = function(
     commandClass, commandName, args) {
-  var environment = this.prefs_.get('environment');
+  let environment = this.prefs_.get('environment');
   if (typeof environment != 'object' || environment == null) {
     environment = {};
   }
@@ -972,7 +972,7 @@ hterm.Terminal.prototype.syncFontFamily = function() {
  * autodetecting if necessary.
  */
 hterm.Terminal.prototype.syncMousePasteButton = function() {
-  var button = this.prefs_.get('mouse-paste-button');
+  const button = this.prefs_.get('mouse-paste-button');
   if (typeof button == 'number') {
     this.mousePasteButton = button;
     return;
@@ -990,17 +990,17 @@ hterm.Terminal.prototype.syncMousePasteButton = function() {
  * necessary.
  */
 hterm.Terminal.prototype.syncBoldSafeState = function() {
-  var enableBold = this.prefs_.get('enable-bold');
+  const enableBold = this.prefs_.get('enable-bold');
   if (enableBold !== null) {
     this.primaryScreen_.textAttributes.enableBold = enableBold;
     this.alternateScreen_.textAttributes.enableBold = enableBold;
     return;
   }
 
-  var normalSize = this.scrollPort_.measureCharacterSize();
-  var boldSize = this.scrollPort_.measureCharacterSize('bold');
+  const normalSize = this.scrollPort_.measureCharacterSize();
+  const boldSize = this.scrollPort_.measureCharacterSize('bold');
 
-  var isBoldSafe = normalSize.equals(boldSize);
+  const isBoldSafe = normalSize.equals(boldSize);
   if (!isBoldSafe) {
     console.warn('Bold characters disabled: Size of bold weight differs ' +
                  'from normal.  Font family is: ' +
@@ -1084,8 +1084,8 @@ hterm.Terminal.prototype.setWindowTitle = function(title) {
  * @param {!hterm.RowCol} cursor The position to restore.
  */
 hterm.Terminal.prototype.restoreCursor = function(cursor) {
-  var row = lib.f.clamp(cursor.row, 0, this.screenSize.height - 1);
-  var column = lib.f.clamp(cursor.column, 0, this.screenSize.width - 1);
+  const row = lib.f.clamp(cursor.row, 0, this.screenSize.height - 1);
+  const column = lib.f.clamp(cursor.column, 0, this.screenSize.width - 1);
   this.screen_.setCursorPosition(row, column);
   if (cursor.column > column ||
       cursor.column == column && cursor.overflow) {
@@ -1231,7 +1231,7 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
     throw new Error('Attempt to realize bad width: ' + columnCount);
   }
 
-  var deltaColumns = columnCount - this.screen_.getWidth();
+  const deltaColumns = columnCount - this.screen_.getWidth();
   if (deltaColumns == 0) {
     // No change, so don't bother recalculating things.
     return;
@@ -1245,7 +1245,7 @@ hterm.Terminal.prototype.realizeWidth_ = function(columnCount) {
       this.setDefaultTabStops(this.screenSize.width - deltaColumns);
     }
   } else {
-    for (var i = this.tabStops_.length - 1; i >= 0; i--) {
+    for (let i = this.tabStops_.length - 1; i >= 0; i--) {
       if (this.tabStops_[i] < columnCount) {
         break;
       }
@@ -1275,7 +1275,7 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
     throw new Error('Attempt to realize bad height: ' + rowCount);
   }
 
-  var deltaRows = rowCount - this.screen_.getHeight();
+  let deltaRows = rowCount - this.screen_.getHeight();
   if (deltaRows == 0) {
     // No change, so don't bother recalculating things.
     return;
@@ -1283,13 +1283,13 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
 
   this.screenSize.height = rowCount;
 
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   if (deltaRows < 0) {
     // Screen got smaller.
     deltaRows *= -1;
     while (deltaRows) {
-      var lastRow = this.getRowCount() - 1;
+      const lastRow = this.getRowCount() - 1;
       if (lastRow - this.scrollbackRows_.length == cursor.row) {
         break;
       }
@@ -1302,7 +1302,7 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
       deltaRows--;
     }
 
-    var ary = this.screen_.shiftRows(deltaRows);
+    const ary = this.screen_.shiftRows(deltaRows);
     this.scrollbackRows_.push.apply(this.scrollbackRows_, ary);
 
     // We just removed rows from the top of the screen, we need to update
@@ -1312,8 +1312,8 @@ hterm.Terminal.prototype.realizeHeight_ = function(rowCount) {
     // Screen got larger.
 
     if (deltaRows <= this.scrollbackRows_.length) {
-      var scrollbackCount = Math.min(deltaRows, this.scrollbackRows_.length);
-      var rows = this.scrollbackRows_.splice(
+      const scrollbackCount = Math.min(deltaRows, this.scrollbackRows_.length);
+      const rows = this.scrollbackRows_.splice(
           this.scrollbackRows_.length - scrollbackCount, scrollbackCount);
       this.screen_.unshiftRows(rows);
       deltaRows -= scrollbackCount;
@@ -1363,7 +1363,7 @@ hterm.Terminal.prototype.scrollPageDown = function() {
  * Scroll the terminal one line up relative to the current position.
  */
 hterm.Terminal.prototype.scrollLineUp = function() {
-  var i = this.scrollPort_.getTopRowIndex();
+  const i = this.scrollPort_.getTopRowIndex();
   this.scrollPort_.scrollRowToTop(i - 1);
 };
 
@@ -1371,7 +1371,7 @@ hterm.Terminal.prototype.scrollLineUp = function() {
  * Scroll the terminal one line down relative to the current position.
  */
 hterm.Terminal.prototype.scrollLineDown = function() {
-  var i = this.scrollPort_.getTopRowIndex();
+  const i = this.scrollPort_.getTopRowIndex();
   this.scrollPort_.scrollRowToTop(i + 1);
 };
 
@@ -1477,9 +1477,9 @@ hterm.Terminal.prototype.softReset = function() {
  * if no more tab stops are set.
  */
 hterm.Terminal.prototype.forwardTabStop = function() {
-  var column = this.screen_.cursorPosition.column;
+  const column = this.screen_.cursorPosition.column;
 
-  for (var i = 0; i < this.tabStops_.length; i++) {
+  for (let i = 0; i < this.tabStops_.length; i++) {
     if (this.tabStops_[i] > column) {
       this.setCursorColumn(this.tabStops_[i]);
       return;
@@ -1487,7 +1487,7 @@ hterm.Terminal.prototype.forwardTabStop = function() {
   }
 
   // xterm does not clear the overflow flag on HT or CHT.
-  var overflow = this.screen_.cursorPosition.overflow;
+  const overflow = this.screen_.cursorPosition.overflow;
   this.setCursorColumn(this.screenSize.width - 1);
   this.screen_.cursorPosition.overflow = overflow;
 };
@@ -1497,9 +1497,9 @@ hterm.Terminal.prototype.forwardTabStop = function() {
  * if no previous tab stops are set.
  */
 hterm.Terminal.prototype.backwardTabStop = function() {
-  var column = this.screen_.cursorPosition.column;
+  const column = this.screen_.cursorPosition.column;
 
-  for (var i = this.tabStops_.length - 1; i >= 0; i--) {
+  for (let i = this.tabStops_.length - 1; i >= 0; i--) {
     if (this.tabStops_[i] < column) {
       this.setCursorColumn(this.tabStops_[i]);
       return;
@@ -1515,7 +1515,7 @@ hterm.Terminal.prototype.backwardTabStop = function() {
  * @param {number} column Zero based column.
  */
 hterm.Terminal.prototype.setTabStop = function(column) {
-  for (var i = this.tabStops_.length - 1; i >= 0; i--) {
+  for (let i = this.tabStops_.length - 1; i >= 0; i--) {
     if (this.tabStops_[i] == column) {
       return;
     }
@@ -1535,9 +1535,9 @@ hterm.Terminal.prototype.setTabStop = function(column) {
  * No effect if there is no tab stop at the current cursor position.
  */
 hterm.Terminal.prototype.clearTabStopAtCursor = function() {
-  var column = this.screen_.cursorPosition.column;
+  const column = this.screen_.cursorPosition.column;
 
-  var i = this.tabStops_.indexOf(column);
+  const i = this.tabStops_.indexOf(column);
   if (i == -1) {
     return;
   }
@@ -1567,10 +1567,10 @@ hterm.Terminal.prototype.clearAllTabStops = function() {
  *     useful for filling out missing tab stops when the terminal is resized.
  */
 hterm.Terminal.prototype.setDefaultTabStops = function(start = 0) {
-  var w = this.tabWidth;
+  const w = this.tabWidth;
   // Round start up to a default tab stop.
   start = start - 1 - ((start - 1) % w) + w;
-  for (var i = start; i < this.screenSize.width; i += w) {
+  for (let i = start; i < this.screenSize.width; i += w) {
     this.setTabStop(i);
   }
 
@@ -1640,8 +1640,8 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
   this.document_.body.oncontextmenu = function() { return false; };
   this.contextMenu.setDocument(this.document_);
 
-  var onMouse = this.onMouse_.bind(this);
-  var screenNode = this.scrollPort_.getScreenNode();
+  const onMouse = this.onMouse_.bind(this);
+  const screenNode = this.scrollPort_.getScreenNode();
   screenNode.addEventListener(
       'mousedown', /** @type {!EventListener} */ (onMouse));
   screenNode.addEventListener(
@@ -1665,7 +1665,7 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
   screenNode.addEventListener(
       'blur', this.onFocusChange_.bind(this, false));
 
-  var style = this.document_.createElement('style');
+  const style = this.document_.createElement('style');
   style.textContent = `
 .cursor-node[focus="false"] {
   box-sizing: border-box;
@@ -1838,7 +1838,7 @@ hterm.Terminal.prototype.getRowNode = function(index) {
     return this.scrollbackRows_[index];
   }
 
-  var screenIndex = index - this.scrollbackRows_.length;
+  const screenIndex = index - this.scrollbackRows_.length;
   return this.screen_.rowsArray[screenIndex];
 };
 
@@ -1858,9 +1858,9 @@ hterm.Terminal.prototype.getRowNode = function(index) {
  *     rows.  Lines will be newline delimited, with no trailing newline.
  */
 hterm.Terminal.prototype.getRowsText = function(start, end) {
-  var ary = [];
-  for (var i = start; i < end; i++) {
-    var node = this.getRowNode(i);
+  const ary = [];
+  for (let i = start; i < end; i++) {
+    const node = this.getRowNode(i);
     ary.push(node.textContent);
     if (i < end - 1 && !node.getAttribute('line-overflow')) {
       ary.push('\n');
@@ -1883,7 +1883,7 @@ hterm.Terminal.prototype.getRowsText = function(start, end) {
  * @return {string} A string containing the text value of the selected row.
  */
 hterm.Terminal.prototype.getRowText = function(index) {
-  var node = this.getRowNode(index);
+  const node = this.getRowNode(index);
   return node.textContent;
 };
 
@@ -1919,18 +1919,18 @@ hterm.Terminal.prototype.getRowCount = function() {
  * @param {number} count The number of rows to created.
  */
 hterm.Terminal.prototype.appendRows_ = function(count) {
-  var cursorRow = this.screen_.rowsArray.length;
-  var offset = this.scrollbackRows_.length + cursorRow;
-  for (var i = 0; i < count; i++) {
-    var row = this.document_.createElement('x-row');
+  let cursorRow = this.screen_.rowsArray.length;
+  const offset = this.scrollbackRows_.length + cursorRow;
+  for (let i = 0; i < count; i++) {
+    const row = this.document_.createElement('x-row');
     row.appendChild(this.document_.createTextNode(''));
     row.rowIndex = offset + i;
     this.screen_.pushRow(row);
   }
 
-  var extraRows = this.screen_.rowsArray.length - this.screenSize.height;
+  const extraRows = this.screen_.rowsArray.length - this.screenSize.height;
   if (extraRows > 0) {
-    var ary = this.screen_.shiftRows(extraRows);
+    const ary = this.screen_.shiftRows(extraRows);
     Array.prototype.push.apply(this.scrollbackRows_, ary);
     if (this.scrollPort_.isScrolledEnd) {
       this.scheduleScrollDown_();
@@ -1959,10 +1959,10 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
  * @param {number} toIndex The destination index.
  */
 hterm.Terminal.prototype.moveRows_ = function(fromIndex, count, toIndex) {
-  var ary = this.screen_.removeRows(fromIndex, count);
+  const ary = this.screen_.removeRows(fromIndex, count);
   this.screen_.insertRows(toIndex, ary);
 
-  var start, end;
+  let start, end;
   if (fromIndex < toIndex) {
     start = fromIndex;
     end = toIndex + count;
@@ -1993,8 +1993,8 @@ hterm.Terminal.prototype.renumberRows_ = function(
     screen = this.screen_;
   }
 
-  var offset = this.scrollbackRows_.length;
-  for (var i = start; i < end; i++) {
+  const offset = this.scrollbackRows_.length;
+  for (let i = start; i < end; i++) {
     screen.rowsArray[i].rowIndex = offset + i;
   }
 };
@@ -2017,9 +2017,9 @@ hterm.Terminal.prototype.print = function(str) {
   // Basic accessibility output for the screen reader.
   this.accessibilityReader_.announce(str);
 
-  var startOffset = 0;
+  let startOffset = 0;
 
-  var strWidth = lib.wc.strWidth(str);
+  let strWidth = lib.wc.strWidth(str);
   // Fun edge case: If the string only contains zero width codepoints (like
   // combining characters), we make sure to iterate at least once below.
   if (strWidth == 0 && str) {
@@ -2032,9 +2032,9 @@ hterm.Terminal.prototype.print = function(str) {
       this.newLine(true);
     }
 
-    var count = strWidth - startOffset;
-    var didOverflow = false;
-    var substr;
+    let count = strWidth - startOffset;
+    let didOverflow = false;
+    let substr;
 
     if (this.screen_.cursorPosition.column + count >= this.screenSize.width) {
       didOverflow = true;
@@ -2052,8 +2052,8 @@ hterm.Terminal.prototype.print = function(str) {
       substr = lib.wc.substr(str, startOffset, count);
     }
 
-    var tokens = hterm.TextAttributes.splitWidecharString(substr);
-    for (var i = 0; i < tokens.length; i++) {
+    const tokens = hterm.TextAttributes.splitWidecharString(substr);
+    for (let i = 0; i < tokens.length; i++) {
       this.screen_.textAttributes.wcNode = tokens[i].wcNode;
       this.screen_.textAttributes.asciiNode = tokens[i].asciiNode;
 
@@ -2152,8 +2152,8 @@ hterm.Terminal.prototype.newLine = function(dueToOverflow = false) {
     this.accessibilityReader_.newLine();
   }
 
-  var cursorAtEndOfScreen = (this.screen_.cursorPosition.row ==
-                             this.screen_.rowsArray.length - 1);
+  const cursorAtEndOfScreen = (this.screen_.cursorPosition.row ==
+                               this.screen_.rowsArray.length - 1);
 
   if (this.vtScrollBottom_ != null) {
     // A VT Scroll region is active, we never append new rows.
@@ -2183,7 +2183,7 @@ hterm.Terminal.prototype.newLine = function(dueToOverflow = false) {
  * Like newLine(), except maintain the cursor column.
  */
 hterm.Terminal.prototype.lineFeed = function() {
-  var column = this.screen_.cursorPosition.column;
+  const column = this.screen_.cursorPosition.column;
   this.newLine();
   this.setCursorColumn(column);
 };
@@ -2205,8 +2205,8 @@ hterm.Terminal.prototype.formFeed = function() {
  * The cursor column is not changed.
  */
 hterm.Terminal.prototype.reverseLineFeed = function() {
-  var scrollTop = this.getVTScrollTop();
-  var currentRow = this.screen_.cursorPosition.row;
+  const scrollTop = this.getVTScrollTop();
+  const currentRow = this.screen_.cursorPosition.row;
 
   if (currentRow == scrollTop) {
     this.insertLines(1);
@@ -2224,7 +2224,7 @@ hterm.Terminal.prototype.reverseLineFeed = function() {
  * position.
  */
 hterm.Terminal.prototype.eraseToLeft = function() {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
   this.setCursorColumn(0);
   const count = cursor.column + 1;
   this.screen_.overwriteString(' '.repeat(count), count);
@@ -2253,12 +2253,12 @@ hterm.Terminal.prototype.eraseToRight = function(count = undefined) {
     return;
   }
 
-  var maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
+  const maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
   count = count ? Math.min(count, maxCount) : maxCount;
 
   if (this.screen_.textAttributes.background ===
       this.screen_.textAttributes.DEFAULT_COLOR) {
-    var cursorRow = this.screen_.rowsArray[this.screen_.cursorPosition.row];
+    const cursorRow = this.screen_.rowsArray[this.screen_.cursorPosition.row];
     if (hterm.TextAttributes.nodeWidth(cursorRow) <=
         this.screen_.cursorPosition.column + count) {
       this.screen_.deleteChars(count);
@@ -2267,7 +2267,7 @@ hterm.Terminal.prototype.eraseToRight = function(count = undefined) {
     }
   }
 
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
   this.screen_.overwriteString(' '.repeat(count), count);
   this.restoreCursor(cursor);
   this.clearCursorOverflow();
@@ -2279,7 +2279,7 @@ hterm.Terminal.prototype.eraseToRight = function(count = undefined) {
  * The cursor position is unchanged.
  */
 hterm.Terminal.prototype.eraseLine = function() {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
   this.screen_.clearCursorRow();
   this.restoreCursor(cursor);
   this.clearCursorOverflow();
@@ -2292,11 +2292,11 @@ hterm.Terminal.prototype.eraseLine = function() {
  * The cursor position is unchanged.
  */
 hterm.Terminal.prototype.eraseAbove = function() {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   this.eraseToLeft();
 
-  for (var i = 0; i < cursor.row; i++) {
+  for (let i = 0; i < cursor.row; i++) {
     this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
@@ -2312,12 +2312,12 @@ hterm.Terminal.prototype.eraseAbove = function() {
  * The cursor position is unchanged.
  */
 hterm.Terminal.prototype.eraseBelow = function() {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   this.eraseToRight();
 
-  var bottom = this.screenSize.height - 1;
-  for (var i = cursor.row + 1; i <= bottom; i++) {
+  const bottom = this.screenSize.height - 1;
+  for (let i = cursor.row + 1; i <= bottom; i++) {
     this.setAbsoluteCursorPosition(i, 0);
     this.screen_.clearCursorRow();
   }
@@ -2334,11 +2334,11 @@ hterm.Terminal.prototype.eraseBelow = function() {
  * @param {string} ch The character to use for the fill.
  */
 hterm.Terminal.prototype.fill = function(ch) {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   this.setAbsoluteCursorPosition(0, 0);
-  for (var row = 0; row < this.screenSize.height; row++) {
-    for (var col = 0; col < this.screenSize.width; col++) {
+  for (let row = 0; row < this.screenSize.height; row++) {
+    for (let col = 0; col < this.screenSize.width; col++) {
       this.setAbsoluteCursorPosition(row, col);
       this.screen_.overwriteString(ch, 1);
     }
@@ -2359,7 +2359,7 @@ hterm.Terminal.prototype.clearHome = function(screen = undefined) {
   if (!screen) {
     screen = this.screen_;
   }
-  var bottom = screen.getHeight();
+  const bottom = screen.getHeight();
 
   this.accessibilityReader_.clear();
 
@@ -2368,7 +2368,7 @@ hterm.Terminal.prototype.clearHome = function(screen = undefined) {
     return;
   }
 
-  for (var i = 0; i < bottom; i++) {
+  for (let i = 0; i < bottom; i++) {
     screen.setCursorPosition(i, 0);
     screen.clearCursorRow();
   }
@@ -2389,7 +2389,7 @@ hterm.Terminal.prototype.clear = function(screen = undefined) {
   if (!screen) {
     screen = this.screen_;
   }
-  var cursor = screen.cursorPosition.clone();
+  const cursor = screen.cursorPosition.clone();
   this.clearHome(screen);
   screen.setCursorPosition(cursor.row, cursor.column);
 };
@@ -2403,19 +2403,19 @@ hterm.Terminal.prototype.clear = function(screen = undefined) {
  * @param {number} count The number of lines to insert.
  */
 hterm.Terminal.prototype.insertLines = function(count) {
-  var cursorRow = this.screen_.cursorPosition.row;
+  const cursorRow = this.screen_.cursorPosition.row;
 
-  var bottom = this.getVTScrollBottom();
+  const bottom = this.getVTScrollBottom();
   count = Math.min(count, bottom - cursorRow);
 
   // The moveCount is the number of rows we need to relocate to make room for
   // the new row(s).  The count is the distance to move them.
-  var moveCount = bottom - cursorRow - count + 1;
+  const moveCount = bottom - cursorRow - count + 1;
   if (moveCount) {
     this.moveRows_(cursorRow, moveCount, cursorRow + count);
   }
 
-  for (var i = count - 1; i >= 0; i--) {
+  for (let i = count - 1; i >= 0; i--) {
     this.setAbsoluteCursorPosition(cursorRow + i, 0);
     this.screen_.clearCursorRow();
   }
@@ -2430,20 +2430,20 @@ hterm.Terminal.prototype.insertLines = function(count) {
  * @param {number} count The number of lines to delete.
  */
 hterm.Terminal.prototype.deleteLines = function(count) {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
-  var top = cursor.row;
-  var bottom = this.getVTScrollBottom();
+  const top = cursor.row;
+  const bottom = this.getVTScrollBottom();
 
-  var maxCount = bottom - top + 1;
+  const maxCount = bottom - top + 1;
   count = Math.min(count, maxCount);
 
-  var moveStart = bottom - count + 1;
+  const moveStart = bottom - count + 1;
   if (count != maxCount) {
     this.moveRows_(top, count, moveStart);
   }
 
-  for (var i = 0; i < count; i++) {
+  for (let i = 0; i < count; i++) {
     this.setAbsoluteCursorPosition(moveStart + i, 0);
     this.screen_.clearCursorRow();
   }
@@ -2460,7 +2460,7 @@ hterm.Terminal.prototype.deleteLines = function(count) {
  * @param {number} count The number of spaces to insert.
  */
 hterm.Terminal.prototype.insertSpace = function(count) {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   const ws = ' '.repeat(count || 1);
   this.screen_.insertString(ws, ws.length);
@@ -2477,9 +2477,9 @@ hterm.Terminal.prototype.insertSpace = function(count) {
  * @param {number} count The number of characters to delete.
  */
 hterm.Terminal.prototype.deleteChars = function(count) {
-  var deleted = this.screen_.deleteChars(count);
+  const deleted = this.screen_.deleteChars(count);
   if (deleted && !this.screen_.textAttributes.isDefault()) {
-    var cursor = this.saveCursor();
+    const cursor = this.saveCursor();
     this.setCursorColumn(this.screenSize.width - deleted);
     this.screen_.insertString(' '.repeat(deleted));
     this.restoreCursor(cursor);
@@ -2502,7 +2502,7 @@ hterm.Terminal.prototype.deleteChars = function(count) {
  * @param {number} count The number of rows to scroll.
  */
 hterm.Terminal.prototype.vtScrollUp = function(count) {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   this.setAbsoluteCursorRow(this.getVTScrollTop());
   this.deleteLines(count);
@@ -2524,7 +2524,7 @@ hterm.Terminal.prototype.vtScrollUp = function(count) {
  * @param {number} count The number of rows to scroll.
  */
 hterm.Terminal.prototype.vtScrollDown = function(count) {
-  var cursor = this.saveCursor();
+  const cursor = this.saveCursor();
 
   this.setAbsoluteCursorPosition(this.getVTScrollTop(), 0);
   this.insertLines(count);
@@ -2571,7 +2571,7 @@ hterm.Terminal.prototype.setCursorPosition = function(row, column) {
  * @param {number} column
  */
 hterm.Terminal.prototype.setRelativeCursorPosition = function(row, column) {
-  var scrollTop = this.getVTScrollTop();
+  const scrollTop = this.getVTScrollTop();
   row = lib.f.clamp(row + scrollTop, scrollTop, this.getVTScrollBottom());
   column = lib.f.clamp(column, 0, this.screenSize.width - 1);
   this.screen_.setCursorPosition(row, column);
@@ -2681,12 +2681,12 @@ hterm.Terminal.prototype.cursorUp = function(count) {
  */
 hterm.Terminal.prototype.cursorDown = function(count) {
   count = count || 1;
-  var minHeight = (this.options_.originMode ? this.getVTScrollTop() : 0);
-  var maxHeight = (this.options_.originMode ? this.getVTScrollBottom() :
-                   this.screenSize.height - 1);
+  const minHeight = (this.options_.originMode ? this.getVTScrollTop() : 0);
+  const maxHeight = (this.options_.originMode ? this.getVTScrollBottom() :
+                     this.screenSize.height - 1);
 
-  var row = lib.f.clamp(this.screen_.cursorPosition.row + count,
-                        minHeight, maxHeight);
+  const row = lib.f.clamp(this.screen_.cursorPosition.row + count,
+                          minHeight, maxHeight);
   this.setAbsoluteCursorRow(row);
 };
 
@@ -2705,7 +2705,7 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
     return;
   }
 
-  var currentColumn = this.screen_.cursorPosition.column;
+  const currentColumn = this.screen_.cursorPosition.column;
   if (this.options_.reverseWraparound) {
     if (this.screen_.cursorPosition.overflow) {
       // If this cursor is in the right margin, consume one count to get it
@@ -2719,8 +2719,8 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
       }
     }
 
-    var newRow = this.screen_.cursorPosition.row;
-    var newColumn = currentColumn - count;
+    let newRow = this.screen_.cursorPosition.row;
+    let newColumn = currentColumn - count;
     if (newColumn < 0) {
       newRow = newRow - Math.floor(count / this.screenSize.width) - 1;
       if (newRow < 0) {
@@ -2733,7 +2733,7 @@ hterm.Terminal.prototype.cursorLeft = function(count) {
     this.setCursorPosition(Math.max(newRow, 0), newColumn);
 
   } else {
-    var newColumn = Math.max(currentColumn - count, 0);
+    const newColumn = Math.max(currentColumn - count, 0);
     this.setCursorColumn(newColumn);
   }
 };
@@ -2750,8 +2750,8 @@ hterm.Terminal.prototype.cursorRight = function(count) {
     return;
   }
 
-  var column = lib.f.clamp(this.screen_.cursorPosition.column + count,
-                           0, this.screenSize.width - 1);
+  const column = lib.f.clamp(this.screen_.cursorPosition.column + count,
+                             0, this.screenSize.width - 1);
   this.setCursorColumn(column);
 };
 
@@ -2802,7 +2802,7 @@ hterm.Terminal.prototype.ringBell = function() {
   }
 
   if (this.desktopNotificationBell_ && !this.document_.hasFocus()) {
-    var n = hterm.notify();
+    const n = hterm.notify();
     this.bellNotificationList_.push(n);
     // TODO: Should we try to raise the window here?
     n.onclick = () => this.closeBellNotifications_();
@@ -3032,9 +3032,9 @@ hterm.Terminal.prototype.pauseCursorBlink_ = function() {
  * @return {boolean} True if the cursor is onscreen and synced.
  */
 hterm.Terminal.prototype.syncCursorPosition_ = function() {
-  var topRowIndex = this.scrollPort_.getTopRowIndex();
-  var bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
-  var cursorRowIndex = this.scrollbackRows_.length +
+  const topRowIndex = this.scrollPort_.getTopRowIndex();
+  const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
+  const cursorRowIndex = this.scrollbackRows_.length +
       this.screen_.cursorPosition.row;
 
   let forceSyncSelection = false;
@@ -3081,7 +3081,7 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
                                 ')');
 
   // Update the caret for a11y purposes.
-  var selection = this.document_.getSelection();
+  const selection = this.document_.getSelection();
   if (selection && (selection.isCollapsed || forceSyncSelection)) {
     this.screen_.syncSelectionCaret(selection);
   }
@@ -3093,14 +3093,14 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
  * and character cell dimensions.
  */
 hterm.Terminal.prototype.restyleCursor_ = function() {
-  var shape = this.cursorShape_;
+  let shape = this.cursorShape_;
 
   if (this.cursorNode_.getAttribute('focus') == 'false') {
     // Always show a block cursor when unfocused.
     shape = hterm.Terminal.cursorShape.BLOCK;
   }
 
-  var style = this.cursorNode_.style;
+  const style = this.cursorNode_.style;
 
   switch (shape) {
     case hterm.Terminal.cursorShape.BEAM:
@@ -3251,8 +3251,8 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
     this.div_.appendChild(this.overlayNode_);
   }
 
-  var divSize = hterm.getClientSize(lib.notNull(this.div_));
-  var overlaySize = hterm.getClientSize(this.overlayNode_);
+  const divSize = hterm.getClientSize(lib.notNull(this.div_));
+  const overlaySize = hterm.getClientSize(this.overlayNode_);
 
   this.overlayNode_.style.top =
       (divSize.height - overlaySize.height) / 2 + 'px';
@@ -3586,7 +3586,7 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
  * @return {string|null}
  */
 hterm.Terminal.prototype.getSelectionText = function() {
-  var selection = this.scrollPort_.selection;
+  const selection = this.scrollPort_.selection;
   selection.sync();
 
   if (selection.isCollapsed) {
@@ -3594,8 +3594,8 @@ hterm.Terminal.prototype.getSelectionText = function() {
   }
 
   // Start offset measures from the beginning of the line.
-  var startOffset = selection.startOffset;
-  var node = selection.startNode;
+  let startOffset = selection.startOffset;
+  let node = selection.startNode;
 
   // If an x-row isn't selected, |node| will be null.
   if (!node) {
@@ -3619,7 +3619,7 @@ hterm.Terminal.prototype.getSelectionText = function() {
   }
 
   // End offset measures from the end of the line.
-  var endOffset = (hterm.TextAttributes.nodeWidth(selection.endNode) -
+  let endOffset = (hterm.TextAttributes.nodeWidth(selection.endNode) -
                    selection.endOffset);
   node = selection.endNode;
 
@@ -3639,8 +3639,8 @@ hterm.Terminal.prototype.getSelectionText = function() {
     }
   }
 
-  var rv = this.getRowsText(selection.startRow.rowIndex,
-                            selection.endRow.rowIndex + 1);
+  const rv = this.getRowsText(selection.startRow.rowIndex,
+                              selection.endRow.rowIndex + 1);
   return lib.wc.substring(rv, startOffset, lib.wc.strWidth(rv) - endOffset);
 };
 
@@ -3649,7 +3649,7 @@ hterm.Terminal.prototype.getSelectionText = function() {
  * short delay.
  */
 hterm.Terminal.prototype.copySelectionToClipboard = function() {
-  var text = this.getSelectionText();
+  const text = this.getSelectionText();
   if (text != null) {
     this.copyStringToClipboard(text);
   }
@@ -3683,7 +3683,7 @@ hterm.Terminal.prototype.onVTKeystroke = function(string) {
  * Open the selected url.
  */
 hterm.Terminal.prototype.openSelectedUrl_ = function() {
-  var str = this.getSelectionText();
+  let str = this.getSelectionText();
 
   // If there is no selection, try and expand wherever they clicked.
   if (str == null) {
@@ -3776,7 +3776,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     // We don't return so click events can be passed to the remote below.
   }
 
-  var reportMouseEvents = (!this.defeatMouseReports_ &&
+  const reportMouseEvents = (!this.defeatMouseReports_ &&
       this.vt.mouseReport != this.vt.MOUSE_REPORT_DISABLED);
 
   e.processedByTerminalHandler_ = true;
@@ -4020,10 +4020,11 @@ hterm.Terminal.prototype.onCopy_ = function(e) {
  * programmatic width change.
  */
 hterm.Terminal.prototype.onResize_ = function() {
-  var columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
-                               this.scrollPort_.characterSize.width) || 0;
-  var rowCount = lib.f.smartFloorDivide(this.scrollPort_.getScreenHeight(),
-                            this.scrollPort_.characterSize.height) || 0;
+  const columnCount = Math.floor(this.scrollPort_.getScreenWidth() /
+                                 this.scrollPort_.characterSize.width) || 0;
+  const rowCount = lib.f.smartFloorDivide(
+      this.scrollPort_.getScreenHeight(),
+      this.scrollPort_.characterSize.height) || 0;
 
   if (columnCount <= 0 || rowCount <= 0) {
     // We avoid these situations since they happen sometimes when the terminal
@@ -4034,8 +4035,8 @@ hterm.Terminal.prototype.onResize_ = function() {
     return;
   }
 
-  var isNewSize = (columnCount != this.screenSize.width ||
-                   rowCount != this.screenSize.height);
+  const isNewSize = (columnCount != this.screenSize.width ||
+                     rowCount != this.screenSize.height);
   const wasScrolledEnd = this.scrollPort_.isScrolledEnd;
 
   // We do this even if the size didn't change, just to be sure everything is

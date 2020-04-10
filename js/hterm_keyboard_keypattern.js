@@ -72,10 +72,10 @@ hterm.Keyboard.KeyPattern.prototype.match_ = function(obj, exactMatch) {
     return false;
   }
 
-  var rv = true;
+  let rv = true;
 
   hterm.Keyboard.KeyPattern.modifiers.forEach(function(mod) {
-    var modValue = (mod in obj) ? obj[mod] : false;
+    const modValue = (mod in obj) ? obj[mod] : false;
     if (!rv || (!exactMatch && this[mod] == '*') || this[mod] == modValue) {
       return;
     }
