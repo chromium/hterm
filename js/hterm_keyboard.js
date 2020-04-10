@@ -411,12 +411,11 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
   // The type of action we're going to use.
   var resolvedActionType = null;
 
-  var self = this;
   /**
    * @param {string} name
    * @return {!hterm.Keyboard.KeyDefAction}
    */
-  function getAction(name) {
+  const getAction = (name) => {
     // Get the key action for the given action name.  If the action is a
     // function, dispatch it.  If the action defers to the normal action,
     // resolve that instead.
@@ -425,7 +424,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
     var action = keyDef[name];
     if (typeof action == 'function') {
-      action = action.call(self.keyMap, e, keyDef);
+      action = action.call(this.keyMap, e, keyDef);
     }
 
     if (action === DEFAULT && name != 'normal') {
@@ -433,7 +432,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     }
 
     return action;
-  }
+  };
 
   // Note that we use the triple-equals ('===') operator to test equality for
   // these constants, in order to distinguish usage of the constant from usage
@@ -522,7 +521,7 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
 
   // Call keyDef function now that we have given bindings a chance to override.
   if (typeof action == 'function') {
-    action = action.call(self.keyMap, e, keyDef);
+    action = action.call(this.keyMap, e, keyDef);
   }
 
   if (alt && this.altSendsWhat == 'browser-key' && action == DEFAULT) {

@@ -145,16 +145,6 @@ hterm.Frame.prototype.postMessage = function(name, argv) {
  * The iframe src is not loaded until this method is called.
  */
 hterm.Frame.prototype.show = function() {
-  var self = this;
-
-  function opt(name, defaultValue) {
-    if (name in self.options) {
-      return self.options[name];
-    }
-
-    return defaultValue;
-  }
-
   if (this.container_ && this.container_.parentNode) {
     console.error('Frame already visible');
     return;

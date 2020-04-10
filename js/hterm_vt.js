@@ -616,15 +616,13 @@ hterm.VT.prototype.updateEncodingState_ = function() {
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
 hterm.VT.prototype.parseUnknown_ = function(parseState) {
-  var self = this;
-
-  function print(str) {
-    if (!self.codingSystemUtf8_ && self[self.GL].GL) {
-      str = self[self.GL].GL(str);
+  const print = (str) => {
+    if (!this.codingSystemUtf8_ && this[this.GL].GL) {
+      str = this[this.GL].GL(str);
     }
 
-    self.terminal.print(str);
-  }
+    this.terminal.print(str);
+  };
 
   // Search for the next contiguous block of plain text.
   var buf = parseState.peekRemainingBuf();

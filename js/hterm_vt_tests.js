@@ -2338,25 +2338,23 @@ it('bracketed-paste', function() {
   });
 
 it('fullscreen', function(done) {
-    this.div.style.height = '100%';
-    this.div.style.width = '100%';
+  this.div.style.height = '100%';
+  this.div.style.width = '100%';
 
-    var self = this;
+  setTimeout(() => {
+    for (let i = 0; i < 1000; i++) {
+      let indent = i % 40;
+      if (indent > 20) {
+        indent = 40 - indent;
+      }
 
-    setTimeout(function() {
-        for (var i = 0; i < 1000; i++) {
-          var indent = i % 40;
-          if (indent > 20) {
-            indent = 40 - indent;
-          }
+      this.terminal.interpret(`Line ${lib.f.zpad(i, 3)}: ` +
+                              ' '.repeat(indent) + '*\n');
+    }
 
-          self.terminal.interpret('Line ' + lib.f.zpad(i, 3) + ': ' +
-                                  ' '.repeat(indent) + '*\n');
-        }
-
-        done();
-      }, 100);
-  });
+    done();
+  }, 100);
+});
 
 /**
  * Verify switching character maps works.

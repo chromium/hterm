@@ -781,18 +781,17 @@ hterm.Terminal.prototype.runCommandClass = function(
     environment = {};
   }
 
-  var self = this;
   this.command = new commandClass(
       {
         commandName: commandName,
         args: args,
         io: this.io.push(),
         environment: environment,
-        onExit: function(code) {
-          self.io.pop();
-          self.uninstallKeyboard();
-          self.div_.dispatchEvent(new CustomEvent('terminal-closing'));
-          if (self.prefs_.get('close-on-exit')) {
+        onExit: (code) => {
+          this.io.pop();
+          this.uninstallKeyboard();
+          this.div_.dispatchEvent(new CustomEvent('terminal-closing'));
+          if (this.prefs_.get('close-on-exit')) {
             window.close();
           }
         },
@@ -2640,11 +2639,10 @@ hterm.Terminal.prototype.scheduleRedraw_ = function() {
     return;
   }
 
-  var self = this;
-  this.timeouts_.redraw = setTimeout(function() {
-      delete self.timeouts_.redraw;
-      self.scrollPort_.redraw_();
-    }, 0);
+  this.timeouts_.redraw = setTimeout(() => {
+    delete this.timeouts_.redraw;
+    this.scrollPort_.redraw_();
+  });
 };
 
 /**
@@ -2661,11 +2659,10 @@ hterm.Terminal.prototype.scheduleScrollDown_ = function() {
     return;
   }
 
-  var self = this;
-  this.timeouts_.scrollDown = setTimeout(function() {
-      delete self.timeouts_.scrollDown;
-      self.scrollPort_.scrollRowToBottom(self.getRowCount());
-    }, 10);
+  this.timeouts_.scrollDown = setTimeout(() => {
+    delete this.timeouts_.scrollDown;
+    this.scrollPort_.scrollRowToBottom(this.getRowCount());
+  }, 10);
 };
 
 /**
@@ -2788,10 +2785,7 @@ hterm.Terminal.prototype.setReverseVideo = function(state) {
 hterm.Terminal.prototype.ringBell = function() {
   this.cursorNode_.style.backgroundColor = 'rgb(var(--hterm-foreground-color))';
 
-  var self = this;
-  setTimeout(function() {
-      self.restyleCursor_();
-    }, 200);
+  setTimeout(() => this.restyleCursor_(), 200);
 
   // bellSquelchTimeout_ affects both audio and notification bells.
   if (this.bellSquelchTimeout_) {
@@ -2811,7 +2805,7 @@ hterm.Terminal.prototype.ringBell = function() {
     var n = hterm.notify();
     this.bellNotificationList_.push(n);
     // TODO: Should we try to raise the window here?
-    n.onclick = function() { self.closeBellNotifications_(); };
+    n.onclick = () => this.closeBellNotifications_();
   }
 };
 
@@ -3152,11 +3146,10 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
         cursorLineText, cursorRowIndex, cursorColumnIndex);
   }
 
-  var self = this;
-  this.timeouts_.syncCursor = setTimeout(function() {
-      self.syncCursorPosition_();
-      delete self.timeouts_.syncCursor;
-    }, 0);
+  this.timeouts_.syncCursor = setTimeout(() => {
+    this.syncCursorPosition_();
+    delete this.timeouts_.syncCursor;
+  });
 };
 
 /**

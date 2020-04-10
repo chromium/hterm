@@ -211,30 +211,28 @@ hterm.ScrollPort.Selection.prototype.findFirstChild = function(
  * object, not the other way around.
  */
 hterm.ScrollPort.Selection.prototype.sync = function() {
-  var self = this;
-
   // The dom selection object has no way to tell which nodes come first in
   // the document, so we have to figure that out.
   //
   // This function is used when we detect that the "anchor" node is first.
-  function anchorFirst() {
-    self.startRow = anchorRow;
-    self.startNode = selection.anchorNode;
-    self.startOffset = selection.anchorOffset;
-    self.endRow = focusRow;
-    self.endNode = selection.focusNode;
-    self.endOffset = selection.focusOffset;
-  }
+  const anchorFirst = () => {
+    this.startRow = anchorRow;
+    this.startNode = selection.anchorNode;
+    this.startOffset = selection.anchorOffset;
+    this.endRow = focusRow;
+    this.endNode = selection.focusNode;
+    this.endOffset = selection.focusOffset;
+  };
 
   // This function is used when we detect that the "focus" node is first.
-  function focusFirst() {
-    self.startRow = focusRow;
-    self.startNode = selection.focusNode;
-    self.startOffset = selection.focusOffset;
-    self.endRow = anchorRow;
-    self.endNode = selection.anchorNode;
-    self.endOffset = selection.anchorOffset;
-  }
+  const focusFirst = () => {
+    this.startRow = focusRow;
+    this.startNode = selection.focusNode;
+    this.startOffset = selection.focusOffset;
+    this.endRow = anchorRow;
+    this.endNode = selection.anchorNode;
+    this.endOffset = selection.anchorOffset;
+  };
 
   var selection = this.scrollPort_.getDocument().getSelection();
 
@@ -879,11 +877,10 @@ hterm.ScrollPort.prototype.scheduleInvalidate = function() {
     return;
   }
 
-  var self = this;
-  this.timeouts_.invalidate = setTimeout(function() {
-      delete self.timeouts_.invalidate;
-      self.invalidate();
-    }, 0);
+  this.timeouts_.invalidate = setTimeout(() => {
+    delete this.timeouts_.invalidate;
+    this.invalidate();
+  });
 };
 
 /**
@@ -987,12 +984,9 @@ hterm.ScrollPort.prototype.resize = function() {
   this.syncScrollHeight();
   this.syncRowNodesDimensions_();
 
-  var self = this;
   this.publish(
       'resize', {scrollPort: this},
-      function() {
-        self.scheduleRedraw();
-      });
+      () => this.scheduleRedraw());
 };
 
 /**
@@ -1085,11 +1079,10 @@ hterm.ScrollPort.prototype.scheduleRedraw = function() {
     return;
   }
 
-  var self = this;
-  this.timeouts_.redraw = setTimeout(function() {
-      delete self.timeouts_.redraw;
-      self.redraw_();
-    }, 0);
+  this.timeouts_.redraw = setTimeout(() => {
+    delete this.timeouts_.redraw;
+    this.redraw_();
+  });
 };
 
 /**
@@ -1269,17 +1262,15 @@ hterm.ScrollPort.prototype.drawBottomFold_ = function(bottomRowIndex) {
  */
 hterm.ScrollPort.prototype.drawVisibleRows_ = function(
     topRowIndex, bottomRowIndex) {
-  var self = this;
-
   // Keep removing nodes, starting with currentNode, until we encounter
   // targetNode.  Throws on failure.
-  function removeUntilNode(currentNode, targetNode) {
+  const removeUntilNode = (currentNode, targetNode) => {
     while (currentNode != targetNode) {
       if (!currentNode) {
         throw 'Did not encounter target node';
       }
 
-      if (currentNode == self.bottomFold_) {
+      if (currentNode == this.bottomFold_) {
         throw 'Encountered bottom fold before target node';
       }
 
@@ -1287,7 +1278,7 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
       currentNode = currentNode.nextSibling;
       deadNode.parentNode.removeChild(deadNode);
     }
-  }
+  };
 
   // Shorthand for things we're going to use a lot.
   var selectionStartRow = this.selection.startRow;
@@ -1915,12 +1906,11 @@ hterm.ScrollPort.prototype.onBodyKeyDown_ = function(e) {
 hterm.ScrollPort.prototype.onPaste_ = function(e) {
   this.pasteTarget_.focus();
 
-  var self = this;
-  setTimeout(function() {
-      self.publish('paste', {text: self.pasteTarget_.value});
-      self.pasteTarget_.value = '';
-      self.focus();
-    }, 0);
+  setTimeout(() => {
+    this.publish('paste', {text: this.pasteTarget_.value});
+    this.pasteTarget_.value = '';
+    this.focus();
+  });
 };
 
 /**

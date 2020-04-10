@@ -105,7 +105,6 @@ hterm.Keyboard.KeyMap.prototype.addKeyDef = function(keyCode, def) {
 hterm.Keyboard.KeyMap.prototype.reset = function() {
   this.keyDefs = {};
 
-  const self = this;
   const CANCEL = hterm.Keyboard.KeyActions.CANCEL;
   const DEFAULT = hterm.Keyboard.KeyActions.DEFAULT;
   const PASS = hterm.Keyboard.KeyActions.PASS;
@@ -120,13 +119,13 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDef} k
    * @return {!hterm.Keyboard.KeyAction}
    */
-  function resolve(action, e, k) {
+  const resolve = (action, e, k) => {
     if (typeof action == 'function') {
       const keyDefFn = /** @type {!hterm.Keyboard.KeyDefFunction} */ (action);
-      return keyDefFn.call(self, e, k);
+      return keyDefFn.call(this, e, k);
     }
     return action;
-  }
+  };
 
   /**
    * If not application keypad a, else b.  The keys that care about
@@ -136,13 +135,15 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDefAction} b
    * @return {!hterm.Keyboard.KeyDefFunction}
    */
-  function ak(a, b) {
-    return function(e, k) {
+  /* TODO(crbug.com/1065216): Delete this if no longer needed.
+  const ak = (a, b) => {
+    return (e, k) => {
       var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
-                    !self.keyboard.applicationKeypad) ? a : b;
+                    !this.keyboard.applicationKeypad) ? a : b;
       return resolve(action, e, k);
     };
-  }
+  };
+  */
 
   /**
    * If mod or not application cursor a, else b.  The keys that care about
@@ -152,13 +153,13 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDefAction} b
    * @return {!hterm.Keyboard.KeyDefFunction}
    */
-  function ac(a, b) {
-    return function(e, k) {
+  const ac = (a, b) => {
+    return (e, k) => {
       var action = (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
-                    !self.keyboard.applicationCursor) ? a : b;
+                    !this.keyboard.applicationCursor) ? a : b;
       return resolve(action, e, k);
     };
-  }
+  };
 
   /**
    * If not backspace-sends-backspace keypad a, else b.
@@ -167,12 +168,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDefAction} b
    * @return {!hterm.Keyboard.KeyDefFunction}
    */
-  function bs(a, b) {
-    return function(e, k) {
-      var action = !self.keyboard.backspaceSendsBackspace ? a : b;
+  const bs = (a, b) => {
+    return (e, k) => {
+      const action = !this.keyboard.backspaceSendsBackspace ? a : b;
       return resolve(action, e, k);
     };
-  }
+  };
 
   /**
    * If not e.shiftKey a, else b.
@@ -181,13 +182,13 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDefAction} b
    * @return {!hterm.Keyboard.KeyDefFunction}
    */
-  function sh(a, b) {
-    return function(e, k) {
+  const sh = (a, b) => {
+    return (e, k) => {
       var action = !e.shiftKey ? a : b;
       e.maskShiftKey = true;
       return resolve(action, e, k);
     };
-  }
+  };
 
   /**
    * If not e.altKey a, else b.
@@ -196,12 +197,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDefAction} b
    * @return {!hterm.Keyboard.KeyDefFunction}
    */
-  function alt(a, b) {
-    return function(e, k) {
+  const alt = (a, b) => {
+    return (e, k) => {
       var action = !e.altKey ? a : b;
       return resolve(action, e, k);
     };
-  }
+  };
 
   /**
    * If no modifiers a, else b.
@@ -210,12 +211,12 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {!hterm.Keyboard.KeyDefAction} b
    * @return {!hterm.Keyboard.KeyDefFunction}
    */
-  function mod(a, b) {
-    return function(e, k) {
+  const mod = (a, b) => {
+    return (e, k) => {
       var action = !(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) ? a : b;
       return resolve(action, e, k);
     };
-  }
+  };
 
   /**
    * Compute a control character for a given character.
@@ -223,15 +224,17 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    * @param {string} ch
    * @return {string}
    */
-  function ctl(ch) { return String.fromCharCode(ch.charCodeAt(0) - 64); }
+  const ctl = (ch) => String.fromCharCode(ch.charCodeAt(0) - 64);
 
   // Call a method on the keymap instance.
-  function c(m) { return function(e, k) { return this[m](e, k); }; }
+  const c = (m) => {
+    return (e, k) => this[m](e, k);
+  };
 
   // Ignore if not trapping media keys.
-  function med(fn) {
-    return function(e, k) {
-      if (!self.keyboard.mediaKeysAreFKeys) {
+  const med = (fn) => {
+    return (e, k) => {
+      if (!this.keyboard.mediaKeysAreFKeys) {
         // Block Back, Forward, and Reload keys to avoid navigating away from
         // the current page.
         return (e.keyCode == 166 || e.keyCode == 167 || e.keyCode == 168) ?
@@ -239,7 +242,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
       }
       return resolve(fn, e, k);
     };
-  }
+  };
 
   /**
    * @param {number} keyCode
