@@ -16,7 +16,7 @@ describe('hterm_accessibility_reader_tests.js', () => {
 before(() => {
   // Stub out the delay loops.  We don't have to worry about waiting for input
   // from the user to accumulate as we don't do that.
-  /** @suppress {duplicate} */
+  /** @suppress {constantProperty} */
   hterm.AccessibilityReader.DELAY = 0;
 });
 
