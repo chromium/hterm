@@ -41,7 +41,7 @@ hterm.Keyboard = function(terminal) {
   this.bindings = new hterm.Keyboard.Bindings();
 
   /**
-   * none: Disable any AltGr related munging.
+   * none: Disable the AltGr emulation.
    * ctrl-alt: Assume Ctrl+Alt means AltGr.
    * left-alt: Assume left Alt means AltGr.
    * right-alt: Assume right Alt means AltGr.

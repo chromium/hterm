@@ -112,7 +112,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `'null': Autodetect based on navigator.language:\n` +
       `      'en-us' => 'none', else => 'right-alt'\n` +
-      `'none': Disable any AltGr related munging.\n` +
+      `'none': Disable any AltGr emulation.\n` +
       `'ctrl-alt': Assume Ctrl+Alt means AltGr.\n` +
       `'left-alt': Assume left Alt means AltGr.\n` +
       `'right-alt': Assume right Alt means AltGr.`,
@@ -162,7 +162,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `Displaying notifications requires permission from the user. When this ` +
       `option is set to true, hterm will attempt to ask the user for ` +
-      `permission if necessary. Browsers may not show this permission ` +
+      `permission if necessary. Browsers might not show this permission ` +
       `request if it was not triggered by a user action.\n` +
       `\n` +
       `Chrome extensions with the "notifications" permission have permission ` +
@@ -486,7 +486,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `Whether to automatically hide the mouse cursor when typing. ` +
       `By default, autodetect whether the platform/OS handles this.\n` +
       `\n` +
-      `Note: Some operating systems may override this setting and thus you ` +
+      `Note: Your operating system might override this setting and thus you ` +
       `might not be able to always disable it.`,
   ),
 
@@ -562,7 +562,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `For autodetect, we'll use the middle mouse button for non-X11 ` +
       `platforms (including Chrome OS). On X11, we'll use the right mouse ` +
-      `button (since the native window manager should paste via the middle ` +
+      `button (since the window manager should paste via the middle ` +
       `mouse button).\n` +
       `\n` +
       `0 == left (primary) button.\n` +
@@ -722,7 +722,9 @@ hterm.PreferenceManager.defaultPreferences = {
       'Meta+V paste behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       true, 'bool',
-      `Whether Meta+V gets passed to host.`,
+      `Whether Meta+V gets passed to the browser.\n` +
+      `\n` +
+      `On some systems, this is used to paste content.`,
   ),
 
   'paste-on-drop': hterm.PreferenceManager.definePref_(
@@ -770,7 +772,7 @@ hterm.PreferenceManager.defaultPreferences = {
       hterm.PreferenceManager.Categories.Scrolling,
       false, 'bool',
       `When using the alternative screen buffer, and DECCKM (Application ` +
-      `Cursor Keys) is active, mouse wheel scroll events will emulate arrow ` +
+      `Cursor Keys) is active, mouse scroll wheel events will emulate arrow ` +
       `keys.\n` +
       `\n` +
       `It can be temporarily disabled by holding the Shift key.\n` +
@@ -783,7 +785,8 @@ hterm.PreferenceManager.defaultPreferences = {
       'Mouse scroll wheel multiplier',
       hterm.PreferenceManager.Categories.Scrolling,
       1, 'int',
-      `The multiplier for scroll wheel events when measured in pixels.\n` +
+      `The multiplier for mouse scroll wheel events when measured in ` +
+      `pixels.\n` +
       `\n` +
       `Alters how fast the page scrolls.`,
   ),
