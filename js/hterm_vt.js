@@ -2155,12 +2155,16 @@ hterm.VT.OSC['1337'] = function(parseState) {
       case 'name':
         try {
           options.name = window.atob(kv[2]);
-        } catch (e) {}
+        } catch (e) {
+          // Ignore invalid base64 from user.
+        }
         break;
       case 'size':
         try {
           options.size = parseInt(kv[2], 10);
-        } catch (e) {}
+        } catch (e) {
+          // Ignore invalid numbers from user.
+        }
         break;
       case 'width':
         options.width = kv[2];

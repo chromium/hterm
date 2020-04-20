@@ -244,7 +244,9 @@ hterm.copySelectionToClipboard = function(document, str) {
     // https://bugzilla.mozilla.org/show_bug.cgi?id=1178676
     try {
       selection.selectAllChildren(copySource);
-    } catch (ex) {}
+    } catch (ex) {
+      // FF workaround.
+    }
 
     try {
       document.execCommand('copy');
