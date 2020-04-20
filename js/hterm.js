@@ -285,7 +285,7 @@ hterm.copySelectionToClipboard = function(document, str) {
  * @param {string=} string The default message text.
  * @return {string} The localized message.
  */
-hterm.msg = function(name, args = [], string) {
+hterm.msg = function(name, args = [], string = '') {
   return hterm.messageManager.get('HTERM_' + name, args, string);
 };
 
