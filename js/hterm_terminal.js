@@ -3902,7 +3902,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
                           'A', 'B') +
             // Left/right arrow keys.
             deltaToArrows(delta.x, this.scrollPort_.characterSize.width,
-                          'C', 'D')
+                          'C', 'D'),
         );
 
         e.preventDefault();

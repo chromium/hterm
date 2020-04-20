@@ -95,7 +95,7 @@ hterm.Frame.prototype.sendTerminalInfo_ = function() {
          fontSize: this.terminal_.getFontSize(),
          fontFamily: this.terminal_.getFontFamily(),
          baseURL: lib.f.getURL('/'),
-          }]
+          }],
         );
     }.bind(this));
 };
