@@ -41,7 +41,7 @@ MockRowProvider.prototype.resetCallCount = function(name) {
  */
 MockRowProvider.prototype.getCallCount = function(name) {
   if (!(name in this.callCounts_)) {
-    throw 'Unknown name: ' + name;
+    throw new Error(`Unknown name: ${name}`);
   }
 
   return this.callCounts_[name];
@@ -85,7 +85,7 @@ MockRowProvider.prototype.getRowCount = function() {
  */
 MockRowProvider.prototype.getRowRecord_ = function(index) {
   if (index < 0 || index >= this.rows_.length) {
-    throw 'Index out of bounds: ' + index;
+    throw new Error(`Index out of bounds: ${index}`);
   }
 
   if (!this.rows_[index]) {
@@ -116,7 +116,7 @@ MockRowProvider.prototype.getRowRecord_ = function(index) {
  */
 MockRowProvider.prototype.getRowsText = function(start, end) {
   if (start < 0 || end >= this.rows_.length) {
-    throw 'Index out of bounds.';
+    throw new Error('Index out of bounds.');
   }
 
   const text = this.rows_.slice(start, end);

@@ -53,12 +53,12 @@ hterm.PubSub.prototype.subscribe = function(subject, callback) {
 hterm.PubSub.prototype.unsubscribe = function(subject, callback) {
   const list = this.observers_[subject];
   if (!list) {
-    throw 'Invalid subject: ' + subject;
+    throw new Error(`Invalid subject: ${subject}`);
   }
 
   const i = list.indexOf(callback);
   if (i < 0) {
-    throw 'Not subscribed: ' + subject;
+    throw new Error(`Not subscribed: ${subject}`);
   }
 
   list.splice(i, 1);

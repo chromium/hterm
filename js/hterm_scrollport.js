@@ -1267,11 +1267,11 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
   const removeUntilNode = (currentNode, targetNode) => {
     while (currentNode != targetNode) {
       if (!currentNode) {
-        throw 'Did not encounter target node';
+        throw new Error('Did not encounter target node');
       }
 
       if (currentNode == this.bottomFold_) {
-        throw 'Encountered bottom fold before target node';
+        throw new Error('Encountered bottom fold before target node');
       }
 
       const deadNode = currentNode;

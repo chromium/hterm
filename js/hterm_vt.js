@@ -561,7 +561,7 @@ hterm.VT.prototype.interpret = function(buf) {
 
     if (this.parseState_.func == func && this.parseState_.pos == pos &&
         this.parseState_.buf == buf) {
-      throw 'Parser did not alter the state!';
+      throw new Error('Parser did not alter the state!');
     }
   }
 };

@@ -98,7 +98,7 @@ it('exception', function(done) {
     let calledBar = false;
     let calledLast = false;
 
-    function foo() { throw 'EXPECTED_EXCEPTION'; }
+    function foo() { throw new Error('EXPECTED_EXCEPTION'); }
     function bar() { calledBar = true; }
     function last() { calledLast = true; }
 
