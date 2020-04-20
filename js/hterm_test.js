@@ -17,9 +17,13 @@ const assert = chai.assert;
 
 // Catch any random errors before the test runner runs.
 let earlyError = null;
-/** Catch any errors. */
-window.onerror = function() {
-  earlyError = Array.from(arguments);
+/**
+ * Catch any errors.
+ *
+ * @param {*} args Whatever arguments are passed in.
+ */
+window.onerror = function(...args) {
+  earlyError = Array.from(args);
 };
 
 /** Run the test framework once everything is finished. */
