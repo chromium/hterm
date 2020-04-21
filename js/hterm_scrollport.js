@@ -100,7 +100,7 @@ hterm.ScrollPort = function(rowProvider) {
   /**
    * A guess at the current scrollbar width, fixed in resize().
    */
-  this.currentScrollbarWidthPx = 16;
+  this.currentScrollbarWidthPx = hterm.ScrollPort.DEFAULT_SCROLLBAR_WIDTH;
 
   /**
    * Whether the ctrl-v key on the screen should paste.
@@ -128,6 +128,14 @@ hterm.ScrollPort = function(rowProvider) {
 
   this.DEBUG_ = false;
 };
+
+/**
+ * Default width for scrollbar used when the system such as CrOS pretends that
+ * scrollbar is zero width.  CrOS currently uses 11px when expanded.
+ *
+ * @const {number}
+ */
+hterm.ScrollPort.DEFAULT_SCROLLBAR_WIDTH = 12;
 
 /**
  * Proxy for the native selection object which understands how to walk up the
@@ -978,9 +986,7 @@ hterm.ScrollPort.prototype.syncCharacterSize = function() {
  * dimensions of the 'x-screen'.
  */
 hterm.ScrollPort.prototype.resize = function() {
-  this.currentScrollbarWidthPx =
-    hterm.getClientWidth(lib.notNull(this.screen_)) - this.screen_.clientWidth;
-
+  this.syncScrollbarWidth_();
   this.syncScrollHeight();
   this.syncRowNodesDimensions_();
 
@@ -1054,6 +1060,19 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   this.rowNodes_.style.height = visibleRowsHeight + topFoldOffset + 'px';
   this.rowNodes_.style.left = this.screen_.offsetLeft + 'px';
   this.rowNodes_.style.top = this.screen_.offsetTop - topFoldOffset + 'px';
+};
+
+/**
+ * Measure scrollbar width.
+ *
+ * @private
+ */
+hterm.ScrollPort.prototype.syncScrollbarWidth_ = function() {
+  const width = hterm.getClientWidth(lib.notNull(this.screen_)) -
+                this.screen_.clientWidth;
+  if (width > 0) {
+    this.currentScrollbarWidthPx = width;
+  }
 };
 
 /**
@@ -1975,7 +1994,14 @@ hterm.ScrollPort.prototype.onDragAndDrop_ = function(e) {
  * @param {boolean} state
  */
 hterm.ScrollPort.prototype.setScrollbarVisible = function(state) {
-  this.screen_.style.overflowY = state ? 'scroll' : 'hidden';
+  if (state) {
+    this.screen_.style.overflowY = 'scroll';
+    this.currentScrollbarWidthPx = hterm.ScrollPort.DEFAULT_SCROLLBAR_WIDTH;
+    this.syncScrollbarWidth_();
+  } else {
+    this.screen_.style.overflowY = 'hidden';
+    this.currentScrollbarWidthPx = 0;
+  }
 };
 
 /**
