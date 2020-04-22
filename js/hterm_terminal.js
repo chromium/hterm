@@ -89,6 +89,9 @@ hterm.Terminal = function(profileId) {
   // Whether to temporarily disable blinking.
   this.cursorBlinkPause_ = false;
 
+  // Cursor is hidden when scrolling up pushes it off the bottom of the screen.
+  this.cursorOffScreen_ = false;
+
   // Pre-bound onCursorBlink_ handler, so we don't have to do this for each
   // cursor on/off servicing.
   this.myOnCursorBlink_ = this.onCursorBlink_.bind(this);
@@ -1701,9 +1704,6 @@ menuitem:hover {
 :root {
   --hterm-charsize-width: ${this.scrollPort_.characterSize.width}px;
   --hterm-charsize-height: ${this.scrollPort_.characterSize.height}px;
-  /* Default position hides the cursor for when the window is initializing. */
-  --hterm-cursor-offset-col: -1;
-  --hterm-cursor-offset-row: -1;
   --hterm-blink-node-duration: 0.7s;
   --hterm-mouse-cursor-default: default;
   --hterm-mouse-cursor-text: text;
@@ -3055,14 +3055,15 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
   }
 
   if (cursorRowIndex > bottomRowIndex) {
-    // Cursor is scrolled off screen, move it outside of the visible area.
-    this.setCssVar('cursor-offset-row', '-1');
+    // Cursor is scrolled off screen, hide it.
+    this.cursorOffScreen_ = true;
+    this.cursorNode_.style.display = 'none';
     return false;
   }
 
-  if (this.options_.cursorVisible &&
-      this.cursorNode_.style.display == 'none') {
-    // Re-display the terminal cursor if it was hidden by the mouse cursor.
+  if (this.cursorNode_.style.display == 'none') {
+    // Re-display the terminal cursor if it was hidden.
+    this.cursorOffScreen_ = false;
     this.cursorNode_.style.display = '';
   }
 
@@ -3804,7 +3805,8 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     return;
   }
 
-  if (this.options_.cursorVisible && !reportMouseEvents) {
+  if (this.options_.cursorVisible && !reportMouseEvents &&
+      !this.cursorOffScreen_) {
     // If the cursor is visible and we're not sending mouse events to the
     // host app, then we want to hide the terminal cursor when the mouse
     // cursor is over top.  This keeps the terminal cursor from interfering
