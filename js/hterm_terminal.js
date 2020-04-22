@@ -3478,9 +3478,10 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
     // right place in the terminal.
     img.onload = () => {
       // Now that we have the image dimensions, figure out how to show it.
+      const screenSize = this.scrollPort_.getScreenSize();
       img.style.objectFit = options.preserveAspectRatio ? 'scale-down' : 'fill';
-      img.style.maxWidth = `${this.document_.body.clientWidth}px`;
-      img.style.maxHeight = `${this.document_.body.clientHeight}px`;
+      img.style.maxWidth = `${screenSize.width}px`;
+      img.style.maxHeight = `${screenSize.height}px`;
 
       // Parse a width/height specification.
       const parseDim = (dim, maxDim, cssVar) => {
@@ -3501,12 +3502,10 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
 
         return '';
       };
-      img.style.width =
-          parseDim(options.width, this.document_.body.clientWidth,
-                   '--hterm-charsize-width');
-      img.style.height =
-          parseDim(options.height,  this.document_.body.clientHeight,
-                   '--hterm-charsize-height');
+      img.style.width = parseDim(
+          options.width, screenSize.width, '--hterm-charsize-width');
+      img.style.height = parseDim(
+          options.height,  screenSize.height, '--hterm-charsize-height');
 
       // Figure out how many rows the image occupies, then add that many.
       // Note: This count will be inaccurate if the font size changes on us.

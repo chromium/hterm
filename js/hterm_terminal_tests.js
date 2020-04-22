@@ -553,9 +553,9 @@ it('display-img-max-dimensions', function(done) {
     const img = container.childNodes[0];
 
     // The image should take up the whole screen, but not more.
-    const body = this.terminal.document_.body;
-    assert.equal(img.clientHeight, body.clientHeight);
-    assert.equal(img.clientWidth, body.clientWidth);
+    const screenSize = this.terminal.scrollPort_.getScreenSize();
+    assert.equal(img.clientHeight, screenSize.height);
+    assert.equal(img.clientWidth, screenSize.width);
 
     done();
   };
