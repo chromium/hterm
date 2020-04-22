@@ -751,7 +751,7 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
 
   if (!args.length) {
     args[0] = '';
-    args[1] = new Date();
+    args[1] = new Date().getTime();
   } else {
     // If our saved buffer ends with an escape, it's because we were hoping
     // it's an ST split across two buffers.  Move it from our saved buffer
@@ -790,8 +790,10 @@ hterm.VT.prototype.parseUntilStringTerminator_ = function(parseState) {
       abortReason = 'embedded escape: ' + nextTerminator;
     }
 
-    if (new Date() - args[1] > this.oscTimeLimit_) {
-      abortReason = 'timeout expired: ' + (new Date() - args[1]);
+    // We stuffed a Date into args[1] above.
+    const elapsedTime = new Date().getTime() - args[1];
+    if (elapsedTime > this.oscTimeLimit_) {
+      abortReason = `timeout expired: ${elapsedTime}s`;
     }
 
     if (abortReason) {
