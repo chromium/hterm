@@ -38,6 +38,8 @@ def mkdeps(_opts):
 def main(argv):
     """The main func!"""
     closure_args = list(libdot.lint.DEFAULT_CLOSURE_ARGS) + [
+        # TODO(vapier): We want to turn this on at some point.
+        '--jscomp_off=strictMissingProperties',
         os.path.relpath(DEPS_FILE)]
     return libdot.lint.main(argv, paths=_get_default_paths(), mkdeps=mkdeps,
                             closure_args=closure_args)
