@@ -91,7 +91,7 @@ lib.registerInit(
         initMessageManager();
       }
 
-      function onTab(tab) {
+      function onTab(tab = undefined) {
         if (tab && window.chrome) {
           chrome.windows.get(tab.windowId, null, onWindow);
         } else {
