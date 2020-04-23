@@ -503,7 +503,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyInsert_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
-  if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
+  if (this.keyboard.homeKeysScroll === e.shiftKey) {
     if ((e.altKey || e.ctrlKey || e.shiftKey) ||
         !this.keyboard.applicationCursor) {
       return '\x1b[H';
@@ -523,7 +523,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyHome_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
-  if (!this.keyboard.homeKeysScroll ^ e.shiftKey) {
+  if (this.keyboard.homeKeysScroll === e.shiftKey) {
     if ((e.altKey || e.ctrlKey || e.shiftKey) ||
         !this.keyboard.applicationCursor) {
       return '\x1b[F';
@@ -543,7 +543,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyEnd_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyPageUp_ = function(e) {
-  if (!this.keyboard.pageKeysScroll ^ e.shiftKey) {
+  if (this.keyboard.pageKeysScroll === e.shiftKey) {
     return '\x1b[5~';
   }
 
@@ -577,7 +577,7 @@ hterm.Keyboard.KeyMap.prototype.onKeyDel_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onKeyPageDown_ = function(e) {
-  if (!this.keyboard.pageKeysScroll ^ e.shiftKey) {
+  if (this.keyboard.pageKeysScroll === e.shiftKey) {
     return '\x1b[6~';
   }
 
@@ -916,7 +916,7 @@ hterm.Keyboard.KeyMap.prototype.onMetaV_ = function(e) {
  * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onZoom_ = function(e, keyDef) {
-  if (!(this.keyboard.ctrlPlusMinusZeroZoom ^ e.shiftKey)) {
+  if (this.keyboard.ctrlPlusMinusZeroZoom === e.shiftKey) {
     // If ctrl-PMZ controls zoom and the shift key is pressed, or
     // ctrl-shift-PMZ controls zoom and this shift key is not pressed,
     // then we want to send the control code instead of affecting zoom.
