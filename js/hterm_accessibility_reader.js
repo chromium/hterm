@@ -322,14 +322,12 @@ hterm.AccessibilityReader.prototype.announceAction_ =
     return false;
   }
 
-  lib.assert(this.lastCursorRowString_ !== null);
-
   // The case when the row of text hasn't changed at all.
-  if (this.lastCursorRowString_ == cursorRowString) {
+  if (lib.notNull(this.lastCursorRowString_) === cursorRowString) {
     // Moving the cursor along the line. We check that no significant changes
     // have been queued. If they have, it may not just be a cursor movement and
     // it may be better to read those out.
-    if (this.lastCursorColumn_ != cursorColumn &&
+    if (lib.notNull(this.lastCursorColumn_) !== cursorColumn &&
         this.cursorChangeQueue_.join('').trim() == '') {
       // Announce the text between the old cursor position and the new one.
       const start = Math.min(this.lastCursorColumn_, cursorColumn);
