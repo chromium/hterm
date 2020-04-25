@@ -532,6 +532,16 @@ hterm.Keyboard.prototype.onKeyDown_ = function(e) {
     action = PASS;
   }
 
+  // If we are going to handle the key, we most likely want to hide the context
+  // menu before doing so.  This way we hide it when pressing a printable key,
+  // or navigate (arrow keys/etc...), or press Escape.  But we don't want to
+  // hide it when only pressing modifiers like Alt/Ctrl/Meta because those might
+  // be used by the OS & hterm to show the context menu in the first place.  The
+  // bare modifier keys are all marked as PASS.
+  if (action !== PASS) {
+    this.terminal.contextMenu.hide();
+  }
+
   if (action === PASS || (action === DEFAULT && !(control || alt || meta))) {
     // If this key is supposed to be handled by the browser, or it is an
     // unmodified key with the default action, then exit this event handler.
