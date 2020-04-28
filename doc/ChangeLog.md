@@ -1,3 +1,45 @@
+# 1.89, 2020-04-29, Tons of linting cleanups, and scrollbar fixes.
+
+* keyboard: Hide context menu for most key presses.
+* closure: Update to v20200204.
+* scrollport: Add padding with new screen-padding-size property.
+* lint: Avoid date->number coercion.
+* keymap: Do not use ^ with bools.
+* accessibility_reader: Add non-null assert.
+* keymap: Fix altKey typo.
+* terminal: Use screen rather than body size for displayImage sizing.
+* terminal: Use display none rather than positioning to hide cursor.
+* scrollport: keep room for scrollbar.
+* eslint: Enable default-param-last check.
+* eslint: Enable no-throw-literal check.
+* lint: Add missing dangling commas.
+* eslint: Enable no-empty check.
+* eslint: Enable prefer-rest-params check.
+* mocha: Upgrade to v7.
+* lint: Convert var to let/const.
+* closure: Update to v20190929.
+* eslint: Ban self usage.
+* eslint: Disable l/I variable usage by default.
+* prefs: Improve some descriptions and translation tips.
+* eslint: Enable object-curly-spacing checks.
+* eslint: Enable space-in-parens checks.
+* eslint: Enable space-before-function-paren checks.
+* eslint: Enable one-var-declaration-per-line checks.
+* eslint: Enable semi-spacing checks.
+* eslint: Enable comma-dangle checks.
+* eslint: Enable space-infix-ops checks.
+* eslint: Enable comma-spacing checks.
+* eslint: Enable keyword-spacing checks.
+* eslint: Enable no-control-regex checks.
+* eslint: Enable no-useless-return checks.
+* eslint: Enable no-useless-escape checks.
+* eslint: Enable no-useless-concat checks.
+* eslint: Enable spaced-comment checks.
+* eslint: Enable radix check for parseInt.
+* lint: Clean up remaining opt_ usage.
+* lint: Add missing braces everywhere per our style guide.
+* lint: Use const with for...of loops.
+
 # 1.88, 2020-04-05, Better word breaks, more keyboard prefs, and dynamic colors.
 
 * a11y: Add options page button.
