@@ -822,6 +822,16 @@ hterm.ScrollPort.prototype.getScreenHeight = function() {
 };
 
 /**
+ * Get the horizontal position in px where the scrollbar starts.
+ *
+ * @return {number}
+ */
+hterm.ScrollPort.prototype.getScrollbarX = function() {
+  return hterm.getClientSize(lib.notNull(this.screen_)).width -
+         this.currentScrollbarWidthPx;
+};
+
+/**
  * Return the document that holds the visible rows of this hterm.ScrollPort.
  *
  * @return {!Document}

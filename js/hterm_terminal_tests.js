@@ -701,6 +701,74 @@ it('mouse-wheel-arrow-keys-primary', function() {
 });
 
 /**
+ * Check mouse row and column.
+ */
+it('mouse-row-column', function() {
+  const terminal = this.terminal;
+  let e;
+
+  // Turn on mouse click reporting.
+  terminal.vt.setDECMode('1000', true);
+
+  let eventReported = false;
+  terminal.onMouse = (e) => {
+    eventReported = true;
+  };
+  const send = (type, x, y) => {
+    eventReported = false;
+    const e = MockTerminalMouseEvent(type, {clientX: x, clientY: y});
+    terminal.onMouse_(e);
+    return e;
+  };
+
+  const padding = terminal.scrollPort_.screenPaddingSize;
+  const charWidth = terminal.scrollPort_.characterSize.width;
+  const charHeight = terminal.scrollPort_.characterSize.height;
+  const screenWidth = terminal.screenSize.width;
+  const screenHeight = terminal.screenSize.height;
+
+  // Cell 10, 10.
+  const x10 = padding + 9.5 * charWidth;
+  const y10 = padding + 9.5 * charHeight;
+  e = send('mousedown', x10, y10);
+  assert.isTrue(eventReported);
+  assert.equal(e.terminalRow, 10);
+  assert.equal(e.terminalColumn, 10);
+
+  // Top padding, clamp to row 1.
+  e = send('mousedown', x10, 0);
+  assert.isTrue(eventReported);
+  assert.equal(e.terminalRow, 1);
+  assert.equal(e.terminalColumn, 10);
+
+  // Right padding, clamp to width.
+  e = send('mousedown', padding + (screenWidth * charWidth) + 1, y10);
+  assert.isTrue(eventReported);
+  assert.equal(e.terminalRow, 10);
+  assert.equal(e.terminalColumn, screenWidth);
+
+  // Scrollbar area, ignore mousedown.
+  e = send('mousedown', (2 * padding) + (screenWidth * charWidth) + 1, y10);
+  assert.isFalse(eventReported);
+  e = send('mousemove', (2 * padding) + (screenWidth * charWidth) + 1, y10);
+  assert.isTrue(eventReported);
+  assert.equal(e.terminalRow, 10);
+  assert.equal(e.terminalColumn, screenWidth);
+
+  // Bottom padding, clamp to height.
+  e = send('mousedown', x10, padding + (screenHeight * charHeight) + 1);
+  assert.isTrue(eventReported);
+  assert.equal(e.terminalRow, screenHeight);
+  assert.equal(e.terminalColumn, 10);
+
+  // Left padding, clamp to column 1.
+  e = send('mousedown', 0, y10);
+  assert.isTrue(eventReported);
+  assert.equal(e.terminalRow, 10);
+  assert.equal(e.terminalColumn, 1);
+});
+
+/**
  * Check paste() is working correctly. Note that we do not test the legacy
  * pasting using document.execCommand() because it is hard to simulate the
  * behavior.

@@ -597,7 +597,6 @@ hterm.Terminal.prototype.setProfile = function(
         console.error(`Invalid screen padding size: ${v}`);
         return;
       }
-      terminal.setCssVar('screen-padding-size', `${v}px`);
       terminal.setScreenPaddingSize(v);
     },
 
@@ -1172,6 +1171,7 @@ hterm.Terminal.prototype.getCursorShape = function() {
  * @param {number} size
  */
 hterm.Terminal.prototype.setScreenPaddingSize = function(size) {
+  this.setCssVar('screen-padding-size', `${size}px`);
   this.scrollPort_.setScreenPaddingSize(size);
 };
 
@@ -3818,14 +3818,19 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
   }
 
   // One based row/column stored on the mouse event.
+  const padding = this.scrollPort_.screenPaddingSize;
   e.terminalRow = Math.floor(
-      (e.clientY - this.scrollPort_.visibleRowTopMargin) /
+      (e.clientY - this.scrollPort_.visibleRowTopMargin - padding) /
       this.scrollPort_.characterSize.height) + 1;
   e.terminalColumn = Math.floor(
-      e.clientX / this.scrollPort_.characterSize.width) + 1;
+      (e.clientX - padding) / this.scrollPort_.characterSize.width) + 1;
 
-  if (e.type == 'mousedown' && e.terminalColumn > this.screenSize.width) {
-    // Mousedown in the scrollbar area.
+  // Clamp row and column.
+  e.terminalRow = lib.f.clamp(e.terminalRow, 1, this.screenSize.height);
+  e.terminalColumn = lib.f.clamp(e.terminalColumn, 1, this.screenSize.width);
+
+  // Ignore mousedown in the scrollbar area.
+  if (e.type == 'mousedown' && e.clientX >= this.scrollPort_.getScrollbarX()) {
     return;
   }
 
