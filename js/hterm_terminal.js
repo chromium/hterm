@@ -232,19 +232,21 @@ hterm.Terminal.prototype.setProfile = function(
    * Clears and reloads key bindings.  Used by preferences
    * 'keybindings' and 'keybindings-os-defaults'.
    *
-   * @param {*} bindings
-   * @param {*} useOsDefaults
+   * @param {*?=} bindings
+   * @param {*?=} useOsDefaults
    */
-  function loadKeyBindings(bindings, useOsDefaults) {
+  function loadKeyBindings(bindings = null, useOsDefaults = false) {
     terminal.keyboard.bindings.clear();
 
-    if (!bindings) {
-      return;
+    // Default to an empty object so we still handle OS defaults.
+    if (bindings === null) {
+      bindings = {};
     }
 
     if (!(bindings instanceof Object)) {
       console.error('Error in keybindings preference: Expected object');
-      return;
+      bindings = {};
+      // Fall through to handle OS defaults.
     }
 
     try {
