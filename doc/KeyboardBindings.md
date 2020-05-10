@@ -212,7 +212,7 @@ files to check out:
   defining a runtime key binding object.
 
 
-[Secure Shell]: https://chrome.google.com/webstore/detail/pnhechapfaindjhompbnflcldabbghjo
+[Secure Shell]: https://chrome.google.com/webstore/detail/iodihamcpbpeioajjeobimgagajmlibd
 [feature request]: https://goo.gl/vb94JY
 
 [hterm_parser.js]: ../js/hterm_parser.js
