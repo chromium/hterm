@@ -50,9 +50,12 @@ e.g. You cannot bind `Escape+K` or `Capslock+D` to something else.
 
 ### Key Codes
 
-The key codes should be the name of the key, or the ASCII value for that key
+The key codes should be the name of the key, or the [keyCode] value for that key
 (either decimal or hexadecimal).  So `A` will match the "A" key, as will `65`
 and `0x41`.
+
+The W3C has a [Keyboard Event Viewer] test page for looking up the [keyCode]
+value quickly -- just press the keyboard keys to see what the browser generates.
 
 For the full list of possible key names, see `hterm.Parser.identifiers.keyCodes`
 in [hterm_parser_identifiers.js].
@@ -71,6 +74,12 @@ Some examples will probably help.
 * `Ctrl+Shift+A`: Matches only Ctrl+Shift+A.
 * `Ctrl+*+A`: Matches Ctrl+A, as well as any other key sequence that includes
   at least the Ctrl and A keys.
+
+For keys that don't have symbolic names, you can match the [keyCode] only.
+
+* `219`: Matches only an unmodified "[".
+* `0xdb`: Same as above.
+* `Alt+219`: Matches only Alt+[.
 
 ## Key Action Parsing
 
@@ -212,6 +221,8 @@ files to check out:
   defining a runtime key binding object.
 
 
+[Keyboard Event Viewer]: https://w3c.github.io/uievents/tools/key-event-viewer.html
+[keyCode]: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 [Secure Shell]: https://chrome.google.com/webstore/detail/iodihamcpbpeioajjeobimgagajmlibd
 [feature request]: https://goo.gl/vb94JY
 
