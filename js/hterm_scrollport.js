@@ -480,14 +480,15 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   const a11yButtonStyle = `
     border-style: solid;
     border-width: ${a11yButtonBorder}px;
+    color: rgb(var(--hterm-foreground-color));
     cursor: pointer;
     font-family: monospace;
     font-weight: bold;
     height: ${a11yButtonHeight}px;
     line-height: ${a11yButtonHeight}px;
     padding: 0 8px;
-    position:fixed;
-    right: 0px;
+    position: fixed;
+    right: var(--hterm-screen-padding-size);
     text-align: center;
     z-index: 1;
   `;
@@ -549,17 +550,17 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
       selectedElement = selection.anchorNode.parentElement;
     }
     if (accessibilityEnabled && selectedElement == this.scrollUpButton_) {
-      this.scrollUpButton_.style.top = '0px';
+      this.scrollUpButton_.style.top = `${this.screenPaddingSize}px`;
     } else {
       this.scrollUpButton_.style.top = `${-a11yButtonTotalHeight}px`;
     }
     if (accessibilityEnabled && selectedElement == this.scrollDownButton_) {
-      this.scrollDownButton_.style.bottom = '0px';
+      this.scrollDownButton_.style.bottom = `${this.screenPaddingSize}px`;
     } else {
       this.scrollDownButton_.style.bottom = `${-a11yButtonTotalHeight}px`;
     }
     if (accessibilityEnabled && selectedElement == this.optionsButton_) {
-      this.optionsButton_.style.bottom = '0px';
+      this.optionsButton_.style.bottom = `${this.screenPaddingSize}px`;
     } else {
       this.optionsButton_.style.bottom = `${-2 * a11yButtonTotalHeight}px`;
     }
@@ -591,7 +592,10 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
   // scrolled off the top or bottom of the visible range.
   this.topFold_ = doc.createElement('x-fold');
   this.topFold_.id = 'hterm:top-fold-for-row-selection';
-  this.topFold_.style.cssText = 'display: block;';
+  this.topFold_.style.cssText = `
+    display: block;
+    height: var(--hterm-screen-padding-size);
+  `;
   this.rowNodes_.appendChild(this.topFold_);
 
   this.bottomFold_ = this.topFold_.cloneNode();
@@ -772,6 +776,7 @@ hterm.ScrollPort.prototype.setBackgroundPosition = function(position) {
 /** @param {number} size */
 hterm.ScrollPort.prototype.setScreenPaddingSize = function(size) {
   this.screenPaddingSize = size;
+  this.resize();
 };
 
 /** @param {boolean} ctrlVPaste */
@@ -1079,11 +1084,12 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
 
   // Set the dimensions of the visible rows container.
   this.rowNodes_.style.width = screenSize.width + 'px';
-  this.rowNodes_.style.height = screenSize.height + topFoldOffset + 'px';
+  this.rowNodes_.style.height =
+      screenSize.height + topFoldOffset + this.screenPaddingSize + 'px';
   this.rowNodes_.style.left =
       this.screen_.offsetLeft + this.screenPaddingSize + 'px';
   this.rowNodes_.style.top =
-      this.screen_.offsetTop + this.screenPaddingSize - topFoldOffset + 'px';
+      this.screen_.offsetTop - topFoldOffset + 'px';
 };
 
 /**
