@@ -42,10 +42,7 @@ hterm.Terminal.IO = function(terminal) {
 /**
  * Show the terminal overlay for a given amount of time.
  *
- * The terminal overlay appears in inverse video in a large font, centered
- * over the terminal.  You should probably keep the overlay message brief,
- * since it's in a large font and you probably aren't going to check the size
- * of the terminal first.
+ * The terminal overlay appears in inverse video, centered over the terminal.
  *
  * @param {string} message The text (not HTML) message to display in the
  *     overlay.

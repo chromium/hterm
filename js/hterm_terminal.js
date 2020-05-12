@@ -3234,10 +3234,7 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
 /**
  * Show the terminal overlay for a given amount of time.
  *
- * The terminal overlay appears in inverse video in a large font, centered
- * over the terminal.  You should probably keep the overlay message brief,
- * since it's in a large font and you probably aren't going to check the size
- * of the terminal first.
+ * The terminal overlay appears in inverse video, centered over the terminal.
  *
  * @param {string} msg The text (not HTML) message to display in the overlay.
  * @param {?number=} timeout The amount of time to wait before fading out
@@ -3252,10 +3249,10 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
 
     this.overlayNode_ = this.document_.createElement('div');
     this.overlayNode_.style.cssText = (
-        'border-radius: 15px;' +
-        'font-size: xx-large;' +
+        'border-radius: 12px;' +
+        'font: 500 1em "Noto Sans", sans-serif;' +
         'opacity: 0.75;' +
-        'padding: 0.2em 0.5em 0.2em 0.5em;' +
+        'padding: 0.923em 1.846em;' +
         'position: absolute;' +
         '-webkit-user-select: none;' +
         '-webkit-transition: opacity 180ms ease-in;' +
@@ -3270,7 +3267,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
 
   this.overlayNode_.style.color = this.prefs_.get('background-color');
   this.overlayNode_.style.backgroundColor = this.prefs_.get('foreground-color');
-  this.overlayNode_.style.fontFamily = this.prefs_.get('font-family');
+  this.overlayNode_.style.fontSize = this.prefs_.get('font-size');
 
   this.overlayNode_.textContent = msg;
   this.overlayNode_.style.opacity = '0.75';
@@ -3687,7 +3684,7 @@ hterm.Terminal.prototype.copySelectionToClipboard = function() {
  */
 hterm.Terminal.prototype.overlaySize = function() {
   if (this.prefs_.get('enable-resize-status')) {
-    this.showOverlay(this.screenSize.width + 'x' + this.screenSize.height);
+    this.showOverlay(`${this.screenSize.width} x ${this.screenSize.height}`);
   }
 };
 
