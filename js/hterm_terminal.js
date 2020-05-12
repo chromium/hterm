@@ -103,6 +103,8 @@ hterm.Terminal = function(profileId) {
   /** @type {?string} */
   this.foregroundColor_ = null;
 
+  this.screenBorderSize_ = 0;
+
   this.scrollOnOutput_ = null;
   this.scrollOnKeystroke_ = null;
   this.scrollWheelArrowKeys_ = null;
@@ -600,6 +602,19 @@ hterm.Terminal.prototype.setProfile = function(
         return;
       }
       terminal.setScreenPaddingSize(v);
+    },
+
+    'screen-border-size': function(v) {
+      v = parseInt(v, 10);
+      if (isNaN(v) || v < 0) {
+        console.error(`Invalid screen border size: ${v}`);
+        return;
+      }
+      terminal.setScreenBorderSize(v);
+    },
+
+    'screen-border-color': function(v) {
+      terminal.div_.style.borderColor = v;
     },
 
     'scroll-on-keystroke': function(v) {
@@ -1178,6 +1193,17 @@ hterm.Terminal.prototype.setScreenPaddingSize = function(size) {
 };
 
 /**
+ * Set the screen border size in pixels.
+ *
+ * @param {number} size
+ */
+hterm.Terminal.prototype.setScreenBorderSize = function(size) {
+  this.div_.style.borderWidth = `${size}px`;
+  this.screenBorderSize_ = size;
+  this.scrollPort_.resize();
+};
+
+/**
  * Set the width of the terminal, resizing the UI to match.
  *
  * @param {?number} columnCount
@@ -1192,8 +1218,9 @@ hterm.Terminal.prototype.setWidth = function(columnCount) {
       this.scrollPort_.screenPaddingSize,
       this.scrollPort_.currentScrollbarWidthPx);
   this.div_.style.width = Math.ceil(
-      this.scrollPort_.characterSize.width * columnCount +
-      this.scrollPort_.screenPaddingSize + rightPadding) + 'px';
+      (this.scrollPort_.characterSize.width * columnCount) +
+      this.scrollPort_.screenPaddingSize + rightPadding +
+      (2 * this.screenBorderSize_)) + 'px';
   this.realizeSize_(columnCount, this.screenSize.height);
   this.scheduleSyncCursorPosition_();
 };
@@ -1209,8 +1236,9 @@ hterm.Terminal.prototype.setHeight = function(rowCount) {
     return;
   }
 
-  this.div_.style.height = this.scrollPort_.characterSize.height * rowCount +
-                           (2 * this.scrollPort_.screenPaddingSize) + 'px';
+  this.div_.style.height = (this.scrollPort_.characterSize.height * rowCount) +
+                           (2 * this.scrollPort_.screenPaddingSize) +
+                           (2 * this.screenBorderSize_) + 'px';
   this.realizeSize_(this.screenSize.width, rowCount);
   this.scheduleSyncCursorPosition_();
 };
@@ -1629,6 +1657,9 @@ hterm.Terminal.prototype.decorate = function(div) {
   }
 
   this.div_ = div;
+  this.div_.style.borderStyle = 'solid';
+  this.div_.style.borderWidth = 0;
+  this.div_.style.boxSizing = 'border-box';
 
   this.accessibilityReader_ = new hterm.AccessibilityReader(div);
 

@@ -41,11 +41,14 @@ beforeEach(function(done) {
   this.terminal = new hterm.Terminal();
 
   this.terminal.decorate(div);
-  // Set some fairly large padding which is hopefully more likely to reveal
-  // bugs.  Update default value for screen-padding-size pref, and set initial
-  // value to be used prior to prefs loading.
+  // Set some fairly large padding and border which are hopefully more
+  // likely to reveal bugs.
+  // Update default value for prefs, and set initial value to be used prior
+  // to prefs loading.
   this.terminal.getPrefs().definePreference('screen-padding-size', 20);
   this.terminal.setScreenPaddingSize(20);
+  this.terminal.getPrefs().definePreference('screen-border-size', 13);
+  this.terminal.setScreenBorderSize(13);
   this.terminal.setHeight(this.visibleRowCount);
   this.terminal.setWidth(this.visibleColumnCount);
   this.terminal.onTerminalReady = () => {
@@ -84,9 +87,12 @@ it('dimensions', function() {
     const scrollPort = this.terminal.scrollPort_;
     const rightPadding = Math.max(
         scrollPort.screenPaddingSize, scrollPort.currentScrollbarWidthPx);
-    const innerWidth = Math.round(
-        divSize.width - scrollPort.screenPaddingSize - rightPadding);
-    const innerHeight = divSize.height - (2 * scrollPort.screenPaddingSize);
+    const innerWidth = divSize.width -
+                       scrollPort.screenPaddingSize - rightPadding -
+                       (2 * this.terminal.screenBorderSize_);
+    const innerHeight = divSize.height -
+                        (2 * scrollPort.screenPaddingSize) -
+                        (2 * this.terminal.screenBorderSize_);
 
     assert.equal(innerWidth, Math.round(scrollPort.getScreenWidth()));
     assert.equal(Math.round(innerHeight),

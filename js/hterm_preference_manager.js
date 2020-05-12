@@ -584,6 +584,26 @@ hterm.PreferenceManager.defaultPreferences = {
       `the user can add some visible padding to the edges of the screen.`,
   ),
 
+  'screen-border-size': hterm.PreferenceManager.definePref_(
+      'Screen border size',
+      hterm.PreferenceManager.Categories.Appearance,
+      0, 'int',
+      `The border size in pixels around the terminal screen.\n` +
+      `\n` +
+      `This controls the size of the border around the terminal screen to ` +
+      `create a visible line at the edges of the screen.`,
+  ),
+
+  'screen-border-color': hterm.PreferenceManager.definePref_(
+      'Screen border color',
+      hterm.PreferenceManager.Categories.Appearance,
+      'rgb(128, 128, 128)', 'color',
+      `The color for the border around the terminal screen.\n` +
+      `\n` +
+      `This controls the color of the border around the terminal screen to ` +
+      `create a visible line at the edges of the screen.`,
+  ),
+
   'word-break-match-left': hterm.PreferenceManager.definePref_(
       'Automatic selection halting (to the left)',
       hterm.PreferenceManager.Categories.CopyPaste,
