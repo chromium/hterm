@@ -1085,7 +1085,7 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   // Set the dimensions of the visible rows container.
   this.rowNodes_.style.width = screenSize.width + 'px';
   this.rowNodes_.style.height =
-      screenSize.height + topFoldOffset + this.screenPaddingSize + 'px';
+      visibleRowsHeight + topFoldOffset + this.screenPaddingSize + 'px';
   this.rowNodes_.style.left =
       this.screen_.offsetLeft + this.screenPaddingSize + 'px';
   this.rowNodes_.style.top =
