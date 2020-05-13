@@ -78,7 +78,7 @@ describe('hterm_keyboard_keymap_tests.js', () => {
       // expected for control + shift.
       /* eslint-disable no-multi-spaces */
       ['N',  F, F, F, F, DEFAULT, ctl('N'),  DEFAULT,  CANCEL],
-      ['N',  T, F, F, F, DEFAULT, CANCEL,    DEFAULT,  CANCEL],
+      ['N',  T, F, F, F, DEFAULT, PASS,      DEFAULT,  PASS],
       ['T',  F, F, F, F, DEFAULT, ctl('T'),  DEFAULT,  ctl('T')],
       ['T',  F, T, F, F, DEFAULT, PASS,      DEFAULT,  PASS],
       ['W',  F, F, F, F, DEFAULT, ctl('W'),  DEFAULT,  ctl('W')],

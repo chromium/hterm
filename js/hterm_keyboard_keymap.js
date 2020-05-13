@@ -790,10 +790,15 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
  * Either send a ^N or open a new window to the same location.
  *
  * @param {!KeyboardEvent} e The event to process.
- * @return {!hterm.Keyboard.KeyDefFunction|string} Key action or sequence.
+ * @return {!hterm.Keyboard.KeyDefFunction|symbol|string} Key action or
+ *     sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
-  if (e.shiftKey || this.keyboard.terminal.passCtrlN) {
+  if (this.keyboard.terminal.passCtrlN) {
+    return hterm.Keyboard.KeyActions.PASS;
+  }
+
+  if (e.shiftKey) {
     return function(e, k) {
       lib.f.openWindow(document.location.href, '',
                        'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
