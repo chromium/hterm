@@ -562,7 +562,7 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `For autodetect, we'll use the middle mouse button for non-X11 ` +
       `platforms (including Chrome OS). On X11, we'll use the right mouse ` +
-      `button (since the window manager should paste via the middle ` +
+      `button (since the window manager should handle pasting via the middle ` +
       `mouse button).\n` +
       `\n` +
       `0 == left (primary) button.\n` +
