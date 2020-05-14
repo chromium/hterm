@@ -71,6 +71,8 @@ hterm.Parser.identifiers.keyCodes = {
   EIGHT: 56,
   NINE: 57,
   ZERO: 48,
+  MINUS: 189,
+  EQUAL: 187,
   BACKSPACE: 8,
   BKSP: 8,
   BS: 8,
@@ -88,6 +90,8 @@ hterm.Parser.identifiers.keyCodes = {
   I: 73,
   O: 79,
   P: 80,
+  BRACKET_LEFT: 219,
+  BRACKET_RIGHT: 221,
 
   // Row four.
   CAPS_LOCK: 20,
