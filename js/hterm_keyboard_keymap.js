@@ -21,7 +21,19 @@ hterm.Keyboard.KeyDef;
  */
 hterm.Keyboard.KeyDefFunction;
 
-/** @typedef {!hterm.Keyboard.KeyAction|!hterm.Keyboard.KeyDefFunction} */
+/**
+ * @typedef {function(!KeyboardEvent, !hterm.Keyboard.KeyDef):
+ *               !hterm.Keyboard.KeyDefFunction|!hterm.Keyboard.KeyAction}
+ */
+hterm.Keyboard.KeyDefFunctionProvider;
+
+/**
+ * @typedef {(
+ *      !hterm.Keyboard.KeyAction|
+ *      !hterm.Keyboard.KeyDefFunction|
+ *      !hterm.Keyboard.KeyDefFunctionProvider
+ *  )}
+ */
 hterm.Keyboard.KeyDefAction;
 
 /**
@@ -227,7 +239,15 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
    */
   const ctl = (ch) => String.fromCharCode(ch.charCodeAt(0) - 64);
 
-  // Call a method on the keymap instance.
+  /**
+   * Call a method on the keymap instance.
+   *
+   * @param {string} m name of method to call.
+   * @return {(
+   *     !hterm.Keyboard.KeyDefFunction|
+   *     !hterm.Keyboard.KeyDefFunctionProvider
+   * )}
+   */
   const c = (m) => {
     return (e, k) => this[m](e, k);
   };
