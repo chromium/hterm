@@ -8,7 +8,6 @@
 
 from __future__ import print_function
 
-import glob
 import os
 import sys
 
@@ -16,17 +15,23 @@ import hterm
 import libdot
 
 
+JS_DIR = hterm.DIR / 'js'
+
 # Path to generated deps file that hterm uses for libdot/etc...
 DEPS_FILE = os.path.join(hterm.DIR, 'dist', 'js', 'hterm_deps.js')
 
 
-def _get_default_paths():
+def _get_default_paths(basedir):
     """Get list of paths to lint by default."""
+    most_files = sorted(x for x in libdot.lint.get_known_sources(basedir)
+                        if x.suffix not in {'.js'})
+
     # All files in js/*.js.
     # Use relpath for nicer default output.
     # Sort to ensure hterm.js comes before hterm_other.js, etc.
-    return sorted(os.path.relpath(x, os.getcwd())
-                  for x in glob.glob(os.path.join(hterm.DIR, 'js', '*.js')))
+    js_files = sorted(x for x in JS_DIR.glob('*.js'))
+
+    return [os.path.relpath(x) for x in most_files + js_files]
 
 
 def mkdeps(_opts):
@@ -41,7 +46,8 @@ def main(argv):
         # TODO(vapier): We want to turn this on at some point.
         '--jscomp_off=strictMissingProperties',
         os.path.relpath(DEPS_FILE)]
-    return libdot.lint.main(argv, paths=_get_default_paths(), mkdeps=mkdeps,
+    return libdot.lint.main(argv, basedir=hterm.DIR,
+                            get_default_paths=_get_default_paths, mkdeps=mkdeps,
                             closure_args=closure_args)
 
 
