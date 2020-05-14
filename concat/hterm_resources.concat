@@ -5,6 +5,7 @@
 # This file lists the resources needed by hterm.
 
 @resource hterm/audio/bell audio/ogg;base64 < ../audio/bell.ogg
+@resource hterm/images/copy image/svg+xml;utf8 < ../images/copy.svg
 @resource hterm/images/icon-96 image/png;base64 < ../images/icon-96.png
 @resource hterm/concat/date text/plain date %a, %d %b %Y %H:%M:%S +0000
 @resource hterm/changelog/version text/plain changelog version

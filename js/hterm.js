@@ -36,18 +36,6 @@ hterm.os = null;
 hterm.zoomWarningMessage = 'ZOOM != 100%';
 
 /**
- * Brief overlay message displayed when text is copied to the clipboard.
- *
- * By default it is the unicode BLACK SCISSORS character, but you can
- * replace it with your own localized message.
- *
- * This is only displayed when the 'enable-clipboard-notice' preference
- * is enabled.
- */
-hterm.notifyCopyMessage = '\u2702';
-
-
-/**
  * Text shown in a desktop notification for the terminal
  * bell.  \u226a is a unicode EIGHTH NOTE, %(title) will
  * be replaced by the terminal title.

@@ -3242,6 +3242,20 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
  *     stay up forever (or until the next overlay).
  */
 hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
+  this.showOverlayWithNode(new Text(msg), timeout);
+};
+
+/**
+ * Show the terminal overlay for a given amount of time.
+ *
+ * The terminal overlay appears in inverse video, centered over the terminal.
+ *
+ * @param {!Node} node The node to display in the overlay.
+ * @param {?number=} timeout The amount of time to wait before fading out
+ *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
+ *     stay up forever (or until the next overlay).
+ */
+hterm.Terminal.prototype.showOverlayWithNode = function(node, timeout = 1500) {
   if (!this.overlayNode_) {
     if (!this.div_) {
       return;
@@ -3269,7 +3283,8 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
 
   this.overlayNode_.style.fontSize = this.prefs_.get('font-size');
 
-  this.overlayNode_.textContent = msg;
+  this.overlayNode_.textContent = '';  // Remove all children first.
+  this.overlayNode_.appendChild(node);
   this.overlayNode_.style.opacity = '0.75';
 
   if (!this.overlayNode_.parentNode) {
@@ -3288,7 +3303,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
     clearTimeout(this.overlayTimeout_);
   }
 
-  this.accessibilityReader_.assertiveAnnounce(msg);
+  this.accessibilityReader_.assertiveAnnounce(this.overlayNode_.textContent);
 
   if (timeout === null) {
     return;
@@ -3355,7 +3370,14 @@ hterm.Terminal.prototype.paste = function() {
  */
 hterm.Terminal.prototype.copyStringToClipboard = function(str) {
   if (this.prefs_.get('enable-clipboard-notice')) {
-    setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
+    if (!this.clipboardNotice_) {
+      this.clipboardNotice_ = this.document_.createElement('div');
+      this.clipboardNotice_.style.textAlign = 'center';
+      const copyImage = lib.resource.getData('hterm/images/copy');
+      this.clipboardNotice_.innerHTML =
+          `${copyImage}<div>${hterm.msg('NOTIFY_COPY')}</div>`;
+    }
+    setTimeout(() => this.showOverlayWithNode(this.clipboardNotice_, 500), 200);
   }
 
   hterm.copySelectionToClipboard(this.document_, str);
