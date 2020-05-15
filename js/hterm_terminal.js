@@ -27,6 +27,9 @@
  * @implements {hterm.RowProvider}
  */
 hterm.Terminal = function(profileId) {
+  // Set to true once terminal is initialized and onTerminalReady() is called.
+  this.ready_ = false;
+
   this.profileId_ = null;
 
   /** @type {?hterm.PreferenceManager} */
@@ -677,6 +680,7 @@ hterm.Terminal.prototype.setProfile = function(
     this.prefs_.notifyAll();
 
     if (callback) {
+      this.ready_ = true;
       callback();
     }
   }.bind(this));
@@ -965,6 +969,7 @@ hterm.Terminal.prototype.setFontSize = function(px) {
   }
 
   this.scrollPort_.setFontSize(px);
+  this.setCssVar('font-size', `${px}px`);
   this.updateCssCharsize_();
 };
 
@@ -3287,17 +3292,17 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
  *     stay up forever (or until the next overlay).
  */
 hterm.Terminal.prototype.showOverlayWithNode = function(node, timeout = 1500) {
-  if (!this.overlayNode_) {
-    if (!this.div_) {
-      return;
-    }
+  if (!this.ready_ || !this.div_) {
+    return;
+  }
 
+  if (!this.overlayNode_) {
     this.overlayNode_ = this.document_.createElement('div');
     this.overlayNode_.style.cssText = (
-        'color: var(--hterm-background-color);' +
-        'background-color: var(--hterm-foreground-color);' +
+        'color: rgb(var(--hterm-background-color));' +
+        'background-color: rgb(var(--hterm-foreground-color));' +
         'border-radius: 12px;' +
-        'font: 500 1em "Noto Sans", sans-serif;' +
+        'font: 500 var(--hterm-font-size) "Noto Sans", sans-serif;' +
         'opacity: 0.75;' +
         'padding: 0.923em 1.846em;' +
         'position: absolute;' +
@@ -3312,14 +3317,11 @@ hterm.Terminal.prototype.showOverlayWithNode = function(node, timeout = 1500) {
     }, true);
   }
 
-  this.overlayNode_.style.fontSize = this.prefs_.get('font-size');
-
   this.overlayNode_.textContent = '';  // Remove all children first.
   this.overlayNode_.appendChild(node);
-  this.overlayNode_.style.opacity = '0.75';
 
   if (!this.overlayNode_.parentNode) {
-    this.div_.appendChild(this.overlayNode_);
+    this.document_.body.appendChild(this.overlayNode_);
   }
 
   const divSize = hterm.getClientSize(lib.notNull(this.div_));
