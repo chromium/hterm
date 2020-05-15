@@ -53,13 +53,6 @@ hterm.ContextMenu.prototype.regenerate_ = function() {
   if (!this.element_) {
     this.element_ = this.document_.createElement('menu');
     this.element_.id = 'hterm:context-menu';
-    this.element_.style.cssText = `
-        background: rgb(var(--hterm-background-color));
-        border: solid 1px;
-        color: rgb(var(--hterm-foreground-color));
-        display: none;
-        position: absolute;
-    `;
   } else {
     this.hide();
   }

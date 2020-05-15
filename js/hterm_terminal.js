@@ -1737,15 +1737,22 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
   border-style: solid;
 }
 menu {
-  margin: 0;
-  padding: 0;
+  background: #fff;
+  border-radius: 4px;
+  color: #202124;
   cursor: var(--hterm-mouse-cursor-pointer);
+  display: none;
+  filter: drop-shadow(0 1px 3px #3C40434D) drop-shadow(0 4px 8px #3C404326);
+  margin: 0;
+  padding: 8px 0;
+  position: absolute;
+  transition-duration: 200ms;
 }
 menuitem {
-  white-space: nowrap;
-  border-bottom: 1px dashed;
   display: block;
-  padding: 0.3em 0.3em 0 0.3em;
+  font: var(--hterm-font-size) 'Roboto', 'Noto Sans', sans-serif;
+  padding: 0.5em 1em;
+  white-space: nowrap;
 }
 menuitem.separator {
   border-bottom: none;
@@ -1753,7 +1760,7 @@ menuitem.separator {
   padding: 0;
 }
 menuitem:hover {
-  color: var(--hterm-cursor-color);
+  background-color: #e2e4e6;
 }
 .wc-node {
   display: inline-block;
