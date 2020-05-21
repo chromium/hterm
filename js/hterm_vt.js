@@ -294,10 +294,10 @@ hterm.VT.ParseState.prototype.iarg = function(argnum, defaultValue) {
  * Check whether an argument has subarguments.
  *
  * @param {number} argnum The argument number to check.
- * @return {number} Whether the argument has subarguments.
+ * @return {boolean} Whether the argument has subarguments.
  */
 hterm.VT.ParseState.prototype.argHasSubargs = function(argnum) {
-  return this.subargs && this.subargs[argnum];
+  return !!(this.subargs && this.subargs[argnum]);
 };
 
 /**
