@@ -57,6 +57,8 @@ hterm.Keyboard.Bindings.OsDefaults = {
   'cros': {
     // Submit feedback.
     'Alt+Shift+I': 'PASS',
+    // Toggle chromevox.
+    'Ctrl+Alt+Z': 'PASS',
     // Switch input method.
     'Ctrl+Space': 'PASS',
   },
