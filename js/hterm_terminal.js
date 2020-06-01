@@ -3934,7 +3934,14 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       }
     }
 
+    // Handle clicks to open links automatically.
     if (e.type == 'click' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
+      // Ignore links created using OSC-8 as those will open by themselves, and
+      // the visible text is most likely not the URI they want anyways.
+      if (e.target.className === 'uri-node') {
+        return;
+      }
+
       // Debounce this event with the dblclick event.  If you try to doubleclick
       // a URL to open it, Chrome will fire click then dblclick, but we won't
       // have expanded the selection text at the first click event.
