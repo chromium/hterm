@@ -551,7 +551,8 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `This option is independent of the "mouse-paste-button" setting.\n` +
       `\n` +
-      `Note: This will handle left & right handed mice correctly.`,
+      `Note: The primary & secondary buttons are handled for you with left ` +
+      `& right handed mice.`,
   ),
 
   'mouse-paste-button': hterm.PreferenceManager.definePref_(
@@ -571,7 +572,8 @@ hterm.PreferenceManager.defaultPreferences = {
       `\n` +
       `This option is independent of the setting for right-click paste.\n` +
       `\n` +
-      `Note: This will handle left & right handed mice correctly.`,
+      `Note: The primary & secondary buttons are handled for you with left ` +
+      `& right handed mice.`,
   ),
 
   'screen-padding-size': hterm.PreferenceManager.definePref_(
