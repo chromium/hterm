@@ -1,0 +1,72 @@
+<meta charset='utf-8'/>
+<style scoped>
+:root {
+  --hterm-grey-200-rgb: 232, 234, 237;  /* #e8eaed */
+  --hterm-grey-200: rgb(var(--hterm-grey-200-rgb));
+  --hterm-grey-400-rgb: 189, 193, 198;  /* #bdc1c6 */
+  --hterm-grey-400: rgb(var(--hterm-grey-400-rgb));
+  --hterm-grey-600-rgb: 128, 134, 139;  /* #80868b */
+  --hterm-grey-600: rgb(var(--hterm-grey-600-rgb));
+  --hterm-grey-800-rgb: 60, 64, 67;  /* #3c4043 */
+  --hterm-grey-800: rgb(var(--hterm-grey-800-rgb));
+}
+
+#hterm\\:find-bar {
+  align-items: center;
+  background: white;
+  border: 1px solid var(--hterm-grey-600);
+  border-radius: 2px;
+  box-shadow: 0 2px 2px 1px rgba(var(--hterm-grey-600-rgb), .1);
+  display: none;
+  padding: 5px 15px;
+  position: fixed;
+  right: 16px;
+  top : 0;
+  z-index: 1;
+}
+#hterm\\:find-bar.enabled {
+  display: flex;
+}
+#hterm\\:find-bar > input {
+  border: 0;
+  margin: 8px 0;
+  outline: none;
+  width: 200px;
+}
+#hterm\\:find-bar-vertical-separator {
+  align-self: stretch;
+  border-left: 1px solid var(--hterm-grey-400);
+  margin-left: 10px;
+}
+#hterm\\:find-bar > .button {
+  align-items: center;
+  border-radius: 50%;
+  cursor: var(--hterm-mouse-cursor-pointer);
+  display: flex;
+  height: 24px;
+  justify-content: center;
+  margin-left: 8px;
+  transition: background-color 0.3s linear;
+  width: 24px;
+}
+#hterm\\:find-bar > .button.enabled:hover {
+  background-color: var(--hterm-grey-200);
+}
+#hterm\\:find-bar > .button.enabled:active {
+  background-color: var(--hterm-grey-400);
+  transition: background-color 0s;
+}
+#hterm\\:find-bar > .button.enabled > svg {
+  fill: var(--hterm-grey-800);
+}
+#hterm\\:find-bar > .button > svg {
+  height: 20px;
+  fill: var(--hterm-grey-400);
+  width: 20px;
+};
+</style>
+<input type='text'>
+<div id='hterm:find-bar-vertical-separator' tabindex='-1'></div>
+<div id='hterm:find-bar-up' class='button' role='button'></div>
+<div id='hterm:find-bar-down' class='button' role='button'></div>
+<div id='hterm:find-bar-close' class='button enabled' role='button'></div>

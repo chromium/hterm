@@ -387,7 +387,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   add(65,  'aA',      DEFAULT, ctl('A'),                    DEFAULT, DEFAULT);
   add(83,  'sS',      DEFAULT, ctl('S'),                    DEFAULT, DEFAULT);
   add(68,  'dD',      DEFAULT, ctl('D'),                    DEFAULT, DEFAULT);
-  add(70,  'fF',      DEFAULT, ctl('F'),                    DEFAULT, DEFAULT);
+  add(70,  'fF', DEFAULT, sh(ctl('F'), c('onCtrlShiftF_')), DEFAULT, DEFAULT);
   add(71,  'gG',      DEFAULT, ctl('G'),                    DEFAULT, DEFAULT);
   add(72,  'hH',      DEFAULT, ctl('H'),                    DEFAULT, DEFAULT);
   add(74,  'jJ',      DEFAULT, sh(ctl('J'), PASS),          DEFAULT, DEFAULT);
@@ -768,6 +768,17 @@ hterm.Keyboard.KeyMap.prototype.onCtrlT_ = function(e) {
     return hterm.Keyboard.KeyActions.PASS;
   }
   return '\x14';
+};
+
+/**
+ * Display the find bar.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {symbol} Key action or sequence.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlShiftF_ = function(e) {
+  this.keyboard.terminal.findBar.display();
+  return hterm.Keyboard.KeyActions.CANCEL;
 };
 
 /**

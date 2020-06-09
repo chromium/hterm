@@ -185,6 +185,9 @@ hterm.Terminal = function(profileId) {
 
   this.setProfile(profileId || 'default',
                   function() { this.onTerminalReady(); }.bind(this));
+
+  /** @const */
+  this.findBar = new hterm.FindBar(this);
 };
 
 /**
@@ -1699,6 +1702,7 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
 
   this.document_ = this.scrollPort_.getDocument();
   this.accessibilityReader_.decorate(this.document_);
+  this.findBar.decorate(this.document_);
 
   this.document_.body.oncontextmenu = function() { return false; };
   this.contextMenu.setDocument(this.document_);
