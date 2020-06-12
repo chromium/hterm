@@ -1861,6 +1861,10 @@ border-color: var(--hterm-cursor-color);
 
   this.setReverseVideo(false);
 
+  // Re-sync fonts whenever a web font loads.
+  this.document_.fonts.addEventListener(
+      'loadingdone', () => this.syncFontFamily());
+
   this.scrollPort_.focus();
   this.scrollPort_.scheduleRedraw();
 };
