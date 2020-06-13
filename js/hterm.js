@@ -52,42 +52,43 @@ lib.registerInit(
      *
      * This is called during lib.init().
      *
-     * @param {function()} onInit The function lib.init() wants us to invoke
-     *     when initialization is complete.
+     * @return {!Promise<void>}
      */
-    function(onInit) {
-      function initOs(os) {
-        hterm.os = os;
-
-        onInit();
-      }
-
+    async () => {
       function initMessageManager() {
-        lib.i18n.getAcceptLanguages().then((languages) => {
-          if (!hterm.messageManager) {
-            hterm.messageManager = new lib.MessageManager(languages);
-          }
-
-          // If OS detection fails, then we'll still set the value to something.
-          // The OS logic in hterm tends to be best effort anyways.
-          lib.f.getOs().then(initOs).catch(initOs);
-        });
+        return lib.i18n.getAcceptLanguages()
+          .then((languages) => {
+            if (!hterm.messageManager) {
+              hterm.messageManager = new lib.MessageManager(languages);
+            }
+          })
+          .then(() => {
+            // If OS detection fails, then we'll still set the value to
+            // something.  The OS logic in hterm tends to be best effort
+            // anyways.
+            const initOs = (os) => { hterm.os = os; };
+            return lib.f.getOs().then(initOs).catch(initOs);
+          });
       }
 
       function onWindow(window) {
         hterm.windowType = window.type;
-        initMessageManager();
+        return initMessageManager();
       }
 
       function onTab(tab = undefined) {
         if (tab && window.chrome) {
-          chrome.windows.get(tab.windowId, null, onWindow);
+          return new Promise((resolve) => {
+            chrome.windows.get(tab.windowId, null, (win) => {
+              onWindow(win).then(resolve);
+            });
+          });
         } else {
           // TODO(rginda): This is where we end up for a v1 app's background
           // page. Maybe windowType = 'none' would be more appropriate, or
           // something.
           hterm.windowType = 'normal';
-          initMessageManager();
+          return initMessageManager();
         }
       }
 
@@ -107,18 +108,20 @@ lib.registerInit(
         isPackagedApp = manifest.app && manifest.app.background;
       }
 
-      if (isPackagedApp) {
-        // Packaged apps are never displayed in browser tabs.
-        setTimeout(onWindow.bind(null, {type: 'popup'}), 0);
-      } else {
-        if (window.chrome && chrome.tabs) {
-          // The getCurrent method gets the tab that is "currently running", not
-          // the topmost or focused tab.
-          chrome.tabs.getCurrent(onTab);
+      return new Promise((resolve) => {
+        if (isPackagedApp) {
+          // Packaged apps are never displayed in browser tabs.
+          onWindow({type: 'popup'}).then(resolve);
         } else {
-          setTimeout(onWindow.bind(null, {type: 'normal'}), 0);
+          if (window.chrome && chrome.tabs) {
+            // The getCurrent method gets the tab that is "currently running",
+            // not the topmost or focused tab.
+            chrome.tabs.getCurrent(() => onTab().then(resolve));
+          } else {
+            onWindow({type: 'normal'}).then(resolve);
+          }
         }
-      }
+      });
     });
 
 /**

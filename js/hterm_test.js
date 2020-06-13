@@ -27,14 +27,13 @@ window.onerror = function(...args) {
 };
 
 /** Run the test framework once everything is finished. */
-window.onload = function() {
+window.onload = async function() {
   hterm.defaultStorage = new lib.Storage.Memory();
 
-  lib.init(() => {
-    mocha.run();
+  await lib.init();
+  mocha.run();
 
-    if (earlyError !== null) {
-      assert.fail(`uncaught exception detected:\n${earlyError.join('\n')}\n`);
-    }
-  });
+  if (earlyError !== null) {
+    assert.fail(`uncaught exception detected:\n${earlyError.join('\n')}\n`);
+  }
 };

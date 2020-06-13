@@ -82,7 +82,7 @@ function initContent(io) {
 };
 
 // Load translations if available.
-lib.registerInit('load messages', async (onInit) => {
+lib.registerInit('load messages', async () => {
   // Try to load the messages database from nassh.  This isn't strictly needed
   // (so if it fails, it should be fine), but does help when testing locally.
   // $1 here means we search the user's language.  Change it to 'en' or another
@@ -90,7 +90,6 @@ lib.registerInit('load messages', async (onInit) => {
   const lang = '$1';
   await hterm.messageManager.findAndLoadMessages(
       lib.f.getURL(`../../nassh/_locales/${lang}/messages.json`));
-  onInit();
 });
 
 function setupHterm() {
@@ -156,8 +155,9 @@ function setupHterm() {
   window.term_ = term;
 }
 
-window.onload = function() {
-  lib.init(setupHterm);
+window.onload = async function() {
+  await lib.init();
+  setupHterm();
 };
 </script>
 

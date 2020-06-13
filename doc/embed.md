@@ -79,7 +79,8 @@ hterm.defaultStorage = new lib.Storage.Chrome(chrome.storage.local);
 ### Framework initialization
 
 Before using hterm, you'll need to initialize the underlying libdot framework.
-You do this by calling `lib.init` and passing it your initialization callback.
+You do this by calling `lib.init()` and waiting it for it to finish before
+calling your own initialization function.
 
 ```js
 function setupHterm() {
@@ -87,8 +88,9 @@ function setupHterm() {
 }
 
 // This will be whatever normal entry/initialization point your project uses.
-window.onload = function() {
-  lib.init(setupHterm);
+window.onload = async function() {
+  await lib.init();
+  setupHterm();
 };
 ```
 
