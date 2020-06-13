@@ -20,13 +20,12 @@ to the right people.
 
 # Requirements
 
-We require ECMAScript 6 (ES6), aka ES2015.  If you're using an older runtime,
-then sorry, you're not supported.  Fortunately, all modern browsers today have
-full ES6 support!
+We require ECMAScript 2018.  If you're using an older runtime, then sorry,
+you're not supported.  Fortunately, all modern browsers today should support it.
 
-We might use some ES2016+ features as we deem useful, but only ones that can be
+We might use some newer features as we deem useful, but only ones that can be
 polyfilled (and we'll include those polyfills by way of [libdot]).  We'll avoid
-language features (such as `await` and `async`) that can't be polyfilled.
+language features (e.g. syntax) that can't be polyfilled.
 
 Of course, we might slip up and use something that violates these stated goals.
 Feel free to let us know via the Contact section above! :)
