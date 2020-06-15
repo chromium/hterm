@@ -91,8 +91,8 @@ it('forever-alone', (done) => {
 it('exception', function(done) {
     // We need to manually disable this.
     // https://github.com/mochajs/mocha/issues/1985
-    const oldUncaught = Mocha.Runner.prototype.uncaught;
-    Mocha.Runner.prototype.uncaught = () => {};
+    const oldOnerror = window.onerror;
+    window.onerror = () => true;
 
     const calledFoo = false;
     let calledBar = false;
@@ -115,7 +115,7 @@ it('exception', function(done) {
         assert.isFalse(calledFoo);
         assert.isTrue(calledBar);
         assert.isTrue(calledLast);
-        Mocha.Runner.prototype.uncaught = oldUncaught;
+        window.onerror = oldOnerror;
         done();
       } else {
         setTimeout(check, 1);
