@@ -410,7 +410,7 @@ the protocol for you.
 ***
 
 ***note
-*Warning:* You should avoid transferring larger files as Chrome performance
+**Warning:** You should avoid transferring larger files as Chrome performance
 will suffer.  If it's under 2 MB, it probably will be fine, but YMMV.
 ***
 
