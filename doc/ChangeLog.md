@@ -1,3 +1,34 @@
+# 1.90, 2020-07-06, ES2018, UI tweaks to martial design, and minor bugfixes.
+
+* storage: Convert get APIs to promises.
+* terminal: Rescan font family whenever a new font is loaded.
+* eslint: Check embedded <script> content.
+* npm: Refresh tool versions.
+* lib.init: Rewrite from callbacks to promises.
+* test page: Show hterm details instead of libdot.
+* i18n: Change getAcceptLanguages from callbacks to promises.
+* Make ES2018 requirement official.
+* test page: Load nassh translations.
+* l10n: Improve some descriptions and translation tips.
+* terminal: Do not scrape URIs from OSC-8 links.
+* keyboard: Add chromeos ctrl+alt+z toggle chromevox as os default binding.
+* contextmenu: Style context menu to match material design.
+* terminal: Add an optional border to the main screen.
+* html: Add missing <meta charset=utf-8/> tag.
+* lint: Change default behavior to look at all files.
+* hterm.py: Convert core constants to pathlib.
+* keyboard: Remap Ctrl+N to call terminalPrivate.openWindow.
+* terminal: Style copy toast to match material design.
+* terminal: Use local color state for text overlays.
+* keyboard: Ctrl+n should PASS if pref is set.
+* scrollport: Fix screen visible height to avoid seeing partial bottom row.
+* terminal: Style size toast to match material design.
+* doc: Add info about CrOS WM shortcuts.
+* scrollport: Handle padding for fold and a11y buttons.
+* terminal: Fix default keybinding handling.
+* terminal: Fix mouse events to adjust for screen padding.
+* eslint: Enable no-multi-spacesfix checks.
+
 # 1.89, 2020-04-29, Tons of linting cleanups, and scrollbar fixes.
 
 * keyboard: Hide context menu for most key presses.
