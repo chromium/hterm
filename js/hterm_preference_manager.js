@@ -659,15 +659,15 @@ hterm.PreferenceManager.defaultPreferences = {
   ),
 
   'pass-alt-number': hterm.PreferenceManager.definePref_(
-      'Alt+1..9 switch tab behavior',
+      'Alt+1..9 switch tab/app behavior',
       hterm.PreferenceManager.Categories.Keyboard,
       null, 'tristate',
       `Whether Alt+1..9 is passed to the browser.\n` +
       `\n` +
       `This is handy when running hterm in a browser tab, so that you don't ` +
-      `lose Chrome's "switch to tab" keyboard shortcuts. When not running ` +
-      `in a tab it's better to send these keys to the host so they can be ` +
-      `used in vim or emacs.\n` +
+      `lose Chrome's "switch to tab/app" keyboard shortcuts. When not ` +
+      `running in a tab it's better to send these keys to the host so they ` +
+      `can be used in vim or emacs.\n` +
       `\n` +
       `If true, Alt+1..9 will be handled by the browser. If false, Alt+1..9 ` +
       `will be sent to the host. If null, autodetect based on browser ` +
