@@ -953,6 +953,13 @@ hterm.Terminal.prototype.getCssVar = function(name, prefix = '--hterm-') {
 };
 
 /**
+ * @return {!hterm.ScrollPort}
+ */
+hterm.Terminal.prototype.getScrollPort = function() {
+  return this.scrollPort_;
+};
+
+/**
  * Update CSS character size variables to match the scrollport.
  */
 hterm.Terminal.prototype.updateCssCharsize_ = function() {

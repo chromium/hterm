@@ -38,6 +38,42 @@ hterm.FindBar = function(terminal) {
 
   /** @type {boolean} */
   this.underTest = false;
+
+  /**
+   * Stores current search results mapping row number to a list of row indices.
+   *
+   * @private {!Object<number, !Array<number>>}
+   */
+  this.results_ = {};
+
+  /**
+   * Timeout ID of pending find batch to run.
+   * Null indicates no search in progress.
+   *
+   * @private {?number}
+   */
+  this.pendingFind_ = null;
+
+  /**
+   * Lower case of find input field.
+   *
+   * @private {string}
+   */
+  this.searchText_ = '';
+
+  /** @private {number} */
+  this.batchNum_ = 0;
+
+  /**
+   * Callbacks to run after the specified batch. Used for testing.
+   *
+   * @private {!Object<number, function()>}
+   * @const
+   */
+  this.batchCallbacksForTest_ = {};
+
+  /** @type {number} */
+  this.batchSize = 50;
 };
 
 /**
@@ -90,6 +126,9 @@ hterm.FindBar.prototype.display = function() {
   this.findBar_.classList.add('enabled');
   this.findBar_.removeAttribute('aria-hidden');
   this.input_.focus();
+
+  // Start searching for stored text in findbar.
+  this.input_.dispatchEvent(new Event('input'));
 };
 
 /**
@@ -99,14 +138,84 @@ hterm.FindBar.prototype.close = function() {
   this.findBar_.classList.remove('enabled');
   this.findBar_.setAttribute('aria-hidden', 'true');
   this.terminal_.focus();
+
+  this.stopSearch();
+  this.results_ = {};
+};
+
+/**
+ * Clears any pending find batch.
+ */
+hterm.FindBar.prototype.stopSearch = function() {
+  if (this.pendingFind_ !== null) {
+    clearTimeout(this.pendingFind_);
+    this.pendingFind_ = null;
+  }
+  this.runBatchCallbackForTest_(0);
+};
+
+/**
+ * Enable batch-wise searching when search text changes.
+ */
+hterm.FindBar.prototype.syncResults_ = function() {
+  this.batchNum_ = 0;
+  // Clear all the results.
+  this.results_ = {};
+
+  // No input text means no results.
+  if (this.searchText_ == '') {
+    return;
+  }
+
+  let row = 0;
+  const rowCount = this.terminal_.getRowCount();
+  const runNextBatch = () => {
+    const batchEnd = Math.min(row + this.batchSize, rowCount);
+    while (row < batchEnd) {
+      this.findInRow_(row++);
+    }
+    this.runBatchCallbackForTest_(++this.batchNum_);
+    if (row < rowCount) {
+      this.pendingFind_ = setTimeout(runNextBatch);
+    } else {
+      this.stopSearch();
+    }
+  };
+  runNextBatch();
+};
+
+/**
+ * Find the results for a particular row and set them in result map.
+ * TODO(crbug.com/209178): Add support for overflowed rows.
+ *
+ * @param {number} row
+ */
+hterm.FindBar.prototype.findInRow_ = function(row) {
+  const rowText = this.terminal_.getRowText(row).toLowerCase();
+  const rowResult = [];
+  let i;
+  let startIndex = 0;
+
+  // Find and create highlight for matching texts.
+  while ((i = rowText.indexOf(this.searchText_, startIndex)) != -1) {
+    rowResult.push(i);
+    startIndex = i + this.searchText_.length;
+  }
+
+  if (rowResult.length) {
+    this.results_[row] = rowResult;
+  }
 };
 
 /**
  * @param {!Event} event The event triggered on input in find bar.
  */
 hterm.FindBar.prototype.onInput_ = function(event) {
-  // TODO(crbug.com/209178): To be implemented.
-  event.preventDefault();
+  this.searchText_ = event.target.value.toLowerCase();
+
+  // If a batch is already pending, reset it.
+  clearTimeout(this.pendingFind_);
+  this.pendingFind_ = setTimeout(() => this.syncResults_());
 };
 
 /**
@@ -146,4 +255,30 @@ hterm.FindBar.prototype.setFindResultColor = function(color) {
   }
 
   this.terminal_.setCssVar('find-result-color', color);
+};
+
+/**
+ * Register a callback to be run after the specified batch (1-based).
+ * Use batchNum 0 to set a callback to be run when search stops.
+ * Used for testing.
+ *
+ * @param {number} batchNum
+ * @param {function()} callback
+ */
+hterm.FindBar.prototype.setBatchCallbackForTest = function(batchNum, callback) {
+  this.batchCallbacksForTest_[batchNum] = callback;
+};
+
+/**
+ * Runs the specified batch callback if it exists and removes it.
+ *
+ * @param {number} batchNum
+ * @private
+ */
+hterm.FindBar.prototype.runBatchCallbackForTest_ = function(batchNum) {
+  const callback = this.batchCallbacksForTest_[batchNum];
+  if (callback) {
+    callback();
+    delete this.batchCallbacksForTest_[batchNum];
+  }
 };

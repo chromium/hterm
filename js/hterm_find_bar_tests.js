@@ -13,7 +13,7 @@ describe('hterm_find_bar_tests.js', () => {
 /**
  * Ensure fresh terminal is used for every test case.
  */
-beforeEach(function() {
+beforeEach(function(done) {
   const document = window.document;
 
   const div = this.div = document.createElement('div');
@@ -21,31 +21,37 @@ beforeEach(function() {
   div.style.height = '100%';
   div.style.width = '100%';
 
+  const width = 23;
+
   document.body.appendChild(div);
 
   this.terminal = new hterm.Terminal();
   this.terminal.decorate(div);
-  this.terminal.installKeyboard();
+  this.terminal.setWidth(width);
+  this.terminal.onTerminalReady = () => {
+    this.terminal.installKeyboard();
+    this.findBar = this.terminal.findBar;
+    this.document = this.terminal.getDocument();
 
-  this.findBar = this.terminal.findBar;
-  this.document = this.terminal.getDocument();
+    // Store HTML elements.
+    /** @suppress {visibility} */
+    this.findBarDiv = this.findBar.findBar_;
+    /** @suppress {visibility} */
+    this.inputElement = this.findBar.input_;
+    /** @suppress {visibility} */
+    this.closeButton = this.findBar.closeButton_;
 
-  // Store HTML elements.
-  /** @suppress {visibility} */
-  this.findBarDiv = this.findBar.findBar_;
-  /** @suppress {visibility} */
-  this.inputElement = this.findBar.input_;
-  /** @suppress {visibility} */
-  this.closeButton = this.findBar.closeButton_;
-
-  // Add check to indicate test state.
-  this.findBar.underTest = true;
+    // Add check to indicate test state.
+    this.findBar.underTest = true;
+    done();
+  };
 });
 
 /**
  * Remove the terminal.
  */
 afterEach(function() {
+  this.findBar.close();
   window.document.body.removeChild(this.div);
 });
 
@@ -118,6 +124,71 @@ it('handles-findbar-input', function() {
 
   assert.equal(this.inputElement.value, 'Hello World');
   assert.equal(doc.activeElement, this.inputElement);
+});
+
+/**
+ * Test findInRow.
+ */
+it('finds-matches-in-a-row', function() {
+  this.terminal.io.println('Findbar Findbar Findbar');
+  this.terminal.io.println('No matches in this row.');
+  this.findBar.searchText_ = 'findbar';
+
+  // Rows with matches should be added to results.
+  this.findBar.findInRow_(0);
+  assert.deepEqual(this.findBar.results_, {0: [0, 8, 16]});
+
+  // Rows with no matches should not be added to results.
+  this.findBar.findInRow_(1);
+  assert.deepEqual(this.findBar.results_, {0: [0, 8, 16]});
+});
+
+/**
+ * Close findbar during search.
+ */
+it('stops-search-when-findbar-closes', function(done) {
+  for (let i = 0; i < 10; i++) {
+    this.terminal.io.println('Findbar Findbar Findbar');
+  }
+
+  this.findBar.searchText_ = 'findbar';
+  this.findBar.batchSize = 2;
+
+  // Close after 3rd batch and ensure search stops.
+  this.findBar.setBatchCallbackForTest(0, done);
+  this.findBar.setBatchCallbackForTest(3, () => {
+    this.findBar.close();
+  });
+  this.findBar.setBatchCallbackForTest(4, assert.fail);
+  this.findBar.syncResults_();
+});
+
+/**
+ * Change search in the middle of the searching process.
+ */
+it('clears-results-and-restarts-when-input-changes', function(done) {
+  this.terminal.io.println('Findbar Findbar Findbar');
+  for (let i = 0; i < 9; i++) {
+    this.terminal.io.println('No match');
+  }
+
+  this.findBar.setBatchCallbackForTest(0, () => {
+    assert.deepEqual(this.findBar.results_, {0: [4, 12, 20]});
+    done();
+  });
+
+  this.findBar.setBatchCallbackForTest(3, () => {
+    assert.deepEqual(this.findBar.results_, {0: [0, 8, 16]});
+    setInputElementValue('bAr', this.inputElement);
+  });
+
+  this.findBar.setBatchCallbackForTest(4, () => {
+    assert.deepEqual(this.findBar.results_, {0: [4, 12, 20]});
+  });
+
+  this.findBar.display();
+  this.findBar.batchSize = 2;
+  setInputElementValue('fInDbAr', this.inputElement);
 });
 
 });
