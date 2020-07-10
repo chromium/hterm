@@ -484,6 +484,10 @@ hterm.Terminal.prototype.setProfile = function(
       terminal.vt.enableCsiJ3 = !!v;
     },
 
+    'find-result-color': function(v) {
+      terminal.findBar.setFindResultColor(v);
+    },
+
     'font-family': function(v) {
       terminal.syncFontFamily();
     },

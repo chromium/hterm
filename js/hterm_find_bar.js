@@ -133,3 +133,17 @@ hterm.FindBar.prototype.onKeyDown_ = function(event) {
   // TODO(crbug.com/209178): To be implemented.
   event.stopPropagation();
 };
+
+/**
+ * Set the background color to highlight find results.
+ *
+ * @param {string=} color The color to set.  If not defined, we reset to the
+ *     saved user preference.
+ */
+hterm.FindBar.prototype.setFindResultColor = function(color) {
+  if (color === undefined) {
+    color = this.terminal_.getPrefs().getString('find-result-color');
+  }
+
+  this.terminal_.setCssVar('find-result-color', color);
+};
