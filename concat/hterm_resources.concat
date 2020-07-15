@@ -10,6 +10,7 @@
 @resource hterm/images/keyboard_arrow_down image/svg+xml;utf8 < ../images/keyboard_arrow_down.svg
 @resource hterm/images/keyboard_arrow_up image/svg+xml;utf8 < ../images/keyboard_arrow_up.svg
 @resource hterm/html/find_bar text/html;utf8 < ../html/find_bar.html
+@resource hterm/html/find_screen text/html;utf8 < ../html/find_screen.html
 @resource hterm/images/icon-96 image/png;base64 < ../images/icon-96.png
 @resource hterm/concat/date text/plain date %a, %d %b %Y %H:%M:%S +0000
 @resource hterm/changelog/version text/plain changelog version

@@ -21,6 +21,12 @@ hterm.FindBar = function(terminal) {
    */
   this.terminal_ = terminal;
 
+  /**
+   * @private {!hterm.ScrollPort}
+   * @const
+   */
+  this.scrollPort_ = terminal.getScrollPort();
+
   /** @private {?Element} */
   this.findBar_ = null;
 
@@ -40,9 +46,10 @@ hterm.FindBar = function(terminal) {
   this.underTest = false;
 
   /**
-   * Stores current search results mapping row number to a list of row indices.
+   * Stores current search results mapping row number to row results.
+   * Also works as cache for find-rows.
    *
-   * @private {!Object<number, !Array<number>>}
+   * @private {!Object<number, !hterm.FindBar.RowResult>}
    */
   this.results_ = {};
 
@@ -55,11 +62,22 @@ hterm.FindBar = function(terminal) {
   this.pendingFind_ = null;
 
   /**
+   * Timeout ID of pending redraw.
+   * Null indicates no redraw is scheduled.
+   *
+   * @private {?number}
+   */
+  this.pendingRedraw_ = null;
+
+  /**
    * Lower case of find input field.
    *
    * @private {string}
    */
   this.searchText_ = '';
+
+  /** @private {number} */
+  this.batchRow_ = 0;
 
   /** @private {number} */
   this.batchNum_ = 0;
@@ -74,7 +92,35 @@ hterm.FindBar = function(terminal) {
 
   /** @type {number} */
   this.batchSize = 50;
+
+  /**
+   * Findbar is visible or not.
+   *
+   * @type {boolean}
+   */
+  this.isVisible = false;
+
+  /**
+   * Keep track of visible rows.
+   *
+   * @private {!Array<!Element>}
+   */
+  this.visibleRows_ = [];
+
+  /**
+   * Listens for scroll events and redraws results.
+   *
+   * @private {function()}
+   * @const
+   */
+  this.onScroll_ = this.scheduleRedraw_.bind(this);
 };
+
+/** @typedef {{findRow: ?Element, rowResult: !Array<!hterm.FindBar.Result>}} */
+hterm.FindBar.RowResult;
+
+/** @typedef {{index: number, wrapper: ?Element}} */
+hterm.FindBar.Result;
 
 /**
  * Add find bar to the terminal.
@@ -113,6 +159,10 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.closeButton_.addEventListener('click', el(this.close));
 
   document.body.appendChild(this.findBar_);
+
+  this.resultScreen_ = document.createElement('div');
+  this.resultScreen_.id = 'hterm:find-result-screen';
+  this.resultScreen_.innerHTML = lib.resource.getData('hterm/html/find_screen');
 };
 
 /**
@@ -123,9 +173,14 @@ hterm.FindBar.prototype.display = function() {
     // TODO(crbug.com/209178): To be implemented.
     return;
   }
+
+  this.scrollPort_.subscribe('scroll', this.onScroll_);
+
   this.findBar_.classList.add('enabled');
   this.findBar_.removeAttribute('aria-hidden');
   this.input_.focus();
+
+  this.terminal_.getDocument().body.appendChild(this.resultScreen_);
 
   // Start searching for stored text in findbar.
   this.input_.dispatchEvent(new Event('input'));
@@ -135,6 +190,11 @@ hterm.FindBar.prototype.display = function() {
  * Close find bar.
  */
 hterm.FindBar.prototype.close = function() {
+  // Clear all results of findbar.
+  this.resultScreen_.remove();
+
+  this.scrollPort_.unsubscribe('scroll', this.onScroll_);
+
   this.findBar_.classList.remove('enabled');
   this.findBar_.setAttribute('aria-hidden', 'true');
   this.terminal_.focus();
@@ -158,28 +218,28 @@ hterm.FindBar.prototype.stopSearch = function() {
  * Enable batch-wise searching when search text changes.
  */
 hterm.FindBar.prototype.syncResults_ = function() {
+  this.batchRow_ = 0;
   this.batchNum_ = 0;
-  // Clear all the results.
   this.results_ = {};
+  this.redraw_();
 
-  // No input text means no results.
+  // No input means no result. Just redraw the results.
   if (this.searchText_ == '') {
     return;
   }
 
-  let row = 0;
   const rowCount = this.terminal_.getRowCount();
   const runNextBatch = () => {
-    const batchEnd = Math.min(row + this.batchSize, rowCount);
-    while (row < batchEnd) {
-      this.findInRow_(row++);
+    const batchEnd = Math.min(this.batchRow_ + this.batchSize, rowCount);
+    while (this.batchRow_ < batchEnd) {
+      this.findInRow_(this.batchRow_++);
     }
-    this.runBatchCallbackForTest_(++this.batchNum_);
-    if (row < rowCount) {
+    if (this.batchRow_ < rowCount) {
       this.pendingFind_ = setTimeout(runNextBatch);
     } else {
       this.stopSearch();
     }
+    this.runBatchCallbackForTest_(++this.batchNum_);
   };
   runNextBatch();
 };
@@ -191,19 +251,21 @@ hterm.FindBar.prototype.syncResults_ = function() {
  * @param {number} row
  */
 hterm.FindBar.prototype.findInRow_ = function(row) {
+  if (this.searchText_ == '') {
+    return;
+  }
   const rowText = this.terminal_.getRowText(row).toLowerCase();
   const rowResult = [];
+
   let i;
   let startIndex = 0;
-
   // Find and create highlight for matching texts.
   while ((i = rowText.indexOf(this.searchText_, startIndex)) != -1) {
-    rowResult.push(i);
+    rowResult.push({index: i, wrapper: null});
     startIndex = i + this.searchText_.length;
   }
-
-  if (rowResult.length) {
-    this.results_[row] = rowResult;
+  if (rowResult.length && !this.results_[row]) {
+    this.results_[row] = {findRow: null, rowResult};
   }
 };
 
@@ -239,6 +301,10 @@ hterm.FindBar.prototype.onKeyDown_ = function(event) {
   if (event.key == 'Escape') {
     this.close();
   }
+  // Stop Ctrl+F inside hterm find input opening browser find.
+  if (event.ctrlKey && event.key == 'f') {
+    event.preventDefault();
+  }
   // TODO(crbug.com/209178): To be implemented.
   event.stopPropagation();
 };
@@ -267,6 +333,76 @@ hterm.FindBar.prototype.setFindResultColor = function(color) {
  */
 hterm.FindBar.prototype.setBatchCallbackForTest = function(batchNum, callback) {
   this.batchCallbacksForTest_[batchNum] = callback;
+};
+
+/**
+ * Redraws the results of findbar on find result screen.
+ */
+hterm.FindBar.prototype.redraw_ = function() {
+  const topRowIndex = this.scrollPort_.getTopRowIndex();
+  const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
+
+  // Clear the find result screen.
+  this.visibleRows_.forEach((row) => {
+    row.remove();
+  });
+  this.visibleRows_ = [];
+
+  for (let row = topRowIndex; row <= bottomRowIndex; row++) {
+    const newRow = this.fetchRowNode_(row);
+    this.resultScreen_.appendChild(newRow);
+    this.visibleRows_.push(newRow);
+  }
+};
+
+/**
+ * Fetch find row element. If find-row is not available in results, it creates
+ * a new one and store it in results.
+ *
+ * @param {number} row
+ * @return {!Element}
+ */
+hterm.FindBar.prototype.fetchRowNode_ = function(row) {
+  // Process row if batch hasn't yet got to it.
+  if (row > this.batchRow_) {
+    this.findInRow_(row);
+  }
+  const result = this.results_[row];
+  if (result && result.findRow) {
+    return result.findRow;
+  }
+
+  // Create a new find-row.
+  const findRow = this.terminal_.getDocument().createElement('find-row');
+  if (!result) {
+    return findRow;
+  }
+  result.rowResult.forEach((result) => {
+    const wrapper = this.terminal_.getDocument().createElement('div');
+    wrapper.classList.add('wrapper');
+    wrapper.style.left = `calc(var(--hterm-charsize-width) * ${result.index})`;
+    wrapper.style.width =
+       `calc(var(--hterm-charsize-width) * ${this.searchText_.length})`;
+    result.wrapper = wrapper;
+    findRow.appendChild(wrapper);
+  });
+  return result.findRow = findRow;
+};
+
+/**
+ * Synchronize redrawing of search results present on the screen.
+ *
+ * The sync will happen asynchronously, soon after the call stack winds down.
+ * Multiple calls will be coalesced into a single sync.
+ */
+hterm.FindBar.prototype.scheduleRedraw_ = function() {
+  if (this.pendingRedraw_) {
+    return;
+  }
+  this.pendingRedraw_ = setTimeout(() => {
+    this.redraw_();
+    delete this.pendingRedraw_;
+  });
 };
 
 /**

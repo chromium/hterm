@@ -21,17 +21,20 @@ beforeEach(function(done) {
   div.style.height = '100%';
   div.style.width = '100%';
 
-  const width = 23;
+  const width = 25;
+  const height = 4;
 
   document.body.appendChild(div);
 
   this.terminal = new hterm.Terminal();
   this.terminal.decorate(div);
   this.terminal.setWidth(width);
+  this.terminal.setHeight(height);
   this.terminal.onTerminalReady = () => {
     this.terminal.installKeyboard();
     this.findBar = this.terminal.findBar;
     this.document = this.terminal.getDocument();
+    this.scrollPort = this.terminal.getScrollPort();
 
     // Store HTML elements.
     /** @suppress {visibility} */
@@ -51,7 +54,6 @@ beforeEach(function(done) {
  * Remove the terminal.
  */
 afterEach(function() {
-  this.findBar.close();
   window.document.body.removeChild(this.div);
 });
 
@@ -126,6 +128,11 @@ it('handles-findbar-input', function() {
   assert.equal(doc.activeElement, this.inputElement);
 });
 
+const extractIndexes = (results) => {
+  return Object.fromEntries(Object.entries(results).map(
+      ([rowNum, v]) => [rowNum, v.rowResult.map((row) => row.index)]));
+};
+
 /**
  * Test findInRow.
  */
@@ -136,11 +143,11 @@ it('finds-matches-in-a-row', function() {
 
   // Rows with matches should be added to results.
   this.findBar.findInRow_(0);
-  assert.deepEqual(this.findBar.results_, {0: [0, 8, 16]});
+  assert.deepEqual(extractIndexes(this.findBar.results_), {0: [0, 8, 16]});
 
   // Rows with no matches should not be added to results.
   this.findBar.findInRow_(1);
-  assert.deepEqual(this.findBar.results_, {0: [0, 8, 16]});
+  assert.deepEqual(extractIndexes(this.findBar.results_), {0: [0, 8, 16]});
 });
 
 /**
@@ -151,16 +158,16 @@ it('stops-search-when-findbar-closes', function(done) {
     this.terminal.io.println('Findbar Findbar Findbar');
   }
 
-  this.findBar.searchText_ = 'findbar';
-  this.findBar.batchSize = 2;
-
   // Close after 3rd batch and ensure search stops.
   this.findBar.setBatchCallbackForTest(0, done);
   this.findBar.setBatchCallbackForTest(3, () => {
     this.findBar.close();
   });
   this.findBar.setBatchCallbackForTest(4, assert.fail);
-  this.findBar.syncResults_();
+
+  this.findBar.display();
+  this.findBar.batchSize = 2;
+  setInputElementValue('fInDbAr', this.inputElement);
 });
 
 /**
@@ -173,17 +180,17 @@ it('clears-results-and-restarts-when-input-changes', function(done) {
   }
 
   this.findBar.setBatchCallbackForTest(0, () => {
-    assert.deepEqual(this.findBar.results_, {0: [4, 12, 20]});
+    assert.deepEqual(extractIndexes(this.findBar.results_), {0: [4, 12, 20]});
     done();
   });
 
   this.findBar.setBatchCallbackForTest(3, () => {
-    assert.deepEqual(this.findBar.results_, {0: [0, 8, 16]});
+    assert.deepEqual(extractIndexes(this.findBar.results_), {0: [0, 8, 16]});
     setInputElementValue('bAr', this.inputElement);
   });
 
   this.findBar.setBatchCallbackForTest(4, () => {
-    assert.deepEqual(this.findBar.results_, {0: [4, 12, 20]});
+    assert.deepEqual(extractIndexes(this.findBar.results_), {0: [4, 12, 20]});
   });
 
   this.findBar.display();
