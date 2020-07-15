@@ -34,10 +34,10 @@ hterm.FindBar = function(terminal) {
   this.input_ = null;
 
   /** @private {?Element} */
-  this.upArrow_ = null;
+  this.upArrowButton_ = null;
 
   /** @private {?Element} */
-  this.downArrow_ = null;
+  this.downArrowButton_ = null;
 
   /** @private {?Element} */
   this.closeButton_ = null;
@@ -144,6 +144,14 @@ hterm.FindBar = function(terminal) {
 
   /** @private {?Element} */
   this.selectedResult_ = null;
+
+  /**
+   * Sorted list of matching row numbers.
+   *
+   * @private {!Array<number>}
+   * @const
+   */
+  this.matchingRowsIndex_ = [];
 };
 
 /** @typedef {{findRow: ?Element, rowResult: !Array<!hterm.FindBar.Result>}} */
@@ -164,21 +172,20 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.findBar_.innerHTML = lib.resource.getData('hterm/html/find_bar');
 
   this.input_ = this.findBar_.querySelector('input');
-  this.upArrow_ = this.findBar_.querySelector('#hterm\\:find-bar-up');
-  this.downArrow_ = this.findBar_.querySelector('#hterm\\:find-bar-down');
-  this.closeButton_ = this.findBar_.querySelector('#hterm\\:find-bar-close');
+  this.upArrowButton_ = this.findBar_.querySelector('#hterm\\:find-bar-up');
+  this.downArrowButton_ = this.findBar_.querySelector('#hterm\\:find-bar-down');
   this.closeButton_ = this.findBar_.querySelector('#hterm\\:find-bar-close');
   this.counterLabel_ = this.findBar_.querySelector('#hterm\\:find-bar-count');
 
   // Add aria-label and svg icons.
-  this.upArrow_.innerHTML = lib.resource
+  this.upArrowButton_.innerHTML = lib.resource
       .getData('hterm/images/keyboard_arrow_up');
-  this.downArrow_.innerHTML = lib.resource
+  this.downArrowButton_.innerHTML = lib.resource
       .getData('hterm/images/keyboard_arrow_down');
   this.closeButton_.innerHTML = lib.resource.getData('hterm/images/close');
 
-  this.upArrow_.setAttribute('aria-label', hterm.msg('BUTTON_PREVIOUS'));
-  this.downArrow_.setAttribute('aria-label', hterm.msg('BUTTON_NEXT'));
+  this.upArrowButton_.setAttribute('aria-label', hterm.msg('BUTTON_PREVIOUS'));
+  this.downArrowButton_.setAttribute('aria-label', hterm.msg('BUTTON_NEXT'));
   this.input_.setAttribute('aria-label', hterm.msg('BUTTON_FIND'));
   this.closeButton_.setAttribute('aria-label', hterm.msg('BUTTON_CLOSE'));
 
@@ -189,6 +196,8 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.input_.addEventListener('keypress', el(this.onKeyPressed_));
   this.input_.addEventListener('textInput', el(this.onInputText_));
   this.closeButton_.addEventListener('click', el(this.close));
+  this.upArrowButton_.addEventListener('click', el(this.onPrevious_));
+  this.downArrowButton_.addEventListener('click', el(this.onNext_));
 
   document.body.appendChild(this.findBar_);
 
@@ -235,7 +244,6 @@ hterm.FindBar.prototype.close = function() {
   this.stopSearch();
   this.results_ = {};
   this.resultCount_ = 0;
-  this.updateCounterLabel_();
 };
 
 /**
@@ -269,7 +277,11 @@ hterm.FindBar.prototype.syncResults_ = function() {
   const runNextBatch = () => {
     const batchEnd = Math.min(this.batchRow_ + this.batchSize, rowCount);
     while (this.batchRow_ < batchEnd) {
-      this.findInRow_(this.batchRow_++);
+      // Matching rows are pushed in order of searching to keep list sorted.
+      if (this.findInRow_(this.batchRow_)) {
+        this.matchingRowsIndex_.push(this.batchRow_);
+      }
+      this.batchRow_++;
     }
     if (this.batchRow_ < rowCount) {
       this.pendingFind_ = setTimeout(runNextBatch);
@@ -288,11 +300,17 @@ hterm.FindBar.prototype.syncResults_ = function() {
  * TODO(crbug.com/209178): Add support for overflowed rows.
  *
  * @param {number} rowNum
+ * @return {boolean} True if there is a match.
  */
 hterm.FindBar.prototype.findInRow_ = function(rowNum) {
-  if (!this.searchText_ || this.results_[rowNum]) {
-    return;
+  if (!this.searchText_) {
+    return false;
   }
+
+  if (this.results_[rowNum]) {
+    return true;
+  }
+
   const rowText = this.terminal_.getRowText(rowNum).toLowerCase();
   const rowResult = [];
 
@@ -309,6 +327,8 @@ hterm.FindBar.prototype.findInRow_ = function(rowNum) {
     if (this.resultCount_ === 0) {
       this.selectedRow_ = rowNum;
       this.selectedOrdinal_ = 0;
+      this.upArrowButton_.classList.add('enabled');
+      this.downArrowButton_.classList.add('enabled');
       this.scrollToResult_();
     }
   }
@@ -317,6 +337,8 @@ hterm.FindBar.prototype.findInRow_ = function(rowNum) {
   if (rowNum < this.selectedRow_) {
     this.selectedOrdinal_ += rowResult.length;
   }
+
+  return rowResult.length > 0;
 };
 
 /**
@@ -348,14 +370,34 @@ hterm.FindBar.prototype.onInputText_ = function(event) {
  * @param {!Event} event The event triggered on keydown in find bar.
  */
 hterm.FindBar.prototype.onKeyDown_ = function(event) {
+  if (event.metaKey || event.altKey) {
+    event.stopPropagation();
+    return;
+  }
   if (event.key == 'Escape') {
     this.close();
   }
-  // Stop Ctrl+F inside hterm find input opening browser find.
-  if (event.ctrlKey && event.key == 'f') {
+  if (event.key == 'Enter') {
+    if (event.shiftKey) {
+      this.onPrevious_();
+    } else {
+      this.onNext_();
+    }
+  }
+  // keyCode for G.
+  if (event.ctrlKey && event.keyCode == 71) {
+    if (event.shiftKey) {
+      this.onPrevious_();
+    } else {
+      this.onNext_();
+    }
     event.preventDefault();
   }
-  // TODO(crbug.com/209178): To be implemented.
+  // Stop Ctrl+F inside hterm find input opening browser find.
+  // keyCode for F.
+  if (event.ctrlKey && event.keyCode == 70) {
+    event.preventDefault();
+  }
   event.stopPropagation();
 };
 
@@ -496,11 +538,136 @@ hterm.FindBar.prototype.updateCounterLabel_ = function() {
     this.selectedRow_ = 0;
     this.selectedRowIndex_ = 0;
     this.selectedOrdinal_ = -1;
+    this.upArrowButton_.classList.remove('enabled');
+    this.downArrowButton_.classList.remove('enabled');
   }
   // Update the counterLabel.
   this.counterLabel_.textContent = hterm.msg('FIND_MATCH_COUNT',
       [this.selectedOrdinal_ + 1, this.resultCount_]);
   this.highlightSelectedResult_();
+};
+
+/**
+ * Returns the largest index of arr with arr[index] <= value, or -1.
+ *
+ * @param {!Array<number>} arr Array to be searched
+ * @param {number} value
+ * @return {number}
+ */
+hterm.FindBar.indexOf = function(arr, value) {
+  let index = -1;
+  let low = 0;
+  let high = arr.length - 1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (arr[mid] <= value) {
+      index = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return index;
+};
+
+/**
+ * Returns true if matchingRowsIndex_ index can be used to find next
+ * via binary search.
+ *
+ * @private
+ * @param {number} step 1 to find next in down direction, -1 to find next in up
+ *     direction
+ * @return {boolean}
+ */
+hterm.FindBar.prototype.canUseMatchingRowsIndex_ = function(step) {
+  // We can use the matchingRowsIndex_ index to find next via binary search
+  // if either all batches are done, or if selectedRow_ is within the index.
+  const topRowIndex = this.scrollPort_.getTopRowIndex();
+  const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
+  const index = this.matchingRowsIndex_;
+  const current = this.selectedRow_;
+
+  return this.batchRow_ > bottomRowIndex ||
+      (step > 0 && current < index[index.length - 1]) ||
+      (step < 0 && current < this.batchRow_ && current > index[0]);
+};
+
+/**
+ * Select the next matching row from the current selected row in either up or
+ * down direction. If batch searching is complete, moving between
+ * results can be done by finding the adjacent item in matchingRowsIndex_.
+ * When batching is not yet complete, we will use matchingRowsIndex_ when we
+ * can, and also do a brute force search across the current visible screen,
+ * but we will not allow the user to select results that are outside of the
+ * visible screen, or the index.
+ *
+ * @param {number} step 1 to find next in down direction, -1 to find next in up
+ *     direction.
+ */
+hterm.FindBar.prototype.selectNext_ = function(step) {
+  // Increment/decrement i by step modulo len.
+  const circularStep = (i, len) => (i + len + step) % len;
+
+  const row = this.results_[this.selectedRow_];
+  if (row && row.rowResult[this.selectedRowIndex_ + step] !== undefined) {
+    // Move to another match on the same row.
+    this.selectedRowIndex_ += step;
+  } else {
+    let topRowIndex = this.scrollPort_.getTopRowIndex();
+    const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
+    const index = this.matchingRowsIndex_;
+    const current = this.selectedRow_;
+
+    if (this.canUseMatchingRowsIndex_(step)) {
+      const i = hterm.FindBar.indexOf(index, current);
+      this.selectedRow_ = index[circularStep(i, index.length)];
+    } else {
+      // Not using the index, so brute force search in visible screen.
+      let start = current + step;
+      // If outside visible screen, then move to the boundary, but first adjust
+      // topRowIndex for if a batch has partially covered the screen.
+      topRowIndex = Math.max(topRowIndex, this.batchRow_);
+      if (current < topRowIndex || current > bottomRowIndex) {
+        start = step > 0 ? topRowIndex : bottomRowIndex;
+      }
+      const end = step > 0 ? bottomRowIndex + 1 : topRowIndex - 1;
+      // If we don't end up finding anything, use the first or last in index.
+      this.selectedRow_ = index[step > 0 ? 0 : index.length - 1];
+      for (let i = start; i != end; i += step) {
+        if (this.results_[i]) {
+          this.selectedRow_ = i;
+          break;
+        }
+      }
+    }
+    const row = this.results_[this.selectedRow_];
+    this.selectedRowIndex_ = step > 0 ? 0 : row.rowResult.length - 1;
+  }
+  this.selectedOrdinal_ = circularStep(
+      this.selectedOrdinal_,
+      this.resultCount_);
+  this.updateCounterLabel_();
+  this.scrollToResult_();
+};
+
+/**
+ * Select the next match.
+ */
+hterm.FindBar.prototype.onNext_ = function() {
+  if (!this.downArrowButton_.classList.contains('enabled')) {
+    return;
+  }
+  this.selectNext_(1);
+};
+
+/**
+ * Select the previous match.
+ */
+hterm.FindBar.prototype.onPrevious_ = function() {
+  if (!this.upArrowButton_.classList.contains('enabled')) {
+    return;
+  }
+  this.selectNext_(-1);
 };
 
 /**

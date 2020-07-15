@@ -288,4 +288,168 @@ it('changes-count-of-results', function(done) {
   setInputElementValue('fInDbAr', this.inputElement);
 });
 
+/**
+ * Test indexOf.
+ */
+it('finds-index-of', function() {
+  const arr = [1, 2, 4, 4, 5];
+  [
+    [0, -1],
+    [1, 0],
+    [2, 1],
+    [3, 1],
+    [4, 3],
+    [5, 4],
+    [6, 4],
+  ].forEach(([n, expected]) => {
+    assert.equal(hterm.FindBar.indexOf(arr, n), expected);
+  });
+});
+
+/**
+ * Test canUseMatchingRowsIndex_.
+ */
+it('uses-index-correctly', function() {
+  const expectCanUseMatchingRowsIndex = (selectedRow, step, expected) => {
+    this.findBar.selectedRow_ = selectedRow;
+    assert.equal(this.findBar.canUseMatchingRowsIndex_(step), expected);
+  };
+
+  // Screen height is 4, topRowIndex == 0, bottomRowIndex == 2.
+  // Test when batching is complete.
+  assert.equal(this.terminal.getRowCount(), 4);
+  assert.equal(this.findBar.scrollPort_.getTopRowIndex(), 0);
+  assert.equal(this.findBar.scrollPort_.getBottomRowIndex(0), 2);
+  this.findBar.batchRow_ = 5;
+  for (let i = 0; i < 4; i++) {
+    expectCanUseMatchingRowsIndex(i, -1, true);
+    expectCanUseMatchingRowsIndex(i, 1, true);
+  }
+
+  // Test when batching is incomplete
+  this.findBar.batchRow_ = 2;
+  this.findBar.matchingRowsIndex_ = [0, 1];
+
+  expectCanUseMatchingRowsIndex(0, 1, true);
+  expectCanUseMatchingRowsIndex(1, 1, false);
+  expectCanUseMatchingRowsIndex(2, 1, false);
+  expectCanUseMatchingRowsIndex(3, 1, false);
+  expectCanUseMatchingRowsIndex(0, -1, false);
+  expectCanUseMatchingRowsIndex(1, -1, true);
+  expectCanUseMatchingRowsIndex(2, -1, false);
+  expectCanUseMatchingRowsIndex(3, -1, false);
+});
+
+/**
+ * Test onNext.
+ */
+it('finds-next', function() {
+  this.terminal.io.println('Findbar Findbar');
+  this.terminal.io.println('FindBar');
+  for (let i = 0; i < 2; i++) {
+    this.terminal.io.println('No matches in this row.');
+  }
+  this.terminal.io.println('Findbar FindBar');
+  this.findBar.searchText_ = 'findbar';
+
+  const expectNext = (row, index, ordinal) => {
+    this.findBar.onNext_();
+    assert.equal(this.findBar.selectedRow_, row);
+    assert.equal(this.findBar.selectedRowIndex_, index);
+    assert.equal(this.findBar.selectedOrdinal_, ordinal);
+  };
+
+  this.findBar.downArrowButton_.classList.add('enabled');
+
+  // Searching process incomplete and canUseMatchingRowsIndex_ returns false.
+  this.batchRow_ = 0;
+
+  // Set first selected result at row 0.
+  this.findBar.findInRow_(0);
+  this.findBar.findInRow_(1);
+
+  expectNext(0, 1, 1);
+  expectNext(1, 0, 2);
+
+  // Searching process partial complete and
+  // canUseMatchingRowsIndex_ returns false.
+  this.batchRow_ = 1;
+  this.findBar.matchingRowsIndex_ = [0];
+
+  // Selected Result outside visible screen.
+  // Screen height is 4, topRowIndex == 3, bottomRowIndex == 5.
+  this.scrollPort.scrollRowToTop(4);
+  this.findBar.findInRow_(4);
+  expectNext(4, 0, 3);
+  expectNext(4, 1, 4);
+
+  expectNext(0, 0, 0);
+  assert.equal(this.scrollPort.getTopRowIndex(), 0);
+
+  // Searching process complete and canUseMatchingRowsIndex_ returns true.
+  this.findBar.batchRow_ = 5;
+  this.findBar.matchingRowsIndex_ = [0, 1, 4];
+  expectNext(0, 1, 1);
+  expectNext(1, 0, 2);
+  expectNext(4, 0, 3);
+  expectNext(4, 1, 4);
+  expectNext(0, 0, 0);
+});
+
+/**
+ * Test onPrevious.
+ */
+it('finds-previous', function() {
+  this.terminal.io.println('Findbar Findbar');
+  this.terminal.io.println('FindBar');
+  for (let i = 0; i < 2; i++) {
+    this.terminal.io.println('No matches in this row.');
+  }
+  this.terminal.io.println('Findbar FindBar');
+  this.findBar.searchText_ = 'findbar';
+
+  const expectPrevious = (row, index, ordinal) => {
+    this.findBar.onPrevious_();
+    assert.equal(this.findBar.selectedRow_, row);
+    assert.equal(this.findBar.selectedRowIndex_, index);
+    assert.equal(this.findBar.selectedOrdinal_, ordinal);
+  };
+
+  this.findBar.downArrowButton_.classList.add('enabled');
+
+  // Searching process incomplete and canUseMatchingRowsIndex_ returns false.
+  this.batchRow_ = 0;
+
+  // Set first selected result at row 1.
+  this.findBar.findInRow_(1);
+  this.findBar.findInRow_(0);
+
+  expectPrevious(0, 1, 1);
+  expectPrevious(0, 0, 0);
+
+  // Searching process partial complete and
+  // canUseMatchingRowsIndex_ returns false.
+  this.batchRow_ = 2;
+  this.findBar.matchingRowsIndex_ = [0, 1];
+
+  // Selected Result outside visible screen.
+  // Screen height is 4, topRowIndex == 3, bottomRowIndex == 5.
+  this.scrollPort.scrollRowToTop(4);
+  this.findBar.findInRow_(4);
+  expectPrevious(4, 1, 4);
+  expectPrevious(4, 0, 3);
+
+  expectPrevious(1, 0, 2);
+  assert.equal(this.scrollPort.getTopRowIndex(), 0);
+
+  // Searching process complete and canUseMatchingRowsIndex_ returns true.
+  this.findBar.batchRow_ = 5;
+  this.findBar.matchingRowsIndex_ = [0, 1, 4];
+  expectPrevious(0, 1, 1);
+  expectPrevious(0, 0, 0);
+  expectPrevious(4, 1, 4);
+  expectPrevious(4, 0, 3);
+  expectPrevious(1, 0, 2);
+});
+
 });
