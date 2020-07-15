@@ -42,6 +42,9 @@ hterm.FindBar = function(terminal) {
   /** @private {?Element} */
   this.closeButton_ = null;
 
+  /** @private {?Element} */
+  this.counterLabel_ = null;
+
   /** @type {boolean} */
   this.underTest = false;
 
@@ -114,6 +117,33 @@ hterm.FindBar = function(terminal) {
    * @const
    */
   this.onScroll_ = this.scheduleRedraw_.bind(this);
+
+  /**
+   * Row number of selected result.
+   *
+   * @private {number}
+   */
+  this.selectedRow_ = 0;
+
+  /**
+   * Index of selected result in its row.
+   *
+   * @private {number}
+   */
+  this.selectedRowIndex_ = 0;
+
+  /**
+   * Index of selected result among all results.
+   *
+   * @private {number}
+   */
+  this.selectedOrdinal_ = -1;
+
+  /** @private {number} */
+  this.resultCount_ = 0;
+
+  /** @private {?Element} */
+  this.selectedResult_ = null;
 };
 
 /** @typedef {{findRow: ?Element, rowResult: !Array<!hterm.FindBar.Result>}} */
@@ -137,6 +167,8 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.upArrow_ = this.findBar_.querySelector('#hterm\\:find-bar-up');
   this.downArrow_ = this.findBar_.querySelector('#hterm\\:find-bar-down');
   this.closeButton_ = this.findBar_.querySelector('#hterm\\:find-bar-close');
+  this.closeButton_ = this.findBar_.querySelector('#hterm\\:find-bar-close');
+  this.counterLabel_ = this.findBar_.querySelector('#hterm\\:find-bar-count');
 
   // Add aria-label and svg icons.
   this.upArrow_.innerHTML = lib.resource
@@ -202,6 +234,8 @@ hterm.FindBar.prototype.close = function() {
 
   this.stopSearch();
   this.results_ = {};
+  this.resultCount_ = 0;
+  this.updateCounterLabel_();
 };
 
 /**
@@ -222,7 +256,9 @@ hterm.FindBar.prototype.syncResults_ = function() {
   this.batchRow_ = 0;
   this.batchNum_ = 0;
   this.results_ = {};
+  this.resultCount_ = 0;
   this.redraw_();
+  this.updateCounterLabel_();
 
   // No input means no result. Just redraw the results.
   if (!this.searchText_) {
@@ -242,6 +278,7 @@ hterm.FindBar.prototype.syncResults_ = function() {
     }
     ++this.batchNum_;
     this.runBatchCallbackForTest_(this.batchNum_);
+    this.updateCounterLabel_();
   };
   runNextBatch();
 };
@@ -266,8 +303,19 @@ hterm.FindBar.prototype.findInRow_ = function(rowNum) {
     rowResult.push({index: i, highlighter: null});
     startIndex = i + this.searchText_.length;
   }
-  if (rowResult.length && !this.results_[rowNum]) {
+
+  if (rowResult.length) {
     this.results_[rowNum] = {findRow: null, rowResult};
+    if (this.resultCount_ === 0) {
+      this.selectedRow_ = rowNum;
+      this.selectedOrdinal_ = 0;
+      this.scrollToResult_();
+    }
+  }
+
+  this.resultCount_ += rowResult.length;
+  if (rowNum < this.selectedRow_) {
+    this.selectedOrdinal_ += rowResult.length;
   }
 };
 
@@ -372,6 +420,7 @@ hterm.FindBar.prototype.redraw_ = function() {
   }
 
   delete this.pendingRedraw_;
+  this.highlightSelectedResult_();
 };
 
 /**
@@ -435,5 +484,53 @@ hterm.FindBar.prototype.runBatchCallbackForTest_ = function(batchNum) {
   if (callback) {
     callback();
     delete this.batchCallbacksForTest_[batchNum];
+  }
+};
+
+/**
+ * Update the counterLabel for findbar.
+ */
+hterm.FindBar.prototype.updateCounterLabel_ = function() {
+  // Reset the counterLabel if no results are present.
+  if (this.resultCount_ === 0) {
+    this.selectedRow_ = 0;
+    this.selectedRowIndex_ = 0;
+    this.selectedOrdinal_ = -1;
+  }
+  // Update the counterLabel.
+  this.counterLabel_.textContent = hterm.msg('FIND_MATCH_COUNT',
+      [this.selectedOrdinal_ + 1, this.resultCount_]);
+  this.highlightSelectedResult_();
+};
+
+/**
+ * Scroll the terminal up/down depending upon the row of selected result.
+ */
+hterm.FindBar.prototype.scrollToResult_ = function() {
+  const topRowIndex = this.scrollPort_.getTopRowIndex();
+  const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
+
+  if (this.selectedRow_ < topRowIndex || this.selectedRow_ > bottomRowIndex) {
+    this.scrollPort_.scrollRowToMiddle(this.selectedRow_);
+  }
+};
+
+/**
+ * Sets CSS to highlight selected result.
+ */
+hterm.FindBar.prototype.highlightSelectedResult_ = function() {
+  // Remove selected result.
+  if (this.selectedResult_) {
+    this.selectedResult_.classList.remove('selected');
+    this.selectedResult_ = null;
+  }
+
+  // Select new instance of result.
+  if (this.resultCount_) {
+    this.selectedResult_ = this.results_[this.selectedRow_]
+        .rowResult[this.selectedRowIndex_].highlighter;
+    if (this.selectedResult_) {
+      this.selectedResult_.classList.add('selected');
+    }
   }
 };

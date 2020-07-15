@@ -72,7 +72,7 @@ const classes = (ele) => Array.from(ele.classList.values());
 it('findbar-visible', function() {
   // Find bar should be non-null, closed by default and not visible.
   assert(this.findBarDiv);
-  assert.isFalse(this.findBarDiv.classList.contains('enabled'));
+  assert.notInclude(classes(this.findBarDiv), 'enabled');
   assert.isAtMost(this.findBarDiv.getBoundingClientRect().bottom, 0);
 
   this.findBar.display();
@@ -119,13 +119,12 @@ it('close-findbar-on-close-button-clicked', function() {
  * Test with fake input in find bar.
  */
 it('handles-findbar-input', function() {
-  const doc = this.terminal.getDocument();
   this.findBar.display();
 
   setInputElementValue('Hello World', this.inputElement);
 
   assert.equal(this.inputElement.value, 'Hello World');
-  assert.equal(doc.activeElement, this.inputElement);
+  assert.equal(this.document.activeElement, this.inputElement);
 });
 
 const extractIndexes = (results) => {
@@ -136,18 +135,44 @@ const extractIndexes = (results) => {
 /**
  * Test findInRow.
  */
-it('finds-matches-in-a-row', function() {
+it('finds-matches-in-a-row-and-updates-count', function(done) {
   this.terminal.io.println('Findbar Findbar Findbar');
-  this.terminal.io.println('No matches in this row.');
+  for (let i = 0; i < 10; i++) {
+    this.terminal.io.println('No matches in this row.');
+  }
+  this.terminal.io.println('Findbar Findbar Findbar');
   this.findBar.searchText_ = 'findbar';
 
-  // Rows with matches should be added to results.
-  this.findBar.findInRow_(0);
-  assert.deepEqual(extractIndexes(this.findBar.results_), {0: [0, 8, 16]});
+  // Wait for scrollDown in terminal.js.
+  setTimeout(() => {
+    this.scrollPort.scrollRowToTop(0);
+    // Wait to scroll to top.
+    setTimeout(() => {
+      // Rows with matches should be added to results and scroll to
+      // first result at middle of screen.
+      this.findBar.findInRow_(11);
+      assert.deepEqual(extractIndexes(this.findBar.results_), {11: [0, 8, 16]});
+      assert.equal(this.findBar.resultCount_, 3);
+      assert.equal(this.scrollPort.getTopRowIndex(), 10);
+      assert.equal(this.findBar.selectedOrdinal_, 0);
 
-  // Rows with no matches should not be added to results.
-  this.findBar.findInRow_(1);
-  assert.deepEqual(extractIndexes(this.findBar.results_), {0: [0, 8, 16]});
+      // Rows with no matches should not be added to results.
+      this.findBar.findInRow_(1);
+      assert.deepEqual(extractIndexes(this.findBar.results_), {11: [0, 8, 16]});
+      assert.equal(this.findBar.resultCount_, 3);
+      assert.equal(this.scrollPort.getTopRowIndex(), 10);
+      assert.equal(this.findBar.selectedOrdinal_, 0);
+
+      // Rows above selected result with matches should be added to results.
+      this.findBar.findInRow_(0);
+      assert.deepEqual(extractIndexes(this.findBar.results_), {11: [0, 8, 16],
+          0: [0, 8, 16]});
+      assert.equal(this.findBar.resultCount_, 6);
+      assert.equal(this.scrollPort.getTopRowIndex(), 10);
+      assert.equal(this.findBar.selectedOrdinal_, 3);
+      done();
+    });
+  }, 10);
 });
 
 /**
@@ -191,6 +216,71 @@ it('clears-results-and-restarts-when-input-changes', function(done) {
 
   this.findBar.setBatchCallbackForTest(4, () => {
     assert.deepEqual(extractIndexes(this.findBar.results_), {0: [4, 12, 20]});
+  });
+
+  this.findBar.display();
+  this.findBar.batchSize = 2;
+  setInputElementValue('fInDbAr', this.inputElement);
+});
+
+const getDiffBoundingClientRect = (element1, element2) => {
+  const rect1 = element1.getBoundingClientRect();
+  const rect2 = element2.getBoundingClientRect();
+  return {
+    top: Math.abs(rect1.top - rect2.top),
+    left: Math.abs(rect1.left - rect2.left),
+    width: Math.abs(rect1.width - rect2.width),
+    height: Math.abs(rect1.height - rect2.height),
+  };
+};
+
+/**
+ * Test redraw.
+ */
+it('draws-results-on-screen-and-first-result-is-selected', function() {
+  this.terminal.io.println('Findbar is here.');
+  this.terminal.io.println('Here is the findbar.');
+
+  this.findBar.searchText_ = 'findbar';
+  this.findBar.batchRow_ = 0;
+  const doc = this.document;
+  doc.body.appendChild(this.findBar.resultScreen_);
+  this.findBar.redraw_();
+  this.findBar.resultScreen_.style.display = '';
+
+  // First result should be selected.
+  const highlighter1 = this.findBar.results_[0].rowResult[0].highlighter;
+  assert.include(classes(highlighter1), 'selected');
+
+  // highlighter should be on top of matching text.
+  const range = doc.createRange();
+  this.terminal.screen_.setRange_(this.terminal.getRowNode(0), 0, 7, range);
+  Object.values(getDiffBoundingClientRect(range, highlighter1))
+      .forEach((value) => {
+        assert.isAtMost(value, 1);
+      });
+
+  // highlighter should be on top of matching text.
+  const highlighter2 = this.findBar.results_[1].rowResult[0].highlighter;
+  this.terminal.screen_.setRange_(this.terminal.getRowNode(1), 12, 19, range);
+  Object.values(getDiffBoundingClientRect(range, highlighter2))
+      .forEach((value) => {
+        assert.isAtMost(value, 1);
+      });
+});
+
+/**
+ * Test findbar counter.
+ */
+it('changes-count-of-results', function(done) {
+  for (let i = 0; i < 6; i++) {
+    this.terminal.io.println('Findbar Findbar Findbar');
+  }
+
+  this.findBar.setBatchCallbackForTest(0, () => {
+    assert.equal(this.findBar.counterLabel_.textContent,
+        hterm.msg('FIND_MATCH_COUNT', [13, 18]));
+    done();
   });
 
   this.findBar.display();
