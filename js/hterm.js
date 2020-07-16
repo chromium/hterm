@@ -116,7 +116,7 @@ lib.registerInit(
           if (window.chrome && chrome.tabs) {
             // The getCurrent method gets the tab that is "currently running",
             // not the topmost or focused tab.
-            chrome.tabs.getCurrent(() => onTab().then(resolve));
+            chrome.tabs.getCurrent((tab) => onTab(tab).then(resolve));
           } else {
             onWindow({type: 'normal'}).then(resolve);
           }
