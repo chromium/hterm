@@ -449,6 +449,13 @@ hterm.PreferenceManager.defaultPreferences = {
     `The background color to highlight find results.`,
   ),
 
+  'find-result-selected-color': hterm.PreferenceManager.definePref_(
+    'Find results selected highlight color',
+    hterm.PreferenceManager.Categories.Appearance,
+    'rgb(102, 204, 255, 0.8)', 'color',
+    `The background color to highlight the selected find result.`,
+  ),
+
   'font-family': hterm.PreferenceManager.definePref_(
       'Text font family',
       hterm.PreferenceManager.Categories.Appearance,

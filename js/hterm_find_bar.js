@@ -324,6 +324,20 @@ hterm.FindBar.prototype.setFindResultColor = function(color) {
 };
 
 /**
+ * Set the background color to highlight the selected find result.
+ *
+ * @param {string=} color The color to set.  If not defined, we reset to the
+ *     saved user preference.
+ */
+hterm.FindBar.prototype.setFindResultSelectedColor = function(color) {
+  if (color === undefined) {
+    color = this.terminal_.getPrefs().getString('find-result-selected-color');
+  }
+
+  this.terminal_.setCssVar('find-result-selected-color', color);
+};
+
+/**
  * Register a callback to be run after the specified batch (1-based).
  * Use batchNum 0 to set a callback to be run when search stops.
  * Used for testing.

@@ -488,6 +488,10 @@ hterm.Terminal.prototype.setProfile = function(
       terminal.findBar.setFindResultColor(v);
     },
 
+    'find-result-selected-color': function(v) {
+      terminal.findBar.setFindResultSelectedColor(v);
+    },
+
     'font-family': function(v) {
       terminal.syncFontFamily();
     },
