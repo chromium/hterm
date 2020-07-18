@@ -77,6 +77,22 @@ hterm.FindBar = function(terminal) {
   this.pendingRedraw_ = null;
 
   /**
+   * Timeout ID of pending row changes.
+   * Null indicates no row change is scheduled.
+   *
+   * @private {?number}
+   */
+  this.pendingNotifyChanges_ = null;
+
+  /**
+   * List of rows which are changed on terminal.
+   *
+   * @private {!Set<number>}
+   * @const
+   */
+  this.changedRows_ = new Set();
+
+  /**
    * Lower case of find input field.
    *
    * @private {string}
@@ -127,7 +143,7 @@ hterm.FindBar = function(terminal) {
    *
    * @private {number}
    */
-  this.selectedRow_ = 0;
+  this.selectedRowNum_ = 0;
 
   /**
    * Index of selected result in its row.
@@ -138,6 +154,7 @@ hterm.FindBar = function(terminal) {
 
   /**
    * Index of selected result among all results.
+   * -1 indicates that there is no current selected result.
    *
    * @private {number}
    */
@@ -146,15 +163,30 @@ hterm.FindBar = function(terminal) {
   /** @private {number} */
   this.resultCount_ = 0;
 
-  /** @private {?Element} */
+  /**
+   * Search match which is currently selected and will have a different
+   * highlight color.
+   *
+   * @private {?Element}
+   */
   this.selectedResult_ = null;
 
   /**
    * Sorted list of matching row numbers.
    *
    * @private {!Array<number>}
+   * @const
    */
   this.matchingRowsIndex_ = [];
+
+  /**
+   * Set to false when the line with the current selected result is
+   * changed by the terminal and there is no longer a match on that line.
+   * This will be set back to true when the user next selects up or down.
+   *
+   * @private {boolean}
+   */
+  this.selectedResultKnown_ = true;
 };
 
 /** @typedef {{findRow: ?Element, rowResult: !Array<!hterm.FindBar.Result>}} */
@@ -210,7 +242,7 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.resultScreen_.id = 'hterm:find-result-screen';
   this.resultScreen_.innerHTML = lib.resource.getData('hterm/html/find_screen');
   this.resultScreen_.style.display = 'none';
-  this.terminal_.getDocument().body.appendChild(this.resultScreen_);
+  document.body.appendChild(this.resultScreen_);
 };
 
 /**
@@ -223,6 +255,7 @@ hterm.FindBar.prototype.display = function() {
   this.findBar_.removeAttribute('aria-hidden');
   this.input_.focus();
   this.resultScreen_.style.display = '';
+  this.isVisible = true;
 
   // Start searching for stored text in findbar.
   this.input_.dispatchEvent(new Event('input'));
@@ -240,6 +273,7 @@ hterm.FindBar.prototype.close = function() {
   this.findBar_.classList.remove('enabled');
   this.findBar_.setAttribute('aria-hidden', 'true');
   this.terminal_.focus();
+  this.isVisible = false;
 
   this.stopSearch();
   this.results_ = {};
@@ -265,7 +299,7 @@ hterm.FindBar.prototype.syncResults_ = function() {
   this.batchNum_ = 0;
   this.results_ = {};
   this.resultCount_ = 0;
-  this.matchingRowsIndex_ = [];
+  this.matchingRowsIndex_.length = 0;
   this.redraw_();
   this.updateCounterLabel_();
 
@@ -301,14 +335,16 @@ hterm.FindBar.prototype.syncResults_ = function() {
  * TODO(crbug.com/209178): Add support for overflowed rows.
  *
  * @param {number} rowNum
+ * @param {boolean=} update True if row should be updated.
  * @return {boolean} True if there is a match.
  */
-hterm.FindBar.prototype.findInRow_ = function(rowNum) {
+hterm.FindBar.prototype.findInRow_ = function(rowNum, update = false) {
   if (!this.searchText_) {
     return false;
   }
 
-  if (this.results_[rowNum]) {
+  const prev = this.results_[rowNum];
+  if (prev && !update) {
     return true;
   }
 
@@ -326,17 +362,21 @@ hterm.FindBar.prototype.findInRow_ = function(rowNum) {
   if (rowResult.length) {
     this.results_[rowNum] = {findRow: null, rowResult};
     if (this.resultCount_ === 0) {
-      this.selectedRow_ = rowNum;
+      this.selectedRowNum_ = rowNum;
       this.selectedOrdinal_ = 0;
       this.upArrowButton_.classList.add('enabled');
       this.downArrowButton_.classList.add('enabled');
       this.scrollToResult_();
     }
+  } else {
+    delete this.results_[rowNum];
   }
 
-  this.resultCount_ += rowResult.length;
-  if (rowNum < this.selectedRow_) {
-    this.selectedOrdinal_ += rowResult.length;
+  // Update the matchCount.
+  const diff = rowResult.length - (prev ? prev.rowResult.length : 0);
+  this.resultCount_ += diff;
+  if (rowNum < this.selectedRowNum_) {
+    this.selectedOrdinal_ += diff;
   }
 
   return rowResult.length > 0;
@@ -536,15 +576,21 @@ hterm.FindBar.prototype.runBatchCallbackForTest_ = function(batchNum) {
 hterm.FindBar.prototype.updateCounterLabel_ = function() {
   // Reset the counterLabel if no results are present.
   if (this.resultCount_ === 0) {
-    this.selectedRow_ = 0;
+    this.selectedRowNum_ = 0;
     this.selectedRowIndex_ = 0;
     this.selectedOrdinal_ = -1;
+    this.selectedResultKnown_ = true;
     this.upArrowButton_.classList.remove('enabled');
     this.downArrowButton_.classList.remove('enabled');
   }
-  // Update the counterLabel.
-  this.counterLabel_.textContent = hterm.msg('FIND_MATCH_COUNT',
-      [this.selectedOrdinal_ + 1, this.resultCount_]);
+   // Update the counterLabel.
+  if (this.selectedResultKnown_) {
+    this.counterLabel_.textContent = hterm.msg(
+        'FIND_COUNTER_LABEL', [this.selectedOrdinal_ + 1, this.resultCount_]);
+  } else {
+    this.counterLabel_.textContent = hterm.msg(
+        'FIND_RESULT_COUNT', [this.resultCount_]);
+  }
   this.highlightSelectedResult_();
 };
 
@@ -582,11 +628,11 @@ hterm.FindBar.indexOf = function(arr, value) {
  */
 hterm.FindBar.prototype.canUseMatchingRowsIndex_ = function(step) {
   // We can use the matchingRowsIndex_ index to find next via binary search
-  // if either all batches are done, or if selectedRow_ is within the index.
+  // if either all batches are done, or if selectedRowNum_ is within the index.
   const topRowIndex = this.scrollPort_.getTopRowIndex();
   const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
   const index = this.matchingRowsIndex_;
-  const current = this.selectedRow_;
+  const current = this.selectedRowNum_;
 
   return this.batchRow_ > bottomRowIndex ||
       (step > 0 && current < index[index.length - 1]) ||
@@ -606,10 +652,11 @@ hterm.FindBar.prototype.canUseMatchingRowsIndex_ = function(step) {
  *     direction.
  */
 hterm.FindBar.prototype.selectNext_ = function(step) {
-  // Increment/decrement i by step modulo len.
-  const circularStep = (i, len) => (i + len + step) % len;
+  // Increment/decrement i by s modulo len.
+  const circularStep = (i, s, len) => (i + s + len) % len;
+  const stepOnce = (prev, next) => step > 0 ? prev : next;
 
-  const row = this.results_[this.selectedRow_];
+  const row = this.results_[this.selectedRowNum_];
   if (row && row.rowResult[this.selectedRowIndex_ + step] !== undefined) {
     // Move to another match on the same row.
     this.selectedRowIndex_ += step;
@@ -617,11 +664,14 @@ hterm.FindBar.prototype.selectNext_ = function(step) {
     let topRowIndex = this.scrollPort_.getTopRowIndex();
     const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
     const index = this.matchingRowsIndex_;
-    const current = this.selectedRow_;
+    const current = this.selectedRowNum_;
 
     if (this.canUseMatchingRowsIndex_(step)) {
-      const i = hterm.FindBar.indexOf(index, current);
-      this.selectedRow_ = index[circularStep(i, index.length)];
+      let i = hterm.FindBar.indexOf(index, current);
+      if (!this.selectedResultKnown_ && step < 0) {
+        i++;
+      }
+      this.selectedRowNum_ = index[circularStep(i, step, index.length)];
     } else {
       // Not using the index, so brute force search in visible screen.
       let start = current + step;
@@ -629,24 +679,33 @@ hterm.FindBar.prototype.selectNext_ = function(step) {
       // topRowIndex for if a batch has partially covered the screen.
       topRowIndex = Math.max(topRowIndex, this.batchRow_);
       if (current < topRowIndex || current > bottomRowIndex) {
-        start = step > 0 ? topRowIndex : bottomRowIndex;
+        start = stepOnce(topRowIndex, bottomRowIndex);
       }
-      const end = step > 0 ? bottomRowIndex + 1 : topRowIndex - 1;
+      const end = stepOnce(bottomRowIndex + 1, topRowIndex - 1);
+
       // If we don't end up finding anything, use the first or last in index.
-      this.selectedRow_ = index[step > 0 ? 0 : index.length - 1];
+      // If the index is empty, stay where we are.
+      if (index.length > 0) {
+        this.selectedRowNum_ = index[stepOnce(0, index.length - 1)];
+      }
       for (let i = start; i != end; i += step) {
         if (this.results_[i]) {
-          this.selectedRow_ = i;
+          this.selectedRowNum_ = i;
           break;
         }
       }
     }
-    const row = this.results_[this.selectedRow_];
-    this.selectedRowIndex_ = step > 0 ? 0 : row.rowResult.length - 1;
+    const row = this.results_[this.selectedRowNum_];
+    this.selectedRowIndex_ = stepOnce(0, row.rowResult.length - 1);
   }
+
+  // If the previous selected result was deleted and we move down,
+  // then ordinal stays the same.
+  const s = !this.selectedResultKnown_ && step > 0 ? 0 : step;
   this.selectedOrdinal_ = circularStep(
-      this.selectedOrdinal_,
-      this.resultCount_);
+      this.selectedOrdinal_, s, this.resultCount_);
+
+  this.selectedResultKnown_ = true;
   this.scrollToResult_();
   this.updateCounterLabel_();
 };
@@ -678,8 +737,9 @@ hterm.FindBar.prototype.scrollToResult_ = function() {
   const topRowIndex = this.scrollPort_.getTopRowIndex();
   const bottomRowIndex = this.scrollPort_.getBottomRowIndex(topRowIndex);
 
-  if (this.selectedRow_ < topRowIndex || this.selectedRow_ > bottomRowIndex) {
-    this.scrollPort_.scrollRowToMiddle(this.selectedRow_);
+  if (this.selectedRowNum_ < topRowIndex ||
+      this.selectedRowNum_ > bottomRowIndex) {
+    this.scrollPort_.scrollRowToMiddle(this.selectedRowNum_);
   }
 };
 
@@ -694,11 +754,65 @@ hterm.FindBar.prototype.highlightSelectedResult_ = function() {
   }
 
   // Select new instance of result.
-  if (this.resultCount_) {
-    this.selectedResult_ = this.results_[this.selectedRow_]
+  if (this.resultCount_ && this.selectedResultKnown_) {
+    this.selectedResult_ = this.results_[this.selectedRowNum_]
         .rowResult[this.selectedRowIndex_].highlighter;
     if (this.selectedResult_) {
       this.selectedResult_.classList.add('selected');
     }
   }
+};
+
+/**
+ * Synchronize changing of rows on terminal.
+ *
+ * The sync will happen asynchronously, soon after the call stack winds down.
+ * Multiple calls will be coalesced into a single sync.
+ *
+ * @param {number} rowNum
+ */
+hterm.FindBar.prototype.scheduleNotifyChanges = function(rowNum) {
+  if (!this.isVisible) {
+    return;
+  }
+  this.changedRows_.add(rowNum);
+  if (this.pendingNotifyChanges_) {
+    return;
+  }
+
+  this.pendingNotifyChanges_ = setTimeout(() => {
+    this.notifyChanges_();
+  });
+};
+
+/**
+ * Change results of all changed rows.
+ */
+hterm.FindBar.prototype.notifyChanges_ = function() {
+  this.changedRows_.forEach((rowNum) => {
+    rowNum += this.scrollPort_.getTopRowIndex();
+    const prev = this.results_[rowNum];
+    const found = this.findInRow_(rowNum, true);
+    if (this.selectedRowNum_ == rowNum) {
+      // If selected row is modified the first result of the row is selected.
+      this.selectedOrdinal_ -= this.selectedRowIndex_;
+      this.selectedRowIndex_ = 0;
+      this.selectedResultKnown_ = found;
+    }
+
+    // Update the index if the changed row needs to be added or removed.
+    if (!!prev !== found) {
+      const i = hterm.FindBar.indexOf(this.matchingRowsIndex_, rowNum);
+      if (found) {
+        this.matchingRowsIndex_.splice(i + 1, 0, rowNum);
+      } else {
+        this.matchingRowsIndex_.splice(i, 1);
+      }
+    }
+  });
+
+  this.updateCounterLabel_();
+  this.redraw_();
+  this.changedRows_.clear();
+  delete this.pendingNotifyChanges_;
 };

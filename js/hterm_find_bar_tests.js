@@ -277,7 +277,7 @@ it('changes-count-of-results', function(done) {
 
   this.findBar.setBatchCallbackForTest(0, () => {
     assert.equal(this.findBar.counterLabel_.textContent,
-        hterm.msg('FIND_MATCH_COUNT', [13, 18]));
+        hterm.msg('FIND_COUNTER_LABEL', [13, 18]));
     done();
   });
 
@@ -309,7 +309,7 @@ it('finds-index-of', function() {
  */
 it('uses-index-correctly', function() {
   const expectCanUseMatchingRowsIndex = (selectedRow, step, expected) => {
-    this.findBar.selectedRow_ = selectedRow;
+    this.findBar.selectedRowNum_ = selectedRow;
     assert.equal(this.findBar.canUseMatchingRowsIndex_(step), expected);
   };
 
@@ -352,7 +352,7 @@ it('finds-next', function() {
 
   const expectNext = (row, index, ordinal) => {
     this.findBar.onNext_();
-    assert.equal(this.findBar.selectedRow_, row);
+    assert.equal(this.findBar.selectedRowNum_, row);
     assert.equal(this.findBar.selectedRowIndex_, index);
     assert.equal(this.findBar.selectedOrdinal_, ordinal);
   };
@@ -408,7 +408,7 @@ it('finds-previous', function() {
 
   const expectPrevious = (row, index, ordinal) => {
     this.findBar.onPrevious_();
-    assert.equal(this.findBar.selectedRow_, row);
+    assert.equal(this.findBar.selectedRowNum_, row);
     assert.equal(this.findBar.selectedRowIndex_, index);
     assert.equal(this.findBar.selectedOrdinal_, ordinal);
   };
@@ -471,6 +471,151 @@ it('keeps-focus-after-scroll', async function() {
   this.terminal.scrollEnd();
   await waitForAsync(5);
   assert.isTrue(this.findBar.hasFocus);
+});
+
+/**
+ * Test notifyChanges.
+ */
+it('notifies-findbar-when-row-changes', function(done) {
+  this.findBar.isVisible = true;
+  this.findBar.searchText_ = 'find';
+  const callbacks = [];
+
+  const expectNotifyChanges = (
+        cursorRow, text, row, index, ordinal,
+        total, matchingRowsIndex, selectedResultKnown) => {
+    this.terminal.setAbsoluteCursorPosition(cursorRow, 0);
+    this.terminal.print(text);
+    setTimeout(() => {
+      assert.equal(this.findBar.selectedRowNum_, row);
+      assert.equal(this.findBar.selectedRowIndex_, index);
+      assert.equal(this.findBar.selectedOrdinal_, ordinal);
+      assert.equal(this.findBar.resultCount_, total);
+      assert.deepEqual(this.findBar.matchingRowsIndex_, matchingRowsIndex);
+      assert.equal(this.findBar.selectedResultKnown_, selectedResultKnown);
+      callbacks.shift()();
+    });
+  };
+
+  // Rows are added to terminal.
+  expectNotifyChanges(1, 'Find Find', 1, 0, 0, 2, [1], true);
+  callbacks.push(() =>
+      expectNotifyChanges(0, 'Find Find', 1, 0, 2, 4, [0, 1], true));
+  callbacks.push(() =>
+      expectNotifyChanges(2, 'Find Find', 1, 0, 2, 6, [0, 1, 2], true));
+
+  // Row is modified, selected result is present at starting of row.
+  callbacks.push(() => {
+    this.findBar.selectNext_(1);
+    expectNotifyChanges(1, 'Find     ', 1, 0, 2, 5, [0, 1, 2], true);
+  });
+
+  // Row is deleted, invalidate the selected result.
+  callbacks.push(() =>
+      expectNotifyChanges(1, '         ', 1, 0, 2, 4, [0, 2], false));
+
+  // Row is modified, selected result is present at starting of row.
+  callbacks.push(() =>
+      expectNotifyChanges(1, 'Find     ', 1, 0, 2, 5, [0, 1, 2], true));
+
+  callbacks.push(done);
+});
+
+
+/**
+ * Test onNext with undecided selected result.
+ */
+it('selects-next-to-cursor-if-selected-result-is-unknown', function(done) {
+  this.findBar.isVisible = true;
+  const callbacks = [];
+
+  this.terminal.io.println('Find Find');
+  this.terminal.io.println('Find Find');
+  this.terminal.io.println('Find Find');
+  this.findBar.searchText_ = 'find';
+
+  this.findBar.findInRow_(1);
+  this.findBar.findInRow_(0);
+  this.findBar.findInRow_(2);
+
+  const expectNext = (cursorRow, text, row, index, ordinal) => {
+    this.terminal.setAbsoluteCursorPosition(cursorRow, 0);
+    this.terminal.print(text);
+    setTimeout(() => {
+      this.findBar.onNext_();
+      assert.equal(this.findBar.selectedRowNum_, row);
+      assert.equal(this.findBar.selectedRowIndex_, index);
+      assert.equal(this.findBar.selectedOrdinal_, ordinal);
+      callbacks.shift()();
+    });
+  };
+
+  // Searching process incomplete and canUseMatchingRowsIndex_ returns false.
+  expectNext(1, '         ', 2, 0, 2);
+
+  callbacks.push(() => {
+    // Restore deleted text.
+    this.terminal.setAbsoluteCursorPosition(1, 0);
+    this.terminal.print('Find Find');
+    this.terminal.setAbsoluteCursorPosition(2, 0);
+    this.terminal.print('Find Find');
+    this.findBar.selectedRowNum_ = 2;
+
+    // Searching process complete and canUseMatchingRowsIndex_ returns true.
+    this.batchRow_ = 4;
+    this.findBar.matchingRowsIndex_ = [0, 1, 2];
+    expectNext(2, '         ', 0, 0, 0);
+  });
+  callbacks.push(() => expectNext(0, '         ', 1, 0, 0));
+  callbacks.push(() => done());
+});
+
+/**
+ * Test onPrevious with undecided selected result.
+ */
+it('selects-previous-to-cursor-if-selected-result-is-unknown', function(done) {
+  this.findBar.isVisible = true;
+  const callbacks = [];
+
+  this.terminal.io.println('Find Find');
+  this.terminal.io.println('Find Find');
+  this.terminal.io.println('Find Find');
+  this.findBar.searchText_ = 'find';
+
+  this.findBar.findInRow_(1);
+  this.findBar.findInRow_(0);
+  this.findBar.findInRow_(2);
+
+  const expectPrevious = (cursorRow, text, row, index, ordinal) => {
+    this.terminal.setAbsoluteCursorPosition(cursorRow, 0);
+    this.terminal.print(text);
+    setTimeout(() => {
+      this.findBar.onPrevious_();
+      assert.equal(this.findBar.selectedRowNum_, row);
+      assert.equal(this.findBar.selectedRowIndex_, index);
+      assert.equal(this.findBar.selectedOrdinal_, ordinal);
+      callbacks.shift()();
+    });
+  };
+
+  // Searching process incomplete and canUseMatchingRowsIndex_ returns false.
+  expectPrevious(1, '         ', 0, 1, 1);
+
+  callbacks.push(() => {
+    // Restore deleted text.
+    this.terminal.setAbsoluteCursorPosition(1, 0);
+    this.terminal.print('Find Find');
+    this.terminal.setAbsoluteCursorPosition(0, 0);
+    this.terminal.print('Find Find');
+    this.findBar.selectedRowNum_ = 0;
+
+    // Searching process complete and canUseMatchingRowsIndex_ returns true.
+    this.batchRow_ = 4;
+    this.findBar.matchingRowsIndex_ = [0, 1, 2];
+    expectPrevious(0, '         ', 2, 1, 3);
+  });
+  callbacks.push(() => expectPrevious(2, '         ', 1, 1, 1));
+  callbacks.push(done);
 });
 
 });

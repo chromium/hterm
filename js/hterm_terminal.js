@@ -2186,6 +2186,8 @@ hterm.Terminal.prototype.print = function(str) {
 
     this.screen_.maybeClipCurrentRow();
     startOffset += count;
+    this.findBar.scheduleNotifyChanges(
+        this.scrollbackRows_.length + this.screen_.cursorPosition.row);
   }
 
   if (this.scrollOnOutput_) {
@@ -2337,6 +2339,8 @@ hterm.Terminal.prototype.eraseToLeft = function() {
   this.setCursorColumn(0);
   const count = cursor.column + 1;
   this.screen_.overwriteString(' '.repeat(count), count);
+    this.findBar.scheduleNotifyChanges(
+        this.scrollbackRows_.length + this.screen_.cursorPosition.row);
   this.restoreCursor(cursor);
 };
 
@@ -2364,6 +2368,9 @@ hterm.Terminal.prototype.eraseToRight = function(count = undefined) {
 
   const maxCount = this.screenSize.width - this.screen_.cursorPosition.column;
   count = count ? Math.min(count, maxCount) : maxCount;
+
+  this.findBar.scheduleNotifyChanges(
+    this.scrollbackRows_.length + this.screen_.cursorPosition.row);
 
   if (this.screen_.textAttributes.background ===
       this.screen_.textAttributes.DEFAULT_COLOR) {
@@ -2451,6 +2458,7 @@ hterm.Terminal.prototype.fill = function(ch) {
       this.setAbsoluteCursorPosition(row, col);
       this.screen_.overwriteString(ch, 1);
     }
+    this.findBar.scheduleNotifyChanges(this.scrollbackRows_.length + row);
   }
 
   this.restoreCursor(cursor);
@@ -2574,6 +2582,8 @@ hterm.Terminal.prototype.insertSpace = function(count) {
   const ws = ' '.repeat(count || 1);
   this.screen_.insertString(ws, ws.length);
   this.screen_.maybeClipCurrentRow();
+  this.findBar.scheduleNotifyChanges(
+    this.scrollbackRows_.length + this.screen_.cursorPosition.row);
 
   this.restoreCursor(cursor);
   this.clearCursorOverflow();
@@ -2594,6 +2604,8 @@ hterm.Terminal.prototype.deleteChars = function(count) {
     this.restoreCursor(cursor);
   }
 
+  this.findBar.scheduleNotifyChanges(
+    this.scrollbackRows_.length + this.screen_.cursorPosition.row);
   this.clearCursorOverflow();
 };
 
