@@ -1557,6 +1557,11 @@ hterm.ScrollPort.prototype.getScrollMax_ = function() {
  * @param {number} rowIndex Index of the target row.
  */
 hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
+  // Other scrollRowTo* functions and scrollLineUp could pass rowIndex < 0.
+  if (rowIndex < 0) {
+    rowIndex = 0;
+  }
+
   this.syncScrollHeight();
 
   this.isScrolledEnd = (
@@ -1584,24 +1589,16 @@ hterm.ScrollPort.prototype.scrollRowToTop = function(rowIndex) {
  * @param {number} rowIndex Index of the target row.
  */
 hterm.ScrollPort.prototype.scrollRowToBottom = function(rowIndex) {
-  this.syncScrollHeight();
+  this.scrollRowToTop(rowIndex - this.visibleRowCount);
+};
 
-  this.isScrolledEnd = (
-    rowIndex + this.visibleRowCount >= this.lastRowCount_);
-
-  let scrollTop = rowIndex * this.characterSize.height +
-      this.visibleRowTopMargin + this.visibleRowBottomMargin;
-  scrollTop -= this.visibleRowCount * this.characterSize.height;
-
-  if (scrollTop < 0) {
-    scrollTop = 0;
-  }
-
-  if (this.screen_.scrollTop == scrollTop) {
-    return;
-  }
-
-  this.screen_.scrollTop = scrollTop;
+/**
+ * Scroll the given rowIndex to the middle of the hterm.ScrollPort.
+ *
+ * @param {number} rowIndex Index of the target row.
+ */
+hterm.ScrollPort.prototype.scrollRowToMiddle = function(rowIndex) {
+  this.scrollRowToTop(rowIndex - Math.floor(this.visibleRowCount / 2));
 };
 
 /**
