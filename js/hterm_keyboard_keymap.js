@@ -407,7 +407,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   add(88,  'xX',   DEFAULT, ctl('X'),              DEFAULT, DEFAULT);
   add(67,  'cC',   DEFAULT, c('onCtrlC_'),         DEFAULT, c('onMetaC_'));
   add(86,  'vV',   DEFAULT, c('onCtrlV_'),         DEFAULT, c('onMetaV_'));
-  add(66,  'bB',   DEFAULT, sh(ctl('B'), PASS),    DEFAULT, sh(DEFAULT, PASS));
+  add(66,  'bB',   DEFAULT, ctl('B'),              DEFAULT, DEFAULT);
   add(78,  'nN',   DEFAULT, c('onCtrlN_'),         DEFAULT, c('onMetaN_'));
   add(77,  'mM',   DEFAULT, ctl('M'),              DEFAULT, DEFAULT);
   add(188, ',<',   DEFAULT, alt(STRIP, PASS),      DEFAULT, DEFAULT);
