@@ -331,7 +331,8 @@ hterm.FindBar.prototype.setFindResultColor = function(color) {
  * @param {string=} color The color to set.  If not defined, we reset to the
  *     saved user preference.
  */
-hterm.FindBar.prototype.setFindResultSelectedColor = function(color) {
+hterm.FindBar.prototype.setFindResultSelectedColor =
+    function(color = undefined) {
   if (color === undefined) {
     color = this.terminal_.getPrefs().getString('find-result-selected-color');
   }
