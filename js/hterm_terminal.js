@@ -1997,15 +1997,14 @@ hterm.Terminal.prototype.getRowCount = function() {
 /**
  * Create DOM nodes for new rows and append them to the end of the terminal.
  *
- * This is the only correct way to add a new DOM node for a row.  Notice that
- * the new row is appended to the bottom of the list of rows, and does not
+ * The new row is appended to the bottom of the list of rows, and does not
  * require renumbering (of the rowIndex property) of previous rows.
  *
  * If you think you want a new blank row somewhere in the middle of the
- * terminal, look into moveRows_().
+ * terminal, look into insertRow_() or moveRows_().
  *
  * This method does not pay attention to vtScrollTop/Bottom, since you should
- * be using moveRows() in cases where they would matter.
+ * be using insertRow_() or moveRows_() in cases where they would matter.
  *
  * The cursor will be positioned at column 0 of the first inserted line.
  *
@@ -2038,10 +2037,36 @@ hterm.Terminal.prototype.appendRows_ = function(count) {
 };
 
 /**
+ * Create a DOM node for a new row and insert it at the current position.
+ *
+ * The new row is inserted at the current cursor position, the existing top row
+ * is moved to scrollback, and lines below are renumbered.
+ *
+ * The cursor will be positioned at column 0.
+ */
+hterm.Terminal.prototype.insertRow_ = function() {
+  const row = this.document_.createElement('x-row');
+  row.appendChild(this.document_.createTextNode(''));
+
+  this.scrollbackRows_.push(this.screen_.shiftRow());
+
+  const cursorRow = this.screen_.cursorPosition.row;
+  this.screen_.insertRow(cursorRow, row);
+
+  this.renumberRows_(cursorRow, this.screen_.rowsArray.length);
+
+  this.setAbsoluteCursorPosition(cursorRow, 0);
+  if (this.scrollPort_.isScrolledEnd) {
+    this.scheduleScrollDown_();
+  }
+};
+
+/**
  * Relocate rows from one part of the addressable screen to another.
  *
- * This is used to recycle rows during VT scrolls (those which are driven
- * by VT commands, rather than by the user manipulating the scrollbar.)
+ * This is used to recycle rows during VT scrolls where a top region is set
+ * (those which are driven by VT commands, rather than by the user manipulating
+ * the scrollbar.)
  *
  * In this case, the blank lines scrolled into the scroll region are made of
  * the nodes we scrolled off.  These have their rowIndex properties carefully
@@ -2185,13 +2210,9 @@ hterm.Terminal.prototype.print = function(str) {
  *     inclusive.
  */
 hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
-  if (scrollTop == 0 && scrollBottom == this.screenSize.height - 1) {
-    this.vtScrollTop_ = null;
-    this.vtScrollBottom_ = null;
-  } else {
-    this.vtScrollTop_ = scrollTop;
-    this.vtScrollBottom_ = scrollBottom;
-  }
+  this.vtScrollTop_ = scrollTop;
+  this.vtScrollBottom_ =
+      scrollBottom == this.screenSize.height - 1 ? null : scrollBottom;
 };
 
 /**
@@ -2245,27 +2266,22 @@ hterm.Terminal.prototype.newLine = function(dueToOverflow = false) {
     this.accessibilityReader_.newLine();
   }
 
-  const cursorAtEndOfScreen = (this.screen_.cursorPosition.row ==
-                               this.screen_.rowsArray.length - 1);
+  const cursorAtEndOfScreen =
+      (this.screen_.cursorPosition.row == this.screen_.rowsArray.length - 1);
+  const cursorAtEndOfVTRegion =
+      (this.screen_.cursorPosition.row == this.getVTScrollBottom());
 
-  if (this.vtScrollBottom_ != null) {
-    // A VT Scroll region is active, we never append new rows.
-    if (this.screen_.cursorPosition.row == this.vtScrollBottom_) {
-      // We're at the end of the VT Scroll Region, perform a VT scroll.
-      this.vtScrollUp(1);
-      this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row, 0);
-    } else if (cursorAtEndOfScreen) {
-      // We're at the end of the screen, the only thing to do is put the
-      // cursor to column 0.
-      this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row, 0);
-    } else {
-      // Anywhere else, advance the cursor row, and reset the column.
-      this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row + 1, 0);
-    }
+  if (this.vtScrollTop_ != null && cursorAtEndOfVTRegion) {
+    // A VT Scroll region is active on top, we never append new rows.
+    // We're at the end of the VT Scroll Region, perform a VT scroll.
+    this.vtScrollUp(1);
+    this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row, 0);
   } else if (cursorAtEndOfScreen) {
     // We're at the end of the screen.  Append a new row to the terminal,
     // shifting the top row into the scrollback.
     this.appendRows_(1);
+  } else if (cursorAtEndOfVTRegion) {
+    this.insertRow_();
   } else {
     // Anywhere else in the screen just moves the cursor.
     this.setAbsoluteCursorPosition(this.screen_.cursorPosition.row + 1, 0);

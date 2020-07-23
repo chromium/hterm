@@ -3097,9 +3097,15 @@ hterm.VT.CSI['"q'] = hterm.VT.ignore;
  */
 hterm.VT.CSI['r'] = function(parseState) {
   const args = parseState.args;
-  const scrollTop = args[0] ? parseInt(args[0], 10) - 1 : null;
-  const scrollBottom = args[1] ? parseInt(args[1], 10) - 1 : null;
-  this.terminal.setVTScrollRegion(scrollTop, scrollBottom);
+  const top = args[0] ? parseInt(args[0], 10) : 0;
+  const bottom =
+      args[1] ? parseInt(args[1], 10) : this.terminal.screenSize.height;
+  // Silently ignore bad args.
+  if (top < 0 || bottom > this.terminal.screenSize.height || bottom <= top) {
+    return;
+  }
+  // Convert from 1-based to 0-based with special case for zero.
+  this.terminal.setVTScrollRegion(top === 0 ? null : top - 1, bottom - 1);
   this.terminal.setCursorPosition(0, 0);
 };
 

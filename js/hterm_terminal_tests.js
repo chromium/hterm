@@ -842,4 +842,111 @@ it('set-and-reset-colors', async function() {
   });
 });
 
+/**
+ * Use reduced scoll region.
+ */
+it('scroll-region', function() {
+  const terminal = this.terminal;
+
+  // This test prints 4 screens worth of text with different VT scroll region
+  // settings for each. The row contents are set so that each new screen will
+  // only partially overwrite the previous screen.
+  // ScreenA: '           |a??'
+  // ScreenB: '       |b??'
+  // ScreenC: '   |c??'
+  // ScreenD: 'd??'
+  // By the end the rows look something like: 'd00|c02|b03|a04' and we can
+  // validate the scrollback and screen at each stage.
+
+  // Print |visibleRowCount+ 1| rows.
+  const screenA = [];
+  for (let i = 0; i <= this.visibleRowCount; ++i) {
+    const p = i.toString().padStart(2, '0');
+    terminal.interpret(`           |a${p}`);
+    if (i < this.visibleRowCount) {
+      terminal.interpret('\n\r');
+    }
+    screenA.push(`           |a${p}`);
+  }
+  // The first row goes from screenA to scrollback.
+  const scrollback = screenA.splice(0, 1);
+
+  const validate = (scrollback, screen) => {
+    assert.deepStrictEqual(
+        terminal.scrollbackRows_.map((r) => r.textContent), scrollback);
+    assert.deepStrictEqual(
+        terminal.screen_.rowsArray.map((r) => r.textContent), screen);
+  };
+  validate(scrollback, screenA);
+
+  // Set top scroll on 2nd line (no bottom scroll), and print
+  // |visibleRowCount + 1| rows which will partially overwrite the existing
+  // screenA.
+  const screenB = [];
+  terminal.setVTScrollRegion(1, null);
+  terminal.setCursorPosition(0, 0);
+  for (let i = 0; i <= this.visibleRowCount; ++i) {
+    const p = i.toString().padStart(2, '0');
+    terminal.interpret(`       |b${p}`);
+    if (i < this.visibleRowCount) {
+      terminal.interpret('\n\r');
+    }
+    let fromScreenA = '';
+    if (i < this.visibleRowCount) {
+      fromScreenA = screenA[i].substr(11);
+    }
+    screenB.push(`       |b${p}${fromScreenA}`);
+  }
+  // The second row is deleted without going to scrollback.
+  screenB.splice(1, 1);
+  validate(scrollback, screenB);
+
+  // Set bottom scroll at 2nd last line (no top scroll), and print
+  // |visibleRowCount + 1| rows which will partially overwrite screenB.
+  const screenC = [];
+  terminal.setVTScrollRegion(null, this.visibleRowCount - 2);
+  terminal.setCursorPosition(0, 0);
+  for (let i = 0; i <= this.visibleRowCount; ++i) {
+    const p = i.toString().padStart(2, '0');
+    terminal.interpret(`   |c${p}`);
+    if (i < this.visibleRowCount) {
+      terminal.interpret('\n\r');
+    }
+    let fromScreenB = '';
+    if (i < this.visibleRowCount - 1) {
+      fromScreenB = screenB[i].substr(7);
+    }
+    screenC.push(`   |c${p}${fromScreenB}`);
+  }
+  // The first 2 rows go from screenC to scrollback.
+  scrollback.push.apply(scrollback, screenC.splice(0, 2));
+  // The last row of screenB is never touched.
+  screenC.push(screenB[this.visibleRowCount - 1]);
+  validate(scrollback, screenC);
+
+  // Set top scroll on 2nd line and bottom scroll on 2nd last line, and print
+  // |visibleRowCount + 1| rows which will partially overwrite screenC.
+  const screenD = [];
+  terminal.setVTScrollRegion(1, this.visibleRowCount - 2);
+  terminal.setCursorPosition(0, 0);
+  for (let i = 0; i <= this.visibleRowCount; ++i) {
+    const p = i.toString().padStart(2, '0');
+    terminal.interpret(`d${p}`);
+    if (i < this.visibleRowCount) {
+      terminal.interpret('\n\r');
+    }
+    let fromScreenC = '';
+    if (i < this.visibleRowCount - 1) {
+      fromScreenC = screenC[i].substr(3);
+    }
+    screenD.push(`d${p}${fromScreenC}`);
+  }
+  // The 2nd and 3rd rows are deleted without going to scrollback.
+  screenD.splice(1, 2);
+
+  // The last row of screenC is never touched.
+  screenD.push(screenC[this.visibleRowCount - 1]);
+  validate(scrollback, screenD);
+});
+
 });

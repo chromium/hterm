@@ -3437,4 +3437,54 @@ it('csi-j-3', function() {
   assert.deepStrictEqual([], terminal.scrollbackRows_);
 });
 
+/**
+ * Verify CSI-N DECSTBM (set scrolling region) works.
+ */
+it('scroll-region', function() {
+  const terminal = this.terminal;
+
+  // Initially scroll region is the full screen.
+  assert.isNull(terminal.vtScrollTop_);
+  assert.isNull(terminal.vtScrollBottom_);
+
+  // Set reduced scrolling region.
+  this.terminal.interpret('\x1b[2;4r');
+  assert.equal(terminal.vtScrollTop_, 1);
+  assert.equal(terminal.vtScrollBottom_, 3);
+
+  // Some edge cases.
+  this.terminal.interpret('\x1b[0r');
+  assert.isNull(terminal.vtScrollTop_);
+  assert.isNull(terminal.vtScrollBottom_);
+  this.terminal.interpret('\x1b[1r');
+  assert.equal(terminal.vtScrollTop_, 0);
+  assert.isNull(terminal.vtScrollBottom_);
+  this.terminal.interpret('\x1b[1;5r');
+  assert.equal(terminal.vtScrollTop_, 0);
+  assert.equal(terminal.vtScrollBottom_, 4);
+  this.terminal.interpret('\x1b[1;6r');
+  assert.equal(terminal.vtScrollTop_, 0);
+  assert.isNull(terminal.vtScrollBottom_);
+
+  // Reset.
+  this.terminal.interpret('\x1b[r');
+  assert.isNull(this.terminal.vtScrollTop_);
+  assert.isNull(this.terminal.vtScrollBottom_);
+
+  // Valid ways to reset.
+  ['', '0', ';6', '0;6'].forEach((args) => {
+    terminal.interpret('\x1b[2;4r');
+    terminal.interpret(`\x1b[${args}r`);
+    assert.isNull(terminal.vtScrollTop_);
+    assert.isNull(terminal.vtScrollBottom_);
+  });
+
+  // Ignore invalid args.
+  ['-1;4', '2;7', '2;2'].forEach((args) => {
+    terminal.interpret(`\x1b[${args}r`);
+    assert.isNull(terminal.vtScrollTop_);
+    assert.isNull(terminal.vtScrollBottom_);
+  });
+});
+
 });
