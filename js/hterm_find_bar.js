@@ -119,7 +119,7 @@ hterm.FindBar = function(terminal) {
 /** @typedef {{findRow: ?Element, rowResult: !Array<!hterm.FindBar.Result>}} */
 hterm.FindBar.RowResult;
 
-/** @typedef {{index: number, wrapper: ?Element}} */
+/** @typedef {{index: number, highlighter: ?Element}} */
 hterm.FindBar.Result;
 
 /**
@@ -163,6 +163,8 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.resultScreen_ = document.createElement('div');
   this.resultScreen_.id = 'hterm:find-result-screen';
   this.resultScreen_.innerHTML = lib.resource.getData('hterm/html/find_screen');
+  this.resultScreen_.style.display = 'none';
+  this.terminal_.getDocument().body.appendChild(this.resultScreen_);
 };
 
 /**
@@ -179,8 +181,7 @@ hterm.FindBar.prototype.display = function() {
   this.findBar_.classList.add('enabled');
   this.findBar_.removeAttribute('aria-hidden');
   this.input_.focus();
-
-  this.terminal_.getDocument().body.appendChild(this.resultScreen_);
+  this.resultScreen_.style.display = '';
 
   // Start searching for stored text in findbar.
   this.input_.dispatchEvent(new Event('input'));
@@ -191,7 +192,7 @@ hterm.FindBar.prototype.display = function() {
  */
 hterm.FindBar.prototype.close = function() {
   // Clear all results of findbar.
-  this.resultScreen_.remove();
+  this.resultScreen_.style.display = 'none';
 
   this.scrollPort_.unsubscribe('scroll', this.onScroll_);
 
@@ -224,7 +225,7 @@ hterm.FindBar.prototype.syncResults_ = function() {
   this.redraw_();
 
   // No input means no result. Just redraw the results.
-  if (this.searchText_ == '') {
+  if (!this.searchText_) {
     return;
   }
 
@@ -239,7 +240,8 @@ hterm.FindBar.prototype.syncResults_ = function() {
     } else {
       this.stopSearch();
     }
-    this.runBatchCallbackForTest_(++this.batchNum_);
+    ++this.batchNum_;
+    this.runBatchCallbackForTest_(this.batchNum_);
   };
   runNextBatch();
 };
@@ -248,24 +250,24 @@ hterm.FindBar.prototype.syncResults_ = function() {
  * Find the results for a particular row and set them in result map.
  * TODO(crbug.com/209178): Add support for overflowed rows.
  *
- * @param {number} row
+ * @param {number} rowNum
  */
-hterm.FindBar.prototype.findInRow_ = function(row) {
-  if (this.searchText_ == '') {
+hterm.FindBar.prototype.findInRow_ = function(rowNum) {
+  if (!this.searchText_ || this.results_[rowNum]) {
     return;
   }
-  const rowText = this.terminal_.getRowText(row).toLowerCase();
+  const rowText = this.terminal_.getRowText(rowNum).toLowerCase();
   const rowResult = [];
 
   let i;
   let startIndex = 0;
   // Find and create highlight for matching texts.
   while ((i = rowText.indexOf(this.searchText_, startIndex)) != -1) {
-    rowResult.push({index: i, wrapper: null});
+    rowResult.push({index: i, highlighter: null});
     startIndex = i + this.searchText_.length;
   }
-  if (rowResult.length && !this.results_[row]) {
-    this.results_[row] = {findRow: null, rowResult};
+  if (rowResult.length && !this.results_[rowNum]) {
+    this.results_[rowNum] = {findRow: null, rowResult};
   }
 };
 
@@ -362,45 +364,48 @@ hterm.FindBar.prototype.redraw_ = function() {
   });
   this.visibleRows_ = [];
 
-  for (let row = topRowIndex; row <= bottomRowIndex; row++) {
-    const newRow = this.fetchRowNode_(row);
+  for (let rowNum = topRowIndex; rowNum <= bottomRowIndex; rowNum++) {
+    const newRow = this.fetchRowNode_(rowNum);
     this.resultScreen_.appendChild(newRow);
     this.visibleRows_.push(newRow);
   }
+
+  delete this.pendingRedraw_;
 };
 
 /**
  * Fetch find row element. If find-row is not available in results, it creates
  * a new one and store it in results.
  *
- * @param {number} row
+ * @param {number} rowNum
  * @return {!Element}
  */
-hterm.FindBar.prototype.fetchRowNode_ = function(row) {
+hterm.FindBar.prototype.fetchRowNode_ = function(rowNum) {
   // Process row if batch hasn't yet got to it.
-  if (row > this.batchRow_) {
-    this.findInRow_(row);
+  if (rowNum >= this.batchRow_) {
+    this.findInRow_(rowNum);
   }
-  const result = this.results_[row];
-  if (result && result.findRow) {
-    return result.findRow;
+  const row = this.results_[rowNum];
+  if (row && row.findRow) {
+    return row.findRow;
   }
 
   // Create a new find-row.
   const findRow = this.terminal_.getDocument().createElement('find-row');
-  if (!result) {
+  if (!row) {
     return findRow;
   }
-  result.rowResult.forEach((result) => {
-    const wrapper = this.terminal_.getDocument().createElement('div');
-    wrapper.classList.add('wrapper');
-    wrapper.style.left = `calc(var(--hterm-charsize-width) * ${result.index})`;
-    wrapper.style.width =
+  row.rowResult.forEach((result) => {
+    const highlighter = this.terminal_.getDocument().createElement('div');
+    highlighter.classList.add('find-highlighter');
+    highlighter.style.left =
+        `calc(var(--hterm-charsize-width) * ${result.index})`;
+    highlighter.style.width =
        `calc(var(--hterm-charsize-width) * ${this.searchText_.length})`;
-    result.wrapper = wrapper;
-    findRow.appendChild(wrapper);
+    result.highlighter = highlighter;
+    findRow.appendChild(highlighter);
   });
-  return result.findRow = findRow;
+  return row.findRow = findRow;
 };
 
 /**
@@ -415,7 +420,6 @@ hterm.FindBar.prototype.scheduleRedraw_ = function() {
   }
   this.pendingRedraw_ = setTimeout(() => {
     this.redraw_();
-    delete this.pendingRedraw_;
   });
 };
 
