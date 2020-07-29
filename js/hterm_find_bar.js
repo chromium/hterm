@@ -45,9 +45,6 @@ hterm.FindBar = function(terminal) {
   /** @private {?Element} */
   this.counterLabel_ = null;
 
-  /** @type {boolean} */
-  this.underTest = false;
-
   /**
    * Stores current search results mapping row number to row results.
    * Also works as cache for find-rows.
@@ -149,7 +146,6 @@ hterm.FindBar = function(terminal) {
    * Sorted list of matching row numbers.
    *
    * @private {!Array<number>}
-   * @const
    */
   this.matchingRowsIndex_ = [];
 };
@@ -212,11 +208,6 @@ hterm.FindBar.prototype.decorate = function(document) {
  * Display find bar.
  */
 hterm.FindBar.prototype.display = function() {
-  if (!this.underTest) {
-    // TODO(crbug.com/209178): To be implemented.
-    return;
-  }
-
   this.scrollPort_.subscribe('scroll', this.onScroll_);
 
   this.findBar_.classList.add('enabled');
@@ -265,6 +256,7 @@ hterm.FindBar.prototype.syncResults_ = function() {
   this.batchNum_ = 0;
   this.results_ = {};
   this.resultCount_ = 0;
+  this.matchingRowsIndex_ = [];
   this.redraw_();
   this.updateCounterLabel_();
 
@@ -646,8 +638,8 @@ hterm.FindBar.prototype.selectNext_ = function(step) {
   this.selectedOrdinal_ = circularStep(
       this.selectedOrdinal_,
       this.resultCount_);
-  this.updateCounterLabel_();
   this.scrollToResult_();
+  this.updateCounterLabel_();
 };
 
 /**

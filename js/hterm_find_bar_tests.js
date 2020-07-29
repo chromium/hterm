@@ -44,8 +44,6 @@ beforeEach(function(done) {
     /** @suppress {visibility} */
     this.closeButton = this.findBar.closeButton_;
 
-    // Add check to indicate test state.
-    this.findBar.underTest = true;
     done();
   };
 });
