@@ -80,4 +80,61 @@ it('pref-messages-sync', () => {
   });
 });
 
+/**
+ * Make sure default values can be parsed correctly.
+ */
+it('parse-defaults', () => {
+  Object.entries(hterm.PreferenceManager.defaultPreferences)
+      .forEach(([key, pref]) => {
+        if (Array.isArray(pref.type)) {
+          assert.isTrue(
+              pref.type.indexOf(pref.default) !== -1,
+              `invalid array pref ${key}, default ` +
+                  `${pref.default} not in pref ${JSON.stringify(pref.type)}`);
+          return;
+        }
+        const msg = `invalid ${pref.type} pref ${key}: ${pref.default}`;
+        switch (pref.type) {
+          case 'bool':
+            assert.typeOf(pref.default, 'boolean', msg);
+            break;
+          case 'color': {
+            const rgba = lib.colors.normalizeCSS(pref.default);
+            assert.isNotNull(rgba, msg);
+            assert.isNotNull(lib.colors.crackRGB(lib.notNull(rgba)), msg);
+            break;
+          }
+          case 'int':
+            assert.isTrue(Number.isInteger(pref.default), msg);
+            break;
+          case 'multiline-string':
+            assert.typeOf(pref.default, 'string', msg);
+            break;
+          case 'string':
+            assert.typeOf(pref.default, 'string', msg);
+            break;
+          case 'tristate':
+            assert.isTrue(
+                typeof pref.default === 'boolean' || pref.default === null,
+                msg);
+            break;
+          case 'url':
+            try {
+              if (pref.default !== '') {
+                // eslint-disable-next-line no-new
+                new URL(pref.default);
+              }
+            } catch (e) {
+              assert.fail(msg);
+            }
+            break;
+          case 'value':
+            // Anything goes for 'value'.
+            break;
+          default:
+            assert.fail(`invalid pref ${key} unknown type: ${pref.type}`);
+        }
+      });
+});
+
 });
