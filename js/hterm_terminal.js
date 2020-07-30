@@ -4180,6 +4180,7 @@ hterm.Terminal.prototype.onResize_ = function() {
   // We do this even if the size didn't change, just to be sure everything is
   // in sync.
   this.realizeSize_(columnCount, rowCount);
+  this.updateCssCharsize_();
   this.showZoomWarning_(this.scrollPort_.characterSize.zoomFactor != 1);
 
   if (isNewSize) {
