@@ -91,7 +91,7 @@ hterm.FindBar = function(terminal) {
   this.batchCallbacksForTest_ = {};
 
   /** @type {number} */
-  this.batchSize = 50;
+  this.batchSize = 500;
 
   /**
    * Findbar is visible or not.
