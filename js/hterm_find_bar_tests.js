@@ -450,4 +450,27 @@ it('finds-previous', function() {
   expectPrevious(1, 0, 2);
 });
 
+it('keeps-focus-after-scroll', async function() {
+  // Call setTimeout multiple times to allow multiple async calls.
+  const waitForAsync = (n) => {
+    return new Promise((resolve) => {
+      let i = 0;
+      const delay = () => {
+        if (++i == n) {
+          resolve();
+        }
+        setTimeout(delay);
+      };
+      delay();
+    });
+  };
+
+  assert.isFalse(this.findBar.hasFocus);
+  this.findBar.display();
+  assert.isTrue(this.findBar.hasFocus);
+  this.terminal.scrollEnd();
+  await waitForAsync(5);
+  assert.isTrue(this.findBar.hasFocus);
+});
+
 });

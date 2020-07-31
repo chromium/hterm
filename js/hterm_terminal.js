@@ -3190,10 +3190,13 @@ hterm.Terminal.prototype.syncCursorPosition_ = function() {
                                 ', ' + this.screen_.cursorPosition.row +
                                 ')');
 
-  // Update the caret for a11y purposes.
-  const selection = this.document_.getSelection();
-  if (selection && (selection.isCollapsed || forceSyncSelection)) {
-    this.screen_.syncSelectionCaret(selection);
+  // Update the caret for a11y purposes unless FindBar has focus which it should
+  // keep.
+  if (!this.findBar.hasFocus) {
+    const selection = this.document_.getSelection();
+    if (selection && (selection.isCollapsed || forceSyncSelection)) {
+      this.screen_.syncSelectionCaret(selection);
+    }
   }
   return true;
 };

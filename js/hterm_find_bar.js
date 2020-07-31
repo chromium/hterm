@@ -33,6 +33,13 @@ hterm.FindBar = function(terminal) {
   /** @private {?Element} */
   this.input_ = null;
 
+  /**
+   * True if find bar input has focus.
+   *
+   * @type {boolean}
+   */
+  this.hasFocus = false;
+
   /** @private {?Element} */
   this.upArrowButton_ = null;
 
@@ -191,6 +198,8 @@ hterm.FindBar.prototype.decorate = function(document) {
   this.input_.addEventListener('keydown', el(this.onKeyDown_));
   this.input_.addEventListener('keypress', el(this.onKeyPressed_));
   this.input_.addEventListener('textInput', el(this.onInputText_));
+  this.input_.addEventListener('focus', el(() => { this.hasFocus = true; }));
+  this.input_.addEventListener('blur', el(() => { this.hasFocus = false; }));
   this.closeButton_.addEventListener('click', el(this.close));
   this.upArrowButton_.addEventListener('click', el(this.onPrevious_));
   this.downArrowButton_.addEventListener('click', el(this.onNext_));
