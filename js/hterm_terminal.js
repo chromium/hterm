@@ -751,6 +751,22 @@ hterm.Terminal.prototype.setSelectionEnabled = function(state) {
 };
 
 /**
+ * Set the background image.
+ *
+ * If you want this setting to persist, set it through prefs_, rather than
+ * with this method.
+ *
+ * @param {string=} cssUrl The image to set as a css url.  If not defined, we
+ *     reset to the saved user preference.
+ */
+hterm.Terminal.prototype.setBackgroundImage = function(cssUrl) {
+  if (cssUrl === undefined) {
+    cssUrl = this.prefs_.getString('background-image');
+  }
+  this.scrollPort_.setBackgroundImage(cssUrl);
+};
+
+/**
  * Set the background color.
  *
  * If you want this setting to persist, set it through prefs_, rather than
