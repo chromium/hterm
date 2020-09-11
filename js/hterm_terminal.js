@@ -2229,8 +2229,13 @@ hterm.Terminal.prototype.print = function(str) {
  */
 hterm.Terminal.prototype.setVTScrollRegion = function(scrollTop, scrollBottom) {
   this.vtScrollTop_ = scrollTop;
-  this.vtScrollBottom_ =
-      scrollBottom == this.screenSize.height - 1 ? null : scrollBottom;
+  this.vtScrollBottom_ = scrollBottom;
+  if (scrollBottom == this.screenSize.height - 1) {
+    this.vtScrollBottom_ = null;
+    if (scrollTop == 0) {
+      this.vtScrollTop_ = null;
+    }
+  }
 };
 
 /**

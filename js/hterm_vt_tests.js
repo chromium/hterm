@@ -3457,13 +3457,13 @@ it('scroll-region', function() {
   assert.isNull(terminal.vtScrollTop_);
   assert.isNull(terminal.vtScrollBottom_);
   this.terminal.interpret('\x1b[1r');
-  assert.equal(terminal.vtScrollTop_, 0);
+  assert.isNull(terminal.vtScrollTop_);
   assert.isNull(terminal.vtScrollBottom_);
   this.terminal.interpret('\x1b[1;5r');
   assert.equal(terminal.vtScrollTop_, 0);
   assert.equal(terminal.vtScrollBottom_, 4);
   this.terminal.interpret('\x1b[1;6r');
-  assert.equal(terminal.vtScrollTop_, 0);
+  assert.isNull(terminal.vtScrollTop_);
   assert.isNull(terminal.vtScrollBottom_);
 
   // Reset.
