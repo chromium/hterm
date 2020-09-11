@@ -105,30 +105,6 @@ it('basic-scroll', function() {
   });
 
 /**
- * Do not scroll for prevented, or non-cancelable wheel events.
- */
-it('scroll-cancelable', function() {
-  assert.equal(this.scrollPort.getTopRowIndex(), 0);
-  const rowsToScroll = 10;
-  const rowAfterEvent = (options) => {
-    options.deltaMode = WheelEvent.DOM_DELTA_PIXEL;
-    options.deltaY = rowsToScroll * this.scrollPort.characterSize.height;
-    this.scrollPort.getScreenNode().dispatchEvent(
-        new WheelEvent('wheel', options));
-    return this.scrollPort.getTopRowIndex();
-  };
-
-  // No scrolling for defaultPrevented.
-  assert.equal(rowAfterEvent({defaultPrevented: true}), 0);
-
-  // No scrolling for cancelable=false.
-  assert.equal(rowAfterEvent({cancelable: false}), 0);
-
-  // Scroll if not prevented, and cancelable.
-  assert.equal(rowAfterEvent({cancelable: true}), rowsToScroll);
-});
-
-/**
  * Make sure the hterm.ScrollPort is reusing the same row nodes when it can.
  */
 it('node-recycler', function() {

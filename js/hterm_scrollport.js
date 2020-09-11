@@ -1674,11 +1674,7 @@ hterm.ScrollPort.prototype.onScrollWheel = function(e) {};
 hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
   this.onScrollWheel(e);
 
-  // Ignore the event if it was already handled (preventDefault was called),
-  // or if it is non-cancelable since preventDefault is ignored for these.
-  // See https://crbug.com/894223 where blink sends non-cancelable touchpad
-  // scrollWheel events.
-  if (e.defaultPrevented || !e.cancelable) {
+  if (e.defaultPrevented) {
     return;
   }
 
