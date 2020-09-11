@@ -526,9 +526,8 @@ hterm.TextAttributes.splitWidecharString = function(str) {
   const it = segmenter.segment(str);
 
   const rv = [];
-  let segment = it.next();
-  while (!segment.done) {
-    const grapheme = segment.value.segment;
+  for (const segment of it) {
+    const grapheme = segment.segment;
     const isAscii = asciiRegex.test(grapheme);
     const strWidth = isAscii ? 1 : lib.wc.strWidth(grapheme);
     const isWideChar =
@@ -549,8 +548,6 @@ hterm.TextAttributes.splitWidecharString = function(str) {
         wcStrWidth: strWidth,
       });
     }
-
-    segment = it.next();
   }
 
   return rv;
