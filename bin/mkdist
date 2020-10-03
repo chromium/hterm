@@ -20,8 +20,6 @@ hterm_all.js: hterm_deps.js + hterm.js.  Most apps can just use this.
 hterm_test_resources.js: Test-specific resources.
 """
 
-from __future__ import print_function
-
 import argparse
 import glob
 import os
