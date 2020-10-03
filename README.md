@@ -32,7 +32,7 @@ Feel free to let us know via the Contact section above! :)
 
 # Mirrors & Packaging
 
-* https://chromium.googlesource.com/apps/libapps/+/master/hterm: Main project site.
+* https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm: Main project site.
 * https://github.com/chromium/hterm: Mirror of just the hterm/ subdir.
   Updated from time to time by developers.
 * https://github.com/libapps/hterm: Another mirror (in the libapps namespace).
