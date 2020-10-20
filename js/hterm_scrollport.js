@@ -374,8 +374,7 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
       'width: 100%;' +
       'overflow: hidden;' +
       'cursor: var(--hterm-mouse-cursor-style);' +
-      '-webkit-user-select: none;' +
-      '-moz-user-select: none;');
+      'user-select: none;');
 
   const metaCharset = doc.createElement('meta');
   metaCharset.setAttribute('charset', 'utf-8');
@@ -573,8 +572,7 @@ hterm.ScrollPort.prototype.paintIframeContents_ = function() {
       'display: block;' +
       'position: fixed;' +
       'overflow: hidden;' +
-      '-webkit-user-select: text;' +
-      '-moz-user-select: text;');
+      'user-select: text;');
   this.screen_.appendChild(this.rowNodes_);
 
   // Two nodes to hold offscreen text during the copy event.

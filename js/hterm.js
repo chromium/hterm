@@ -217,8 +217,7 @@ hterm.copySelectionToClipboard = function(document, str) {
     copySource.id = 'hterm:copy-to-clipboard-source';
     copySource.textContent = str;
     copySource.style.cssText = (
-        '-webkit-user-select: text;' +
-        '-moz-user-select: text;' +
+        'user-select: text;' +
         'position: absolute;' +
         'top: -99px');
 

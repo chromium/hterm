@@ -3328,10 +3328,9 @@ hterm.Terminal.prototype.showZoomWarning_ = function(state) {
         'top: 0.5em;' +
         'right: 1.2em;' +
         'position: absolute;' +
+        'user-select: none;' +
         '-webkit-text-size-adjust: none;' +
-        '-webkit-user-select: none;' +
-        '-moz-text-size-adjust: none;' +
-        '-moz-user-select: none;');
+        '-moz-text-size-adjust: none;');
 
     this.zoomWarningNode_.addEventListener('click', function(e) {
       this.parentNode.removeChild(this);
@@ -3392,9 +3391,8 @@ hterm.Terminal.prototype.showOverlayWithNode = function(node, timeout = 1500) {
         'opacity: 0.75;' +
         'padding: 0.923em 1.846em;' +
         'position: absolute;' +
-        '-webkit-user-select: none;' +
+        'user-select: none;' +
         '-webkit-transition: opacity 180ms ease-in;' +
-        '-moz-user-select: none;' +
         '-moz-transition: opacity 180ms ease-in;');
 
     this.overlayNode_.addEventListener('mousedown', function(e) {
