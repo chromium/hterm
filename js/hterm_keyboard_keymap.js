@@ -942,13 +942,6 @@ hterm.Keyboard.KeyMap.prototype.onMetaV_ = function(e) {
 /**
  * Handle font zooming.
  *
- * The browser's built-in zoom has a bit of an issue at certain zoom levels.
- * At some magnifications, the measured height of a row of text differs from
- * the height that was explicitly set.
- *
- * We override the browser zoom keys to change the ScrollPort's font size to
- * avoid the issue.
- *
  * @param {!KeyboardEvent} e The event to process.
  * @param {!hterm.Keyboard.KeyDef} keyDef Key definition.
  * @return {symbol|string} Key action or sequence.
@@ -965,12 +958,6 @@ hterm.Keyboard.KeyMap.prototype.onZoom_ = function(e, keyDef) {
 
     // Only ^_ is valid, the other sequences have no meaning.
     return hterm.Keyboard.KeyActions.CANCEL;
-  }
-
-  if (this.keyboard.terminal.getZoomFactor() != 1) {
-    // If we're not at 1:1 zoom factor, let the Ctrl +/-/0 keys control the
-    // browser zoom, so it's easier to for the user to get back to 100%.
-    return hterm.Keyboard.KeyActions.PASS;
   }
 
   const cap = keyDef.keyCap.substr(0, 1);

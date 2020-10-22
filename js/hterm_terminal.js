@@ -1133,15 +1133,6 @@ hterm.Terminal.prototype.setTextAttributes = function(textAttributes) {
 };
 
 /**
- * Return the current browser zoom factor applied to the terminal.
- *
- * @return {number} The current browser zoom factor.
- */
-hterm.Terminal.prototype.getZoomFactor = function() {
-  return this.scrollPort_.characterSize.zoomFactor;
-};
-
-/**
  * Change the title of this terminal's window.
  *
  * @param {string} title The title to set.
@@ -3303,56 +3294,6 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
 };
 
 /**
- * Show or hide the zoom warning.
- *
- * The zoom warning is a message warning the user that their browser zoom must
- * be set to 100% in order for hterm to function properly.
- *
- * @param {boolean} state True to show the message, false to hide it.
- */
-hterm.Terminal.prototype.showZoomWarning_ = function(state) {
-  if (!this.zoomWarningNode_) {
-    if (!state) {
-      return;
-    }
-
-    this.zoomWarningNode_ = this.document_.createElement('div');
-    this.zoomWarningNode_.id = 'hterm:zoom-warning';
-    this.zoomWarningNode_.style.cssText = (
-        'color: black;' +
-        'background-color: #ff2222;' +
-        'font-size: large;' +
-        'border-radius: 8px;' +
-        'opacity: 0.75;' +
-        'padding: 0.2em 0.5em 0.2em 0.5em;' +
-        'top: 0.5em;' +
-        'right: 1.2em;' +
-        'position: absolute;' +
-        'user-select: none;' +
-        '-webkit-text-size-adjust: none;' +
-        '-moz-text-size-adjust: none;');
-
-    this.zoomWarningNode_.addEventListener('click', function(e) {
-      this.parentNode.removeChild(this);
-    });
-  }
-
-  this.zoomWarningNode_.textContent = lib.i18n.replaceReferences(
-      hterm.zoomWarningMessage,
-      [Math.floor(this.scrollPort_.characterSize.zoomFactor * 100)]);
-
-  this.zoomWarningNode_.style.fontFamily = this.prefs_.get('font-family');
-
-  if (state) {
-    if (!this.zoomWarningNode_.parentNode) {
-      this.div_.parentNode.appendChild(this.zoomWarningNode_);
-    }
-  } else if (this.zoomWarningNode_.parentNode) {
-    this.zoomWarningNode_.parentNode.removeChild(this.zoomWarningNode_);
-  }
-};
-
-/**
  * Show the terminal overlay for a given amount of time.
  *
  * The terminal overlay appears in inverse video, centered over the terminal.
@@ -4219,7 +4160,6 @@ hterm.Terminal.prototype.onResize_ = function() {
   // in sync.
   this.realizeSize_(columnCount, rowCount);
   this.updateCssCharsize_();
-  this.showZoomWarning_(this.scrollPort_.characterSize.zoomFactor != 1);
 
   if (isNewSize) {
     this.overlaySize();

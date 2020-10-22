@@ -29,13 +29,6 @@ hterm.windowType = null;
 hterm.os = null;
 
 /**
- * Warning message to display in the terminal when browser zoom is enabled.
- *
- * You can replace it with your own localized message.
- */
-hterm.zoomWarningMessage = 'ZOOM != 100%';
-
-/**
  * Text shown in a desktop notification for the terminal
  * bell.  \u226a is a unicode EIGHTH NOTE, %(title) will
  * be replaced by the terminal title.
