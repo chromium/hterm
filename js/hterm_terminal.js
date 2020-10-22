@@ -396,9 +396,8 @@ hterm.Terminal.prototype.setProfile = function(
       // Call terminal.setColorPalette here and below with the new default
       // value before changing it in lib.colors.colorPalette to ensure that
       // CSS vars are updated.
-      lib.colors.stockColorPalette.forEach(
-          (c, i) => terminal.setColorPalette(i, c));
-      lib.colors.colorPalette = lib.colors.stockColorPalette.concat();
+      lib.colors.stockPalette.forEach((c, i) => terminal.setColorPalette(i, c));
+      lib.colors.colorPalette = lib.colors.stockPalette.concat();
 
       if (v) {
         for (const key in v) {
@@ -1813,7 +1812,7 @@ menuitem:hover {
   --hterm-mouse-cursor-style: var(--hterm-mouse-cursor-text);
   --hterm-screen-padding-size: 0;
 
-${lib.colors.stockColorPalette.map((c, i) => `
+${lib.colors.stockPalette.map((c, i) => `
   --hterm-color-${i}: ${lib.colors.crackRGB(c).slice(0, 3).join(',')};
 `).join('')}
 }
