@@ -324,70 +324,72 @@ hterm.openUrl = function(url) {
 };
 
 /**
- * Constructor for a hterm.Size record.
+ * Tracks size of the terminal.
  *
  * Instances of this class have public read/write members for width and height.
- *
- * @param {number} width The width of this record.
- * @param {number} height The height of this record.
- * @constructor
  */
-hterm.Size = function(width, height) {
-  this.width = width;
-  this.height = height;
-};
+hterm.Size = class {
+  /**
+   * @param {number} width The width of this record.
+   * @param {number} height The height of this record.
+   */
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+  }
 
-/**
- * Adjust the width and height of this record.
- *
- * @param {number} width The new width of this record.
- * @param {number} height The new height of this record.
- */
-hterm.Size.prototype.resize = function(width, height) {
-  this.width = width;
-  this.height = height;
-};
+  /**
+   * Adjust the width and height of this record.
+   *
+   * @param {number} width The new width of this record.
+   * @param {number} height The new height of this record.
+   */
+  resize(width, height) {
+    this.width = width;
+    this.height = height;
+  }
 
-/**
- * Return a copy of this record.
- *
- * @return {!hterm.Size} A new hterm.Size instance with the same width and
- *     height.
- */
-hterm.Size.prototype.clone = function() {
-  return new hterm.Size(this.width, this.height);
-};
+  /**
+   * Return a copy of this record.
+   *
+   * @return {!hterm.Size} A new hterm.Size instance with the same width and
+   *     height.
+   */
+  clone() {
+    return new this.constructor(this.width, this.height);
+  }
 
-/**
- * Set the height and width of this instance based on another hterm.Size.
- *
- * @param {!hterm.Size} that The object to copy from.
- */
-hterm.Size.prototype.setTo = function(that) {
-  this.width = that.width;
-  this.height = that.height;
-};
+  /**
+   * Set the height and width of this instance based on another hterm.Size.
+   *
+   * @param {!hterm.Size} that The object to copy from.
+   */
+  setTo(that) {
+    this.width = that.width;
+    this.height = that.height;
+  }
 
-/**
- * Test if another hterm.Size instance is equal to this one.
- *
- * @param {!hterm.Size} that The other hterm.Size instance.
- * @return {boolean} True if both instances have the same width/height, false
- *     otherwise.
- */
-hterm.Size.prototype.equals = function(that) {
-  return this.width == that.width && this.height == that.height;
-};
+  /**
+   * Test if another hterm.Size instance is equal to this one.
+   *
+   * @param {!hterm.Size} that The other hterm.Size instance.
+   * @return {boolean} True if both instances have the same width/height, false
+   *     otherwise.
+   */
+  equals(that) {
+    return this.width == that.width && this.height == that.height;
+  }
 
-/**
- * Return a string representation of this instance.
- *
- * @return {string} A string that identifies the width and height of this
- *     instance.
- * @override
- */
-hterm.Size.prototype.toString = function() {
-  return '[hterm.Size: ' + this.width + ', ' + this.height + ']';
+  /**
+   * Return a string representation of this instance.
+   *
+   * @return {string} A string that identifies the width and height of this
+   *     instance.
+   * @override
+   */
+  toString() {
+    return `[hterm.Size: ${this.width}, ${this.height}]`;
+  }
 };
 
 /**
@@ -402,73 +404,75 @@ hterm.Size.prototype.toString = function() {
  * happens normally, but any attempt to print new characters causes a cr/lf
  * first.
  *
- * @param {number} row The row of this record.
- * @param {number} column The column of this record.
- * @param {boolean=} overflow Optional boolean indicating that the RowCol
- *     has overflowed.
- * @constructor
  */
-hterm.RowCol = function(row, column, overflow = false) {
-  this.row = row;
-  this.column = column;
-  this.overflow = !!overflow;
-};
+hterm.RowCol = class {
+  /**
+   * @param {number} row The row of this record.
+   * @param {number} column The column of this record.
+   * @param {boolean=} overflow Optional boolean indicating that the RowCol
+   *     has overflowed.
+   */
+  constructor(row, column, overflow = false) {
+    this.row = row;
+    this.column = column;
+    this.overflow = !!overflow;
+  }
 
-/**
- * Adjust the row and column of this record.
- *
- * @param {number} row The new row of this record.
- * @param {number} column The new column of this record.
- * @param {boolean=} overflow Optional boolean indicating that the RowCol
- *     has overflowed.
- */
-hterm.RowCol.prototype.move = function(row, column, overflow = false) {
-  this.row = row;
-  this.column = column;
-  this.overflow = !!overflow;
-};
+  /**
+   * Adjust the row and column of this record.
+   *
+   * @param {number} row The new row of this record.
+   * @param {number} column The new column of this record.
+   * @param {boolean=} overflow Optional boolean indicating that the RowCol
+   *     has overflowed.
+   */
+  move(row, column, overflow = false) {
+    this.row = row;
+    this.column = column;
+    this.overflow = !!overflow;
+  }
 
-/**
- * Return a copy of this record.
- *
- * @return {!hterm.RowCol} A new hterm.RowCol instance with the same row and
- *     column.
- */
-hterm.RowCol.prototype.clone = function() {
-  return new hterm.RowCol(this.row, this.column, this.overflow);
-};
+  /**
+   * Return a copy of this record.
+   *
+   * @return {!hterm.RowCol} A new hterm.RowCol instance with the same row and
+   *     column.
+   */
+  clone() {
+    return new this.constructor(this.row, this.column, this.overflow);
+  }
 
-/**
- * Set the row and column of this instance based on another hterm.RowCol.
- *
- * @param {!hterm.RowCol} that The object to copy from.
- */
-hterm.RowCol.prototype.setTo = function(that) {
-  this.row = that.row;
-  this.column = that.column;
-  this.overflow = that.overflow;
-};
+  /**
+   * Set the row and column of this instance based on another hterm.RowCol.
+   *
+   * @param {!hterm.RowCol} that The object to copy from.
+   */
+  setTo(that) {
+    this.row = that.row;
+    this.column = that.column;
+    this.overflow = that.overflow;
+  }
 
-/**
- * Test if another hterm.RowCol instance is equal to this one.
- *
- * @param {!hterm.RowCol} that The other hterm.RowCol instance.
- * @return {boolean} True if both instances have the same row/column, false
- *     otherwise.
- */
-hterm.RowCol.prototype.equals = function(that) {
-  return (this.row == that.row && this.column == that.column &&
-          this.overflow == that.overflow);
-};
+  /**
+   * Test if another hterm.RowCol instance is equal to this one.
+   *
+   * @param {!hterm.RowCol} that The other hterm.RowCol instance.
+   * @return {boolean} True if both instances have the same row/column, false
+   *     otherwise.
+   */
+  equals(that) {
+    return (this.row == that.row && this.column == that.column &&
+            this.overflow == that.overflow);
+  }
 
-/**
- * Return a string representation of this instance.
- *
- * @return {string} A string that identifies the row and column of this
- *     instance.
- * @override
- */
-hterm.RowCol.prototype.toString = function() {
-  return ('[hterm.RowCol: ' + this.row + ', ' + this.column + ', ' +
-          this.overflow + ']');
+  /**
+   * Return a string representation of this instance.
+   *
+   * @return {string} A string that identifies the row and column of this
+   *     instance.
+   * @override
+   */
+  toString() {
+    return `[hterm.RowCol: ${this.row}, ${this.column}, ${this.overflow}]`;
+  }
 };
