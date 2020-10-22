@@ -106,6 +106,9 @@ hterm.Terminal = function(profileId) {
   /** @type {?string} */
   this.foregroundColor_ = null;
 
+  /** @type {!Map<number, string>} */
+  this.colorPaletteOverrides_ = new Map();
+
   this.screenBorderSize_ = 0;
 
   this.scrollOnOutput_ = null;
@@ -393,11 +396,11 @@ hterm.Terminal.prototype.setProfile = function(
         return;
       }
 
-      // Call terminal.setColorPalette here and below with the new default
-      // value before changing it in lib.colors.colorPalette to ensure that
-      // CSS vars are updated.
+      // Reset all existing colors first as the new palette override might not
+      // have the same mappings.  If the old one set colors the new one doesn't,
+      // those old mappings have to get cleared first.
       lib.colors.stockPalette.forEach((c, i) => terminal.setColorPalette(i, c));
-      lib.colors.colorPalette = lib.colors.stockPalette.concat();
+      terminal.colorPaletteOverrides_.clear();
 
       if (v) {
         for (const key in v) {
@@ -411,7 +414,7 @@ hterm.Terminal.prototype.setProfile = function(
             const rgb = lib.colors.normalizeCSS(v[i]);
             if (rgb) {
               terminal.setColorPalette(i, rgb);
-              lib.colors.colorPalette[i] = rgb;
+              terminal.colorPaletteOverrides_.set(i, rgb);
             }
           }
         }
@@ -936,7 +939,8 @@ hterm.Terminal.prototype.setColorPalette = function(i, rgb) {
  */
 hterm.Terminal.prototype.getColorPalette = function(i) {
   return this.screen_.textAttributes.colorPaletteOverrides[i] ||
-      lib.colors.colorPalette[i];
+      this.colorPaletteOverrides_.get(i) ||
+      lib.colors.stockPalette[i];
 };
 
 /**
@@ -945,7 +949,8 @@ hterm.Terminal.prototype.getColorPalette = function(i) {
  * @param {number} i Color to reset
  */
 hterm.Terminal.prototype.resetColor = function(i) {
-  this.setColorPalette(i, lib.colors.colorPalette[i]);
+  this.setColorPalette(
+      i, this.colorPaletteOverrides_.get(i) || lib.colors.stockPalette[i]);
   delete this.screen_.textAttributes.colorPaletteOverrides[i];
 };
 

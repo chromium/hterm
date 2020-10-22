@@ -66,7 +66,7 @@ hterm.TextAttributes = function(document) {
   this.uriId = null;
 
   /**
-   * Colors set different to defaults in lib.colors.colorPalette.
+   * Colors set different to defaults in lib.colors.stockPalette.
    *
    * @type {!Array<string>}
    */

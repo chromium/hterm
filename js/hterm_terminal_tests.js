@@ -825,20 +825,20 @@ it('set-and-reset-colors', async function() {
 
   // Change the colors.
   indices.forEach((index) => {
-    assert.isTrue(lib.colors.colorPalette != custom);
-    assertColor(index, lib.colors.colorPalette[index]);
+    assert.isTrue(lib.colors.stockPalette != custom);
+    assertColor(index, lib.colors.stockPalette[index]);
     terminal.setColorPalette(index, custom);
     assertColor(index, custom);
   });
 
   // Reset a single color.
   terminal.resetColor(0);
-  assertColor(0, lib.colors.colorPalette[0]);
+  assertColor(0, lib.colors.stockPalette[0]);
 
   // Reset the palette and check the colors.
   terminal.resetColorPalette();
   indices.forEach((index) => {
-    assertColor(index, lib.colors.colorPalette[index]);
+    assertColor(index, lib.colors.stockPalette[index]);
   });
 });
 

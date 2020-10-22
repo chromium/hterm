@@ -1819,7 +1819,7 @@ hterm.VT.OSC['4'] = function(parseState) {
     const colorIndex = parseInt(args[pairNumber * 2], 10);
     let colorValue = args[pairNumber * 2 + 1];
 
-    if (colorIndex >= lib.colors.colorPalette.length) {
+    if (colorIndex >= lib.colors.stockPalette.length) {
       continue;
     }
 
@@ -2798,7 +2798,7 @@ hterm.VT.prototype.parseSgrExtendedColors = function(parseState, i, attrs) {
         skipCount: usedSubargs ? 0 : 2,
       };
       const color = parseState.parseInt(ary[1]);
-      if (color < lib.colors.colorPalette.length) {
+      if (color < lib.colors.stockPalette.length) {
         ret.color = color;
       }
       return ret;
