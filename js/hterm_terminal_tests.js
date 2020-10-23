@@ -83,7 +83,7 @@ const DISPLAY_IMAGE_TIMEOUT = 5000;
  * values that the Terminal was constructed with.
  */
 it('dimensions', function() {
-    const divSize = hterm.getClientSize(this.div);
+    const divSize = this.div.getBoundingClientRect();
     const scrollPort = this.terminal.scrollPort_;
     const rightPadding = Math.max(
         scrollPort.screenPaddingSize, scrollPort.currentScrollbarWidthPx);

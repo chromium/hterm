@@ -614,11 +614,12 @@ it('fullscreen', function() {
     const scrollPort = new hterm.ScrollPort(rowProvider);
     scrollPort.decorate(div);
 
-    const divSize = hterm.getClientSize(div);
+    const divSize = div.getBoundingClientRect();
 
     assert.isAbove(divSize.height, 0);
     assert.isAbove(divSize.width, 0);
-    assert.equal(divSize.height, hterm.getClientHeight(scrollPort.iframe_));
+    assert.equal(divSize.height,
+                 scrollPort.iframe_.getBoundingClientRect().height);
 
     document.body.removeChild(div);
   });

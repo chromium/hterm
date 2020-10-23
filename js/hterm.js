@@ -118,36 +118,6 @@ lib.registerInit(
     });
 
 /**
- * Return decimal { width, height } for a given DOM element.
- *
- * @param {!Element} element The element whose size to lookup.
- * @return {!DOMRect} The size of the element.
- */
-hterm.getClientSize = function(element) {
-  return element.getBoundingClientRect();
-};
-
-/**
- * Return decimal width for a given DOM element.
- *
- * @param {!Element} element The element whose width to lookup.
- * @return {number} The width of the element.
- */
-hterm.getClientWidth = function(element) {
-  return element.getBoundingClientRect().width;
-};
-
-/**
- * Return decimal height for a given DOM element.
- *
- * @param {!Element} element The element whose height to lookup.
- * @return {number} The height of the element.
- */
-hterm.getClientHeight = function(element) {
-  return element.getBoundingClientRect().height;
-};
-
-/**
  * Copy the specified text to the system clipboard.
  *
  * We'll create selections on demand based on the content to copy.

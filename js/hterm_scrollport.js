@@ -776,7 +776,7 @@ hterm.ScrollPort.prototype.setPasteOnDrop = function(pasteOnDrop) {
  * @return {{height: number, width: number}}
  */
 hterm.ScrollPort.prototype.getScreenSize = function() {
-  const size = hterm.getClientSize(lib.notNull(this.screen_));
+  const size = this.screen_.getBoundingClientRect();
   const rightPadding = Math.max(
       this.screenPaddingSize, this.currentScrollbarWidthPx);
   return {
@@ -811,7 +811,7 @@ hterm.ScrollPort.prototype.getScreenHeight = function() {
  * @return {number}
  */
 hterm.ScrollPort.prototype.getScrollbarX = function() {
-  return hterm.getClientSize(lib.notNull(this.screen_)).width -
+  return this.screen_.getBoundingClientRect().width -
          this.currentScrollbarWidthPx;
 };
 
@@ -958,7 +958,7 @@ hterm.ScrollPort.prototype.measureCharacterSize = function(weight = '') {
   this.rulerSpan_.style.fontWeight = weight;
 
   this.rowNodes_.appendChild(this.ruler_);
-  const rulerSize = hterm.getClientSize(this.rulerSpan_);
+  const rulerSize = this.rulerSpan_.getBoundingClientRect();
 
   const size = new hterm.Size(rulerSize.width / lineLength,
                             rulerSize.height / numberOfLines);
@@ -1053,7 +1053,7 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   let topFoldOffset = 0;
   let node = this.topFold_.previousSibling;
   while (node) {
-    topFoldOffset += hterm.getClientHeight(node);
+    topFoldOffset += node.getBoundingClientRect().height;
     node = node.previousSibling;
   }
 
@@ -1073,7 +1073,7 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
  * @private
  */
 hterm.ScrollPort.prototype.syncScrollbarWidth_ = function() {
-  const width = hterm.getClientWidth(lib.notNull(this.screen_)) -
+  const width = this.screen_.getBoundingClientRect().width -
                 this.screen_.clientWidth;
   if (width > 0) {
     this.currentScrollbarWidthPx = width;
@@ -1521,9 +1521,9 @@ hterm.ScrollPort.prototype.selectAll = function() {
  * @return {number}
  */
 hterm.ScrollPort.prototype.getScrollMax_ = function() {
-  return (hterm.getClientHeight(this.scrollArea_) +
-          this.visibleRowTopMargin + this.visibleRowBottomMargin -
-          hterm.getClientHeight(lib.notNull(this.screen_)));
+  return this.scrollArea_.getBoundingClientRect().height +
+         this.visibleRowTopMargin + this.visibleRowBottomMargin -
+         this.screen_.getBoundingClientRect().height;
 };
 
 /**
@@ -1698,12 +1698,12 @@ hterm.ScrollPort.prototype.scrollWheelDelta = function(e) {
       delta.x = e.deltaX * this.characterSize.width;
       delta.y = e.deltaY * this.characterSize.height;
       break;
-    case WheelEvent.DOM_DELTA_PAGE:
-      delta.x = e.deltaX * this.characterSize.width *
-          hterm.getClientWidth(lib.notNull(this.screen_));
-      delta.y = e.deltaY * this.characterSize.height *
-          hterm.getClientHeight(lib.notNull(this.screen_));
+    case WheelEvent.DOM_DELTA_PAGE: {
+      const {width, height} = this.screen_.getBoundingClientRect();
+      delta.x = e.deltaX * this.characterSize.width * width;
+      delta.y = e.deltaY * this.characterSize.height * height;
       break;
+    }
   }
 
   // The Y sign is inverted from what we would expect: up/down are

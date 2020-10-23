@@ -3349,8 +3349,8 @@ hterm.Terminal.prototype.showOverlayWithNode = function(node, timeout = 1500) {
     this.document_.body.appendChild(this.overlayNode_);
   }
 
-  const divSize = hterm.getClientSize(lib.notNull(this.div_));
-  const overlaySize = hterm.getClientSize(this.overlayNode_);
+  const divSize = this.div_.getBoundingClientRect();
+  const overlaySize = this.overlayNode_.getBoundingClientRect();
 
   this.overlayNode_.style.top =
       (divSize.height - overlaySize.height) / 2 + 'px';

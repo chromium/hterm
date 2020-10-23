@@ -120,12 +120,12 @@ hterm.ContextMenu.prototype.show = function(e, terminal) {
 
   this.element_.style.top = `${e.clientY}px`;
   this.element_.style.left = `${e.clientX}px`;
-  const docSize = hterm.getClientSize(lib.notNull(this.document_.body));
+  const docSize = this.document_.body.getBoundingClientRect();
 
   this.element_.style.display = 'block';
 
   // We can't calculate sizes until after it's displayed.
-  const eleSize = hterm.getClientSize(this.element_);
+  const eleSize = this.element_.getBoundingClientRect();
   // Make sure the menu isn't clipped outside of the current element.
   const minY = Math.max(0, docSize.height - eleSize.height);
   const minX = Math.max(0, docSize.width - eleSize.width);
