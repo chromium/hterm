@@ -30,10 +30,11 @@ hterm.PreferenceManager.prefix_ = '/hterm/profiles/';
 /**
  * List all the defined profiles.
  *
+ * @param {!lib.Storage} storage Where to look for profiles.
  * @param {function(!Array<string>)} callback Called with the list of profiles.
  */
-hterm.PreferenceManager.listProfiles = function(callback) {
-  hterm.defaultStorage.getItems(null).then((items) => {
+hterm.PreferenceManager.listProfiles = function(storage, callback) {
+  storage.getItems(null).then((items) => {
     const profiles = {};
     for (const key of Object.keys(items)) {
       if (key.startsWith(hterm.PreferenceManager.prefix_)) {
