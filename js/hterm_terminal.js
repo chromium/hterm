@@ -21,12 +21,14 @@
  * displayed twice as wide as standard latin characters.  This is to support
  * CJK (and possibly other character sets).
  *
- * @param {?string=} profileId Optional preference profile name.  If not
- *     provided or null, defaults to 'default'.
+ * @param {{
+ *   profileId: (?string|undefined),
+ * }=} options Various settings to control behavior.
+ *     profileId: The preference profile name.  Defaults to "default".
  * @constructor
  * @implements {hterm.RowProvider}
  */
-hterm.Terminal = function(profileId) {
+hterm.Terminal = function({profileId} = {}) {
   // Set to true once terminal is initialized and onTerminalReady() is called.
   this.ready_ = false;
 

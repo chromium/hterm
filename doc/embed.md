@@ -101,11 +101,11 @@ All of the logic below lives within the `setupHterm` callback.
 Create an instance of `hterm.Terminal`:
 
 ```js
-// profileName is the name of the terminal profile to load, or "default" if
+// profileId is the name of the terminal profile to load, or "default" if
 // not specified.  If you're using one of the persistent storage
 // implementations then this will scope all preferences read/writes to this
 // name.
-const t = new hterm.Terminal(profileName);
+const t = new hterm.Terminal({profileId});
 ```
 
 Now write an `onTerminalReady` handler.
