@@ -2,6 +2,11 @@
 ;; Use of this source code is governed by a BSD-style license that can be
 ;; found in the LICENSE file.
 ;;
+;; Warning: Starting with Emacs 26, Emacs contains builtin functionality to
+;; support OSC 52.  Avoid loading osc52.el under Emacs 26 or later, as it will
+;; stomp over that functionality.  If copying to the clipboard doesn’t work out
+;; of the box, customize the variable ‘xterm-extra-capabilities.’
+;;
 ;; This script can be loaded during emacs initialization to automatically
 ;; send `kill-region' and `kill-ring-save' regions to your system clipboard.
 ;; The OSC 52 terminal escape sequence is used to transfer the selection from
@@ -17,6 +22,13 @@
 ;; use the DSC sequence as a pass-through to the host terminal.  Please feel
 ;; free to submit patches.
 ;;
+
+(when (>= emacs-major-version 26)
+  (display-warning 'osc52
+                   (concat "Emacs supports OSC-52 natively starting with "
+                           "Emacs 26.  Loading this library should no longer "
+                           "be necessary.  Also see "
+                           "the user option ‘xterm-extra-capabilities’.")))
 
 (defcustom osc52-max-sequence 100000
   "Maximum length of the OSC 52 sequence.
