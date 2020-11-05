@@ -44,8 +44,7 @@ hterm.Terminal.IO = function(terminal) {
  *
  * The terminal overlay appears in inverse video, centered over the terminal.
  *
- * @param {string} message The text (not HTML) message to display in the
- *     overlay.
+ * @param {string|!Node} message The message to display in the overlay.
  * @param {number=} timeout The amount of time to wait before fading out
  *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
  *     stay up forever (or until the next overlay).
