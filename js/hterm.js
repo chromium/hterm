@@ -93,26 +93,13 @@ lib.registerInit(
         }
       }
 
-      // The chrome.tabs API is not supported in packaged apps, and detecting if
-      // you're a packaged app is a little awkward.
-      let isPackagedApp = false;
-      if (window.chrome && chrome.runtime && chrome.runtime.getManifest) {
-        const manifest = chrome.runtime.getManifest();
-        isPackagedApp = manifest.app && manifest.app.background;
-      }
-
       return new Promise((resolve) => {
-        if (isPackagedApp) {
-          // Packaged apps are never displayed in browser tabs.
-          onWindow({type: 'popup'}).then(resolve);
+        if (window.chrome && chrome.tabs) {
+          // The getCurrent method gets the tab that is "currently running",
+          // not the topmost or focused tab.
+          chrome.tabs.getCurrent((tab) => onTab(tab).then(resolve));
         } else {
-          if (window.chrome && chrome.tabs) {
-            // The getCurrent method gets the tab that is "currently running",
-            // not the topmost or focused tab.
-            chrome.tabs.getCurrent((tab) => onTab(tab).then(resolve));
-          } else {
-            onWindow({type: 'normal'}).then(resolve);
-          }
+          onWindow({type: 'normal'}).then(resolve);
         }
       });
     });
