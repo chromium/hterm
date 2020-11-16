@@ -177,6 +177,8 @@ In the keybindings below (many of which are not terribly useful):
 * Ctrl+*+M will match all Ctrl+M combinations (regardless of Alt, Meta,
   or Shift keys), except for keys with more specific bindings (e.g. it will
   not match Ctrl+Alt+M here).
+* Ctrl+Tab will send `Ctrl-x o` sequence, which is alternative `other-window`
+  key for Emacs when ctrl-tab does not work.
 
 ```
 {
@@ -186,7 +188,8 @@ In the keybindings below (many of which are not terribly useful):
   "Shift+PGUP": "scrollPageUp",
   "X": "DEFAULT",
   "Ctrl+Alt+M": "'\u0008'",
-  "Ctrl+*+M": "DEFAULT"
+  "Ctrl+*+M": "DEFAULT",
+  "Ctrl+Tab": "'\u0018o'"
 }
 ```
 
