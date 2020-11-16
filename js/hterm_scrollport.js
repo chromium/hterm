@@ -1674,6 +1674,10 @@ hterm.ScrollPort.prototype.onScrollWheel_ = function(e) {
     // to scroll we want to pass the event through so Chrome can detect the
     // overscroll.
     e.preventDefault();
+  } else if (e.ctrlKey) {
+    // Holding Contrl while scrolling will trigger zoom events.  Defeat them!
+    // Touchpad pinches also hit here via fake events.  https://crbug.com/289887
+    e.preventDefault();
   }
 };
 
