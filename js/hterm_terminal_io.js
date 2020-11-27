@@ -40,14 +40,11 @@ hterm.Terminal.IO = function(terminal) {
 };
 
 /**
- * Show the terminal overlay for a given amount of time.
+ * Show the terminal overlay.
  *
- * The terminal overlay appears in inverse video, centered over the terminal.
- *
- * @param {string|!Node} message The message to display in the overlay.
- * @param {number=} timeout The amount of time to wait before fading out
- *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
- *     stay up forever (or until the next overlay).
+ * @see hterm.NotificationCenter.show
+ * @param {string|!Node} message The message to display.
+ * @param {?number=} timeout How long to time to wait before hiding.
  */
 hterm.Terminal.IO.prototype.showOverlay = function(
     message, timeout = undefined) {
@@ -57,7 +54,7 @@ hterm.Terminal.IO.prototype.showOverlay = function(
 /**
  * Hide the current overlay immediately.
  *
- * Useful when we show an overlay for an event with an unknown end time.
+ * @see hterm.NotificationCenter.hide
  */
 hterm.Terminal.IO.prototype.hideOverlay = function() {
   this.terminal_.hideOverlay();

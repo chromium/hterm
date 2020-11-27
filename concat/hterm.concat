@@ -17,6 +17,7 @@ hterm/js/hterm_keyboard.js
 hterm/js/hterm_keyboard_bindings.js
 hterm/js/hterm_keyboard_keymap.js
 hterm/js/hterm_keyboard_keypattern.js
+hterm/js/hterm_notifications.js
 hterm/js/hterm_options.js
 hterm/js/hterm_parser.js
 hterm/js/hterm_parser_identifiers.js

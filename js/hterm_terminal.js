@@ -62,6 +62,9 @@ hterm.Terminal = function({profileId} = {}) {
   // The div that contains this terminal.
   this.div_ = null;
 
+  // UI for showing info to the user in a privileged way.
+  this.notifications_ = null;
+
   // The document that contains the scrollPort.  Defaulted to the global
   // document here so that the terminal is functional even if it hasn't been
   // inserted into a document yet, but re-set in decorate().
@@ -1722,6 +1725,8 @@ hterm.Terminal.prototype.setupScrollPort_ = function() {
   this.document_ = this.scrollPort_.getDocument();
   this.accessibilityReader_.decorate(this.document_);
   this.findBar.decorate(this.document_);
+  this.notifications_ = new hterm.NotificationCenter(
+      lib.notNull(this.document_.body), this.accessibilityReader_);
 
   this.document_.body.oncontextmenu = function() { return false; };
   this.contextMenu.setDocument(this.document_);
@@ -3286,84 +3291,27 @@ hterm.Terminal.prototype.scheduleSyncCursorPosition_ = function() {
 };
 
 /**
- * Show the terminal overlay for a given amount of time.
+ * Show the terminal overlay.
  *
- * The terminal overlay appears in inverse video, centered over the terminal.
- *
- * @param {string|!Node} msg The message to display in the overlay.
- * @param {?number=} timeout The amount of time to wait before fading out
- *     the overlay.  Defaults to 1.5 seconds.  Pass null to have the overlay
- *     stay up forever (or until the next overlay).
+ * @see hterm.NotificationCenter.show
+ * @param {string|!Node} msg The message to display.
+ * @param {?number=} timeout How long to time to wait before hiding.
  */
 hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
-  const node = typeof msg === 'string' ? new Text(msg) : msg;
-
-  if (!this.ready_ || !this.div_) {
+  if (!this.ready_ || !this.notifications_) {
     return;
   }
 
-  if (!this.overlayNode_) {
-    this.overlayNode_ = this.document_.createElement('div');
-    this.overlayNode_.style.cssText = (
-        'color: rgb(var(--hterm-background-color));' +
-        'background-color: rgb(var(--hterm-foreground-color));' +
-        'border-radius: 12px;' +
-        'font: 500 var(--hterm-font-size) "Noto Sans", sans-serif;' +
-        'opacity: 0.75;' +
-        'padding: 0.923em 1.846em;' +
-        'position: absolute;' +
-        'user-select: none;' +
-        'transition: opacity 180ms ease-in;');
-
-    this.overlayNode_.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }, true);
-  }
-
-  this.overlayNode_.textContent = '';  // Remove all children first.
-  this.overlayNode_.appendChild(node);
-
-  if (!this.overlayNode_.parentNode) {
-    this.document_.body.appendChild(this.overlayNode_);
-  }
-
-  const overlaySize = this.overlayNode_.getBoundingClientRect();
-  this.overlayNode_.style.top = `calc(50% - ${overlaySize.height / 2}px)`;
-  this.overlayNode_.style.left = `calc(50% - ${overlaySize.width / 2}px)`;
-
-  if (this.overlayTimeout_) {
-    clearTimeout(this.overlayTimeout_);
-  }
-
-  this.accessibilityReader_.assertiveAnnounce(this.overlayNode_.textContent);
-
-  if (timeout === null) {
-    return;
-  }
-
-  this.overlayTimeout_ = setTimeout(() => {
-    this.overlayNode_.style.opacity = '0';
-    this.overlayTimeout_ = setTimeout(() => this.hideOverlay(), 200);
-  }, timeout);
+  this.notifications_.show(msg, {timeout});
 };
 
 /**
  * Hide the terminal overlay immediately.
  *
- * Useful when we show an overlay for an event with an unknown end time.
+ * @see hterm.NotificationCenter.hide
  */
 hterm.Terminal.prototype.hideOverlay = function() {
-  if (this.overlayTimeout_) {
-    clearTimeout(this.overlayTimeout_);
-  }
-  this.overlayTimeout_ = null;
-
-  this.overlayNode_.remove();
-  // Remove all children in case there was sensitive content shown that we don't
-  // want to leave laying around.
-  this.overlayNode_.textContent = '';
-  this.overlayNode_.style.opacity = '0.75';
+  this.notifications_.hide();
 };
 
 /**
