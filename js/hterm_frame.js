@@ -114,7 +114,7 @@ hterm.Frame.prototype.close = function() {
     return;
   }
 
-  this.container_.parentNode.removeChild(this.container_);
+  this.container_.remove();
   this.onClose();
 };
 

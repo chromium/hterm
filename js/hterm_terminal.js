@@ -3363,9 +3363,7 @@ hterm.Terminal.prototype.hideOverlay = function() {
   }
   this.overlayTimeout_ = null;
 
-  if (this.overlayNode_.parentNode) {
-    this.overlayNode_.parentNode.removeChild(this.overlayNode_);
-  }
+  this.overlayNode_.remove();
   this.overlayNode_.style.opacity = '0.75';
 };
 

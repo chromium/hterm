@@ -412,7 +412,7 @@ hterm.Screen.prototype.splitNode_ = function(node, offset) {
     node.parentNode.insertBefore(afterNode, node.nextSibling);
   }
   if (!node.textContent) {
-    node.parentNode.removeChild(node);
+    node.remove();
   }
 };
 
@@ -705,7 +705,7 @@ hterm.Screen.prototype.deleteChars = function(count) {
 
     const nextNode = node.nextSibling;
     if (endLength == 0 && node != this.cursorNode_) {
-      node.parentNode.removeChild(node);
+      node.remove();
     }
     node = nextNode;
     offset = 0;

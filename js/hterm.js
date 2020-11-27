@@ -207,7 +207,7 @@ hterm.copySelectionToClipboard = function(document, str) {
       }
     }
 
-    copySource.parentNode.removeChild(copySource);
+    copySource.remove();
 
     // Since execCommand is synchronous, resolve right away.
     return Promise.resolve();

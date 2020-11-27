@@ -872,7 +872,7 @@ hterm.ScrollPort.prototype.invalidate = function() {
   let node = this.topFold_.nextSibling;
   while (node != this.bottomFold_) {
     const nextSibling = node.nextSibling;
-    node.parentElement.removeChild(node);
+    node.remove();
     node = nextSibling;
   }
 
@@ -1301,7 +1301,7 @@ hterm.ScrollPort.prototype.drawVisibleRows_ = function(
 
       const deadNode = currentNode;
       currentNode = currentNode.nextSibling;
-      deadNode.parentNode.removeChild(deadNode);
+      deadNode.remove();
     }
   };
 
@@ -1429,12 +1429,12 @@ hterm.ScrollPort.prototype.ariaHideOffscreenSelectionRows_ = function(
 hterm.ScrollPort.prototype.resetSelectBags_ = function() {
   if (this.topSelectBag_.parentNode) {
     this.topSelectBag_.textContent = '';
-    this.topSelectBag_.parentNode.removeChild(this.topSelectBag_);
+    this.topSelectBag_.remove();
   }
 
   if (this.bottomSelectBag_.parentNode) {
     this.bottomSelectBag_.textContent = '';
-    this.bottomSelectBag_.parentNode.removeChild(this.bottomSelectBag_);
+    this.bottomSelectBag_.remove();
   }
 };
 
