@@ -3328,13 +3328,9 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
     this.document_.body.appendChild(this.overlayNode_);
   }
 
-  const divSize = this.div_.getBoundingClientRect();
   const overlaySize = this.overlayNode_.getBoundingClientRect();
-
-  this.overlayNode_.style.top =
-      (divSize.height - overlaySize.height) / 2 + 'px';
-  this.overlayNode_.style.left = (divSize.width - overlaySize.width -
-      this.scrollPort_.currentScrollbarWidthPx) / 2 + 'px';
+  this.overlayNode_.style.top = `calc(50% - ${overlaySize.height / 2}px)`;
+  this.overlayNode_.style.left = `calc(50% - ${overlaySize.width / 2}px)`;
 
   if (this.overlayTimeout_) {
     clearTimeout(this.overlayTimeout_);
