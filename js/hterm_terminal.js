@@ -1841,8 +1841,7 @@ width: var(--hterm-charsize-width);
 height: var(--hterm-charsize-height);
 background-color: var(--hterm-cursor-color);
 border-color: var(--hterm-cursor-color);
--webkit-transition: opacity, background-color 100ms linear;
--moz-transition: opacity, background-color 100ms linear;`;
+transition: opacity, background-color 100ms linear;`;
 
   this.setCursorColor();
   this.setCursorBlink(!!this.prefs_.get('cursor-blink'));
@@ -3314,8 +3313,7 @@ hterm.Terminal.prototype.showOverlay = function(msg, timeout = 1500) {
         'padding: 0.923em 1.846em;' +
         'position: absolute;' +
         'user-select: none;' +
-        '-webkit-transition: opacity 180ms ease-in;' +
-        '-moz-transition: opacity 180ms ease-in;');
+        'transition: opacity 180ms ease-in;');
 
     this.overlayNode_.addEventListener('mousedown', function(e) {
       e.preventDefault();
