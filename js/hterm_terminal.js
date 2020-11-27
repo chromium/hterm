@@ -3360,6 +3360,9 @@ hterm.Terminal.prototype.hideOverlay = function() {
   this.overlayTimeout_ = null;
 
   this.overlayNode_.remove();
+  // Remove all children in case there was sensitive content shown that we don't
+  // want to leave laying around.
+  this.overlayNode_.textContent = '';
   this.overlayNode_.style.opacity = '0.75';
 };
 
