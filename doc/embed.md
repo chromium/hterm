@@ -217,9 +217,23 @@ When passing data to hterm to interpret, strings should be in [UTF-16] encoding.
 This covers `hterm.Terminal.IO`'s `print`, `writeUTF16`, `println`, and
 `writelnUTF16` APIs as well as `hterm.Terminal`'s `interpret`.
 
-A few APIs are also provided to pass in [UTF-16] strings with [UTF-8]
-[code unit]s, but those are deprecated and should be avoided.
+A few APIs are also provided to pass in arrays of [UTF-8] [code unit]s.
 This covers `hterm.Terminal.IO`'s `writeUTF8` and `writelnUTF8` APIs.
+This can be helpful when streaming binary data from somewhere else.
+
+You should avoid mixing calls to the two sets of functions: either only use
+the string-based APIs, or only use the array-based APIs.
+This is because [UTF-8] is a multibyte protocol, and if an incomplete [code
+point] was written, mixing the APIs could lead to subtle corruption.
+If you take care to only write complete [code point]s when using the `writeUTF8`
+APIs, then you could call the plain `print` APIs inbetween.
+
+***note
+Note: <=hterm-1.90 supported [UTF-16] strings with [UTF-8] [code unit]s.
+The API had been deprecated since hterm-1.85, and has been removed with
+hterm-1.91+.  As a quick hack, `lib.codec.stringToCodeUnitArray` can be
+used to convert the string to an array before calling `writeUTF8`.
+***
 
 ***note
 Note: <=hterm-1.84 required `hterm.Terminal.interpret`'s argument to be a string
@@ -229,6 +243,7 @@ With >=hterm-1.85, `hterm.Terminal.interpret` always uses [UTF-16] strings.
 
 
 [ArrayBuffer]: https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer
+[code point]: https://en.wikipedia.org/wiki/Character_encoding
 [code unit]: https://en.wikipedia.org/wiki/Character_encoding
 [Mojibake]: https://en.wikipedia.org/wiki/Mojibake
 [TextEncoder]: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder

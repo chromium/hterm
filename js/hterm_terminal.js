@@ -604,15 +604,6 @@ hterm.Terminal.prototype.setProfile = function(
       terminal.keyboard.passMetaV = v;
     },
 
-    'receive-encoding': function(v) {
-       if (!(/^(utf-8|raw)$/).test(v)) {
-         console.warn('Invalid value for "receive-encoding": ' + v);
-         v = 'utf-8';
-       }
-
-       terminal.vt.characterEncoding = v;
-    },
-
     'screen-padding-size': function(v) {
       v = parseInt(v, 10);
       if (isNaN(v) || v < 0) {

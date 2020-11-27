@@ -108,31 +108,39 @@ it('sanity', function() {
  * characters.
  */
 it('utf8', function() {
-    // 11100010 10000000 10011001 split over two writes.
-    this.terminal.io.writeUTF8('\xe2\x80');
-    this.terminal.io.writeUTF8('\x99\r\n');
+  // 11100010 10000000 10011001 split over two writes.
+  this.terminal.io.writeUTF8([0xe2, 0x80]);
+  this.terminal.io.writeUTF8([0x99]);
+  this.terminal.io.writeUTF8([0x0d, 0x0a]);
 
-    // Interpret some invalid UTF-8. xterm and gnome-terminal are
-    // inconsistent about the number of replacement characters. We
-    // match xterm.
-    this.terminal.io.writelnUTF8('a\xf1\x80\x80\xe1\x80\xc2b\x80c\x80\xbfd');
+  // Interpret some invalid UTF-8. xterm and gnome-terminal are
+  // inconsistent about the number of replacement characters. We
+  // match xterm.
+  this.terminal.io.writelnUTF8([
+    0x61, 0xf1, 0x80, 0x80, 0xe1, 0x80, 0xc2,
+    0x62, 0x80,
+    0x63, 0x80, 0xbf,
+    0x64,
+  ]);
 
-    // Surrogate pairs turn into replacements.
-    this.terminal.io.writeUTF8('\xed\xa0\x80' +  // D800
-                               '\xed\xad\xbf' +  // D87F
-                               '\xed\xae\x80' +  // DC00
-                               '\xed\xbf\xbf');  // DFFF
+  // Surrogate pairs turn into replacements.
+  this.terminal.io.writeUTF8([
+    0xed, 0xa0, 0x80,  // D800
+    0xed, 0xad, 0xbf,  // D87F
+    0xed, 0xae, 0x80,  // DC00
+    0xed, 0xbf, 0xbf,  // DFFF
+  ]);
 
-    // Write some text to finish flushing the decoding stream.
-    this.terminal.io.writeUTF8('\r\ndone');
+  // Write some text to finish flushing the decoding stream.
+  this.terminal.io.writeUTF8([0x0d, 0x0a, 0x64, 0x6f, 0x6e, 0x65]);
 
-    const text = this.terminal.getRowsText(0, 4);
-    assert.equal(text,
-                 '\u2019\n' +
-                 'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
-                 '\ufffd'.repeat(12) +
-                 '\ndone');
-  });
+  const text = this.terminal.getRowsText(0, 4);
+  assert.equal(text,
+               '\u2019\n' +
+               'a\ufffd\ufffd\ufffdb\ufffdc\ufffd\ufffdd\n' +
+               '\ufffd'.repeat(12) +
+               '\ndone');
+});
 
 /**
  * Verify we can write ArrayBuffers of UTF-8 data.

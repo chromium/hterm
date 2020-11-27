@@ -80,11 +80,6 @@ hterm.VT = function(terminal) {
   this.enableCsiJ3 = true;
 
   /**
-   * The expected encoding method for data received from the host.
-   */
-  this.characterEncoding = 'utf-8';
-
-  /**
    * If true, emit warnings when we encounter a control character or escape
    * sequence that we don't recognize or explicitly ignore.
    *
@@ -544,8 +539,6 @@ hterm.VT.prototype.onTerminalMouse_ = function(e) {
 /**
  * Interpret a string of characters, displaying the results on the associated
  * terminal object.
- *
- * The buffer will be decoded according to the 'receive-encoding' preference.
  *
  * @param {string} buf The buffer to interpret.
  */
@@ -2030,9 +2023,6 @@ hterm.VT.OSC['50'] = function(parseState) {
  * that is able to both write and read to the clipboard could essentially
  * take over your session.
  *
- * The clipboard data will be decoded according to the 'receive-encoding'
- * preference.
- *
  * @this {!hterm.VT}
  * @param {!hterm.VT.ParseState} parseState The current parse state.
  */
@@ -2056,11 +2046,9 @@ hterm.VT.OSC['52'] = function(parseState) {
     // If the user sent us invalid base64 content, silently ignore it.
     return;
   }
-  if (this.characterEncoding == 'utf-8') {
-    const decoder = new TextDecoder();
-    const bytes = lib.codec.stringToCodeUnitArray(data);
-    data = decoder.decode(bytes);
-  }
+  const decoder = new TextDecoder();
+  const bytes = lib.codec.stringToCodeUnitArray(data);
+  data = decoder.decode(bytes);
   if (data) {
     this.terminal.copyStringToClipboard(data);
   }

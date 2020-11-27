@@ -772,17 +772,6 @@ hterm.PreferenceManager.defaultPreferences = {
       `If false, dropped text will be ignored.`,
   ),
 
-  'receive-encoding': hterm.PreferenceManager.definePref_(
-      'Receive encoding',
-      hterm.PreferenceManager.Categories.Encoding,
-      'utf-8', ['utf-8', 'raw'],
-      `Set the expected encoding for data received from the host.\n` +
-      `If the encodings do not match, visual bugs are likely to be ` +
-      `observed.\n` +
-      `\n` +
-      `Valid values are 'utf-8' and 'raw'.`,
-  ),
-
   'scroll-on-keystroke': hterm.PreferenceManager.definePref_(
       'Scroll to bottom after keystroke',
       hterm.PreferenceManager.Categories.Scrolling,
