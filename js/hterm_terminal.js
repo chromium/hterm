@@ -3737,7 +3737,7 @@ hterm.Terminal.prototype.copySelectionToClipboard = function() {
  */
 hterm.Terminal.prototype.overlaySize = function() {
   if (this.prefs_.get('enable-resize-status')) {
-    this.showOverlay(`${this.screenSize.width} x ${this.screenSize.height}`);
+    this.showOverlay(`${this.screenSize.width} × ${this.screenSize.height}`);
   }
 };
 
