@@ -3425,53 +3425,53 @@ hterm.Terminal.prototype.displayImage = function(options, onLoad, onError) {
 
   // Has the user approved image display yet?
   if (this.allowImagesInline !== true) {
-    this.newLine();
-    const row = this.getRowNode(this.scrollbackRows_.length +
-                                this.getCursorRow() - 1);
-
     if (this.allowImagesInline === false) {
-      row.textContent = hterm.msg('POPUP_INLINE_IMAGE_DISABLED', [],
-                                  'Inline Images Disabled');
+      this.showOverlay(hterm.msg('POPUP_INLINE_IMAGE_DISABLED', [],
+                       'Inline Images Disabled'));
       return;
     }
 
     // Show a prompt.
     let button;
     const span = this.document_.createElement('span');
-    span.innerText = hterm.msg('POPUP_INLINE_IMAGE', [], 'Inline Images');
-    span.style.fontWeight = 'bold';
-    span.style.borderWidth = '1px';
-    span.style.borderStyle = 'dashed';
-    button = this.document_.createElement('span');
-    button.innerText = hterm.msg('BUTTON_BLOCK', [], 'block');
-    button.style.marginLeft = '1em';
-    button.style.borderWidth = '1px';
-    button.style.borderStyle = 'solid';
+
+    const label = this.document_.createElement('p');
+    label.innerText = hterm.msg('POPUP_INLINE_IMAGE', [], 'Inline Images');
+    label.style.textAlign = 'center';
+    span.appendChild(label);
+
+    button = this.document_.createElement('input');
+    button.type = 'button';
+    button.value = hterm.msg('BUTTON_BLOCK', [], 'block');
     button.addEventListener('click', () => {
       this.prefs_.set('allow-images-inline', false);
-    });
-    span.appendChild(button);
-    button = this.document_.createElement('span');
-    button.innerText = hterm.msg('BUTTON_ALLOW_SESSION', [],
-                                 'allow this session');
-    button.style.marginLeft = '1em';
-    button.style.borderWidth = '1px';
-    button.style.borderStyle = 'solid';
-    button.addEventListener('click', () => {
-      this.allowImagesInline = true;
-    });
-    span.appendChild(button);
-    button = this.document_.createElement('span');
-    button.innerText = hterm.msg('BUTTON_ALLOW_ALWAYS', [], 'always allow');
-    button.style.marginLeft = '1em';
-    button.style.borderWidth = '1px';
-    button.style.borderStyle = 'solid';
-    button.addEventListener('click', () => {
-      this.prefs_.set('allow-images-inline', true);
+      this.hideOverlay();
     });
     span.appendChild(button);
 
-    row.appendChild(span);
+    span.appendChild(new Text(' '));
+
+    button = this.document_.createElement('input');
+    button.type = 'button';
+    button.value = hterm.msg('BUTTON_ALLOW_SESSION', [], 'allow this session');
+    button.addEventListener('click', () => {
+      this.allowImagesInline = true;
+      this.hideOverlay();
+    });
+    span.appendChild(button);
+
+    span.appendChild(new Text(' '));
+
+    button = this.document_.createElement('input');
+    button.type = 'button';
+    button.value = hterm.msg('BUTTON_ALLOW_ALWAYS', [], 'always allow');
+    button.addEventListener('click', () => {
+      this.prefs_.set('allow-images-inline', true);
+      this.hideOverlay();
+    });
+    span.appendChild(button);
+
+    this.showOverlay(span, null);
     return;
   }
 

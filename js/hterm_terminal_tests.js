@@ -416,9 +416,12 @@ it('per-screen-cursor-state', function() {
 it('display-img-disabled', function() {
   this.terminal.allowImagesInline = false;
 
+  let notification;
+  this.terminal.showOverlay = (msg) => {
+    notification = msg;
+  };
   this.terminal.displayImage({uri: ''});
-  const text = this.terminal.getRowsText(0, 1);
-  assert.equal('Inline Images Disabled', text);
+  assert.equal('Inline Images Disabled', notification);
 });
 
 /**
@@ -427,11 +430,15 @@ it('display-img-disabled', function() {
 it('display-img-prompt', function() {
   this.terminal.allowImagesInline = null;
 
-  // Search for the block & allow buttons.
+  // Make sure the notification has some buttons.  Don't probe too deeply so we
+  // don't have tests bound to the exact translations.
+  let notification;
+  this.terminal.showOverlay = (msg) => {
+    notification = msg;
+  };
   this.terminal.displayImage({uri: ''});
-  const text = this.terminal.getRowsText(0, 1);
-  assert.include(text.toLowerCase(), 'block');
-  assert.include(text.toLowerCase(), 'allow');
+  const buttons = notification.querySelectorAll('input');
+  assert.isAtLeast(buttons.length, 3);
 });
 
 /**

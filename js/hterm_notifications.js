@@ -66,6 +66,15 @@ hterm.NotificationCenter = class {
   show(msg, {timeout = 1500} = {}) {
     const node = typeof msg === 'string' ? new Text(msg) : msg;
 
+    // Hacky heuristic: if we're currently showing a notification w/out a
+    // timeout, and the new one includes a timeout, leave the existing one
+    // alone.  We should rework this stack a bit to give more power to the
+    // callers, but for now, this should be OK.
+    if (this.container_.parentNode && this.timeout_ === null &&
+        timeout !== null) {
+      return;
+    }
+
     // Remove all children first.
     this.container_.textContent = '';
     this.container_.appendChild(node);
