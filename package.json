@@ -1,6 +1,6 @@
 {
   "name": "hterm",
-  "version": "1.90.0",
+  "version": "1.91.0",
   "description": "A reasonably correct & fast terminal emulator.",
   "main": "js/hterm_all.js",
   "unpkg": "js/hterm_all.min.js",

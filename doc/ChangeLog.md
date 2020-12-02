@@ -1,3 +1,54 @@
+# 1.91, 2020-12-07, Findbar support, notifications overhaul, and IO cleanups.
+
+* terminal: Move image permission prompt to overlays.
+* notifications: Pull out into dedicated file.
+* notifications: Clear content when hiding.
+* size notification: Use × instead of x.
+* notifications: Keep it dynamically centered.
+* Replace parent{Element,Node}.removeChild() with remove().
+* css: Move from non-standard -webkit-transition CSS to standard transition.
+* io: Drop support for UTF-8 code units in UTF-16 strings.
+* Drop support for Chrome apps.
+* docs: Add an example for emacs ctrl-tab.
+* scrollport: Disable zoom gestures.
+* terminal: Unify showOverlay APIs.
+* tests: Convert MockRowProvider to ES6 class.
+* prefs: Make listProfiles take the storage.
+* terminal: Change Terminal constructor API to an options object.
+* utils: Inline a few utility functions.
+* utils: Convert Size/RowCol to ES6 classes.
+* zoom: Drop browser zoom logic.
+* css: Switch to standard user-select CSS property.
+* test: Use a dark theme by default.
+* python: Trim Python 2 boiler plate.
+* change "master" to "HEAD" in most places.
+* terminal: VT scroll clear when region is full screen.
+* scrollport: Revert "Ignore scrolling for non-cancelable scrollwheel events."
+* text-attrs: Intl.Segmenter: avoid use of next().
+* parser: Add identifiers for MINUS, EQUAL, BRACKET_{LEFT,RIGHT}.
+* terminal: Add background image.
+* findbar: Update find bar results.
+* findbar: Keep focus on FindBar after scroll.
+* findbar: Set find-bar batch size to 500.
+* findbar: Set sans-serif font for find bar.
+* terminal: Call updateCssCharsize_() on window resize.
+* findbar: Fix find bar default colors.
+* findbar: Remove test variable in findbar.
+* findbar: Move between find results.
+* vt: Fix VT region scrolling.
+* findbar: Highlight first instance of findbar result.
+* findbar: Added scrollRowToMiddle function.
+* findbar: Updated find-result-selected-color pref.
+* findbar: Render findbar search results updated.
+* keyboard: Stop passing Ctrl+Shift+B to browser.
+* keyboard: Do not capture Shift+F11.
+* init: Fix chrome.tabs.getCurrent to pass tab.
+* findbar: Add find-result-selected-color pref.
+* findbar: Render findbar search results on terminal.
+* prefs: Change wording for Alt+1..9 switch tab/app behavior.
+* findbar: Start implementing searching.
+* findbar: Add find-result-color pref.
+
 # 1.90, 2020-07-06, ES2018, UI tweaks to martial design, and minor bugfixes.
 
 * storage: Convert get APIs to promises.
