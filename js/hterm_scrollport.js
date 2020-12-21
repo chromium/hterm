@@ -232,14 +232,14 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     this.startRow = anchorRow;
     this.startNode = selection.anchorNode;
     this.startOffset = selection.anchorOffset;
-    this.endRow = focusRow;
+    this.endRow = this.focusRow;
     this.endNode = selection.focusNode;
     this.endOffset = selection.focusOffset;
   };
 
   // This function is used when we detect that the "focus" node is first.
   const focusFirst = () => {
-    this.startRow = focusRow;
+    this.startRow = this.focusRow;
     this.startNode = selection.focusNode;
     this.startOffset = selection.focusOffset;
     this.endRow = anchorRow;
@@ -282,16 +282,16 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
   while (focusRow && focusRow.nodeName != 'X-ROW') {
     focusRow = focusRow.parentNode;
   }
-
-  if (!focusRow) {
-    // Don't set a selection if it's not a row node that's selected.
-    return;
+  // Update this.focusRow if selection ends on a valid row, else keep last
+  // valid row value if focus has moved off rows (e.g. into padding).
+  if (focusRow) {
+    this.focusRow = focusRow;
   }
 
-  if (anchorRow.rowIndex < focusRow.rowIndex) {
+  if (anchorRow.rowIndex < this.focusRow.rowIndex) {
     anchorFirst();
 
-  } else if (anchorRow.rowIndex > focusRow.rowIndex) {
+  } else if (anchorRow.rowIndex > this.focusRow.rowIndex) {
     focusFirst();
 
   } else if (selection.focusNode == selection.anchorNode) {
@@ -318,7 +318,7 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     }
   }
 
-  this.isMultiline = anchorRow.rowIndex != focusRow.rowIndex;
+  this.isMultiline = anchorRow.rowIndex != this.focusRow.rowIndex;
 };
 
 /**

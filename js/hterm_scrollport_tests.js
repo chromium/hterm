@@ -245,6 +245,41 @@ it('scroll-selection-collapsed', function() {
 });
 
 /**
+ * Keep focus on the last selected row when focus moves off rows.
+ */
+it('scroll-selection-moves-off-rows', function() {
+  const doc = this.scrollPort.getDocument();
+
+  const s = doc.getSelection();
+
+  // Force a synchronous redraw.  We'll need the DOM to be correct in order
+  // to alter the selection.
+  this.scrollPort.redraw_();
+
+  // Select row 2, startRow and endRow should be 2.
+  const row2 = this.rowProvider.getRowNode(2);
+  s.collapse(row2.lastChild, 0);
+  s.extend(row2.firstChild, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(2, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(2, this.scrollPort.selection.endRow.rowIndex);
+
+  // Extend focus to row 0, startRow should be 0.
+  const row0 = this.rowProvider.getRowNode(0);
+  s.extend(row0.firstChild, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(2, this.scrollPort.selection.endRow.rowIndex);
+
+  // Extend focus off rows to padding, startRow should stay at 0.
+  const margin = doc.getElementById('hterm:top-fold-for-row-selection');
+  s.extend(margin, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(2, this.scrollPort.selection.endRow.rowIndex);
+});
+
+/**
  * Test the select-all function.
  */
 it('select-all', function() {
