@@ -283,11 +283,30 @@ it('scroll-selection-moves-off-rows', function() {
  * Test the select-all function.
  */
 it('select-all', function() {
-    this.scrollPort.selectAll();
-    assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
-    assert.equal(this.totalRowCount - 1,
-                 this.scrollPort.selection.endRow.rowIndex);
-  });
+  // Scroll at top.
+  this.scrollPort.scrollRowToTop(0);
+  this.scrollPort.redraw_();
+  this.scrollPort.selectAll();
+  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(this.totalRowCount - 1,
+               this.scrollPort.selection.endRow.rowIndex);
+
+  // Scroll in middle.
+  this.scrollPort.scrollRowToTop(50);
+  this.scrollPort.redraw_();
+  this.scrollPort.selectAll();
+  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(this.totalRowCount - 1,
+               this.scrollPort.selection.endRow.rowIndex);
+
+  // Scroll at bottom.
+  this.scrollPort.scrollRowToBottom(this.totalRowCount);
+  this.scrollPort.redraw_();
+  this.scrollPort.selectAll();
+  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(this.totalRowCount - 1,
+               this.scrollPort.selection.endRow.rowIndex);
+});
 
 /**
  * Test that the page up/down buttons are onscreen when selected but offscreen

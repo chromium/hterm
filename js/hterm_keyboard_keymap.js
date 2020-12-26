@@ -384,7 +384,7 @@ hterm.Keyboard.KeyMap.prototype.reset = function() {
   // want to do that. Our behavior on Enter is what most other
   // modern emulators do.
   add(20,  '[CAPS]',  PASS,    PASS,                        PASS,    DEFAULT);
-  add(65,  'aA',      DEFAULT, ctl('A'),                    DEFAULT, DEFAULT);
+  add(65,  'aA', DEFAULT, sh(ctl('A'), c('onCtrlShiftA_')), DEFAULT, DEFAULT);
   add(83,  'sS',      DEFAULT, ctl('S'),                    DEFAULT, DEFAULT);
   add(68,  'dD',      DEFAULT, ctl('D'),                    DEFAULT, DEFAULT);
   add(70,  'fF', DEFAULT, sh(ctl('F'), c('onCtrlShiftF_')), DEFAULT, DEFAULT);
@@ -768,6 +768,21 @@ hterm.Keyboard.KeyMap.prototype.onCtrlT_ = function(e) {
     return hterm.Keyboard.KeyActions.PASS;
   }
   return '\x14';
+};
+
+/**
+ * Select all lines. Returns a function which selects all lines when invoked
+ * rather than calling selectAll() directly so that users can override their own
+ * key binding for 'Ctrl+Shift+A' if desired.
+ *
+ * @param {!KeyboardEvent} e The event to process.
+ * @return {!hterm.Keyboard.KeyDefFunction} Function to select all.
+ */
+hterm.Keyboard.KeyMap.prototype.onCtrlShiftA_ = function(e) {
+  return function(e, k) {
+    this.keyboard.terminal.getScrollPort().selectAll();
+    return hterm.Keyboard.KeyActions.CANCEL;
+  };
 };
 
 /**

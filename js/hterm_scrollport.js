@@ -1477,14 +1477,14 @@ hterm.ScrollPort.prototype.fetchRowNode_ = function(rowIndex) {
 };
 
 /**
- * Select all rows in the viewport.
+ * Select all rows in the terminal including scrollback.
  */
 hterm.ScrollPort.prototype.selectAll = function() {
   let firstRow;
 
   if (this.topFold_.nextSibling.rowIndex != 0) {
     while (this.topFold_.previousSibling) {
-      this.rowNodes_.removeChild(this.topFold_.previousSibling);
+      this.topFold_.previousSibling.remove();
     }
 
     firstRow = this.fetchRowNode_(0);
@@ -1499,18 +1499,23 @@ hterm.ScrollPort.prototype.selectAll = function() {
 
   if (this.bottomFold_.previousSibling.rowIndex != lastRowIndex) {
     while (this.bottomFold_.nextSibling) {
-      this.rowNodes_.removeChild(this.bottomFold_.nextSibling);
+      this.bottomFold_.nextSibling.remove();
     }
 
     lastRow = this.fetchRowNode_(lastRowIndex);
     this.rowNodes_.appendChild(lastRow);
   } else {
-    lastRow = this.bottomFold_.previousSibling.rowIndex;
+    lastRow = this.bottomFold_.previousSibling;
+  }
+
+  let focusNode = lastRow;
+  while (focusNode.lastChild) {
+    focusNode = focusNode.lastChild;
   }
 
   const selection = this.document_.getSelection();
   selection.collapse(firstRow, 0);
-  selection.extend(lastRow, lastRow.childNodes.length);
+  selection.extend(focusNode, focusNode.length || 0);
 
   this.selection.sync();
 };

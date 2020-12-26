@@ -267,6 +267,17 @@ hterm.Parser.identifiers.actions = {
   },
 
   /**
+   * Select all lines in the terminal buffer.
+   *
+   * @param {!hterm.Terminal} terminal
+   * @return {!hterm.Keyboard.KeyActions}
+   */
+  selectAll: function(terminal) {
+    terminal.getScrollPort().selectAll();
+    return hterm.Keyboard.KeyActions.CANCEL;
+  },
+
+  /**
    * Clear the active screen and move the cursor to (0,0).
    *
    * @param {!hterm.Terminal} terminal
