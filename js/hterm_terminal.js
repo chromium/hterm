@@ -3651,8 +3651,9 @@ hterm.Terminal.prototype.getSelectionText = function() {
   }
 
   // End offset measures from the end of the line.
-  let endOffset = (hterm.TextAttributes.nodeWidth(selection.endNode) -
-                   selection.endOffset);
+  let endOffset =
+      hterm.TextAttributes.nodeWidth(lib.notNull(selection.endNode)) -
+      selection.endOffset;
   node = selection.endNode;
 
   if (node.nodeName != 'X-ROW') {
@@ -3870,6 +3871,11 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
       this.setSelectionEnabled(false);
       e.preventDefault();
     }
+
+    // Primary button 'mousedown'.
+    if (e.button === 0) {
+      this.scrollPort_.selection.setAutoScrollEnabled(true);
+    }
   }
 
   if (!reportMouseEvents) {
@@ -3972,11 +3978,18 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     this.onMouse(e);
   }
 
-  if (e.type == 'mouseup' && this.document_.getSelection().isCollapsed) {
-    // Restore this on mouseup in case it was temporarily defeated with a
-    // alt-mousedown.  Only do this when the selection is empty so that
-    // we don't immediately kill the users selection.
-    this.defeatMouseReports_ = false;
+  if (e.type == 'mouseup') {
+    if (this.document_.getSelection().isCollapsed) {
+      // Restore this on mouseup in case it was temporarily defeated with a
+      // alt-mousedown.  Only do this when the selection is empty so that
+      // we don't immediately kill the users selection.
+      this.defeatMouseReports_ = false;
+    }
+
+    // Primary button 'mouseup'.
+    if (e.button === 0) {
+      this.scrollPort_.selection.setAutoScrollEnabled(false);
+    }
   }
 };
 

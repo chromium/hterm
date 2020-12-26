@@ -956,4 +956,28 @@ it('scroll-region', function() {
   validate(scrollback, screenD);
 });
 
+/**
+ * Test the autoScroll is enabled/disabled when primary mouse button is down.
+ */
+it('auto-scroll-enabled', function() {
+  const s = this.terminal.getScrollPort().selection;
+  assert.isFalse(s.autoScrollEnabled_);
+
+  // Auto scroll should not get enabled from right button down.
+  this.terminal.onMouse_(new MouseEvent('mousedown', {button: 1}));
+  assert.isFalse(s.autoScrollEnabled_);
+
+  // Auto scroll should be enabled from left (primary).
+  this.terminal.onMouse_(new MouseEvent('mousedown', {button: 0}));
+  assert.isTrue(s.autoScrollEnabled_);
+
+  // Auto scroll should not get disabled from right button up.
+  this.terminal.onMouse_(new MouseEvent('mouseup', {button: 1}));
+  assert.isTrue(s.autoScrollEnabled_);
+
+  // Auto scroll should be disabled from left (primary).
+  this.terminal.onMouse_(new MouseEvent('mouseup', {button: 0}));
+  assert.isFalse(s.autoScrollEnabled_);
+});
+
 });

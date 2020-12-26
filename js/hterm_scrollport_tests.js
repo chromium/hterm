@@ -206,12 +206,7 @@ it('scroll-selection-collapsed', function() {
   assert.strictEqual(anchorNode, s.focusNode);
   assert.isTrue(s.isCollapsed);
 
-  // When accessibility is enabled, the selection should be preserved after
-  // scrolling.
-  const mockAccessibilityReader = new MockAccessibilityReader();
-  mockAccessibilityReader.accessibilityEnabled = true;
-  this.scrollPort.setAccessibilityReader(mockAccessibilityReader);
-
+  // The selection should be preserved after scrolling.
   for (let i = 0; i < this.visibleRowCount; i++) {
     this.scrollPort.scrollRowToTop(50 - i);
     this.scrollPort.redraw_();
@@ -225,58 +220,223 @@ it('scroll-selection-collapsed', function() {
     assert.strictEqual(anchorNode, s.anchorNode);
     assert.strictEqual(anchorNode, s.focusNode);
   }
-
-  // When accessibility isn't enabled, the selection shouldn't be preserved
-  // after scrolling.
-  mockAccessibilityReader.accessibilityEnabled = false;
-
-  for (let i = 0; i < this.visibleRowCount; i++) {
-    this.scrollPort.scrollRowToTop(50 - i);
-    this.scrollPort.redraw_();
-  }
-
-  for (let i = 0; i < this.visibleRowCount; i++) {
-    this.scrollPort.scrollRowToTop(50 + i);
-    this.scrollPort.redraw_();
-  }
-
-  assert.notStrictEqual(anchorNode, s.anchorNode);
-  assert.notStrictEqual(anchorNode, s.focusNode);
 });
 
 /**
- * Keep focus on the last selected row when focus moves off rows.
+ * Set focus to top or bottom row when focus moves off rows.
  */
 it('scroll-selection-moves-off-rows', function() {
   const doc = this.scrollPort.getDocument();
 
   const s = doc.getSelection();
 
-  // Force a synchronous redraw.  We'll need the DOM to be correct in order
-  // to alter the selection.
+  // Start with row 3 at top.
+  this.scrollPort.scrollRowToTop(3);
   this.scrollPort.redraw_();
 
-  // Select row 2, startRow and endRow should be 2.
+  // Select row 7, startRow and endRow should be 7.
+  const row7 = this.rowProvider.getRowNode(7);
+  s.collapse(row7.lastChild, 0);
+  s.extend(row7.firstChild, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(7, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(7, this.scrollPort.selection.endRow.rowIndex);
+
+  // Extend focus to row 5, startRow should be 5.
+  const row5 = this.rowProvider.getRowNode(5);
+  s.extend(row5.firstChild, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(5, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(7, this.scrollPort.selection.endRow.rowIndex);
+
+  // Extend focus off rows to top fold, startRow should be 3.
+  const topFold = doc.getElementById('hterm:top-fold-for-row-selection');
+  s.extend(topFold, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(3, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(7, this.scrollPort.selection.endRow.rowIndex);
+
+  // Extend focus off rows to bottom fold, startRow should be 3.
+  const bottomFold = doc.getElementById('hterm:bottom-fold-for-row-selection');
+  s.extend(bottomFold, 0);
+  this.scrollPort.selection.sync();
+  assert.equal(7, this.scrollPort.selection.startRow.rowIndex);
+  const bottomRow = 3 + this.visibleRowCount - 1;
+  assert.equal(bottomRow, this.scrollPort.selection.endRow.rowIndex);
+});
+
+/**
+ * Keep focus row in fold if this is not auto scroll, else change focus to
+ * adjacent row.
+ */
+it('scroll-selection-focus-row-in-fold', function() {
+  const doc = this.scrollPort.getDocument();
+
+  const s = doc.getSelection();
+
+  // Select rows 2 and 3 then scroll them into top fold.
+  this.scrollPort.redraw_();
   const row2 = this.rowProvider.getRowNode(2);
-  s.collapse(row2.lastChild, 0);
+  const row3 = this.rowProvider.getRowNode(3);
+  s.collapse(row3.lastChild, 0);
   s.extend(row2.firstChild, 0);
   this.scrollPort.selection.sync();
   assert.equal(2, this.scrollPort.selection.startRow.rowIndex);
-  assert.equal(2, this.scrollPort.selection.endRow.rowIndex);
+  assert.equal(3, this.scrollPort.selection.endRow.rowIndex);
+  this.scrollPort.scrollRowToTop(5);
+  this.scrollPort.redraw_();
 
-  // Extend focus to row 0, startRow should be 0.
-  const row0 = this.rowProvider.getRowNode(0);
-  s.extend(row0.firstChild, 0);
+  // If auto scroll is not enabled, focus should not change.
+  this.scrollPort.autoScrollEnabled_ = false;
   this.scrollPort.selection.sync();
-  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
-  assert.equal(2, this.scrollPort.selection.endRow.rowIndex);
+  assert.equal(2, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(3, this.scrollPort.selection.endRow.rowIndex);
 
-  // Extend focus off rows to padding, startRow should stay at 0.
-  const margin = doc.getElementById('hterm:top-fold-for-row-selection');
-  s.extend(margin, 0);
+  // If auto scroll is enabled, focus should change to top row.
+  this.scrollPort.autoScrollEnabled_ = true;
   this.scrollPort.selection.sync();
-  assert.equal(0, this.scrollPort.selection.startRow.rowIndex);
-  assert.equal(2, this.scrollPort.selection.endRow.rowIndex);
+  assert.equal(3, this.scrollPort.selection.startRow.rowIndex);
+  assert.equal(5, this.scrollPort.selection.endRow.rowIndex);
+});
+
+/**
+ * Test redraw_() handles selection rows and folds.
+ */
+it('redraw-with-selection', function() {
+  const doc = this.scrollPort.getDocument();
+  const s = doc.getSelection();
+
+  // Select 4 rows 2 pages in.
+  const start = this.visibleRowCount * 2;
+  const startRow = this.rowProvider.getRowNode(start);
+  const end = start + 4;
+  const endRow = this.rowProvider.getRowNode(end);
+  this.scrollPort.scrollRowToTop(start);
+  this.scrollPort.redraw_();
+  s.collapse(startRow.firstChild, 0);
+  s.extend(endRow.firstChild, 0);
+  this.scrollPort.redraw_();
+  assert.isNull(this.scrollPort.topFold_.previousSibling);
+  assert.isNull(this.scrollPort.bottomFold_.nextSibling);
+
+  // Start and end in bottom fold.
+  this.scrollPort.scrollRowToTop(0);
+  this.scrollPort.redraw_();
+  assert.isNull(this.scrollPort.topFold_.previousSibling);
+  assert.equal(startRow, this.scrollPort.bottomFold_.nextSibling);
+  assert.equal(endRow, startRow.nextSibling);
+  assert.isNull(endRow.nextSibling);
+
+  // Start on screen, end in bottom fold.
+  this.scrollPort.scrollRowToTop(start - this.visibleRowCount + 2);
+  this.scrollPort.redraw_();
+  assert.isNull(this.scrollPort.topFold_.previousSibling);
+  assert.equal(endRow, this.scrollPort.bottomFold_.nextSibling);
+  assert.isNull(endRow.nextSibling);
+
+  // Start and end in screen.
+  this.scrollPort.scrollRowToTop(start);
+  this.scrollPort.redraw_();
+  assert.isNull(this.scrollPort.topFold_.previousSibling);
+  assert.isNull(this.scrollPort.bottomFold_.nextSibling);
+
+  // Start in top fold, end on screen.
+  this.scrollPort.scrollRowToTop(end);
+  this.scrollPort.redraw_();
+  assert.equal(startRow, this.scrollPort.topFold_.previousSibling);
+  assert.isNull(startRow.previousSibling);
+  assert.isNull(this.scrollPort.bottomFold_.nextSibling);
+
+  // Start and end in top fold.
+  this.scrollPort.scrollRowToTop(end + this.visibleRowCount);
+  this.scrollPort.redraw_();
+  assert.equal(endRow, this.scrollPort.topFold_.previousSibling);
+  assert.equal(startRow, endRow.previousSibling);
+  assert.isNull(this.scrollPort.bottomFold_.nextSibling);
+
+  // Start in top fold, end in bottom fold.
+  const endFar = start + this.visibleRowCount + 4;
+  const endFarRow = this.rowProvider.getRowNode(endFar);
+  this.scrollPort.scrollRowToTop(start + this.visibleRowCount);
+  this.scrollPort.redraw_();
+  s.extend(endFarRow.firstChild, 0);
+  this.scrollPort.selection.sync();
+  this.scrollPort.scrollRowToTop(start + 2);
+  this.scrollPort.redraw_();
+  assert.equal(startRow, this.scrollPort.topFold_.previousSibling);
+  assert.isNull(startRow.previousSibling);
+  assert.equal(endFarRow, this.scrollPort.bottomFold_.nextSibling);
+  assert.isNull(endFarRow.nextSibling);
+});
+
+/**
+ * Test auto scroll starts and stops correctly with correct direction.
+ */
+it('auto-scroll-start-stop', function() {
+  const padding = this.scrollPort.screenPaddingSize;
+  const rowsHeight = this.scrollPort.visibleRowsHeight;
+  const mouseAboveRows = {pageY: -1};
+  const mouseInRows = {pageY: padding + 1};
+  const mouseBelowRows = {pageY: padding + rowsHeight + 1};
+  this.scrollPort.selection.autoScrollEnabled_ = true;
+
+  assert.isNull(this.scrollPort.selection.autoScrollInterval_);
+
+  // Moving mouse below rows should start scroll.
+  this.scrollPort.selection.autoScrollOnMouseMove_(mouseBelowRows);
+  assert.isNotNull(this.scrollPort.selection.autoScrollInterval_);
+  assert.equal(1, this.scrollPort.selection.autoScrollDirection_);
+
+  // Moving mouse above rows should make direction up.
+  this.scrollPort.selection.autoScrollOnMouseMove_(mouseAboveRows);
+  assert.isNotNull(this.scrollPort.selection.autoScrollInterval_);
+  assert.equal(-1, this.scrollPort.selection.autoScrollDirection_);
+
+  // Moving mouse back into rows should stop scroll.
+  this.scrollPort.selection.autoScrollOnMouseMove_(mouseInRows);
+  assert.isNull(this.scrollPort.selection.autoScrollInterval_);
+
+  // Auto scroll does not start if it is not enabled.
+  this.scrollPort.selection.autoScrollEnabled_ = false;
+  this.scrollPort.selection.autoScrollOnMouseMove_(mouseBelowRows);
+  assert.isNull(this.scrollPort.selection.autoScrollInterval_);
+});
+
+/**
+ * Test the auto scroll delta acceleration.
+ */
+it('auto-scroll-delta', function() {
+  const doc = this.scrollPort.getDocument();
+  const s = doc.getSelection();
+  this.scrollPort.redraw_();
+
+  // Select from row 10 to row 12.
+  const row10 = this.rowProvider.getRowNode(10);
+  const row12 = this.rowProvider.getRowNode(12);
+  s.collapse(row10.firstChild, 0);
+  s.extend(row12.firstChild, 0);
+  this.scrollPort.selection.sync();
+
+  // Delta should increase each time it is called.
+  assert.equal(1, this.scrollPort.selection.autoScrollDelta_);
+  assert.equal(0, this.scrollPort.getTopRowIndex());
+  this.scrollPort.selection.autoScroll_();
+  assert.equal(1.2, this.scrollPort.selection.autoScrollDelta_);
+  assert.equal(1, this.scrollPort.getTopRowIndex());
+  this.scrollPort.selection.autoScrollDelta_ = 10;
+  this.scrollPort.selection.autoScroll_();
+  assert.equal(12, this.scrollPort.selection.autoScrollDelta_);
+  assert.equal(13, this.scrollPort.getTopRowIndex());
+
+  // Delta should be reset on stop.
+  this.scrollPort.selection.stopAutoScroll_();
+  assert.equal(1, this.scrollPort.selection.autoScrollDelta_);
+
+  // Scroll should move up if direction is up.
+  this.scrollPort.selection.autoScrollDirection_ = -1;
+  this.scrollPort.selection.autoScroll_();
+  assert.equal(1.2, this.scrollPort.selection.autoScrollDelta_);
+  assert.equal(12, this.scrollPort.getTopRowIndex());
 });
 
 /**

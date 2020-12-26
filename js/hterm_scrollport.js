@@ -72,8 +72,8 @@ hterm.ScrollPort = function(rowProvider) {
   this.previousRowNodeCache_ = {};
 
   // Used during scroll events to detect when the underlying cause is a resize.
-  this.lastScreenWidth_ = null;
-  this.lastScreenHeight_ = null;
+  this.lastScreenWidth_ = 0;
+  this.lastScreenHeight_ = 0;
 
   // True if the user should be allowed to select text in the terminal.
   // This is disabled when the host requests mouse drag events so that we don't
@@ -161,8 +161,24 @@ hterm.ScrollPort.Selection = function(scrollPort) {
    *
    * If only one row is selected then startRow == endRow.  If there is no
    * selection or the selection is collapsed then startRow == null.
+   *
+   * @type {?Node}
    */
   this.startRow = null;
+
+  /**
+   * Node where selection starts.
+   *
+   * @type {?Node}
+   */
+  this.startNode = null;
+
+  /**
+   * Character offset in startNode where selection starts.
+   *
+   * @type {number}
+   */
+  this.startOffset = 0;
 
   /**
    * The row containing the end of the selection.
@@ -173,18 +189,77 @@ hterm.ScrollPort.Selection = function(scrollPort) {
    *
    * If only one row is selected then startRow == endRow.  If there is no
    * selection or the selection is collapsed then startRow == null.
+   *
+   * @type {?Node}
    */
   this.endRow = null;
 
   /**
-   * True if startRow != endRow.
+   * Node where selection ends.
+   *
+   * @type {?Node}
    */
-  this.isMultiline = null;
+  this.endNode = null;
 
   /**
-   * True if the selection is just a point rather than a range.
+   * Character offset in endNode where selection ends.
+   *
+   * @type {number}
    */
-  this.isCollapsed = null;
+  this.endOffset = 0;
+
+  /**
+   * True if startRow != endRow.
+   *
+   * @type {boolean}
+   */
+  this.isMultiline = false;
+
+  /**
+   * True if the selection is just a point (empty) rather than a range.
+   *
+   * @type {boolean}
+   */
+  this.isCollapsed = true;
+
+  /**
+   * @private
+   * @const
+   */
+  this.autoScrollOnMouseMoveBound_ =
+      /** @type {!EventListener} */ (this.autoScrollOnMouseMove_.bind(this));
+
+  /**
+   * True when 'mousedown' event is received for primary button until 'mouseup'
+   * is received for primary button.
+   *
+   * @private {boolean}
+   */
+  this.autoScrollEnabled_ = false;
+
+  /**
+   * Direction of auto scroll. 1 for scrolling down, -1 for scrolling up. Set by
+   * detecting mouse position from 'mousemove' events.
+   *
+   * @private {number}
+   */
+  this.autoScrollDirection_ = 1;
+
+  /**
+   * ID of interval running this.autoScroll_(). Set by startAutoScroll_(),
+   * cleared by stopAutoScroll_().
+   *
+   * @private {?number}
+   */
+  this.autoScrollInterval_ = null;
+
+  /**
+   * Number of rows to scroll at a time. Auto scroll runs at a 200ms interval.
+   * It starts by scrolling 1 row and accelerates by 20% each invocation.
+   *
+   * @private {number}
+   */
+  this.autoScrollDelta_ = 1;
 };
 
 /**
@@ -218,6 +293,81 @@ hterm.ScrollPort.Selection.prototype.findFirstChild = function(
 };
 
 /**
+ * Capture mousemove events while auto scroll is enabled. Set scroll direction
+ * up if mouse is above midpoint of screen, else set direction down. Start and
+ * stop auto scroll when mouse moves above or below rows.
+ *
+ * @param {!MouseEvent} e
+ * @private
+ */
+hterm.ScrollPort.Selection.prototype.autoScrollOnMouseMove_ = function(e) {
+  // If mouse is in top half of screen, then direction is up, else down.
+  const screenHeight = this.scrollPort_.lastScreenHeight_;
+  this.autoScrollDirection_ = (e.pageY * 2) < screenHeight ? -1 : 1;
+
+  const padding = this.scrollPort_.screenPaddingSize;
+  if (e.pageY < padding) {
+    // Mouse above rows.
+    this.startAutoScroll_();
+  } else if (e.pageY < (this.scrollPort_.visibleRowsHeight + padding)) {
+    // Mouse inside rows.
+    this.stopAutoScroll_();
+  } else {
+    // Mouse below rows.
+    this.startAutoScroll_();
+  }
+};
+
+/**
+ * Enable auto scrolling. True while primary mouse button is down.
+ *
+ * @param {boolean} enabled
+ */
+hterm.ScrollPort.Selection.prototype.setAutoScrollEnabled = function(enabled) {
+  this.autoScrollEnabled_ = enabled;
+  const doc = this.scrollPort_.getDocument();
+  if (enabled) {
+    doc.addEventListener('mousemove', this.autoScrollOnMouseMoveBound_);
+  } else {
+    doc.removeEventListener('mousemove', this.autoScrollOnMouseMoveBound_);
+    this.stopAutoScroll_();
+  }
+};
+
+/**
+ * Increase this.autoScrollDelta_ by 20% and scroll.
+ *
+ * @private
+ */
+hterm.ScrollPort.Selection.prototype.autoScroll_ = function() {
+  this.autoScrollDelta_ *= 1.2;
+  const delta = Math.floor(this.autoScrollDelta_) * this.autoScrollDirection_;
+  this.scrollPort_.scrollRowToTop(this.scrollPort_.getTopRowIndex() + delta);
+};
+
+/**
+ * Start auto scrolling if primary mouse is down and it is above or below rows.
+ *
+ * @private
+ */
+hterm.ScrollPort.Selection.prototype.startAutoScroll_ = function() {
+  if (this.autoScrollEnabled_ && this.autoScrollInterval_ === null) {
+    this.autoScrollInterval_ = setInterval(this.autoScroll_.bind(this), 200);
+  }
+};
+
+/**
+ * Stop auto scrolling called on 'mouseup' or if mouse moves back into rows.
+ *
+ * @private
+ */
+hterm.ScrollPort.Selection.prototype.stopAutoScroll_ = function() {
+  clearInterval(this.autoScrollInterval_);
+  this.autoScrollInterval_ = null;
+  this.autoScrollDelta_ = 1;
+};
+
+/**
  * Synchronize this object with the current DOM selection.
  *
  * This is a one-way synchronization, the DOM selection is copied to this
@@ -232,16 +382,16 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     this.startRow = anchorRow;
     this.startNode = selection.anchorNode;
     this.startOffset = selection.anchorOffset;
-    this.endRow = this.focusRow;
-    this.endNode = selection.focusNode;
-    this.endOffset = selection.focusOffset;
+    this.endRow = focusRow;
+    this.endNode = focusNode;
+    this.endOffset = focusOffset;
   };
 
   // This function is used when we detect that the "focus" node is first.
   const focusFirst = () => {
-    this.startRow = this.focusRow;
-    this.startNode = selection.focusNode;
-    this.startOffset = selection.focusOffset;
+    this.startRow = focusRow;
+    this.startNode = focusNode;
+    this.startOffset = focusOffset;
     this.endRow = anchorRow;
     this.endNode = selection.anchorNode;
     this.endOffset = selection.anchorOffset;
@@ -249,24 +399,27 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
 
   const selection = this.scrollPort_.getDocument().getSelection();
 
-  this.startRow = null;
-  this.endRow = null;
-  this.isMultiline = null;
-  this.isCollapsed = !selection || selection.isCollapsed;
+  const clear = () => {
+    this.startRow = null;
+    this.startNode = null;
+    this.startOffset = 0;
+    this.endRow = null;
+    this.endNode = null;
+    this.endOffset = 0;
+    this.isMultiline = false;
+    this.isCollapsed = true;
+  };
 
   if (!selection) {
+    clear();
     return;
   }
 
-  // Usually collapsed selections wouldn't be interesting, however screen
-  // readers will set a collapsed selection as they navigate through the DOM.
-  // It is important to preserve these nodes in the DOM as scrolling happens
-  // so that screen reader navigation isn't cleared.
-  const accessibilityEnabled = this.scrollPort_.accessibilityReader_ &&
-      this.scrollPort_.accessibilityReader_.accessibilityEnabled;
-  if (this.isCollapsed && !accessibilityEnabled) {
-    return;
-  }
+  // Do not ignore collapsed selections. They must not be cleared.
+  // Screen readers will set them as they navigate through the DOM.
+  // Auto scroll can also create them as the selection inverts if you scroll
+  // one way and then reverse direction.
+  this.isCollapsed = !selection || selection.isCollapsed;
 
   let anchorRow = selection.anchorNode;
   while (anchorRow && anchorRow.nodeName != 'X-ROW') {
@@ -275,27 +428,68 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
 
   if (!anchorRow) {
     // Don't set a selection if it's not a row node that's selected.
+    clear();
     return;
   }
 
   let focusRow = selection.focusNode;
+  let focusNode = focusRow;
+  let focusOffset = selection.focusOffset;
+  const focusIsStartOfTopRow = () => {
+    focusRow = this.scrollPort_.topFold_.nextSibling;
+    focusNode = focusRow;
+    focusOffset = 0;
+  };
+  const focusIsEndOfBottomRow = () => {
+    focusRow = this.scrollPort_.bottomFold_.previousSibling;
+    focusNode = focusRow;
+    while (focusNode.lastChild) {
+      focusNode = focusNode.lastChild;
+    }
+    focusOffset = focusNode.length || 0;
+  };
+
+  // If focus is topFold or bottomFold, use adjacent row.
+  if (focusRow === this.scrollPort_.topFold_) {
+    focusIsStartOfTopRow();
+  } else if (focusRow === this.scrollPort_.bottomFold_) {
+    focusIsEndOfBottomRow();
+  }
+
   while (focusRow && focusRow.nodeName != 'X-ROW') {
     focusRow = focusRow.parentNode;
   }
-  // Update this.focusRow if selection ends on a valid row, else keep last
-  // valid row value if focus has moved off rows (e.g. into padding).
-  if (focusRow) {
-    this.focusRow = focusRow;
+
+  if (!focusRow) {
+    // Keep existing selection (do not clear()) if focus is not a valid row.
+    return;
   }
 
-  if (anchorRow.rowIndex < this.focusRow.rowIndex) {
+  // During auto scroll, if focusRow is one of the selection rows inside the
+  // fold, use adjacent row.
+  if (this.scrollPort_.autoScrollEnabled_) {
+    let node = this.scrollPort_.topFold_;
+    while ((node = node.previousSibling) !== null) {
+      if (node === focusRow) {
+        focusIsStartOfTopRow();
+      }
+    }
+    node = this.scrollPort_.bottomFold_;
+    while ((node = node.nextSibling) !== null) {
+      if (node === focusRow) {
+        focusIsEndOfBottomRow();
+      }
+    }
+  }
+
+  if (anchorRow.rowIndex < focusRow.rowIndex) {
     anchorFirst();
 
-  } else if (anchorRow.rowIndex > this.focusRow.rowIndex) {
+  } else if (anchorRow.rowIndex > focusRow.rowIndex) {
     focusFirst();
 
-  } else if (selection.focusNode == selection.anchorNode) {
-    if (selection.anchorOffset < selection.focusOffset) {
+  } else if (focusNode == selection.anchorNode) {
+    if (selection.anchorOffset < focusOffset) {
       anchorFirst();
     } else {
       focusFirst();
@@ -305,7 +499,7 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     // The selection starts and ends in the same row, but isn't contained all
     // in a single node.
     const firstNode = this.findFirstChild(
-        anchorRow, [selection.anchorNode, selection.focusNode]);
+        anchorRow, [selection.anchorNode, focusNode]);
 
     if (!firstNode) {
       throw new Error('Unexpected error syncing selection.');
@@ -318,7 +512,7 @@ hterm.ScrollPort.Selection.prototype.sync = function() {
     }
   }
 
-  this.isMultiline = anchorRow.rowIndex != this.focusRow.rowIndex;
+  this.isMultiline = anchorRow.rowIndex != focusRow.rowIndex;
 };
 
 /**
@@ -1039,13 +1233,13 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
       screenSize.height, this.characterSize.height);
 
   // Then compute the height of our integral number of rows.
-  const visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
+  this.visibleRowsHeight = this.visibleRowCount * this.characterSize.height;
 
   // Then the difference between the screen height and total row height needs to
   // be made up for as top margin.  We need to record this value so it
   // can be used later to determine the topRowIndex.
   this.visibleRowTopMargin = 0;
-  this.visibleRowBottomMargin = screenSize.height - visibleRowsHeight;
+  this.visibleRowBottomMargin = screenSize.height - this.visibleRowsHeight;
 
   this.topFold_.style.marginBottom = this.visibleRowTopMargin + 'px';
 
@@ -1060,7 +1254,7 @@ hterm.ScrollPort.prototype.syncRowNodesDimensions_ = function() {
   // Set the dimensions of the visible rows container.
   this.rowNodes_.style.width = screenSize.width + 'px';
   this.rowNodes_.style.height =
-      visibleRowsHeight + topFoldOffset + this.screenPaddingSize + 'px';
+      this.visibleRowsHeight + topFoldOffset + this.screenPaddingSize + 'px';
   this.rowNodes_.style.left =
       this.screen_.offsetLeft + this.screenPaddingSize + 'px';
   this.rowNodes_.style.top =
