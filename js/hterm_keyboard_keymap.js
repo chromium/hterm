@@ -776,13 +776,11 @@ hterm.Keyboard.KeyMap.prototype.onCtrlT_ = function(e) {
  * key binding for 'Ctrl+Shift+A' if desired.
  *
  * @param {!KeyboardEvent} e The event to process.
- * @return {!hterm.Keyboard.KeyDefFunction} Function to select all.
+ * @return {symbol} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlShiftA_ = function(e) {
-  return function(e, k) {
-    this.keyboard.terminal.getScrollPort().selectAll();
-    return hterm.Keyboard.KeyActions.CANCEL;
-  };
+  this.keyboard.terminal.getScrollPort().selectAll();
+  return hterm.Keyboard.KeyActions.CANCEL;
 };
 
 /**
@@ -836,8 +834,7 @@ hterm.Keyboard.KeyMap.prototype.onCtrlC_ = function(e) {
  * Either send a ^N or open a new window to the same location.
  *
  * @param {!KeyboardEvent} e The event to process.
- * @return {!hterm.Keyboard.KeyDefFunction|symbol|string} Key action or
- *     sequence.
+ * @return {symbol|string} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
   if (this.keyboard.terminal.passCtrlN) {
@@ -845,13 +842,11 @@ hterm.Keyboard.KeyMap.prototype.onCtrlN_ = function(e) {
   }
 
   if (e.shiftKey) {
-    return function(e, k) {
-      lib.f.openWindow(document.location.href, '',
-                       'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
-                       'minimizable=yes,width=' + window.innerWidth +
-                       ',height=' + window.innerHeight);
-      return hterm.Keyboard.KeyActions.CANCEL;
-    };
+    lib.f.openWindow(document.location.href, '',
+                     'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
+                     'minimizable=yes,width=' + window.innerWidth +
+                     ',height=' + window.innerHeight);
+    return hterm.Keyboard.KeyActions.CANCEL;
   }
 
   return '\x0e';
@@ -888,17 +883,15 @@ hterm.Keyboard.KeyMap.prototype.onCtrlV_ = function(e) {
  * Either the default action or open a new window to the same location.
  *
  * @param {!KeyboardEvent} e The event to process.
- * @return {!hterm.Keyboard.KeyDefFunction|symbol} Key action or sequence.
+ * @return {symbol} Key action or sequence.
  */
 hterm.Keyboard.KeyMap.prototype.onMetaN_ = function(e) {
   if (e.shiftKey) {
-    return function(e, k) {
-      lib.f.openWindow(document.location.href, '',
-                       'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
-                       'minimizable=yes,width=' + window.outerWidth +
-                       ',height=' + window.outerHeight);
-      return hterm.Keyboard.KeyActions.CANCEL;
-    };
+    lib.f.openWindow(document.location.href, '',
+                     'chrome=no,close=yes,resize=yes,scrollbars=yes,' +
+                     'minimizable=yes,width=' + window.outerWidth +
+                     ',height=' + window.outerHeight);
+    return hterm.Keyboard.KeyActions.CANCEL;
   }
 
   return hterm.Keyboard.KeyActions.DEFAULT;
