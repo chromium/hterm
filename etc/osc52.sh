@@ -101,8 +101,8 @@ Usage: osc52 [options] [string]
 
 Send an arbitrary string to the terminal clipboard using the OSC 52 escape
 sequence as specified in xterm:
-  https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-  Section "Operating System Controls", Ps => 52.
+  https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
+  Section "Operating System Commands", Ps => 52.
 
 The data can either be read from stdin:
   $ echo "hello world" | osc52.sh
